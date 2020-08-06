@@ -41,7 +41,6 @@ async function pirateSpeak(query: string) {
     }
   });
   let request = await (await fetch(req)).json();
-  //console.log(request);
   if (typeof request.contents !== 'object') return request;
   return request.contents.translated;
 }
@@ -70,8 +69,6 @@ function getLanguageFromFlag(flag: string) {
     message.content.substring(3),
     'en'
   );
-  console.log(translation);
-  console.log(constants.countries.find((e) => e.shortcode === 'BR'));
   const richEmbed = new discord.Embed();
   richEmbed.setTitle(translation.detectedSourceLanguage).setColor(0x00ff00);
   richEmbed.setDescription(translation.translatedText);
@@ -95,10 +92,8 @@ async function saveToPool(pool: any, mid: string, lang: string) {
   }
   if (pfi > -1) {
     pool[pfi].translations.push(lang);
-    //console.log('push existing');
   } else {
     pool.push(newObj);
-    //console.log('push new');
   }
   await kv.put('translatedMessages', pool);
 }
@@ -177,13 +172,11 @@ export async function OnMessageReactionAdd(
   let memBot = await guild.getMember(discord.getBotId());
   let shortCode = lang;
   if (typeof lang === 'object') shortCode = lang.shortcode;
-  //console.log(pool);
   if (Array.isArray(pool)) {
     let pf = pool.find((e: any) => {
       return e.id === message.id && e.translations.indexOf(shortCode) > -1;
     });
     if (typeof pf !== 'undefined') {
-      console.log('Duplicate translation request!');
 
       if (
         memBot !== null &&
@@ -199,7 +192,6 @@ export async function OnMessageReactionAdd(
     );
     return false;
   } else if (lang === 'piratespeak') {
-    //console.log('Argh!');
     await saveToPool(pool, message.id, lang);
     let langTyped = await gTranslate.detectLanguage(message.content);
     let foundEn = langTyped.find((e: any) => {
@@ -259,7 +251,6 @@ export async function OnMessageReactionAdd(
       channel.canMember(memBot, discord.Permissions.MANAGE_MESSAGES)
     )
       await message.deleteReaction(reaction.emoji.name, reaction.userId);
-    console.log(translation);
     return false;
   }
   await translationEmbed(

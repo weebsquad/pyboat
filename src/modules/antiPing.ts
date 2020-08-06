@@ -436,7 +436,6 @@ export async function OnMessageDeleteBulk(messages) {
 }
 
 export async function OnMessageReactionAdd(args) {
-  // console.log('react', args);
   // Check staff adds
   if (!(await isStaff(args.member))) {
     return;

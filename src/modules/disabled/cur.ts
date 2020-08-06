@@ -120,7 +120,6 @@ export async function CheckRole(role: discord.Role) {
   if (!(await RoleHasUser(role.id))) {
     return;
   }
-  // console.log(`Checking ${role.name} perms`);
   if (role.permissions > 0) {
     await role.edit({
       permissions: 0,

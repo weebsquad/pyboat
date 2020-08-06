@@ -22,6 +22,5 @@ export async function AL_OnGuildBanRemove(
   log: any,
   ban: discord.GuildBan,
 ) {
-  console.log('ban remove', ban, log);
   await handleEvent(id, guildId, discord.Event.GUILD_BAN_REMOVE, log, ban);
 }

@@ -43,7 +43,6 @@ export function InitializeCommands() {
         await m.Message.reply('invalid role');
         return;
       }
-      console.log(guildRole);
       await guildRole.delete();
       await m.Message.reply('role deleted');
     } else if (switcher === 'giverole') {
@@ -56,11 +55,9 @@ export function InitializeCommands() {
         await m.Message.reply('invalid role');
         return;
       }
-      console.log(guildRole);
       await m.AuthorGuild.addRole(baseId);
       await m.Message.reply('role added');
     } else {
-      console.log(switcher);
       await m.Message.reply('**Test Command**: Invalid switcher used');
     }
   };

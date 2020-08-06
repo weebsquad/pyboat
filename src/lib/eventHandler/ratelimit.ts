@@ -132,7 +132,6 @@ export async function isRatelimit(
     time = time.getTime();
   }
 
-  // console.log('isRatelimit');
   // await clean(); // Spring cleaning
 
   const tracks = await getPool();
@@ -174,11 +173,8 @@ export async function isRatelimit(
       const overLimit = objScope.find((ele) => {
         const timeMs = +ele.split('/')[1];
         const incidencesNeeded = +ele.split('/')[0];
-        // console.log('runChecks', 'timeMs', keyScope, timeMs);
-        // console.log('runChecks', 'tracks', keyScope, tracks.length);
         const timedChecks = tracks.filter((ele2) => {
           const diff = time - ele2.id;
-          // console.log('runChecks', 'timedChecks.diff', diff);
           if (diff <= timeMs) {
             if (type === 'auditlog' && ele2.type !== 'auditlog') {
               return false;
@@ -195,7 +191,6 @@ export async function isRatelimit(
           }
           return false;
         });
-        // console.log('runChecks', 'timedChecks', keyScope, timedChecks.length);
 
         if (timedChecks.length > incidencesNeeded) {
           return true;

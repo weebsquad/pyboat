@@ -10,11 +10,9 @@ export async function OnAnyEvent(
 ) {}
 
 export async function OnBatchEvents(q: Array<QueuedEvent>) {
-  console.log('OnBatchEvents', q);
 }
 
 export async function AL_OnBatchEvents(q: Array<QueuedEvent>) {
-  console.log('AL_OnBatchEvents', q);
 }
 
 export async function OnChannelCreate(

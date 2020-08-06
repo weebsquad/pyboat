@@ -23,7 +23,6 @@ export function InitializeCommands() {
     let text = '**< COMMANDS >**\n\n';
     const commandsArray = Object.values(commands);
     const commandCategories = {};
-    // console.log(commandsArray);
     commandsArray.sort((a, b) => {
       if (a.Category > b.Category) {
         return 1;

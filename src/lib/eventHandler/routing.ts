@@ -303,7 +303,6 @@ export async function ExecuteModules(
         if (!Array.isArray(auditLogData)) {
           auditLogData = [auditLogData, ...args];
         }
-        // console.log(auditLogData);
         let _e;
         try {
           if (asyncModules.includes(moduleName)) {
@@ -395,9 +394,6 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
       return e;
     });
     const unProc = q.filter((e) => !e.processed);
-    if (unProc.length > 0) {
-      console.log('error in routing, unprocessed batches: ', unProc);
-    }
     return q;
   }
   procQueue = procQueue.map((e: QueuedEvent) => {
@@ -496,7 +492,6 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
       );
       continue;
     }
-    // console.log(`${event} : ${moduleName}`);
     let _e;
     try {
       if (eventFunction instanceof Function) {

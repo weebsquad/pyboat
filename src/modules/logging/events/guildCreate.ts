@@ -38,6 +38,5 @@ export async function OnGuildCreate(
   guildId: string,
   guild: discord.Guild,
 ) {
-  console.log('onGuildCreate', guild);
   await handleEvent(id, guildId, discord.Event.GUILD_CREATE, null, guild);
 }

@@ -42,7 +42,6 @@ const eventFilters = <any>{
             return false;
           return true;
         });
-        //console.log(mismatch1, mismatch2);
         if (mismatch1.length !== 0 || mismatch2.length !== 0) return false;
       } else {
         return false;

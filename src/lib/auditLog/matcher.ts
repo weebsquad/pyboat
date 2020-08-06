@@ -309,7 +309,6 @@ export async function getAuditLogData(
     ).getTime();
     if (dateSn < limit) break;
     if (actionsForThis.indexOf(item.actionType) === -1) continue;
-    //console.log('getLog.item', item);
     let res = await validateAuditEvent(eventName, eventPayload, item);
     if (!res) continue;
 
@@ -406,7 +405,6 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
     let lowerDiff = logEntryLimiter;
     if (hasGrouping) lowerDiff = 10 * 60 * 1000;
     lf = new Date(lf).getTime() - lowerDiff; // Limit on how long ago audit log entries can be
-    //console.log(_events, bf, lf, utils.decomposeSnowflake(bf).timestamp - lf);
     let opts = {
       limit: Math.min(450, Math.floor(procQueue.length * 1.5)),
       before: bf
@@ -417,7 +415,6 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
       let dateSn = new Date(
         utils.decomposeSnowflake(item.id).timestamp
       ).getTime();
-      //console.log(item, dateSn < lf, dateSn, lf);
       if (dateSn < lf) break;
       let _f = false;
       let tmpstore: any;

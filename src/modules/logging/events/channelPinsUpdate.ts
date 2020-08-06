@@ -61,6 +61,5 @@ export async function AL_OnChannelPinsUpdate(
   log: any,
   ev: discord.Event.IChannelPinsUpdate,
 ) {
-  // console.log('onpins', ev, log);
   await handleEvent(id, guildId, discord.Event.CHANNEL_PINS_UPDATE, log, ev);
 }

@@ -35,9 +35,7 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
     }
   }*/
 
-  /*console.log('before', opts.filters);
   opts['filters'].unshift(filterNoCmds);
-  console.log('after', opts.filters);*/
   let newo = <any>opts;
   return newo;
 }
@@ -48,7 +46,6 @@ export async function handleCommand(message: discord.Message) {
     let obj: discord.command.CommandGroup = cmdgroups[key];
     let ret = await obj.checkMessage(message);
     if (ret === true) {
-      //console.log('handleCom', `Found ${message.content} at ${key}`);
       try {
         await obj.handleMessage(message);
         return true;
@@ -84,7 +81,6 @@ export function InitializeCommands2() {
       obj['_groupOptions']
     ) as discord.command.ICommandGroupOptions;
     const newC = new discord.command.CommandGroup(opts).attach(newKeys);
-    //console.log(opts);
     cmdgroups.push(newC);
     //console.info('Loaded ' + count + ' cmds from commands2.' + key);
   }

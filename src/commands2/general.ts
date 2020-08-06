@@ -89,7 +89,7 @@ export const snowflake = discord.command.handler(
   },
 );
 
-export const rolelb = discord.command.rawHandler(
+/*export const rolelb = discord.command.rawHandler(
   async (message) => {
     await message.reply(async () => {
       const ms = new Date();
@@ -123,13 +123,10 @@ export const rolelb = discord.command.rawHandler(
         } roles`;
       }
       board += '\n```';
-      console.log(
-        `Took ${new Date(Date.now()).getTime() - new Date(ms).getTime()}ms`,
-      );
       return board;
     });
   },
-);
+);*/
 
 /* export const translate = discord.command.handler(
   (ctx) => ({ lang: ctx.string(), text: ctx.text() }),

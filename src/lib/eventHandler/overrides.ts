@@ -8,7 +8,6 @@ EventOverrides['GUILD_ROLE_CREATE'] = function(
 /*EventOverrides['CHANNELS_PINS_UPDATE'] = function(
   ch: discord.Event.IChannelPinsUpdate
 ) {
-  console.log(ch);
   return [ch];
 };*/
 EventOverrides['GUILD_ROLE_UPDATE'] = function(

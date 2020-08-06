@@ -77,7 +77,6 @@ export function parsePerms(bitf: number) {
   let newp = {} as any;
   for (var key in PermissionFlags) {
     let _c = (bitf >> PermissionFlags[key]) & 1;
-    console.log(key, _c);
     if (_c === PermissionFlags[key]) {
       newp[key] = true;
     } else {
@@ -340,10 +339,8 @@ export async function sendWebhookPostComplex(webhook_id: string, data: any) {
   }
 
   let res = await metalApiRequest('', `webhooks/${webhook_id}`, 'POST', body);
-  //console.log(body, res.status, res.statusText, res.ok);
   try {
     let resp = await res.json();
-    //console.log(resp);
     return resp;
   } catch (e) {
     return true;

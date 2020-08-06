@@ -20,7 +20,6 @@ export async function OnGuildMemberUpdate(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
-    console.log('roleM.onUpdate');
   await checkUserRoles(
     await refreshGuildMember(member.guildId, member.user.id),
   );
@@ -149,11 +148,6 @@ async function checkRolePerms(role: discord.Role) {
     }
     if (role.permissions > 0 && highestRole.position > role.position) {
       role.edit({ permissions: 0 });
-      console.log(
-        `Setting role perms on ${
-          role.name
-        } because the seperator role has perms..`,
-      );
     }
   }
 }
@@ -199,8 +193,6 @@ async function getGuildSeperatorRoles(guild: discord.Guild) {
 }
 
 async function checkMemberSeperatorRoles(member: discord.GuildMember) {
-  // console.log('Running update on ' + member.user.tag);
-
   let rolesChanged = false;
   const guild = await member.getGuild();
   const guildMe = await guild.getMember(discord.getBotId());
@@ -212,15 +204,11 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
   const roles = guildRoles
     .filter((el) => member.roles.indexOf(el.id) > -1)
     .reverse();
-  // console.log(roles);
   let rolesAdd = [];
   let rolesRemove = [];
   if (seps.length < 1 || roles.length < 2) {
     return;
   }
-  /* roles.forEach(function(rl) {
-		console.log(`${rl.name} - ${rl.position} - ${rl.hexColor}`);
-	}); */
   const sepPosMaps = {};
   const posArray = [];
   seps.forEach((sep) => {
@@ -249,7 +237,6 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
       sepPosMaps[sep1.id] = push;
     }
   });
-  // console.log(sepPosMaps);
 
   const highestRole = await getMemberHighestRole(guildMe);
   if (highestRole === null) {
@@ -266,7 +253,6 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
       highestRole.position < sepRole.position
       || !guildMe.can(discord.Permissions.MANAGE_ROLES)
     ) {
-      console.log(`Skipping role ${sepRole.name} due to no perms`);
       return;
     } // Bot has no perm
     const posSep = sepRole.position;
@@ -313,22 +299,19 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
         }
       }
     });
-    // console.log(above, below);
     /* if (
       isSeperatorRole(above) &&
       (above.color === 0 || above.position < highestColor)
     ) {
-      console.log('above');
       rolesRemove.push(sepRole);
     } else if (
       isSeperatorRole(below) &&
       (sepRole.color === 0 || sepRole.position < highestColor)
     ) {
-      console.log('below');
       rolesRemove.push(below);
     } else {
       if (sepRole.id === '593077150077288481')
-        console.log(hasSep, hasAbove, hasBelow, hasAboveColor); */
+         */
     if (hasSep && (!hasBelow || !hasAbove)) {
       rolesRemove.push(sepRole);
     } else if (hasSep && !hasAboveColor && sepRole.color !== 0) {
@@ -379,7 +362,6 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
         await member.removeRole(el.id);
       })
     ); */
-    // console.log('Updated ' + member.user.getTag() + ' in ' + member.guildId);
   }
   return rolesChanged;
 }

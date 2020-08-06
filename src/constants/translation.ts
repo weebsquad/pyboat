@@ -409,6 +409,5 @@ export class Language {
       }
       //final = `${final}${sepp[i]}`
   }
-  console.log(final);
   */
   

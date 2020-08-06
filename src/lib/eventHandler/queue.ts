@@ -58,7 +58,6 @@ export async function resolveQueue() {
   try {
     if (cpuT >= 100) {
       try {
-        console.log('queue using cpu burst ', neededCpuTime);
         await pylon.requestCpuBurst(async () => {
           await routing.ExecuteQueuedEvents(procQueue);
         }, Math.max(200, Math.floor(cpuT * 1.2)));
@@ -75,11 +74,6 @@ export async function resolveQueue() {
           );
           if (canFit > 0) {
             const _alt = procQueue.slice(0, canFit);
-            /* console.log(
-              'queue alternative..',
-              _alt,
-              _alt.length + '/' + procQueue.length
-            ); */
             await routing.ExecuteQueuedEvents(_alt);
             _alt.map((e) => {
               const _f = queue.findIndex((e2) => e.id === e2.id);
@@ -96,7 +90,6 @@ export async function resolveQueue() {
         } /*
         let remaining = e.bucketRemainingMs;
         let resetin = e.bucketResetInMs;
-        console.log(e);
         if (remaining >= Math.floor(cpuT * 1.2)) {
           await pylon.requestCpuBurst(async function() {
             await routing.ExecuteQueuedEvents(queue);
@@ -187,7 +180,6 @@ export async function checkObject(obj: QueuedEvent) {
   }
 }
 export async function addToQueue(eventName: string, ts: string, ...args: any) {
-  // console.log('Adding to queue ', eventName);
   const obj = new QueuedEvent(eventName, ...args);
   obj.id = ts;
   queue.push(obj);

@@ -25,6 +25,5 @@ export async function OnWebhooksUpdate(
   guildId: string,
   ev: discord.Event.IWebhooksUpdate,
 ) {
-  console.log('OnWebhooksUpdate', ev);
   await handleEvent(id, guildId, discord.Event.WEBHOOKS_UPDATE, null, ev);
 }

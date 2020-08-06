@@ -26,6 +26,5 @@ export async function OnVoiceServerUpdate(
   guildId: string,
   ev: discord.Event.IVoiceServerUpdate,
 ) {
-  // console.log('onvoiceserverupdate', ev);
   await handleEvent(id, guildId, discord.Event.VOICE_SERVER_UPDATE, null, ev);
 }

@@ -40,6 +40,5 @@ export function InitializeCrons() {
     pylon.tasks.cron(nm, key, async () => {
       await onCron(nm);
     });
-    // console.log('initialized cron ', nm);
   }
 }

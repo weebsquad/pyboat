@@ -74,13 +74,7 @@ export const falseupdate = discord.command.handler(
   }
 );
 
-export const update = discord.command.rawHandler(
-    async (msg) => {
-      const req = await fetch('https://pylon.bot/');
-      console.log(req);
-      await msg.reply('done');
-    }
-  );
+
 
 const test = cmdGroup.subcommand('test', (sub) => {
   /*sub.raw('queue', async (m) => {
@@ -93,28 +87,9 @@ const test = cmdGroup.subcommand('test', (sub) => {
     }
   });*/
   sub.raw('type', async (m) => {
-    console.log(m.member);
     await m.reply({ content: '' + typeof m });
   });
-  sub.raw('timeouts', async (m) => {
-    setTimeout(function() {
-      console.log('timeout 1/4 (2000ms) triggered');
-      m.reply('timeout 1/4 (2000ms) triggered');
-    }, 2000);
-    setTimeout(function() {
-      console.log('timeout 2/4 (5000ms) triggered');
-      m.reply('timeout 2/4 (5000ms) triggered');
-    }, 5000);
-    setTimeout(function() {
-      console.log('timeout 3/4 (15000ms) triggered');
-      m.reply('timeout 3/4 (15000ms) triggered');
-    }, 15000);
-    setTimeout(function() {
-      console.log('timeout 4/4 (60000ms) triggered');
-      m.reply('timeout 4/4 (60000ms) triggered');
-    }, 60000);
-    await m.reply('timeout set!');
-  });
+
   sub.raw('error', async (m) => {
     throw new Error('testing pls ignore');
   });

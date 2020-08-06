@@ -356,7 +356,6 @@ export async function AL_OnVoiceStateUpdate(
   voiceState: discord.VoiceState,
   oldVoiceState: discord.VoiceState,
 ) {
-  // console.log('onVoiceState.', log, voiceState, oldVoiceState);
   await handleEvent(
     id,
     guildId,

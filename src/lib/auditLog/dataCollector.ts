@@ -99,7 +99,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
         let d =
           utils.decomposeSnowflake(log.id).timestamp -
           new Date(ev.lastPinTimestamp).getTime();
-        //console.log('ms diff ', d);
         if (d < 150 && d > -150) return true;
       } else {
         //unpin
@@ -149,10 +148,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
     guildId: function(dt: any[]) {
       return dt[0].guildId;
     },
-    /*validate: (dt: any, log: any) => {
-      console.log(dt, log);
-      return false;
-    },*/
     60: (dt: any, log: any) => {
       // discord.AuditLogEntry.ActionType.EMOJI_CREATE
       let newE = dt[0].emojis.find(
