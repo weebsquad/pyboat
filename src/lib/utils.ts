@@ -1,11 +1,12 @@
 import { config } from '../config';
 import * as constants from '../constants/constants';
+
 export * from './metalApi';
 export * from './discordHelpers';
 export * from './bitField';
 
 export function isNormalInteger(str, checkPositive = false) {
-  var n = Math.floor(Number(str));
+  const n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && (n >= 0 || !checkPositive);
 }
 
@@ -14,19 +15,21 @@ export function isNumber(n: string) {
 }
 const blacklist = ['`', '\t', '@everyone', '@here'];
 export function escapeString(string) {
-  blacklist.forEach(function(vl) {
+  blacklist.forEach((vl) => {
     string = string.split(vl).join('');
   });
   return string;
 }
 
 export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
-  if (n < 2) return [a];
+  if (n < 2) {
+    return [a];
+  }
 
-  var len = a.length,
-    out = [],
-    i = 0,
-    size;
+  const len = a.length;
+  const out = [];
+  let i = 0;
+  let size;
 
   if (len % n === 0) {
     size = Math.floor(len / n);
@@ -41,7 +44,9 @@ export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
   } else {
     n--;
     size = Math.floor(len / n);
-    if (len % size === 0) size--;
+    if (len % size === 0) {
+      size--;
+    }
     while (i < size * n) {
       out.push(a.slice(i, (i += size)));
     }
@@ -56,26 +61,29 @@ export async function getPresentableRequestData(resp: Response) {
   try {
     jsn = await resp.json();
   } catch (e) {}
-  let newData = {};
-  if (typeof jsn !== 'undefined') newData['jsonResponse'] = jsn;
-  for (var key in resp) {
+  const newData = {};
+  if (typeof jsn !== 'undefined') {
+    newData.jsonResponse = jsn;
+  }
+  for (const key in resp) {
     if (
-      key === 'headers' ||
-      key === 'redirected' ||
-      key === 'url' ||
-      key === 'bodySource' ||
-      key === 'type'
-    )
+      key === 'headers'
+      || key === 'redirected'
+      || key === 'url'
+      || key === 'bodySource'
+      || key === 'type'
+    ) {
       continue;
+    }
     newData[key] = resp[key];
   }
   return newData;
 }
 export function strToObj(str, val) {
-  var i,
-    obj = {},
-    strarr = str.split('.');
-  var x = obj;
+  let i;
+  const obj = {};
+  const strarr = str.split('.');
+  let x = obj;
   for (i = 0; i < strarr.length - 1; i++) {
     x = x[strarr[i]] = {};
   }
@@ -92,15 +100,13 @@ export function pad(v, n, c = '0') {
 export function text2Binary(string) {
   return string
     .split('')
-    .map(function(char) {
-      return char.charCodeAt(0).toString(2);
-    })
+    .map((char) => char.charCodeAt(0).toString(2))
     .join(' ');
 }
 
 export function swapKV(json) {
-  var ret = {};
-  for (var key in json) {
+  const ret = {};
+  for (const key in json) {
     ret[json[key]] = key;
   }
   return ret;
@@ -109,49 +115,51 @@ export function swapKV(json) {
 export function getCommandDetails(content) {}
 
 export function mathEval(exp) {
-  var reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/gi,
-    valid = true;
+  const reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/gi;
+  let valid = true;
 
   // Detect valid JS identifier names and replace them
-  exp = exp.replace(reg, function($0) {
+  exp = exp.replace(reg, ($0) => {
     // If the name is a direct member of Math, allow
-    if (Math.hasOwnProperty($0)) return 'Math.' + $0;
+    if (Math.hasOwnProperty($0)) {
+      return `Math.${$0}`;
+    }
     // Otherwise the expression is invalid
-    else valid = false;
+    valid = false;
   });
 
   // Don't eval if our replace function flagged as invalid
   if (!valid) {
     return false;
-  } else {
-    try {
-      let res = eval(exp);
-      return res;
-    } catch (e) {
-      return false;
-    }
+  }
+  try {
+    const res = eval(exp);
+    return res;
+  } catch (e) {
+    return false;
   }
 }
 
 export function VBColorToHEX(i: number) {
-  var bbggrr = ('000000' + i.toString(16)).slice(-6);
-  var rrggbb = bbggrr.substr(0, 2) + bbggrr.substr(2, 2) + bbggrr.substr(4, 2);
-  return '#' + rrggbb;
+  const bbggrr = (`000000${i.toString(16)}`).slice(-6);
+  const rrggbb = bbggrr.substr(0, 2) + bbggrr.substr(2, 2) + bbggrr.substr(4, 2);
+  return `#${rrggbb}`;
 }
 
 export function deepCompare(...args: any) {
-  var i, l, leftChain, rightChain;
+  let i; let l; let leftChain; let
+    rightChain;
 
   function compare2Objects(x, y) {
-    var p;
+    let p;
 
     // remember that NaN === NaN returns false
     // and isNaN(undefined) returns true
     if (
-      isNaN(x) &&
-      isNaN(y) &&
-      typeof x === 'number' &&
-      typeof y === 'number'
+      isNaN(x)
+      && isNaN(y)
+      && typeof x === 'number'
+      && typeof y === 'number'
     ) {
       return true;
     }
@@ -167,11 +175,11 @@ export function deepCompare(...args: any) {
     // Comparing dates is a common scenario. Another built-ins?
     // We can even handle functions passed across iframes
     if (
-      (typeof x === 'function' && typeof y === 'function') ||
-      (x instanceof Date && y instanceof Date) ||
-      (x instanceof RegExp && y instanceof RegExp) ||
-      (x instanceof String && y instanceof String) ||
-      (x instanceof Number && y instanceof Number)
+      (typeof x === 'function' && typeof y === 'function')
+      || (x instanceof Date && y instanceof Date)
+      || (x instanceof RegExp && y instanceof RegExp)
+      || (x instanceof String && y instanceof String)
+      || (x instanceof Number && y instanceof Number)
     ) {
       return x.toString() === y.toString();
     }
@@ -203,7 +211,7 @@ export function deepCompare(...args: any) {
     for (p in y) {
       if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
         return false;
-      } else if (typeof y[p] !== typeof x[p]) {
+      } if (typeof y[p] !== typeof x[p]) {
         return false;
       }
     }
@@ -211,7 +219,7 @@ export function deepCompare(...args: any) {
     for (p in x) {
       if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
         return false;
-      } else if (typeof y[p] !== typeof x[p]) {
+      } if (typeof y[p] !== typeof x[p]) {
         return false;
       }
 
@@ -241,12 +249,12 @@ export function deepCompare(...args: any) {
   }
 
   if (args.length < 1) {
-    return true; //Die silently? Don't know how to handle such case, please help...
+    return true; // Die silently? Don't know how to handle such case, please help...
     // throw "Need two or more arguments to compare";
   }
 
   for (i = 1, l = args.length; i < l; i++) {
-    leftChain = []; //Todo: this can be cached
+    leftChain = []; // Todo: this can be cached
     rightChain = [];
 
     if (!compare2Objects(args[0], args[i])) {
@@ -262,7 +270,7 @@ export function containsOnlyEmojis(text: string) {
   const customEmojis = text.replace(new RegExp(constants.EmojiRegex, 'g'), '');
   const visibleChars = text.replace(new RegExp('[\n\rs]+|( )+', 'g'), '');
   return (
-    onlyEmojis.length === visibleChars.length &&
-    customEmojis.length === visibleChars.length
+    onlyEmojis.length === visibleChars.length
+    && customEmojis.length === visibleChars.length
   );
 }

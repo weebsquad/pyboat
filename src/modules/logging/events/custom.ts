@@ -1,7 +1,8 @@
 import { handleEvent, getUserTag, getMemberTag } from '../main';
 import * as conf from '../../../config';
-const config = conf.config.modules.logging;
 import * as utils from '../../../lib/utils';
+
+const config = conf.config.modules.logging;
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
   return ['customLog'];
@@ -12,35 +13,45 @@ export function isAuditLog() {
 }
 
 export const messages = {
-  customLog: function(
+  customLog(
     log: discord.AuditLogEntry,
     typeSent: string,
-    others: Map<string, any> | undefined = undefined
+    others: Map<string, any> | undefined = undefined,
   ) {
-    //let mp = new Map([['_USERTAG_', getUserTag(member)]]);
-    let mp = new Map<string, string>();
+    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    const mp = new Map<string, string>();
     mp.set('_TYPE_', typeSent);
     if (typeof others !== 'undefined') {
-      others.forEach(function(v, k) {
-        if (k.substring(0, 1) !== '_') k = '_' + k;
-        if (k.slice(-1) !== '_') k += '_';
+      others.forEach((v, k) => {
+        if (k.substring(0, 1) !== '_') {
+          k = `_${k}`;
+        }
+        if (k.slice(-1) !== '_') {
+          k += '_';
+        }
         k = k.toUpperCase();
         if (typeof v !== 'string') {
-          if (k === '_AUTHOR_') mp.set('_USERTAG_', getUserTag(v));
-          if (k === '_MEMBER_') mp.set('_USERTAG_', getMemberTag(v));
+          if (k === '_AUTHOR_') {
+            mp.set('_USERTAG_', getUserTag(v));
+          }
+          if (k === '_MEMBER_') {
+            mp.set('_USERTAG_', getMemberTag(v));
+          }
         }
-        if (typeof v !== 'string') return;
+        if (typeof v !== 'string') {
+          return;
+        }
         mp.set(k, v);
       });
     }
     return mp;
-  }
+  },
 };
 
 export async function logCustom(
   type: string,
   placeholders: Map<string, any> | undefined = undefined,
-  id: string = utils.composeSnowflake()
+  id: string = utils.composeSnowflake(),
 ) {
   const evData = config.messages.CUSTOM[type];
   if (evData === undefined) {
@@ -53,25 +64,26 @@ export async function logCustom(
     'CUSTOM',
     null,
     type,
-    placeholders
+    placeholders,
   );
 }
 
 export async function logDebug(
   type: string,
   placeholders: Map<string, any> | undefined = undefined,
-  id: string = utils.composeSnowflake()
+  id: string = utils.composeSnowflake(),
 ) {
-  //if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'));
+  // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'));
   const evData = config.messages.DEBUG[type];
-  if (evData === undefined)
+  if (evData === undefined) {
     throw new Error(`Tried to log ${type} but not defined in config!`);
+  }
   await handleEvent(
     id,
     discord.getGuildId(), // todo: change!
     'DEBUG',
     null,
     type,
-    placeholders
+    placeholders,
   );
 }

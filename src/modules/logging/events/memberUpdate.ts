@@ -3,87 +3,106 @@ import { handleEvent, getUserTag, getMemberTag } from '../main';
 export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.GuildMember,
-  oldMember: discord.GuildMember
+  oldMember: discord.GuildMember,
 ) {
-  let keys = new Array();
-  if (member.nick !== oldMember.nick) keys.push('nickname');
+  const keys = new Array();
+  if (member.nick !== oldMember.nick) {
+    keys.push('nickname');
+  }
   let rlf = false;
-  member.roles.forEach(function(rl) {
-    if (oldMember.roles.indexOf(rl) === -1) rlf = true;
+  member.roles.forEach((rl) => {
+    if (oldMember.roles.indexOf(rl) === -1) {
+      rlf = true;
+    }
   });
-  oldMember.roles.forEach(function(rl) {
-    if (member.roles.indexOf(rl) === -1) rlf = true;
+  oldMember.roles.forEach((rl) => {
+    if (member.roles.indexOf(rl) === -1) {
+      rlf = true;
+    }
   });
-  if (rlf) keys.push('roles');
-  if (member.user.username !== oldMember.user.username) keys.push('username');
-  if (member.user.avatar !== oldMember.user.avatar) keys.push('avatar');
-  if (member.premiumSince !== oldMember.premiumSince) keys.push('boost');
-  if (member.user.discriminator !== oldMember.user.discriminator)
+  if (rlf) {
+    keys.push('roles');
+  }
+  if (member.user.username !== oldMember.user.username) {
+    keys.push('username');
+  }
+  if (member.user.avatar !== oldMember.user.avatar) {
+    keys.push('avatar');
+  }
+  if (member.premiumSince !== oldMember.premiumSince) {
+    keys.push('boost');
+  }
+  if (member.user.discriminator !== oldMember.user.discriminator) {
     keys.push('discriminator');
+  }
   return keys;
 }
 
 export function isAuditLog(
   log: discord.AuditLogEntry,
   key: string,
-  member: discord.GuildMember
+  member: discord.GuildMember,
 ) {
-  if (['avatar', 'username', 'boost'].indexOf(key) > -1) return false;
+  if (['avatar', 'username', 'boost'].indexOf(key) > -1) {
+    return false;
+  }
   return log.userId !== member.user.id;
 }
 
 export const messages = {
-  boost: function(
+  boost(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
-    let mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
     let type = '';
     if (member.premiumSince !== null && oldMember.premiumSince === null) {
       type = 'BOOSTING_STARTED';
     } else if (
-      member.premiumSince === null &&
-      oldMember.premiumSince !== null
+      member.premiumSince === null
+      && oldMember.premiumSince !== null
     ) {
       type = 'BOOSTING_STOPPED';
     }
-    if (type === '') return false;
+    if (type === '') {
+      return false;
+    }
     mp.set('_TYPE_', type);
     return mp;
   },
-  discriminator: function(
+  discriminator(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
-    let mp = new Map([
+    const mp = new Map([
       ['_USERTAG_', getMemberTag(member)],
       ['_TYPE_', 'DISCRIMINATOR_CHANGED'],
       ['_OLD_DISCRIMINATOR_', oldMember.user.discriminator],
-      ['_NEW_DISCRIMINATOR_', member.user.discriminator]
+      ['_NEW_DISCRIMINATOR_', member.user.discriminator],
     ]);
     return mp;
   },
-  username: function(
+  username(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
-    let mp = new Map([
+    const mp = new Map([
       ['_USERTAG_', getMemberTag(member)],
       ['_TYPE_', 'USERNAME_CHANGED'],
       ['_OLD_USERNAME_', oldMember.user.username],
-      ['_NEW_USERNAME_', member.user.username]
+      ['_NEW_USERNAME_', member.user.username],
     ]);
     return mp;
   },
-  avatar: function(
+  avatar(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
-    let mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
     let type = '';
     if (member.user.avatar === null && oldMember.user.avatar !== null) {
       type = 'AVATAR_REMOVED';
@@ -99,67 +118,63 @@ export const messages = {
     mp.set('_TYPE_', type);
     return mp;
   },
-  roles: function(
+  roles(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
-    let rolesAdded = new Array();
-    let rolesRemoved = new Array();
+    const rolesAdded = new Array();
+    const rolesRemoved = new Array();
     let type = '';
-    let mp = new Map([['_USERTAG_', getMemberTag(member)]]);
-    member.roles.forEach(function(rl) {
-      if (oldMember.roles.indexOf(rl) === -1) rolesAdded.push(rl);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    member.roles.forEach((rl) => {
+      if (oldMember.roles.indexOf(rl) === -1) {
+        rolesAdded.push(rl);
+      }
     });
-    oldMember.roles.forEach(function(rl) {
-      if (member.roles.indexOf(rl) === -1) rolesRemoved.push(rl);
+    oldMember.roles.forEach((rl) => {
+      if (member.roles.indexOf(rl) === -1) {
+        rolesRemoved.push(rl);
+      }
     });
     if (rolesAdded.length > 0 && rolesRemoved.length === 0) {
       type = 'ROLES_ADDED';
       mp.set(
         '_ADDED_ROLES_',
         rolesAdded
-          .map(function(e: string) {
-            return `<@&${e}>`;
-          })
-          .join('  ')
+          .map((e: string) => `<@&${e}>`)
+          .join('  '),
       );
     } else if (rolesAdded.length === 0 && rolesRemoved.length > 0) {
       type = 'ROLES_REMOVED';
       mp.set(
         '_REMOVED_ROLES_',
         rolesRemoved
-          .map(function(e: string) {
-            return `<@&${e}>`;
-          })
-          .join('  ')
+          .map((e: string) => `<@&${e}>`)
+          .join('  '),
       );
     } else {
       type = 'ROLES_CHANGED';
       mp.set(
         '_CHANGED_ROLES_',
         rolesAdded
-          .map(function(e: string) {
-            return `**+**<@&${e}>`;
-          })
+          .map((e: string) => `**+**<@&${e}>`)
           .concat(
-            rolesRemoved.map(function(e: string) {
-              return `**-**<@&${e}>`;
-            })
+            rolesRemoved.map((e: string) => `**-**<@&${e}>`),
           )
-          .join('  ')
+          .join('  '),
       );
     }
     mp.set('_TYPE_', type);
     return mp;
   },
-  nickname: function(
+  nickname(
     log: discord.AuditLogEntry,
     member: discord.GuildMember,
-    oldMember: discord.GuildMember
+    oldMember: discord.GuildMember,
   ) {
     let type = '';
-    let mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
     if (oldMember.nick === null && member.nick !== null) {
       type = 'NICK_ADDED';
       mp.set('_NEW_NICK_', member.nick);
@@ -173,7 +188,7 @@ export const messages = {
     }
     mp.set('_TYPE_', type);
     return mp;
-  }
+  },
 };
 
 export async function AL_OnGuildMemberUpdate(
@@ -181,7 +196,7 @@ export async function AL_OnGuildMemberUpdate(
   guildId: string,
   log: any,
   member: discord.GuildMember,
-  oldMember: discord.GuildMember
+  oldMember: discord.GuildMember,
 ) {
   await handleEvent(
     id,
@@ -189,6 +204,6 @@ export async function AL_OnGuildMemberUpdate(
     discord.Event.GUILD_MEMBER_UPDATE,
     log,
     member,
-    oldMember
+    oldMember,
   );
 }

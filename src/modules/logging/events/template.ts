@@ -2,7 +2,7 @@ import { handleEvent, getUserTag, getMemberTag } from '../main';
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
   console.log('getKeys', args);
-  let keys = new Array();
+  const keys = new Array();
   return keys;
 }
 
@@ -16,14 +16,14 @@ export function isAuditLog(
 }
 
 export const messages = {
-  key: function(log: discord.AuditLogEntry, ...args: any) {
+  key(log: discord.AuditLogEntry, ...args: any) {
     console.log('messages.key', args);
-    //let mp = new Map([['_USERTAG_', getUserTag(member)]]);
-    let mp = new Map();
-    let type = 'CONFIG_KEY';
+    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    const mp = new Map();
+    const type = 'CONFIG_KEY';
     mp.set('_TYPE_', type);
     return mp;
-  }
+  },
 };
 
 export async function AL_OnEvent(

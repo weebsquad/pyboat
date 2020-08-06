@@ -4,32 +4,33 @@ export async function metalApiRequest(
   token: string,
   apiPath: string,
   protocol: string,
-  body: any
+  body: any,
 ) {
   protocol = protocol.toUpperCase();
-  let realBody = {
+  const realBody = {
     key: config.global.metalApi.key, // My api key
-    protocol: protocol,
+    protocol,
     apiUrl: apiPath,
     headers: {
       'Content-Type': 'application/json',
-      Accept: 'application/json'
-    }
+      'Accept': 'application/json',
+    },
   };
-  if (typeof token === 'string' && token.length > 0)
-    realBody['headers']['Authorization'] = `Bot ${token}`;
+  if (typeof token === 'string' && token.length > 0) {
+    realBody.headers.Authorization = `Bot ${token}`;
+  }
   if (
-    typeof body !== 'undefined' &&
-    body !== null &&
-    (typeof body !== 'string' || body !== '')
+    typeof body !== 'undefined'
+    && body !== null
+    && (typeof body !== 'string' || body !== '')
   ) {
-    realBody['body'] = body;
-    //if (typeof body === 'string') realBody['body'] = JSON.parse(body);
+    realBody.body = body;
+    // if (typeof body === 'string') realBody['body'] = JSON.parse(body);
   }
 
-  let req = new Request(config.global.metalApi.url, {
+  const req = new Request(config.global.metalApi.url, {
     method: 'POST',
-    body: JSON.stringify(realBody)
+    body: JSON.stringify(realBody),
   });
   return await fetch(req);
 }

@@ -8,36 +8,36 @@ import {
   CommandData,
   CommandArgumentUser,
   ResolvedCommandArgument,
-  commands
+  commands,
 } from '../lib/commands';
 
 export function InitializeCommands() {
-  let _c = [];
+  const _c = [];
 
-  let Test = new Command('testcom', 'Testing command!', 3);
-  Test.Execute = async function(m: CommandData) {
-    let switcher = m.ResolvedArguments[0].Data;
+  const Test = new Command('testcom', 'Testing command!', 3);
+  Test.Execute = async function (m: CommandData) {
+    const switcher = m.ResolvedArguments[0].Data;
     if (switcher === 'snowflake') {
-      let now = new Date();
-      //now.setFullYear(now.getFullYear() + 100);
+      const now = new Date();
+      // now.setFullYear(now.getFullYear() + 100);
       let baseId;
       try {
         baseId = m.ResolvedArguments[1].Data;
       } catch (e) {}
-      let normalTs = utils.getSnowflakeDate(baseId);
-      /*let bi = bigInt(baseId, 10, undefined, undefined);
+      const normalTs = utils.getSnowflakeDate(baseId);
+      /* let bi = bigInt(baseId, 10, undefined, undefined);
       let diff = bi.subtract(parseInt(baseId)).toString();
       let calculatedTs =
-        Math.floor(parseInt(baseId) / 4194304) + constants.Epoch;*/
+        Math.floor(parseInt(baseId) / 4194304) + constants.Epoch; */
       await m.Message.reply(
-        `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``
+        `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
       );
     } else if (switcher === 'delrole') {
       let baseId;
       try {
         baseId = m.ResolvedArguments[1].Data;
       } catch (e) {}
-      let guildRole = await m.Guild.getRole(baseId);
+      const guildRole = await m.Guild.getRole(baseId);
       if (guildRole === null) {
         await m.Message.reply('invalid role');
         return;
@@ -50,7 +50,7 @@ export function InitializeCommands() {
       try {
         baseId = m.ResolvedArguments[1].Data;
       } catch (e) {}
-      let guildRole = await m.Guild.getRole(baseId);
+      const guildRole = await m.Guild.getRole(baseId);
       if (guildRole === null) {
         await m.Message.reply('invalid role');
         return;
@@ -65,10 +65,10 @@ export function InitializeCommands() {
   };
   Test.Hidden = true;
   Test.Aliases = ['tc', 'test'];
-  //Test.Parameters.push('test1', 'test2');
+  // Test.Parameters.push('test1', 'test2');
   Test.Arguments.push(
     new CommandArgument('Text', 1, true),
-    new CommandArgument('Text', 2, false)
+    new CommandArgument('Text', 2, false),
   );
   _c.push(Test);
 

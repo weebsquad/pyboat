@@ -9,23 +9,23 @@ export function isAuditLog() {
 }
 
 export const messages = {
-  connection: function(
+  connection(
     log: discord.AuditLogEntry,
-    ev: discord.Event.IVoiceServerUpdate
+    ev: discord.Event.IVoiceServerUpdate,
   ) {
     return new Map([
       ['_TYPE_', 'CONNECTED'],
       ['_TOKEN_', ev.token],
-      ['_ENDPOINT_', ev.endpoint]
+      ['_ENDPOINT_', ev.endpoint],
     ]);
-  }
+  },
 };
 
 export async function OnVoiceServerUpdate(
   id: string,
   guildId: string,
-  ev: discord.Event.IVoiceServerUpdate
+  ev: discord.Event.IVoiceServerUpdate,
 ) {
-  //console.log('onvoiceserverupdate', ev);
+  // console.log('onvoiceserverupdate', ev);
   await handleEvent(id, guildId, discord.Event.VOICE_SERVER_UPDATE, null, ev);
 }

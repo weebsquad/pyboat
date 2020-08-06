@@ -9,19 +9,19 @@ export function isAuditLog() {
 }
 
 export const messages = {
-  userUpdate: function(log: discord.AuditLogEntry, user: discord.User) {
+  userUpdate(log: discord.AuditLogEntry, user: discord.User) {
     return new Map([
       ['_TYPE_', 'USER_UPDATED'],
       ['_USER_ID_', user.id],
-      ['_USERTAG_', getUserTag(user)]
+      ['_USERTAG_', getUserTag(user)],
     ]);
-  }
+  },
 };
 
 export async function OnUserUpdate(
   id: string,
   guildId: string,
-  user: discord.User
+  user: discord.User,
 ) {
   await handleEvent(id, guildId, discord.Event.USER_UPDATE, null, user);
 }

@@ -9,21 +9,21 @@ export function isAuditLog() {
 }
 
 export const messages = {
-  webhooksUpdate: async function(
+  async webhooksUpdate(
     log: discord.AuditLogEntry,
-    ev: discord.Event.IWebhooksUpdate
+    ev: discord.Event.IWebhooksUpdate,
   ) {
     return new Map([
       ['_TYPE_', 'WEBHOOK_UPDATED'],
-      ['_CHANNEL_ID_', ev.channelId]
+      ['_CHANNEL_ID_', ev.channelId],
     ]);
-  }
+  },
 };
 
 export async function OnWebhooksUpdate(
   id: string,
   guildId: string,
-  ev: discord.Event.IWebhooksUpdate
+  ev: discord.Event.IWebhooksUpdate,
 ) {
   console.log('OnWebhooksUpdate', ev);
   await handleEvent(id, guildId, discord.Event.WEBHOOKS_UPDATE, null, ev);

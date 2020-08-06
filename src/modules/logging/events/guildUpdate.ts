@@ -3,50 +3,89 @@ import { handleEvent, getUserTag } from '../main';
 export function getKeys(
   log: discord.AuditLogEntry,
   guild: discord.Guild,
-  oldGuild: discord.Guild
+  oldGuild: discord.Guild,
 ) {
-  let keys = new Array();
-  if (guild.name !== oldGuild.name) keys.push('name');
-  if (guild.region !== oldGuild.region) keys.push('region');
-  if (guild.description !== oldGuild.description) keys.push('description');
+  const keys = new Array();
+  if (guild.name !== oldGuild.name) {
+    keys.push('name');
+  }
+  if (guild.region !== oldGuild.region) {
+    keys.push('region');
+  }
+  if (guild.description !== oldGuild.description) {
+    keys.push('description');
+  }
   if (
     guild.defaultMessageNotifications !== oldGuild.defaultMessageNotifications
-  )
+  ) {
     keys.push('defaultMessageNotifications');
-  if (guild.explicitContentFilter !== oldGuild.explicitContentFilter)
+  }
+  if (guild.explicitContentFilter !== oldGuild.explicitContentFilter) {
     keys.push('explicitContentFilter');
-  if (guild.verificationLevel !== oldGuild.verificationLevel)
+  }
+  if (guild.verificationLevel !== oldGuild.verificationLevel) {
     keys.push('verificationLevel');
-  if (guild.banner !== oldGuild.banner) keys.push('banner');
-  if (guild.icon !== oldGuild.icon) keys.push('icon');
-  if (guild.maxPresences !== oldGuild.maxPresences) keys.push('maxPresences');
-  if (guild.mfaLevel !== oldGuild.mfaLevel) keys.push('mfaLevel');
-  if (guild.ownerId !== oldGuild.ownerId) keys.push('ownerId');
-  if (guild.afkChannelId !== oldGuild.afkChannelId) keys.push('afkChannelId');
-  if (guild.afkTimeout !== oldGuild.afkTimeout) keys.push('afkTimeout');
-  if (guild.premiumTier !== oldGuild.premiumTier) keys.push('premiumTier');
-  if (guild.premiumSubscriptionCount !== oldGuild.premiumSubscriptionCount)
+  }
+  if (guild.banner !== oldGuild.banner) {
+    keys.push('banner');
+  }
+  if (guild.icon !== oldGuild.icon) {
+    keys.push('icon');
+  }
+  if (guild.maxPresences !== oldGuild.maxPresences) {
+    keys.push('maxPresences');
+  }
+  if (guild.mfaLevel !== oldGuild.mfaLevel) {
+    keys.push('mfaLevel');
+  }
+  if (guild.ownerId !== oldGuild.ownerId) {
+    keys.push('ownerId');
+  }
+  if (guild.afkChannelId !== oldGuild.afkChannelId) {
+    keys.push('afkChannelId');
+  }
+  if (guild.afkTimeout !== oldGuild.afkTimeout) {
+    keys.push('afkTimeout');
+  }
+  if (guild.premiumTier !== oldGuild.premiumTier) {
+    keys.push('premiumTier');
+  }
+  if (guild.premiumSubscriptionCount !== oldGuild.premiumSubscriptionCount) {
     keys.push('premiumSubscriptionCount');
-  if (guild.preferredLocale !== oldGuild.preferredLocale)
+  }
+  if (guild.preferredLocale !== oldGuild.preferredLocale) {
     keys.push('preferredLocale');
-  if (guild.splash !== oldGuild.splash) keys.push('splash');
-  if (guild.systemChannelId !== oldGuild.systemChannelId)
+  }
+  if (guild.splash !== oldGuild.splash) {
+    keys.push('splash');
+  }
+  if (guild.systemChannelId !== oldGuild.systemChannelId) {
     keys.push('systemChannelId');
-  if (guild.vanityUrlCode !== oldGuild.vanityUrlCode)
+  }
+  if (guild.vanityUrlCode !== oldGuild.vanityUrlCode) {
     keys.push('vanityUrlCode');
+  }
 
-  if (guild.widgetEnabled !== oldGuild.widgetEnabled)
+  if (guild.widgetEnabled !== oldGuild.widgetEnabled) {
     keys.push('widgetEnabled');
-  if (guild.widgetChannelId !== oldGuild.widgetChannelId)
+  }
+  if (guild.widgetChannelId !== oldGuild.widgetChannelId) {
     keys.push('widgetChannelId');
+  }
   let feats = false;
-  guild.features.forEach(function(fe) {
-    if (!oldGuild.features.includes(fe)) feats = true;
+  guild.features.forEach((fe) => {
+    if (!oldGuild.features.includes(fe)) {
+      feats = true;
+    }
   });
-  oldGuild.features.forEach(function(fe) {
-    if (!guild.features.includes(fe)) feats = true;
+  oldGuild.features.forEach((fe) => {
+    if (!guild.features.includes(fe)) {
+      feats = true;
+    }
   });
-  if (feats) keys.push('features');
+  if (feats) {
+    keys.push('features');
+  }
   return keys;
 }
 
@@ -54,7 +93,7 @@ export function isAuditLog(
   log: discord.AuditLogEntry,
   key: string,
   guild: discord.Guild,
-  oldGuild: discord.Guild
+  oldGuild: discord.Guild,
 ) {
   if (
     [
@@ -62,105 +101,106 @@ export function isAuditLog(
       'features',
       'premiumSubscriptionCount',
       'premiumTier',
-      'features'
+      'features',
     ].indexOf(key) > -1
-  )
+  ) {
     return false;
+  }
   return true;
 }
 
 export const messages = {
-  name: function(
+  name(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'NAME_CHANGED'],
       ['_OLD_NAME_', oldGuild.name],
-      ['_NEW_NAME_', guild.name]
+      ['_NEW_NAME_', guild.name],
     ]);
   },
-  region: function(
+  region(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'REGION_CHANGED'],
       ['_OLD_REGION_', oldGuild.region],
-      ['_NEW_REGION_', guild.region]
+      ['_NEW_REGION_', guild.region],
     ]);
   },
-  description: function(
+  description(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'DESCRIPTION_CHANGED'],
       ['_OLD_DESC_', oldGuild.description],
-      ['_NEW_DESC_', guild.description]
+      ['_NEW_DESC_', guild.description],
     ]);
   },
-  defaultMessageNotifications: function(
+  defaultMessageNotifications(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     const levels = {
       0: 'All Messages',
-      1: 'Only Mentions'
+      1: 'Only Mentions',
     };
     return new Map([
       ['_TYPE_', 'DMN_CHANGED'],
 
       ['_OLD_DMN_', levels[oldGuild.defaultMessageNotifications]],
 
-      ['_NEW_DMN_', levels[guild.defaultMessageNotifications]]
+      ['_NEW_DMN_', levels[guild.defaultMessageNotifications]],
     ]);
   },
-  explicitContentFilter: function(
+  explicitContentFilter(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     const levels = {
       0: 'Disabled',
       1: 'Members Without Roles',
-      2: 'All Members'
+      2: 'All Members',
     };
     return new Map([
       ['_TYPE_', 'EXPLICIT_FILTER_CHANGED'],
       ['_OLD_FILTER_', levels[oldGuild.explicitContentFilter]],
-      ['_NEW_FILTER_', levels[guild.explicitContentFilter]]
+      ['_NEW_FILTER_', levels[guild.explicitContentFilter]],
     ]);
   },
-  verificationLevel: function(
+  verificationLevel(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     const levels = {
       0: 'None',
       1: 'Low',
       2: 'Medium',
       3: 'High',
-      4: 'Very High'
+      4: 'Very High',
     };
     return new Map([
       ['_TYPE_', 'VERIFICATION_LEVEL_CHANGED'],
       ['_OLD_LEVEL_', levels[oldGuild.verificationLevel]],
-      ['_NEW_LEVEL_', levels[guild.verificationLevel]]
+      ['_NEW_LEVEL_', levels[guild.verificationLevel]],
     ]);
   },
-  banner: function(
+  banner(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldBanner = oldGuild.banner !== null ? '' : null;
-    let newBanner = guild.banner !== null ? guild.getBannerUrl() : null;
+    const oldBanner = oldGuild.banner !== null ? '' : null;
+    const newBanner = guild.banner !== null ? guild.getBannerUrl() : null;
     let type = '';
     if (oldBanner !== null && newBanner !== null) {
       type = 'BANNER_CHANGED';
@@ -169,20 +209,22 @@ export const messages = {
     } else if (oldBanner === null && newBanner !== null) {
       type = 'BANNER_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_BANNER_', oldBanner],
-      ['_NEW_BANNER_', newBanner]
+      ['_NEW_BANNER_', newBanner],
     ]);
   },
-  icon: function(
+  icon(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldIcon = oldGuild.icon !== null ? '' : null;
-    let newIcon = guild.icon !== null ? guild.getIconUrl() : null;
+    const oldIcon = oldGuild.icon !== null ? '' : null;
+    const newIcon = guild.icon !== null ? guild.getIconUrl() : null;
     let type = '';
     if (oldIcon !== null && newIcon !== null) {
       type = 'ICON_CHANGED';
@@ -191,54 +233,56 @@ export const messages = {
     } else if (oldIcon === null && newIcon !== null) {
       type = 'ICON_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_ICON_', oldIcon],
-      ['_NEW_ICON_', newIcon]
+      ['_NEW_ICON_', newIcon],
     ]);
   },
-  maxPresences: function(
+  maxPresences(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'PRESENCES_CHANGED'],
       ['_OLD_PRES_', oldGuild.maxPresences.toString()],
-      ['_NEW_PRES_', guild.maxPresences.toString()]
+      ['_NEW_PRES_', guild.maxPresences.toString()],
     ]);
   },
-  mfaLevel: function(
+  mfaLevel(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     const levels = {
       0: 'Disabled',
-      1: 'Enabled'
+      1: 'Enabled',
     };
     return new Map([
       ['_TYPE_', 'MFA_LEVEL_CHANGED'],
       ['_OLD_LEVEL_', levels[oldGuild.mfaLevel]],
-      ['_NEW_LEVEL_', levels[guild.mfaLevel]]
+      ['_NEW_LEVEL_', levels[guild.mfaLevel]],
     ]);
   },
-  ownerId: function(
+  ownerId(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'OWNER_CHANGED'],
       ['_OLD_OWNER_', oldGuild.ownerId],
-      ['_NEW_OWNER_', guild.ownerId]
+      ['_NEW_OWNER_', guild.ownerId],
     ]);
   },
-  afkChannelId: function(
+  afkChannelId(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     let type = '';
     if (oldGuild.afkChannelId !== null && guild.afkChannelId !== null) {
@@ -248,68 +292,68 @@ export const messages = {
     } else if (oldGuild.afkChannelId === null && guild.afkChannelId !== null) {
       type = 'AFKCHANNEL_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_CHANNEL_', oldGuild.afkChannelId],
-      ['_NEW_CHANNEL_', guild.afkChannelId]
+      ['_NEW_CHANNEL_', guild.afkChannelId],
     ]);
   },
-  afkTimeout: function(
+  afkTimeout(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'AFKTIMEOUT_CHANGED'],
       ['_OLD_TIMEOUT_', oldGuild.afkTimeout.toString()],
-      ['_NEW_TIMEOUT_', guild.afkTimeout.toString()]
+      ['_NEW_TIMEOUT_', guild.afkTimeout.toString()],
     ]);
   },
-  premiumTier: function(
+  premiumTier(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldTier =
-      oldGuild.premiumTier !== null ? oldGuild.premiumTier.toString() : 'None';
-    let newTier =
-      guild.premiumTier !== null ? guild.premiumTier.toString() : 'None';
+    const oldTier = oldGuild.premiumTier !== null ? oldGuild.premiumTier.toString() : 'None';
+    const newTier = guild.premiumTier !== null ? guild.premiumTier.toString() : 'None';
     return new Map([
       ['_TYPE_', 'BOOST_TIER_CHANGED'],
       ['_OLD_TIER_', oldTier],
-      ['_NEW_TIER_', newTier]
+      ['_NEW_TIER_', newTier],
     ]);
   },
-  premiumSubscriptionCount: function(
+  premiumSubscriptionCount(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'BOOST_SUBSCRIPTIONS_CHANGED'],
       ['_OLD_SUBS_', oldGuild.premiumSubscriptionCount.toString()],
-      ['_NEW_SUBS_', guild.premiumSubscriptionCount.toString()]
+      ['_NEW_SUBS_', guild.premiumSubscriptionCount.toString()],
     ]);
   },
-  preferredLocale: function(
+  preferredLocale(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
     return new Map([
       ['_TYPE_', 'PREFERRED_LOCALE_CHANGED'],
       ['_OLD_LOCALE_', oldGuild.preferredLocale],
-      ['_NEW_LOCALE_', guild.preferredLocale]
+      ['_NEW_LOCALE_', guild.preferredLocale],
     ]);
   },
-  splash: function(
+  splash(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldSplash = oldGuild.splash !== null ? '' : null;
-    let newSplash = guild.splash !== null ? guild.getSplashUrl() : null;
+    const oldSplash = oldGuild.splash !== null ? '' : null;
+    const newSplash = guild.splash !== null ? guild.getSplashUrl() : null;
     let type = '';
     if (oldSplash !== null && newSplash !== null) {
       type = 'SPLASH_CHANGED';
@@ -318,22 +362,22 @@ export const messages = {
     } else if (oldSplash === null && newSplash !== null) {
       type = 'SPLASH_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_SPLASH_', oldSplash],
-      ['_NEW_SPLASH_', newSplash]
+      ['_NEW_SPLASH_', newSplash],
     ]);
   },
-  systemChannelId: function(
+  systemChannelId(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldChannel =
-      oldGuild.systemChannelId !== null ? oldGuild.systemChannelId : null;
-    let newChannel =
-      guild.systemChannelId !== null ? guild.systemChannelId : null;
+    const oldChannel = oldGuild.systemChannelId !== null ? oldGuild.systemChannelId : null;
+    const newChannel = guild.systemChannelId !== null ? guild.systemChannelId : null;
     let type = '';
     if (oldChannel !== null && newChannel !== null) {
       type = 'SYSTEM_CHANNEL_CHANGED';
@@ -342,21 +386,22 @@ export const messages = {
     } else if (oldChannel === null && newChannel !== null) {
       type = 'SYSTEM_CHANNEL_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_CHANNEL_', oldChannel],
-      ['_NEW_CHANNEL_', newChannel]
+      ['_NEW_CHANNEL_', newChannel],
     ]);
   },
-  vanityUrlCode: function(
+  vanityUrlCode(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldVanity =
-      oldGuild.vanityUrlCode !== null ? oldGuild.vanityUrlCode : null;
-    let newVanity = guild.vanityUrlCode !== null ? guild.vanityUrlCode : null;
+    const oldVanity = oldGuild.vanityUrlCode !== null ? oldGuild.vanityUrlCode : null;
+    const newVanity = guild.vanityUrlCode !== null ? guild.vanityUrlCode : null;
     let type = '';
     if (oldVanity !== null && newVanity !== null) {
       type = 'VANITY_URL_CHANGED';
@@ -365,35 +410,35 @@ export const messages = {
     } else if (oldVanity === null && newVanity !== null) {
       type = 'VANITY_URL_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_VANITY_', oldVanity],
-      ['_NEW_VANITY_', newVanity]
+      ['_NEW_VANITY_', newVanity],
     ]);
   },
-  widgetEnabled: function(
+  widgetEnabled(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let widget = guild.widgetEnabled === true ? 'Enabled' : 'Disabled';
-    let widgetOld = oldGuild.widgetEnabled === true ? 'Enabled' : 'Disabled';
+    const widget = guild.widgetEnabled === true ? 'Enabled' : 'Disabled';
+    const widgetOld = oldGuild.widgetEnabled === true ? 'Enabled' : 'Disabled';
     return new Map([
       ['_TYPE_', 'WIDGET_CHANGED'],
       ['_OLD_WIDGET_', widgetOld],
-      ['_NEW_WIDGET_', widget]
+      ['_NEW_WIDGET_', widget],
     ]);
   },
-  widgetChannelId: function(
+  widgetChannelId(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let oldChannel =
-      oldGuild.widgetChannelId !== null ? oldGuild.widgetChannelId : null;
-    let newChannel =
-      guild.widgetChannelId !== null ? guild.widgetChannelId : null;
+    const oldChannel = oldGuild.widgetChannelId !== null ? oldGuild.widgetChannelId : null;
+    const newChannel = guild.widgetChannelId !== null ? guild.widgetChannelId : null;
     let type = '';
     if (oldChannel !== null && newChannel !== null) {
       type = 'WIDGET_CHANNEL_CHANGED';
@@ -402,27 +447,33 @@ export const messages = {
     } else if (oldChannel === null && newChannel !== null) {
       type = 'WIDGET_CHANNEL_ADDED';
     }
-    if (type === '') return;
+    if (type === '') {
+      return;
+    }
     return new Map([
       ['_TYPE_', type],
       ['_OLD_CHANNEL_', oldChannel],
-      ['_NEW_CHANNEL_', newChannel]
+      ['_NEW_CHANNEL_', newChannel],
     ]);
   },
-  features: function(
+  features(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
-    oldGuild: discord.Guild
+    oldGuild: discord.Guild,
   ) {
-    let featsAdded = new Array();
-    let featsRemoved = new Array();
+    const featsAdded = new Array();
+    const featsRemoved = new Array();
     let type = '';
-    let mp = new Map();
-    guild.features.forEach(function(rl) {
-      if (oldGuild.features.indexOf(rl) === -1) featsAdded.push(rl);
+    const mp = new Map();
+    guild.features.forEach((rl) => {
+      if (oldGuild.features.indexOf(rl) === -1) {
+        featsAdded.push(rl);
+      }
     });
-    oldGuild.features.forEach(function(rl) {
-      if (guild.features.indexOf(rl) === -1) featsRemoved.push(rl);
+    oldGuild.features.forEach((rl) => {
+      if (guild.features.indexOf(rl) === -1) {
+        featsRemoved.push(rl);
+      }
     });
     if (featsAdded.length > 0 && featsRemoved.length === 0) {
       type = 'FEATURES_ADDED';
@@ -435,20 +486,16 @@ export const messages = {
       mp.set(
         '_CHANGED_FEATURES_',
         featsAdded
-          .map(function(e: string) {
-            return `**+**${e}`;
-          })
+          .map((e: string) => `**+**${e}`)
           .concat(
-            featsRemoved.map(function(e: string) {
-              return `**-**${e}`;
-            })
+            featsRemoved.map((e: string) => `**-**${e}`),
           )
-          .join(', ')
+          .join(', '),
       );
     }
     mp.set('_TYPE_', type);
     return mp;
-  }
+  },
 };
 
 export async function AL_OnGuildUpdate(

@@ -8,23 +8,25 @@ export async function OnGuildMemberAdd(member: discord.GuildMember) {
 }
 export async function OnGuildMemberUpdate(
   member: discord.GuildMember,
-  oldMember: discord.GuildMember
+  oldMember: discord.GuildMember,
 ) {
   await check(member);
 }
 
 export async function check(member: discord.GuildMember) {
-  if (member.user.id === discord.getBotId()) return; // Don't trigger this on pylon, lol
-  let roles = await utils.getUserRoles(member);
+  if (member.user.id === discord.getBotId()) {
+    return;
+  } // Don't trigger this on pylon, lol
+  const roles = await utils.getUserRoles(member);
 
   async function checkRoles(
     member: discord.GuildMember,
     normal: string,
     reduced: string,
-    replaceOnly: boolean = false
+    replaceOnly: boolean = false,
   ) {
-    let hasReduced = roles.find((o) => o.id === reduced);
-    let hasNormal = roles.find((o) => o.id === normal);
+    const hasReduced = roles.find((o) => o.id === reduced);
+    const hasNormal = roles.find((o) => o.id === normal);
 
     if (!hasReduced && !hasNormal && !replaceOnly) {
       await member.addRole(reduced);

@@ -4,8 +4,8 @@ import * as fun from './fun';
 import * as admin from './admin';
 
 export const commandsTable = {
-  dev: dev,
-  general: general,
-  fun: fun,
-  admin: admin
+  dev,
+  general,
+  fun,
+  admin,
 };

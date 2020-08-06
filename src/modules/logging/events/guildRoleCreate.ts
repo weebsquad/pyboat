@@ -12,19 +12,19 @@ export function isAuditLog(log: discord.AuditLogEntry) {
 export const messages = {
   newRole(log: discord.AuditLogEntry, role: discord.Role) {
     // maybe ill give a shit to actually check for default props some other time...
-    let mp = new Map([
+    const mp = new Map([
       ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'NEW_ROLE']
+      ['_TYPE_', 'NEW_ROLE'],
     ]);
     return mp;
-  }
+  },
 };
 
 export async function AL_OnGuildRoleCreate(
   id: string,
   guildId: string,
   log: any,
-  role: discord.Role
+  role: discord.Role,
 ) {
   await handleEvent(id, guildId, discord.Event.GUILD_ROLE_CREATE, log, role);
 }
