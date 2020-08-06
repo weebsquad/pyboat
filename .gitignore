@@ -5,3 +5,4 @@ package-lock.json
 run.bat
 work.code-workspace
 typings/
+.env
