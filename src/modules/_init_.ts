@@ -6,12 +6,11 @@ import * as translation from './translation';
 import * as logging from './logging/tracking';
 import * as utilities from './utilities';
 import * as antiPing from './antiPing';
-import * as roleSeperator from './roleSeperator';
+
 
 export const moduleDefinitions: {[key: string]: object} = {
   logging,
   antiPing,
-  roleSeperator,
   counting,
   roleManagement,
   commands,

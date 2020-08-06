@@ -4,14 +4,16 @@ import { config } from '../config';
 
 export let cmdgroups = [];
 export let modulegroups = new Map<string, Array<any>>();
-const cmdChannels = new Array<any>().concat(config.modules.counting.channels);
+//let cmdChannels = [];
+
+function getCmdChannels() {
+    return [].concat(config.modules.counting.channels);
+}
 
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
-  const F = discord.command.filters;
-  /*let filterNoCmds = F.silent(
-    F.not(F.or(F.isAdministrator(), F.channelIdIn(cmdChannels)))
-  );*/
-  let opts = {
+    const F = discord.command.filters;
+    const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
+    let opts = {
     label: 'default',
     description: 'default',
     defaultPrefix: config.modules.commands.prefix,
@@ -35,13 +37,13 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
     }
   }*/
 
-  opts['filters'].unshift(filterNoCmds);
+  if(Array.isArray(opts['filters'])) opts['filters'].unshift(filterNoCmds);
   let newo = <any>opts;
   return newo;
 }
 
 export async function handleCommand(message: discord.Message) {
-  if (cmdChannels.indexOf(message.channelId) > -1) return false;
+  if (getCmdChannels().includes(message.channelId)) return false;
   for (var key in cmdgroups) {
     let obj: discord.command.CommandGroup = cmdgroups[key];
     let ret = await obj.checkMessage(message);
