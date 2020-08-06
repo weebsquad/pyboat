@@ -16,7 +16,6 @@ export const messages = {
   },
 };
 
-
 export async function AL_OnGuildBanAdd(
   id: string,
   guildId: string,
