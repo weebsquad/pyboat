@@ -59,7 +59,7 @@ function workbenchWs(url) {
 }
 
 function sendWebhook(txt) {
-    if(typeof(wh) !== 'string') return;
+    if(typeof(wh) !== 'string' || isDebug) return;
     fetch(wh, {
         method: 'POST',
         headers: {
