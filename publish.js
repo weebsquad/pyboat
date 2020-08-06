@@ -1,11 +1,16 @@
 'use strict';
 
 /* eslint-disable no-console */
+/* eslint-disable no-undef */
 
 require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const WebSocket = require('ws');
+const dep = process.env.DEPLOYMENTS;
+let _dep = [dep];
+if(dep.includes('|')) _dep = new Array().concat(dep.split('|'));
+const isDebug = _dep.length === 1 && _dep.includes('71541889924333568') ? true : false;
 
 function deserialize(value) {
   if (typeof value === 'object' && value !== null) {
@@ -38,9 +43,18 @@ function deserialize(value) {
   return value;
 }
 
-const dep = process.env.DEPLOYMENTS;
-let _dep = [dep];
-if(dep.includes('|')) _dep = new Array().concat(dep.split('|'));
+function workbenchWs(url) {
+    const ws = new WebSocket(url);
+    ws.onopen = () => console.log('WS Open');
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      console[data[0].method]('PYLON LOG:', ...data[0].data.map(deserialize));
+    };
+    ws.onerror = console.error;
+    ws.onclose = () => workbenchWs(url);
+  }
+
+
 _dep.forEach(function(deployment_id) {
     fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
     method: 'POST',
@@ -64,14 +78,9 @@ _dep.forEach(function(deployment_id) {
             return;
         } else {
             console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
-            //workbenchWs(obj.workbench_url);
+            if(isDebug) workbenchWs(obj.workbench_url);
         }
     })
-    /*
-    .then(({ workbench_url: workbenchEndpoint }) => {
-        console.log('Published!');
-        workbenchWs(workbenchEndpoint);
-    })*/
     .catch(e => {
         console.log('API KEY IS ' + process.env.API_TOKEN);
         console.error(e);
