@@ -125,7 +125,7 @@ const guildConfigs = <any>{
             },
             counting: { // counting module
                 enabled: true,
-                channels: ['740880532325531659'],
+                channels: ['703167521431355412'],
                 keyCount: 'counting_current',
                 keyLastUser: 'counting_lastuser',
                 keyLastMid: 'counting_lastmid',

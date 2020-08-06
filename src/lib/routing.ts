@@ -234,7 +234,7 @@ export async function ExecuteModules(
     auditLogData = await getEventAuditLogData(event, tm, ...args);
   }
 
-  const guildId = discord.getGuildId();
+  const guildId = config.guildId;
   for (const moduleName in moduleDefinitions) {
     const tdiff = new Date().getTime();
     const module = moduleDefinitions[moduleName];
@@ -397,7 +397,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   }
   function pQueue(p: Array<QueuedEvent>, q: Array<QueuedEvent>) {
     q = q.map((e: QueuedEvent) => {
-      const guildId = discord.getGuildId();
+      const guildId = config.guildId;
       e.guildId = guildId;
       const proc = p.find((p2) => p2.id === e.id);
       if (proc) {
@@ -434,7 +434,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
           const eventFunctionName = eventFunctions[e.eventName];
           const eventFunction = module[eventFunctionName];
           const eventFunctionAuditLog = module[eventFunctionPrefixAuditLog + eventFunctionName];
-          const guildId = discord.getGuildId();
+          const guildId = config.guildId;
           if (eventFunction instanceof Function) {
             let _e;
             try {

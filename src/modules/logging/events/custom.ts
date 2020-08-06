@@ -60,7 +60,7 @@ export async function logCustom(
   }
   await handleEvent(
     id,
-    discord.getGuildId(), // todo: change!
+    conf.guildId, // todo: change!
     'CUSTOM',
     null,
     type,
@@ -80,7 +80,7 @@ export async function logDebug(
   }
   await handleEvent(
     id,
-    discord.getGuildId(), // todo: change!
+    conf.guildId, // todo: change!
     'DEBUG',
     null,
     type,

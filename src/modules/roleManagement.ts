@@ -1,5 +1,6 @@
 import * as config from '../config';
 import * as utils from '../lib/utils';
+const cfgMod = config.config.modules.roleManagement;
 
 async function refreshGuildMember(gid: string, uid: string) {
   const guild = await discord.getGuild(gid);
@@ -19,6 +20,7 @@ export async function OnGuildMemberUpdate(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
+    console.log('roleM.onUpdate');
   await checkUserRoles(
     await refreshGuildMember(member.guildId, member.user.id),
   );
@@ -61,7 +63,6 @@ async function checkHoist(member: discord.GuildMember) {
   }
   const roles = await utils.getUserRoles(member);
   let hasHoist = false;
-  const cfgMod = config.getGuildConfig(member.guildId);
   roles.forEach((role: discord.Role) => {
     if (role.hoist === true && role.id !== cfgMod.lowestHoistRole) {
       hasHoist = true;
@@ -100,7 +101,6 @@ export async function checkUserRoles(mem: discord.GuildMember) {
       await member.removeRole(reduced);
     }
   }
-  const cfgMod = config.getGuildConfig(mem.guildId);
   if (mem.user.bot === true) {
     await checkRoles(mem, cfgMod.botRole, cfgMod.botRoleRP, false);
     await checkRoles(mem, cfgMod.botRoleRP, cfgMod.memberRoleRP, true);

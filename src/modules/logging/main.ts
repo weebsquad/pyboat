@@ -632,7 +632,7 @@ export async function handleEvent(
   ...args: any
 ) {
     if (typeof guildId !== 'string') guildId = '0';
-  if(guildId === '0') guildId = discord.getGuildId();
+  if(guildId === '0') guildId = conf.guildId;
   if (eventName === 'DEBUG' && !utils.isDebug()) return;
   
   

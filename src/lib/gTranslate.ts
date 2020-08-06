@@ -1,6 +1,6 @@
 import { config } from '../config';
 // const key = config.global.googleApi.key;
-const { apiKey } = config.modules.translation.googleApi;
+const apiKey  = config.modules.translation.googleApi.key;
 const endpointTranslate = 'https://translation.googleapis.com/language/translate/v2';
 const endpointDetect = 'https://translation.googleapis.com/language/translate/v2/detect';
 

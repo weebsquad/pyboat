@@ -277,7 +277,7 @@ export async function getAuditLogData(
       );
   }
   //let guildId = auditLogDefinitions[eventName]['guildId'](eventPayload);
-  let guildId = discord.getGuildId();
+  let guildId = config.guildId;
   let guild = await discord.getGuild(guildId);
   if (typeof guild !== 'object' || guild === null)
     return getAuditLogErrorJson('No guild found');
@@ -347,7 +347,7 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
         );
     }
     //let guildId = auditLogDefinitions[e.eventName]['guildId'](e.payload);
-    let guildId = discord.getGuildId();
+    let guildId = config.guildId;
     if (typeof guildId !== 'string') return e;
     e.guildId = guildId;
     let actionsForThis = def['auditLogEntries'];
