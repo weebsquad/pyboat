@@ -28,7 +28,6 @@ jobs:
     - name: Build
       run: npm run build --if-present
     - name: Publish to all guilds
-      needs: build
       run: npm run publish --if-present
 #      if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.synchronize) }}
       env:
