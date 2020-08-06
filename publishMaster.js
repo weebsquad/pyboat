@@ -80,4 +80,7 @@ fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_MASTER}`, {
     console.log('Published!');
     workbenchWs(workbenchEndpoint);
   })*/
-  .catch(console.error);
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+});

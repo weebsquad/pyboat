@@ -72,5 +72,9 @@ _dep.forEach(function(deployment_id) {
         console.log('Published!');
         workbenchWs(workbenchEndpoint);
     })*/
-    .catch(console.error);
+    .catch(e => {
+        console.log('API KEY IS ' + process.env.API_TOKEN);
+        console.error(e);
+        process.exit(1);
+    });
 });
