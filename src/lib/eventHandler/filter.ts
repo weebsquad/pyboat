@@ -81,7 +81,7 @@ const eventFilters = <any>{
       return false;
     },
     MESSAGE_CREATE: (message: discord.Message) => {
-      if (message.author!.id === discord.getBotId()) return true;
+      if (message.author !== null && message.author.id === discord.getBotId()) return true;
       return false;
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {

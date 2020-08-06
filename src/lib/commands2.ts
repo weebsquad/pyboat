@@ -2,7 +2,7 @@ import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config } from '../config';
 
-export let cmdgroups = new Array();
+export let cmdgroups = [];
 export let modulegroups = new Map<string, Array<any>>();
 const cmdChannels = new Array<any>().concat(config.modules.counting.channels);
 

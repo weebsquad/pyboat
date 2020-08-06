@@ -82,13 +82,13 @@ function getLanguageFromFlag(flag: string) {
 }*/
 
 async function saveToPool(pool: any, mid: string, lang: string) {
-  if (!Array.isArray(pool)) pool = new Array();
+  if (!Array.isArray(pool)) pool = [];
   let pfi = pool.findIndex((e: any) => e.id === mid);
   let newObj = new PooledMessage(mid);
   newObj.translations.push(lang);
   if (!Array.isArray(pool) || pool === null) {
     // idk how to do this better lmao
-    let pool2 = new Array();
+    let pool2 = [];
     pool2.push(newObj);
     await kv.put('translatedMessages', pool2);
     return;

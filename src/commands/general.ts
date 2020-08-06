@@ -34,7 +34,7 @@ export function InitializeCommands() {
     });
     commandsArray.forEach(function(el) {
       if (!Array.isArray(commandCategories[el.Category]))
-        commandCategories[el.Category] = new Array();
+        commandCategories[el.Category] = [];
       commandCategories[el.Category].push(el);
     });
     for (var key in commandCategories) {
@@ -49,13 +49,13 @@ export function InitializeCommands() {
         return 0;
       });
     }
-    let commandsFinal = new Array();
+    let commandsFinal = [];
 
     let maxLengthCat = 0;
     for (var key in commandCategories) {
       let obj = commandCategories[key];
 
-      for (var i = 0; i < obj.length; i++) {
+      for (var i = 0; i < obj.length; i+=1) {
         commandsFinal.push(obj[i]);
         if (obj[i].Category.length > maxLengthCat)
           maxLengthCat = obj[i].Category.length;
@@ -63,7 +63,7 @@ export function InitializeCommands() {
     }
 
     let currCat = '';
-    for (var i = 0; i < commandsFinal.length; i++) {
+    for (var i = 0; i < commandsFinal.length; i+=1) {
       let obj = commandsFinal[i];
       if (obj.Authorization > m.UserAuthorization || obj.Hidden == true)
         continue;

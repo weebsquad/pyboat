@@ -81,7 +81,7 @@ async function sendInLogChannel(
       const channel = await discord.getGuildTextChannel(chId);
       if (channel === null || opts.length < 1) continue;
       if (isWh && opts.length > 1) {
-        let embeds = new Array();
+        let embeds = [];
         for (let i = 0; i < opts.length; i++) {
           const opt = opts[i];
           if (opt.embed instanceof discord.Embed) {
@@ -118,7 +118,7 @@ async function sendInLogChannel(
             let newE = new Array<any[]>();
             for (var i = 0; i < embeds.length; i++) {
               let indexArr = Math.floor(i / 10);
-              if (!Array.isArray(newE[indexArr])) newE[indexArr] = new Array();
+              if (!Array.isArray(newE[indexArr])) newE[indexArr] = [];
               newE[indexArr].push(embeds[i]);
             }
             for (let i = 0; i < newE.length; i++) {
@@ -168,7 +168,7 @@ async function parseChannelsData(
   let chans = _ch;
   if (typeof chans === 'undefined')
     chans = new Map<string, Array<Map<string, string>>>(); // this typing lmfao
-  let k2 = new Array();
+  let k2 = [];
   await Promise.all(
     ev.keys.map(async function(el: string) {
       if (typeof ev.data.messages[el] !== 'function') return null;
@@ -191,7 +191,7 @@ async function parseChannelsData(
     el.set('isAuditLog', isAuditLog);
     if (
       ev.auditLogEntry instanceof discord.AuditLogEntry &&
-      !['MESSAGE_DELETE', 'MESSAGE_DELETE_BULK'].includes(ev.eventName)
+      !(['MESSAGE_DELETE', 'MESSAGE_DELETE_BULK'].includes(ev.eventName))
     ) {
       let oldD = utils2.decomposeSnowflake(ev.id).timestamp;
 
@@ -249,7 +249,8 @@ async function getMessages(
   for (let [chId, v] of chans) {
     /* Parse Messages */
     const cfgG = config.logChannels.get(guildId);
-    const cfg = cfgG!.channels.get(chId);
+    if(!cfgG) continue;
+    const cfg = cfgG.channels.get(chId);
     if (!cfg) throw new Error('h'); // just to void that error below, lol, this should never be undefined
 
     if (!cfg.embed) {
@@ -401,14 +402,14 @@ async function getMessages(
           ) {
             msg = msg.split(jumps[0]).join('');
             let name = jumps[0]
-              .match(/\<[^<>]*\>/g)![0]
+              .match(/\<[^<>]*\>/g)[0]
               .split('<')
               .join('')
               .split('>')
               .join('');
             let val = jumps[0].match(
               /\[[^\[\]]*\]\(https:.*channels\/.{18}\/.{18}\/.{18}\)$/g
-            )![0];
+            )[0];
             em.setFields([
               {
                 name: name,
@@ -513,21 +514,21 @@ function combineMessages(
       if (contents.length >= 1990) {
         let lines = contents.split('\n');
         //lines = lines.slice(0, lines.length - 1);
-        let accum = new Array();
+        let accum = [];
         for (var i = 0; i < lines.length; i++) {
           let currl = (accum.join('\n') + lines[i]).length;
           if (currl > 1985 && i !== lines.length - 1) {
             let thism = accum.join('\n');
             thism += '\n';
             newarr.push({ content: thism, allowedMentions: {} });
-            accum = new Array();
+            accum = [];
           } else if (i === lines.length - 1) {
             if (currl < 1985) accum.push(lines[i]);
 
             let thism = accum.join('\n');
             thism += '\n';
             newarr.push({ content: thism, allowedMentions: {} });
-            accum = new Array();
+            accum = [];
             if (currl >= 1985) newarr.push({ content: `\n${lines[i]}\n` });
           }
           if (i !== lines.length - 1) accum.push(lines[i]);
@@ -630,7 +631,7 @@ export async function handleEvent(
 ) {
     if (typeof guildId !== 'string') guildId = '0';
   if(guildId === '0') guildId = discord.getGuildId();
-  if (eventName === 'DEBUG' && (guildId !== conf.globalConfig.masterGuild || !config.debug)) return;
+  if (eventName === 'DEBUG' && !utils.isDebug()) return;
   
   
   let date = new Date(utils2.decomposeSnowflake(id).timestamp);

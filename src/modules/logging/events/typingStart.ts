@@ -20,7 +20,7 @@ export const messages = {
     ) {
       const usr = await discord.getUser(tpdata.userId);
       if (usr === null) {
-        return;
+        return null;
       }
       return new Map([
         ['_USERTAG_', getUserTag(usr)],

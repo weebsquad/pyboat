@@ -6,7 +6,7 @@ export function getKeys(
   voiceState: discord.VoiceState,
   oldVoiceState: discord.VoiceState,
 ) {
-  const keys = new Array();
+  const keys = [];
   if (voiceState.deaf !== oldVoiceState.deaf && voiceState.deaf === true) {
     keys.push('serverDeaf');
   }
@@ -44,13 +44,13 @@ export function getKeys(
     keys.push('selfUnmute');
   }
   if (
-    voiceState.selfStream !== voiceState.selfStream
+    voiceState.selfStream !== oldVoiceState.selfStream
     && voiceState.selfStream === true
   ) {
     keys.push('startStream');
   }
   if (
-    voiceState.selfStream !== voiceState.selfStream
+    voiceState.selfStream !== oldVoiceState.selfStream
     && voiceState.selfStream === false
   ) {
     keys.push('stopStream');

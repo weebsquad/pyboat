@@ -2,7 +2,7 @@ import { handleEvent, getUserTag, getMemberTag } from '../main';
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
   console.log('getKeys', args);
-  const keys = new Array();
+  const keys = [];
   return keys;
 }
 
@@ -33,5 +33,5 @@ export async function AL_OnEvent(
   ...args: any
 ) {
   console.log('onEvent.', args);
-  await handleEvent(id, guildId, discord.Event, log, args);
+  // await handleEvent(id, guildId, discord.Event, log, args);
 }

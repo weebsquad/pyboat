@@ -5,7 +5,7 @@ export function getKeys(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
-  const keys = new Array();
+  const keys = [];
   if (member.nick !== oldMember.nick) {
     keys.push('nickname');
   }
@@ -123,8 +123,8 @@ export const messages = {
     member: discord.GuildMember,
     oldMember: discord.GuildMember,
   ) {
-    const rolesAdded = new Array();
-    const rolesRemoved = new Array();
+    const rolesAdded = [];
+    const rolesRemoved = [];
     let type = '';
     const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
     member.roles.forEach((rl) => {

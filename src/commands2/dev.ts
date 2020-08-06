@@ -198,14 +198,14 @@ const test = cmdGroup.subcommand('test', (sub) => {
     ];
     let cc = 0;
     //await pylon.requestCpuBurst(async function() {
-    for (var i = 0; i < count; i++) {
+    for (var i = 0; i < count; i+=1) {
       routing.OnEvent(
         'MESSAGE_DELETE',
         utils.composeSnowflake(new Date().getTime()),
         ...args
       );
       await sleep(30);
-      cc++;
+      cc+=1;
     }
     //}, 300);
     await m.reply('sent ' + cc + ' ' + event + ' events!');

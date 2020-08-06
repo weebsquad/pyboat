@@ -409,7 +409,7 @@ export async function OnMessageReactionAdd(args) {
   } else if (emojiAction === 'Ignore') {
     wipeAll = false;
     let ignores = (await kv.get(kvIgnoresKey)) as Array<string>;
-    if (!Array.isArray(ignores)) ignores = new Array();
+    if (!Array.isArray(ignores)) ignores = [];
     if (!ignores.includes(userMsg.authorId)) {
       ignores.push(userMsg.authorId);
       await kv.put(kvIgnoresKey, ignores);

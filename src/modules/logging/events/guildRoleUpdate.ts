@@ -6,7 +6,7 @@ export function getKeys(
   role: discord.Role,
   oldRole: discord.Role,
 ) {
-  const keys = new Array();
+  const keys = [];
   if (role.name !== oldRole.name) {
     keys.push('name');
   }

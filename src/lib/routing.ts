@@ -141,7 +141,7 @@ export async function getEventAuditLogData(
 
 export async function getMultiEventAuditLogData(evs: Array<QueuedEvent>) {
   let tdiff = new Date().getTime();
-  let events = new Array().concat(evs); // making a solid copy just in case
+  let events = [].concat(evs); // making a solid copy just in case
   let auditLogData;
   events = events.map(function(e) {
     if (isFiltered(e.eventName, 'auditlog', ...e.payload)) {
@@ -337,7 +337,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   if (isAlQueueEnabled())
     procQueue = await getMultiEventAuditLogData(procQueue);
 
-  let modulesSendIndividual = new Array();
+  let modulesSendIndividual = [];
   for (var moduleName in moduleDefinitions) {
     let module = moduleDefinitions[moduleName];
     if (typeof module !== 'object' || module === null) continue;

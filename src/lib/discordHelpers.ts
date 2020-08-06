@@ -148,7 +148,7 @@ export function decomposeSnowflake(snowflake: string) {
 
 export async function getUserRoles(member: discord.GuildMember) {
   let roleIds = member.roles;
-  let roles = new Array();
+  let roles = [];
   let guildRoles = await (await discord.getGuild(member.guildId)).getRoles();
   guildRoles.forEach(function(role: discord.Role) {
     if (roleIds.indexOf(role.id) > -1) roles.push(role);

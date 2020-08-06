@@ -4,7 +4,7 @@ function getChanges(
   ev: discord.Event.IGuildEmojisUpdate,
   oldEv: discord.Event.IGuildEmojisUpdate
 ) {
-  let ret = <any>{
+  let ret: {[key: string]: any} = {
     added: new Array<discord.Emoji>(),
     removed: new Array<discord.Emoji>(),
     changed: new Map<string, Array<string>>()
@@ -51,7 +51,7 @@ export function getKeys(
 ) {
   const changes = getChanges(ev, oldEv);
   const changed = changes.changed as Map<string, Array<string>>;
-  let keys = new Array();
+  let keys = [];
   if (changes.added.length > 0) keys.push('addedEmoji');
   if (changes.removed.length > 0) keys.push('removedEmoji');
   if (changed.size > 0) keys.push('editedEmoji');
@@ -94,8 +94,8 @@ export const messages = {
             discord.decor.Emojis.ARROW_RIGHT
           } \`${newProp}\``;
         } else {
-          let added = new Array();
-          let removed = new Array();
+          let added = [];
+          let removed = [];
           emj.roles.forEach(function(newRoles) {
             if (!emjOld.roles.includes(newRoles)) added.push(newRoles);
           });

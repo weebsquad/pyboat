@@ -30,20 +30,23 @@ export async function AL_OnMessageDelete(
   guildId: string,
   log: discord.AuditLogEntry | Object,
   ev: discord.Event.IMessageDelete,
-  msg: discord.Message.AnyMessage | null
+  msg: discord.Message.AnyMessage | null,
 ) {
   if (
-    msg === null ||
-    log instanceof discord.AuditLogEntry ||
-    msg.author === null ||
-    msg.webhookId !== null ||
-    msg.author!.bot === true
-  )
+    msg === null
+    || log instanceof discord.AuditLogEntry
+    || msg.author === null
+    || msg.webhookId !== null
+    || msg.author.bot === true
+  ) {
     return;
-  let dt = utils.decomposeSnowflake(msg.id).timestamp;
-  let diff = new Date().getTime() - dt;
-  if (diff >= SNIPE_DELAY) return;
+  }
+  const dt = utils.decomposeSnowflake(msg.id).timestamp;
+  const diff = new Date().getTime() - dt;
+  if (diff >= SNIPE_DELAY) {
+    return;
+  }
   await snipekvs.put(msg.channelId, JSON.stringify(msg), {
-    ttl: SNIPE_DELAY
+    ttl: SNIPE_DELAY,
   });
 }

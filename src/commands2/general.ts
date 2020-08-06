@@ -127,7 +127,7 @@ export const rolelb = discord.command.handler(
   }
 );
 
-export const translate = discord.command.handler(
+/*export const translate = discord.command.handler(
   (ctx) => ({ lang: ctx.string(), text: ctx.text() }),
   async (message, { lang, text }) => {
     let translation = await gTranslate.translate(text, lang);
@@ -135,8 +135,8 @@ export const translate = discord.command.handler(
       (e) => e.shortcode === translation.detectedSourceLanguage
     );
     let targetLang = constants.languages.find((e) => e.shortcode === lang);
-    let ll = sourceLang!.name ?? translation.detectedSourceLanguage;
-    let targ = targetLang!.name ?? lang;
+    let ll = sourceLang.name ?? translation.detectedSourceLanguage;
+    let targ = targetLang.name ?? lang;
     const richEmbed = new discord.Embed();
     richEmbed.setThumbnail({
       url:
@@ -159,7 +159,7 @@ export const translate = discord.command.handler(
       return { embed: richEmbed };
     });
   }
-);
+);*/
 
 const timeMap = new Map([
   ['decade', 1000 * 60 * 60 * 24 * 365 * 10],
@@ -188,13 +188,13 @@ function getLongAgoFormat(ts: number, limiter: number) {
       runcheck -= v;
     }
   }
-  let txtret = new Array();
+  let txtret = [];
   let runsc = 0;
   for (var [key, value] of txt) {
     if (runsc >= limiter) break;
     let cc = value > 1 ? key + 's' : key;
     txtret.push(value + ' ' + cc);
-    runsc++;
+    runsc+=1;
   }
   return txtret.join(', ');
 }
@@ -269,7 +269,7 @@ export const server = discord.command.rawHandler(async (message) => {
   󠇰**Features**: \`${features}\`
   󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
-  let chanStats = new Array();
+  let chanStats = [];
   let counts = {
     text: 0,
     category: 0,

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as commands from './commands';
 import * as roleManagement from './roleManagement';
 import * as counting from './counting';
@@ -7,14 +8,14 @@ import * as utilities from './utilities';
 import * as antiPing from './antiPing';
 import * as roleSeperator from './roleSeperator';
 
-export const moduleDefinitions = <any>{
-  logging: logging,
-  antiPing: antiPing,
-  roleSeperator: roleSeperator,
-  counting: counting,
-  roleManagement: roleManagement,
-  commands: commands,
-  translation: translation,
-  utilities: utilities
+export const moduleDefinitions: {[key: string]: object} = {
+  logging,
+  antiPing,
+  roleSeperator,
+  counting,
+  roleManagement,
+  commands,
+  translation,
+  utilities,
 };
-export const asyncModules = new Array('logging');
+export const asyncModules = ['logging'];

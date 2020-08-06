@@ -377,7 +377,7 @@ export class Language {
   
   //https://pkgstore.datahub.io/core/country-codes/country-codes_json/data/471a2e653140ecdd7243cdcacfd66608/country-codes_json.json
   let langtags = JSON.parse(languageTagsJson);
-  export let languageTags = new Array();
+  export let languageTags = [];
   langtags.forEach(function(ll: any) {
     if (
       ll['ISO3166-1-Alpha-2'] === null ||

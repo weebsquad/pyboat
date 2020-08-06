@@ -5,7 +5,7 @@ export function getKeys(
   guild: discord.Guild,
   oldGuild: discord.Guild,
 ) {
-  const keys = new Array();
+  const keys = [];
   if (guild.name !== oldGuild.name) {
     keys.push('name');
   }
@@ -210,7 +210,7 @@ export const messages = {
       type = 'BANNER_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -234,7 +234,7 @@ export const messages = {
       type = 'ICON_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -293,7 +293,7 @@ export const messages = {
       type = 'AFKCHANNEL_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -363,7 +363,7 @@ export const messages = {
       type = 'SPLASH_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -387,7 +387,7 @@ export const messages = {
       type = 'SYSTEM_CHANNEL_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -411,7 +411,7 @@ export const messages = {
       type = 'VANITY_URL_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -448,7 +448,7 @@ export const messages = {
       type = 'WIDGET_CHANNEL_ADDED';
     }
     if (type === '') {
-      return;
+      return null;
     }
     return new Map([
       ['_TYPE_', type],
@@ -461,8 +461,8 @@ export const messages = {
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
-    const featsAdded = new Array();
-    const featsRemoved = new Array();
+    const featsAdded = [];
+    const featsRemoved = [];
     let type = '';
     const mp = new Map();
     guild.features.forEach((rl) => {
