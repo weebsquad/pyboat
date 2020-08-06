@@ -41,7 +41,6 @@ const regexUrls = /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=
 const regexClickableMarkdown = /\<[^<>@&!\-=_]*\>\[[^\[\]@&!\-=_]*\]\(https:.*channels\/[^ ]{18}\/[^ ]{18}\/[^ ]{18}\)$/g;
 
 export function getLogChannels(gid: string, event: string, type: string) {
-    console.log(event, type);
   let arr = new Array<string>();
     const gconf = conf.getGuildConfig(gid);
   let mp = gconf.modules.logging.logChannels;
@@ -201,6 +200,7 @@ async function parseChannelsData(
     /*let txt = utils.getLogMessage(eventName, type, isAuditLog);
       let final = utils.replacePlaceholders(txt, el);*/
     const thesechannels = getLogChannels(ev.guildId, ev.eventName, type);
+    if(!Array.isArray(thesechannels)) return;
     thesechannels.forEach(function(ch) {
       if (!chans.has(ch)) chans.set(ch, new Array<Map<string, string>>());
       let curr = chans.get(ch);
