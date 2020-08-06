@@ -8,7 +8,7 @@ export enum Ranks {
     "Administrator" = 100,
     "Owner" = 200,
 }
-asdasdasd
+
 export const globalConfig = <any>{
     admins: ['344837487526412300'],
     masterGuild: '565323632751149103',
