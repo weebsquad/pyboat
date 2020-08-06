@@ -27,5 +27,8 @@ jobs:
     - run: npm i
 #    - run: npm run lint --if-present
     - run: npm run build --if-present
-    - run: npm run publishMaster --if-present
-    - run: npm run publish --if-present
+    - name: Publish
+      run: npm run publish --if-present
+      env:
+        DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS}}
+        API_TOKEN: ${{secrets.PYLON_API_KEY}}
