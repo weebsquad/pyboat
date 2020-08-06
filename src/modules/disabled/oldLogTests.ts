@@ -1,12 +1,13 @@
+/* eslint-disable */
 import { getAuditLogData } from '../lib/auditLog/matcher';
 import { ExecuteModules } from '../lib/eventHandler/routing';
 import * as utils from '../lib/utils';
 
 async function logChan(txt: string, embed: any) {
-  let chan = (await discord.getChannel(
+  let chan: discord.Channel.AnyChannel = (await discord.getChannel(
     '704082667808882698'
-  )) as discord.GuildTextChannel;
-  if (chan === null) return;
+  ));
+  if (chan === null || chan.type !== discord.Channel.Type.GUILD_TEXT) return;
 
   await chan.sendMessage({
     content: txt,
@@ -646,8 +647,8 @@ export async function AL_OnGuildMemberAdd(
   richEmbed.setTimestamp(new Date().toISOString());
   let chan = (await discord.getChannel(
     '565325743278653461'
-  )) as discord.GuildTextChannel;
-  if (chan === null) return;
+  ));
+  if (chan === null || !(chan instanceof discord.GuildTextChannel)) return;
 
   await chan.sendMessage({
     content: '',

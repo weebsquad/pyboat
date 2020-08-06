@@ -1,65 +1,72 @@
+/* eslint-disable no-irregular-whitespace */
 import * as conf from '../config';
 import * as utils from '../lib/utils';
 import * as commands2 from '../lib/commands2';
 import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
-const config = conf.config;
+
+const { config } = conf;
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_general');
 
 export const _groupOptions = {
   additionalPrefixes: [],
   description: 'General commands',
-  filters: []
+  filters: [],
 };
 
 const optsGroup = commands2.getOpts(
-  _groupOptions
-) as discord.command.ICommandGroupOptions;
+  _groupOptions,
+);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
 export const mylevel = discord.command.rawHandler(
-    async (msg) => await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${conf.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`)
-  );
+  async (msg) => {
+       await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${conf.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`)
+    }
+);
 
 export const ping = discord.command.rawHandler(async (msg) => {
-  let msgdiff =
-    new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
-  let msgd = new Date();
-  let edmsg = await msg.reply('<a:loading:735794724480483409>');
-  let td = new Date().getTime() - msgd.getTime();
+  const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
+  const msgd = new Date();
+  const edmsg = await msg.reply('<a:loading:735794724480483409>');
+  const td = new Date().getTime() - msgd.getTime();
   await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
 });
 
 const snipekvs = new pylon.KVNamespace('snipe');
 export const snipe = discord.command.rawHandler(async (msg) => {
-  let _sn = await snipekvs.get(msg.channelId);
-  if (typeof _sn === 'string') _sn = JSON.parse(_sn);
+  let _sn: any = await snipekvs.get(msg.channelId);
+  if (typeof _sn === 'string') {
+    _sn = JSON.parse(_sn);
+  }
   if (
-    _sn === undefined ||
-    typeof _sn['author'] !== 'object' ||
-    typeof _sn['id'] !== 'string' || !(_sn instanceof discord.Message)
+    _sn === undefined
+    || typeof _sn.author !== 'object'
+    || typeof _sn.id !== 'string' || !(_sn instanceof discord.Message)
   ) {
     await msg.reply('Nothing to snipe.');
     return;
   }
   if (
-    _sn.author.id === msg.author.id &&
-    !msg.member.can(discord.Permissions.ADMINISTRATOR)
+    _sn.author.id === msg.author.id
+    && !msg.member.can(discord.Permissions.ADMINISTRATOR)
   ) {
     await msg.reply('Nothing to snipe.');
     return;
   }
-  let emb = new discord.Embed();
-  let _usr = await discord.getUser(_sn.author.id);
-  if (!_usr) return;
+  const emb = new discord.Embed();
+  const _usr = await discord.getUser(_sn.author.id);
+  if (!_usr) {
+    return;
+  }
   emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
   emb.setTimestamp(
-    new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString()
+    new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
   );
   emb.setFooter({
     iconUrl: msg.author.getAvatarUrl(),
-    text: 'Requested by: ' + msg.author.getTag()
+    text: `Requested by: ${msg.author.getTag()}`,
   });
   emb.setDescription(_sn.content);
   emb.setColor(0x03fc52);
@@ -67,33 +74,30 @@ export const snipe = discord.command.rawHandler(async (msg) => {
   await msg.reply({
     embed: emb,
     content: `${_usr.toMention()} said ...`,
-    allowedMentions: {}
+    allowedMentions: {},
   });
 });
 export const snowflake = discord.command.handler(
-  (ctx) => ({ snowflake: ctx.string() }),
-  async (msg, { snowflake }) => {
-    let now = new Date();
-    let baseId = snowflake;
-    let normalTs = utils.getSnowflakeDate(baseId);
+  (ctx) => ({ snowflakee: ctx.string() }),
+  async (msg, { snowflakee }) => {
+    const now = new Date();
+    const baseId = snowflakee;
+    const normalTs = utils.getSnowflakeDate(baseId);
     await msg.reply(
-      `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``
+      `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
     );
-  }
+  },
 );
 
-export const rolelb = discord.command.handler(
-  () => ({}),
-  async (message, {}) => {
+export const rolelb = discord.command.rawHandler(
+  async (message) => {
     await message.reply(async () => {
-      let ms = new Date();
-      let guild = await message.getGuild();
-      let board = '**ROLE COUNT LEADERBOARD FOR ' + guild.name + '**\n```';
+      const ms = new Date();
+      const guild = await message.getGuild();
+      let board = `**ROLE COUNT LEADERBOARD FOR ${guild.name}**\n\`\`\``;
       let top10homos = new Array<discord.GuildMember>();
-      let sortit = function(arr: Array<discord.GuildMember>) {
-        arr.sort((el1, el2) => {
-          return el2.roles.length - el1.roles.length;
-        });
+      const sortit = function (arr: Array<discord.GuildMember>) {
+        arr.sort((el1, el2) => el2.roles.length - el1.roles.length);
         return arr;
       };
 
@@ -103,7 +107,7 @@ export const rolelb = discord.command.handler(
           continue;
         }
 
-        let lowest = top10homos[top10homos.length - 1];
+        const lowest = top10homos[top10homos.length - 1];
         if (member.roles.length > lowest.roles.length) {
           if (top10homos.length < 10) {
             top10homos.push(member);
@@ -113,21 +117,21 @@ export const rolelb = discord.command.handler(
         }
         top10homos = sortit(top10homos);
       }
-      for (var i = 0; i < top10homos.length; i++) {
+      for (let i = 0; i < top10homos.length; i += 1) {
         board += `\n#${i + 1} - ${top10homos[i].user.getTag()} - ${
           top10homos[i].roles.length
         } roles`;
       }
       board += '\n```';
       console.log(
-        `Took ${new Date(Date.now()).getTime() - new Date(ms).getTime()}ms`
+        `Took ${new Date(Date.now()).getTime() - new Date(ms).getTime()}ms`,
       );
       return board;
     });
-  }
+  },
 );
 
-/*export const translate = discord.command.handler(
+/* export const translate = discord.command.handler(
   (ctx) => ({ lang: ctx.string(), text: ctx.text() }),
   async (message, { lang, text }) => {
     let translation = await gTranslate.translate(text, lang);
@@ -159,7 +163,7 @@ export const rolelb = discord.command.handler(
       return { embed: richEmbed };
     });
   }
-);*/
+); */
 
 const timeMap = new Map([
   ['decade', 1000 * 60 * 60 * 24 * 365 * 10],
@@ -170,16 +174,20 @@ const timeMap = new Map([
   ['hour', 1000 * 60 * 60],
   ['minute', 1000 * 60],
   ['second', 1000],
-  ['milisecond', 1]
+  ['milisecond', 1],
 ]);
 function getLongAgoFormat(ts: number, limiter: number) {
   let runcheck = ts + 0;
-  let txt = new Map();
-  for (var [k, v] of timeMap) {
-    if (runcheck < v || txt.entries.length >= limiter) continue;
-    let runs = Math.ceil(runcheck / v) + 1;
-    for (var i = 0; i <= runs; i++) {
-      if (runcheck < v) break;
+  const txt = new Map();
+  for (const [k, v] of timeMap) {
+    if (runcheck < v || txt.entries.length >= limiter) {
+      continue;
+    }
+    const runs = Math.ceil(runcheck / v) + 1;
+    for (let i = 0; i <= runs; i += 1) {
+      if (runcheck < v) {
+        break;
+      }
       if (txt.has(k)) {
         txt.set(k, txt.get(k) + 1);
       } else {
@@ -188,78 +196,78 @@ function getLongAgoFormat(ts: number, limiter: number) {
       runcheck -= v;
     }
   }
-  let txtret = [];
+  const txtret = [];
   let runsc = 0;
-  for (var [key, value] of txt) {
-    if (runsc >= limiter) break;
-    let cc = value > 1 ? key + 's' : key;
-    txtret.push(value + ' ' + cc);
-    runsc+=1;
+  for (const [key, value] of txt) {
+    if (runsc >= limiter) {
+      break;
+    }
+    const cc = value > 1 ? `${key}s` : key;
+    txtret.push(`${value} ${cc}`);
+    runsc += 1;
   }
   return txtret.join(', ');
 }
 export const server = discord.command.rawHandler(async (message) => {
-  let edmsg = message.reply('<a:loading:735794724480483409>');
-  let embed = new discord.Embed();
+  const edmsg = message.reply('<a:loading:735794724480483409>');
+  const embed = new discord.Embed();
   const guild = await message.getGuild();
-  if (guild === null) throw new Error('guild not found');
+  if (guild === null) {
+    throw new Error('guild not found');
+  }
   let icon = guild.getIconUrl();
-  if (icon === null) icon = '';
+  if (icon === null) {
+    icon = '';
+  }
   embed.setAuthor({
     name: guild.name,
-    iconUrl: 'https://cdn.discordapp.com/emojis/735781410509684786.png?v=1'
+    iconUrl: 'https://cdn.discordapp.com/emojis/735781410509684786.png?v=1',
   });
-  let dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
-  let diff = new Date(new Date().getTime() - dtCreation.getTime()).getTime();
-  let tdiff = getLongAgoFormat(diff, 2);
-  if (icon !== null) embed.setThumbnail({ url: icon });
+  const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
+  const diff = new Date(new Date().getTime() - dtCreation.getTime()).getTime();
+  const tdiff = getLongAgoFormat(diff, 2);
+  if (icon !== null) {
+    embed.setThumbnail({ url: icon });
+  }
   let desc = '';
   const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })}`; /* @ ${dtCreation.toLocaleTimeString('en-US', {
     hour12: false,
     timeZone: 'UTC',
     timeZoneName: 'short'
-  })}`;*/
+  })}`; */
 
-  let preferredLocale =
-    typeof guild.preferredLocale === 'string' &&
-    guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
-      ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\`\n`
-      : '';
-  let boosts =
-    guild.premiumSubscriptionCount > 0
-      ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}\n`
-      : '';
-  let boostTier =
-    guild.premiumTier !== null
-      ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}\n`
-      : '';
-  let systemChannel =
-    guild.systemChannelId !== null
-      ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>\n`
-      : '';
-  let vanityUrl =
-    guild.vanityUrlCode !== null
-      ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
-      : '';
-  let description =
-    guild.description !== null
-      ? `\n  󠇰**Description**: \`${guild.description}\``
-      : '';
-  let widgetChannel =
-    guild.widgetChannelId !== null
-      ? `<#${guild.widgetChannelId}>`
-      : 'No channel';
-  let widget =
-    guild.widgetEnabled === true
-      ? '\n  󠇰**Widget**: ' +
-        discord.decor.Emojis.WHITE_CHECK_MARK +
-        ` ( ${widgetChannel} )`
-      : '';
-  let features = guild.features.length > 0 ? guild.features.join(', ') : 'None';
+  const preferredLocale = typeof guild.preferredLocale === 'string'
+    && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
+    ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\`\n`
+    : '';
+  const boosts = guild.premiumSubscriptionCount > 0
+    ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}\n`
+    : '';
+  const boostTier = guild.premiumTier !== null
+    ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}\n`
+    : '';
+  const systemChannel = guild.systemChannelId !== null
+    ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>\n`
+    : '';
+  const vanityUrl = guild.vanityUrlCode !== null
+    ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
+    : '';
+  const description = guild.description !== null
+    ? `\n  󠇰**Description**: \`${guild.description}\``
+    : '';
+  const widgetChannel = guild.widgetChannelId !== null
+    ? `<#${guild.widgetChannelId}>`
+    : 'No channel';
+  const widget = guild.widgetEnabled === true
+    ? `\n  󠇰**Widget**: ${
+      discord.decor.Emojis.WHITE_CHECK_MARK
+    } ( ${widgetChannel} )`
+    : '';
+  const features = guild.features.length > 0 ? guild.features.join(', ') : 'None';
 
   desc += `  **❯ **Information
 <:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
@@ -269,44 +277,65 @@ export const server = discord.command.rawHandler(async (message) => {
   󠇰**Features**: \`${features}\`
   󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
-  let chanStats = [];
-  let counts = {
+  const chanStats = [];
+  const counts = {
     text: 0,
     category: 0,
     voice: 0,
     news: 0,
-    store: 0
+    store: 0,
   };
-  let channels = await guild.getChannels();
-  channels.forEach(function(ch) {
-    if (ch.type === discord.GuildChannel.Type.GUILD_TEXT) counts.text++;
-    if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) counts.voice++;
-    if (ch.type === discord.GuildChannel.Type.GUILD_STORE) counts.store++;
-    if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) counts.category++;
-    if (ch.type === discord.GuildChannel.Type.GUILD_NEWS) counts.news++;
+  const channels = await guild.getChannels();
+  channels.forEach((ch) => {
+    if (ch.type === discord.GuildChannel.Type.GUILD_TEXT) {
+      counts.text += 1;
+    }
+    if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
+      counts.voice += 1;
+    }
+    if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
+      counts.store += 1;
+    }
+    if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) {
+      counts.category += 1;
+    }
+    if (ch.type === discord.GuildChannel.Type.GUILD_NEWS) {
+      counts.news += 1;
+    }
   });
-  for (var k in counts) {
-    let obj = counts[k];
+  for (const k in counts) {
+    const obj = counts[k];
     let emj = '';
-    if (k === 'text') emj = '<:channel:735780703983239218> ';
-    if (k === 'voice') emj = '<:voice:735780703928844319> ';
-    if (k === 'store') emj = '<:store:735780704130170880> ';
-    if (k === 'news') emj = '<:news:735780703530385470> ';
-    if (k === 'category') emj = '<:rich_presence:735781410509684786> ';
+    if (k === 'text') {
+      emj = '<:channel:735780703983239218> ';
+    }
+    if (k === 'voice') {
+      emj = '<:voice:735780703928844319> ';
+    }
+    if (k === 'store') {
+      emj = '<:store:735780704130170880> ';
+    }
+    if (k === 'news') {
+      emj = '<:news:735780703530385470> ';
+    }
+    if (k === 'category') {
+      emj = '<:rich_presence:735781410509684786> ';
+    }
 
-    if (obj > 0)
+    if (obj > 0) {
       chanStats.push(
-        '\n ' +
-          emj +
-          '**' +
-          k.substr(0, 1).toUpperCase() +
-          k.substr(1) +
-          '**: **' +
-          obj +
-          '**'
+        `\n ${
+          emj
+        }**${
+          k.substr(0, 1).toUpperCase()
+        }${k.substr(1)
+        }**: **${
+          obj
+        }**`,
       );
+    }
   }
-  desc += '\n\n**❯ **Channels ⎯ ' + channels.length + chanStats.join('');
+  desc += `\n\n**❯ **Channels ⎯ ${channels.length}${chanStats.join('')}`;
   const roles = await guild.getRoles();
   const emojis = await guild.getEmojis();
 
@@ -316,7 +345,7 @@ export const server = discord.command.rawHandler(async (message) => {
 **❯ **Other Counts
  <:settings:735782884836638732> **Roles**: ${roles.length}
  <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
-  let memberCounts = {
+  const memberCounts = {
     human: 0,
     bot: 0,
     presences: {
@@ -327,69 +356,81 @@ export const server = discord.command.rawHandler(async (message) => {
       online: 0,
       dnd: 0,
       idle: 0,
-      offline: 0
-    }
+      offline: 0,
+    },
   };
   for await (const member of guild.iterMembers()) {
-    let usr = member.user;
+    const usr = member.user;
     if (!usr.bot) {
-      memberCounts.human++;
+      memberCounts.human += 1;
     } else {
-      memberCounts.bot++;
+      memberCounts.bot += 1;
       continue;
     }
-    let pres = await member.getPresence();
+    const pres = await member.getPresence();
     if (
-      pres.activities.find((e) => {
-        return e.type === discord.Presence.ActivityType.STREAMING;
-      })
-    )
-      memberCounts.presences.streaming++;
+      pres.activities.find((e) => e.type === discord.Presence.ActivityType.STREAMING)
+    ) {
+      memberCounts.presences.streaming += 1;
+    }
 
     if (
-      pres.activities.find((e) => {
-        return e.type === discord.Presence.ActivityType.LISTENING;
-      })
-    )
-      memberCounts.presences.listening++;
+      pres.activities.find((e) => e.type === discord.Presence.ActivityType.LISTENING)
+    ) {
+      memberCounts.presences.listening += 1;
+    }
 
     if (
-      pres.activities.find((e) => {
-        return e.type === discord.Presence.ActivityType.GAME;
-      })
-    )
-      memberCounts.presences.game++;
+      pres.activities.find((e) => e.type === discord.Presence.ActivityType.GAME)
+    ) {
+      memberCounts.presences.game += 1;
+    }
     if (
-      pres.activities.find((e) => {
-        return e.type === discord.Presence.ActivityType.WATCHING;
-      })
-    )
-      memberCounts.presences.watching++;
+      pres.activities.find((e) => e.type === discord.Presence.ActivityType.WATCHING)
+    ) {
+      memberCounts.presences.watching += 1;
+    }
 
-    memberCounts.presences[pres.status]++;
+    memberCounts.presences[pres.status] += 1;
   }
-  let prestext = ``;
+  let prestext = '';
   let nolb = false;
-  for (let key in memberCounts.presences) {
-    let obj = memberCounts.presences[key];
+  for (const key in memberCounts.presences) {
+    const obj = memberCounts.presences[key];
     let emj = '';
-    if (key === 'streaming') emj = '<:streaming:735793095597228034>';
-    if (key === 'game') emj = discord.decor.Emojis.VIDEO_GAME;
-    if (key === 'watching') emj = '<:watching:735793898051469354>';
-    if (key === 'listening') emj = '<:spotify:735788337897406535>';
-    if (key === 'online') emj = '<:status_online:735780704167919636>';
-    if (key === 'dnd') emj = '<:status_busy:735780703983239168>';
-    if (key === 'idle') emj = '<:status_away:735780703710478407>';
-    if (key === 'offline') emj = '<:status_offline:735780703802753076>';
+    if (key === 'streaming') {
+      emj = '<:streaming:735793095597228034>';
+    }
+    if (key === 'game') {
+      emj = discord.decor.Emojis.VIDEO_GAME;
+    }
+    if (key === 'watching') {
+      emj = '<:watching:735793898051469354>';
+    }
+    if (key === 'listening') {
+      emj = '<:spotify:735788337897406535>';
+    }
+    if (key === 'online') {
+      emj = '<:status_online:735780704167919636>';
+    }
+    if (key === 'dnd') {
+      emj = '<:status_busy:735780703983239168>';
+    }
+    if (key === 'idle') {
+      emj = '<:status_away:735780703710478407>';
+    }
+    if (key === 'offline') {
+      emj = '<:status_offline:735780703802753076>';
+    }
 
     if (obj > 0) {
       if (
-        key !== 'streaming' &&
-        key !== 'listening' &&
-        key !== 'watching' &&
-        key !== 'game' &&
-        !prestext.includes('****') &&
-        !nolb
+        key !== 'streaming'
+        && key !== 'listening'
+        && key !== 'watching'
+        && key !== 'game'
+        && !prestext.includes('****')
+        && !nolb
       ) {
         if (prestext.length === 0) {
           nolb = true;
@@ -402,12 +443,14 @@ export const server = discord.command.rawHandler(async (message) => {
   }
   let bottxt = `\n <:bot:735780703945490542> **-** ${memberCounts.bot}
 ****`;
-  if (memberCounts.bot <= 0) bottxt = '';
+  if (memberCounts.bot <= 0) {
+    bottxt = '';
+  }
   desc += `
 
 
 **❯ **Members ⎯ ${guild.memberCount}${bottxt}${prestext}`;
   embed.setDescription(desc);
-  let editer = await edmsg;
-  await editer.edit({ content: '', embed: embed });
+  const editer = await edmsg;
+  await editer.edit({ content: '', embed });
 });

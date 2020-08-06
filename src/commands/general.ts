@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as utils from '../lib/utils';
 import {
   Command,
@@ -5,25 +6,25 @@ import {
   CommandData,
   CommandArgumentUser,
   ResolvedCommandArgument,
-  commands
+  commands,
 } from '../lib/commands';
 
 export function InitializeCommands() {
-  let _c = [];
-  let Ping = new Command('ping', 'Useless command', 1);
-  Ping.Execute = async function(m: CommandData) {
+  const _c = [];
+  const Ping = new Command('ping', 'Useless command', 1);
+  Ping.Execute = async function (m: CommandData) {
     await m.Message.reply('Pong!');
   };
   Ping.Aliases = ['pong'];
   _c.push(Ping);
 
-  let Help = new Command('help', 'Show bot commands', 0);
-  Help.Execute = async function(m: CommandData) {
+  const Help = new Command('help', 'Show bot commands', 0);
+  Help.Execute = async function (m: CommandData) {
     let text = '**< COMMANDS >**\n\n';
-    let commandsArray = Object.values(commands);
-    let commandCategories = {};
-    //console.log(commandsArray);
-    commandsArray.sort(function(a, b) {
+    const commandsArray = Object.values(commands);
+    const commandCategories = {};
+    // console.log(commandsArray);
+    commandsArray.sort((a, b) => {
       if (a.Category > b.Category) {
         return 1;
       }
@@ -32,14 +33,15 @@ export function InitializeCommands() {
       }
       return 0;
     });
-    commandsArray.forEach(function(el) {
-      if (!Array.isArray(commandCategories[el.Category]))
+    commandsArray.forEach((el) => {
+      if (!Array.isArray(commandCategories[el.Category])) {
         commandCategories[el.Category] = [];
+      }
       commandCategories[el.Category].push(el);
     });
-    for (var key in commandCategories) {
-      let obj = commandCategories[key];
-      obj.sort(function(a, b) {
+    for (let key in commandCategories) {
+      const obj = commandCategories[key];
+      obj.sort((a, b) => {
         if (a.Name > b.Name) {
           return 1;
         }
@@ -49,36 +51,40 @@ export function InitializeCommands() {
         return 0;
       });
     }
-    let commandsFinal = [];
+    const commandsFinal = [];
 
     let maxLengthCat = 0;
-    for (var key in commandCategories) {
-      let obj = commandCategories[key];
+    for (let key in commandCategories) {
+      const obj = commandCategories[key];
 
-      for (var i = 0; i < obj.length; i+=1) {
+      for (let i = 0; i < obj.length; i += 1) {
         commandsFinal.push(obj[i]);
-        if (obj[i].Category.length > maxLengthCat)
+        if (obj[i].Category.length > maxLengthCat) {
           maxLengthCat = obj[i].Category.length;
+        }
       }
     }
 
     let currCat = '';
-    for (var i = 0; i < commandsFinal.length; i+=1) {
-      let obj = commandsFinal[i];
-      if (obj.Authorization > m.UserAuthorization || obj.Hidden == true)
+    for (let i = 0; i < commandsFinal.length; i += 1) {
+      const obj = commandsFinal[i];
+      if (obj.Authorization > m.UserAuthorization || obj.Hidden == true) {
         continue;
-      let usage = obj.Usage + ' ';
-      let maxcategorylength = 0;
-      let prefix;
+      }
+      const usage = `${obj.Usage} `;
+      const maxcategorylength = 0;
+      let prefix: any;
       if (Array.isArray(m.ConfigData.modules.commands.prefix)) {
         prefix = m.ConfigData.modules.commands.prefix[0];
       } else {
         prefix = m.ConfigData.modules.commands.prefix;
       }
 
-      //text += `\n**[**${obj.Category}**]** ${spacesThis}**${prefix}${obj.Name}** ${usage}- __${obj.Description}__`;
+      // text += `\n**[**${obj.Category}**]** ${spacesThis}**${prefix}${obj.Name}** ${usage}- __${obj.Description}__`;
       if (obj.Category !== currCat) {
-        if (currCat !== '') text += '\n\n';
+        if (currCat !== '') {
+          text += '\n\n';
+        }
         text += `**>>** __${obj.Category.toUpperCase()}__ **<<**`;
       }
       text += `\n **${prefix}${obj.Name}** ${usage}- __${obj.Description}__`;
@@ -88,14 +94,15 @@ export function InitializeCommands() {
   };
   Help.ConfigModuleAccess = ['modules.commands'];
   Help.Aliases = ['halp', 'cmds', 'commands'];
-  //Help.Hidden = true;
+  // Help.Hidden = true;
   _c.push(Help);
 
-  let UserInfo = new Command('userinfo', 'Gets data of a user ID', 0);
-  UserInfo.Execute = async function(m: CommandData) {
-    let usr = m.Author;
-    if (m.ResolvedArguments[0])
-      usr = m.ResolvedArguments[0].Data.User as discord.User;
+  const UserInfo = new Command('userinfo', 'Gets data of a user ID', 0);
+  UserInfo.Execute = async function (m: CommandData) {
+    let usr: any = m.Author;
+    if (m.ResolvedArguments[0]) {
+      usr = m.ResolvedArguments[0].Data.User;
+    }
     const embed = new discord.Embed();
     embed.setTitle(usr.getTag()).setColor(0x00ff00);
     embed.setDescription('User Information');
@@ -103,10 +110,10 @@ export function InitializeCommands() {
     embed.addField({
       name: 'User ID',
       value: usr.id,
-      inline: false
+      inline: false,
     });
     embed.setTimestamp(new Date().toISOString());
-    await m.Message.reply({ content: '', embed: embed });
+    await m.Message.reply({ content: '', embed });
   };
   UserInfo.Aliases = ['user'];
   UserInfo.Arguments.push(new CommandArgument('User', 1, false));

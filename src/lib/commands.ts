@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { config } from '../config';
 import * as utils from './utils';
 import { commandsFiles } from '../commands/_init_';
@@ -72,7 +73,7 @@ export class CommandData {
   Author: discord.User;
   AuthorGuild: discord.GuildMember;
   GuildId: discord.Snowflake;
-  Channel: discord.GuildTextChannel;
+  Channel: discord.GuildTextChannel | discord.DmChannel | discord.GuildNewsChannel;
   UserAuthorization: number;
   Command: Command;
   PassedArguments: Array<string>;
@@ -85,13 +86,13 @@ export class CommandData {
   async FillData() {
     try {
       if (this.GuildId) {
-        this.Channel = (await this.Message.getChannel()) as discord.GuildTextChannel;
+        this.Channel = (await this.Message.getChannel());
         this.Guild = await this.Message.getGuild();
         this.BotGuild = await this.Guild.getMember(discord.getBotId());
       } else {
-        this.Channel = (await this.Message.getChannel()) as discord.GuildTextChannel;
+        this.Channel = (await this.Message.getChannel());
       }
-      this.Bot = (await utils.getUser(discord.getBotId())) as discord.User;
+      this.Bot = (await utils.getUser(discord.getBotId()));
     } catch (e) {
       console.error(this);
       console.error(e);
@@ -108,7 +109,7 @@ export class CommandData {
     let textLastPos = 0;
     let _argData = [];
 
-    for (var i = 0; i < this.Command.Arguments.length; i++) {
+    for (var i = 0; i < this.Command.Arguments.length; i+=1) {
       let expectedArgument = this.Command.Arguments[i];
       let passedArgument = this.PassedArguments[i];
       if (
@@ -185,7 +186,7 @@ export class CommandData {
     this.Message = msg;
     this.Command = cmd;
     this.Author = msg.author;
-    this.UserAuthorization = utils.getUserAuth(msg.author.id);
+    this.UserAuthorization = 0//utils.getUserAuth(msg.author.id);
     if (msg.guildId) {
       this.AuthorGuild = msg.member;
       this.GuildId = msg.guildId;
@@ -234,7 +235,7 @@ export class CommandArgumentUser {
   }
   constructor(userid: string) {
     this.Id = userid;
-    this.Authorization = utils.getUserAuth(userid);
+    this.Authorization = 0//utils.getUserAuth(userid);
     return this;
   }
 }
@@ -260,7 +261,7 @@ export class CommandArgumentGuildMember {
   constructor(userid: string, guildid: string) {
     this.Id = userid;
     if (guildid && guildid.length > 2) this.GuildId = guildid;
-    this.Authorization = utils.getUserAuth(userid);
+    this.Authorization =0// utils.getUserAuth(userid);
     return this;
   }
 }
@@ -305,13 +306,13 @@ export async function HandleCommand(msg: discord.Message) {
         let afterPref = content.substr(pref.length).split('');
         if (afterPref.length > 0) {
           let cmdStartIndex = 0;
-          for (var i = 0; i < afterPref.length; i++) {
+          for (var i = 0; i < afterPref.length; i+=1) {
             let currChar = afterPref[i];
             if (currChar !== ' ') {
               cmdStartIndex = i;
               break;
             }
-            cmdStartIndex++;
+            cmdStartIndex+=1;
           }
           cmdName = content.substr(pref.length + cmdStartIndex);
         }
@@ -327,7 +328,7 @@ export async function HandleCommand(msg: discord.Message) {
   // Check parameters before arguments
   let params = [];
   if (command.Parameters.length > 0) {
-    for (var i = 0; i < command.Parameters.length; i++) {
+    for (var i = 0; i < command.Parameters.length; i+=1) {
       let indParam = -1;
       let usedPrefix;
       config.modules.commands.prefixParameters.forEach(function(prefixParam) {
@@ -351,7 +352,7 @@ export async function HandleCommand(msg: discord.Message) {
       let argsCChars = argsContent.split(config.modules.commands.seperator);
       let newArr = [];
       let foundSpace = false;
-      for (var i2 = 0; i2 < argsCChars.length; i2++) {
+      for (var i2 = 0; i2 < argsCChars.length; i2+=1) {
         if (argsCChars[i2] === '') {
           if (!foundSpace) {
             foundSpace = true;
@@ -386,7 +387,7 @@ export async function HandleCommand(msg: discord.Message) {
 }
 
 export function AddCommand(cmd: Command) {
-  for (var i = 0; i < 1 + cmd.Aliases.length; i++) {
+  for (var i = 0; i < 1 + cmd.Aliases.length; i+=1) {
     let _c = cmd.Name;
     if (i > 0) _c = cmd.Aliases[i - 1];
     let _ex = GetCommand(_c);
@@ -405,7 +406,7 @@ export function AddCommand(cmd: Command) {
   if (cmd.Usage === '' && cmd.Arguments.length > 0) {
     let ufinal = '';
     let usages = [];
-    for (var i = 0; i < cmd.Arguments.length; i++) {
+    for (var i = 0; i < cmd.Arguments.length; i+=1) {
       let stringu = '';
       let arg = cmd.Arguments[i];
       // Check curr pos exists
@@ -440,7 +441,7 @@ export function InitializeCommands() {
     commandlist.forEach(function(cmd) {
       cmd.Category = key;
       AddCommand(cmd);
-      count++;
+      count+=1;
     });
     //console.info('Loaded ' + count + ' cmds from commands1.' + key);
   }

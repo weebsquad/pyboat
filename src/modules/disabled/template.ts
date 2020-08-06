@@ -1,3 +1,4 @@
+/* eslint-disable */
 // * CHANNELS * //
 import { QueuedEvent } from '../../lib/eventHandler/queue';
 

@@ -132,8 +132,8 @@ export const messages = {
     let type = '';
     const newPerms = new utils.Permissions(role.permissions).serialize();
     const oldPerms = new utils.Permissions(oldRole.permissions).serialize();
-    const permsAdded = new Array<string>();
-    const permsRemoved = new Array<string>();
+    const permsAdded = [];
+    const permsRemoved = [];
     for (const key in newPerms) {
       if (newPerms[key] === true && oldPerms[key] === false) {
         permsAdded.push(key);
@@ -147,11 +147,11 @@ export const messages = {
         .split('_')
         .join(' ')
         .split(' ')
-        .map((e) => {
-          if (e.length > 1) {
-            e = e.substring(0, 1).toUpperCase() + e.substring(1).toLowerCase();
+        .map((e2) => {
+          if (e2.length > 1) {
+            e2 = e2.substring(0, 1).toUpperCase() + e2.substring(1).toLowerCase();
           }
-          return e;
+          return e2;
         })
         .join(' ');
     }

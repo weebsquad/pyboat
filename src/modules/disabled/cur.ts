@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { config } from '../config';
 import * as utils from '../lib/utils';
 
@@ -47,7 +48,7 @@ export async function checkAllStoredRoles(guild: discord.Guild) {
   const roles = await guild.getRoles();
   if (Array.isArray(data.cotdRoles)) {
     const newCotd = [];
-    for (var i = 0; i < data.cotdRoles.length; i++) {
+    for (var i = 0; i < data.cotdRoles.length; i += 1) {
       const rl = roles.find((role) => role.id === data.cotdRoles[i]);
       if (typeof rl === 'undefined') {
         continue;
@@ -101,7 +102,7 @@ export async function cotdUpdate(cotd: discord.Role) {
   if (roles.length < 1) {
     return;
   }
-  for (var i = 0; i < cotdRoles.length; i++) {
+  for (var i = 0; i < cotdRoles.length; i += 1) {
     const rl = roles.find((role) => role.id === cotdRoles[i]);
     if (typeof rl === 'undefined') {
       continue;

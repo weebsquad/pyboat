@@ -398,7 +398,7 @@ export class Language {
   
   let sepp = txt.split('\n');
   let final = ``;
-  for(var i = 0; i < sepp.length; i++) {
+  for(var i = 0; i < sepp.length; i+=1) {
       if(sepp[i].indexOf('	') === -1 && sepp[i].indexOf('U+') !== -1) continue;
       if(sepp[i].indexOf('U+') > -1) {
           let seppmore = sepp[i].substring(16).split('\'').join('´');

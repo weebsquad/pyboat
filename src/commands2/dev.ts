@@ -19,14 +19,10 @@ export const _groupOptions = {
   )
 };
 
-const optsGroup = commands2.getOpts(
-  _groupOptions
-) as discord.command.ICommandGroupOptions;
+const optsGroup = commands2.getOpts(_groupOptions)
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-let optsEval = commands2.getOpts(
-  _groupOptions
-) as discord.command.ICommandGroupOptions;
+let optsEval = commands2.getOpts(_groupOptions)
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.filters = F.silent(
@@ -134,7 +130,7 @@ const test = cmdGroup.subcommand('test', (sub) => {
     let embed = new discord.Embed();
     embed.setDescription('does this even look good');
     let txt = '';
-    for (var i = 0; i < 1900; i++) {
+    for (var i = 0; i < 1900; i+=1) {
       txt += Math.floor(Math.random() * 10).toString();
     }
     //txt = '.' + '\n'.repeat(1000) + '.';

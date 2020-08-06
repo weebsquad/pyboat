@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as utils from '../lib/utils';
 import * as constants from '../constants/constants';
 import { bigInt } from '../lib/bigint';

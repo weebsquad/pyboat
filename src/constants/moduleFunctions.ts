@@ -3,7 +3,7 @@ export const eventFunctionQueue = 'OnBatchEvents';
 export const eventFunctionVarForceIndividuals = '_ForceIndividualEvents';
 export const eventFunctionEveryEvent = 'OnAnyEvent';
 
-export const eventFunctions = <any>{
+export const eventFunctions : {[key: string]: string} = {
   CHANNEL_CREATE: 'OnChannelCreate',
   CHANNEL_DELETE: 'OnChannelDelete',
   CHANNEL_UPDATE: 'OnChannelUpdate',
@@ -31,9 +31,5 @@ export const eventFunctions = <any>{
   VOICE_STATE_UPDATE: 'OnVoiceStateUpdate',
   VOICE_SERVER_UPDATE: 'OnVoiceServerUpdate',
   WEBHOOKS_UPDATE: 'OnWebhooksUpdate',
-  USER_UPDATE: 'OnUserUpdate'
+  USER_UPDATE: 'OnUserUpdate',
 };
-
-/*
-  AL_OnGuildUpdate
-*/

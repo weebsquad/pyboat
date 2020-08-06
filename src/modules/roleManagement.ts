@@ -79,11 +79,11 @@ async function checkHoist(member: discord.GuildMember) {
 }
 
 /* USER/BOT ROLE MANAGEMENT */
-export async function checkUserRoles(member: discord.GuildMember) {
-  if (member.user.id === discord.getBotId()) {
+export async function checkUserRoles(mem: discord.GuildMember) {
+  if (mem.user.id === discord.getBotId()) {
     return;
   } // Don't trigger this on pylon, lol
-  const roles = await utils.getUserRoles(member);
+  const roles = await utils.getUserRoles(mem);
 
   async function checkRoles(
     member: discord.GuildMember,
@@ -100,12 +100,12 @@ export async function checkUserRoles(member: discord.GuildMember) {
       await member.removeRole(reduced);
     }
   }
-  const cfgMod = config.getGuildConfig(member.guildId);
-  if (member.user.bot === true) {
-    await checkRoles(member, cfgMod.botRole, cfgMod.botRoleRP, false);
-    await checkRoles(member, cfgMod.botRoleRP, cfgMod.memberRoleRP, true);
+  const cfgMod = config.getGuildConfig(mem.guildId);
+  if (mem.user.bot === true) {
+    await checkRoles(mem, cfgMod.botRole, cfgMod.botRoleRP, false);
+    await checkRoles(mem, cfgMod.botRoleRP, cfgMod.memberRoleRP, true);
   } else {
-    await checkRoles(member, cfgMod.memberRole, cfgMod.memberRoleRP, true);
+    await checkRoles(mem, cfgMod.memberRole, cfgMod.memberRoleRP, true);
   }
 }
 
@@ -124,7 +124,8 @@ const chars = {
 const defaultNeededSepChars = 5;
 
 async function getMemberHighestRole(member: discord.GuildMember) {
-  return await (await member.getGuild()).getRole(member.roles[0]);
+  const rl = await (await member.getGuild()).getRole(member.roles[0]);
+  return rl;
 }
 
 async function checkRolePerms(role: discord.Role) {
@@ -230,7 +231,7 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
     let lowerLim = 0;
     let upperLim = 501;
     const thispos = sep1.position;
-    for (let i = 0; i < posArray.length; i+=) {
+    for (let i = 0; i < posArray.length; i += 1) {
       if (posArray[i] !== thispos) {
         continue;
       }

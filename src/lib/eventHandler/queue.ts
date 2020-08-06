@@ -18,7 +18,6 @@ export class QueuedEvent {
 }
 
 const cpuTimePerEvent = 8; // to determine when to use burst :P
-const tries = 5;
 const interval = 5000;
 const maxEventRuntime = 16000;
 let queue = new Array<QueuedEvent>();
@@ -63,10 +62,10 @@ export async function resolveQueue() {
         await pylon.requestCpuBurst(async () => {
           await routing.ExecuteQueuedEvents(procQueue);
         }, Math.max(200, Math.floor(cpuT * 1.2)));
-      } catch (e) {
+      } catch (err) {
         if (
-          !(e instanceof pylon.CpuBurstRequestError)
-          && typeof e.bucketRemainingMs !== 'number'
+          !(err instanceof pylon.CpuBurstRequestError)
+          && typeof err.bucketRemainingMs !== 'number'
         ) {
           // console.error(e);
 
@@ -152,12 +151,15 @@ async function resetInterval() {
 export async function checkObject(obj: QueuedEvent) {
   const _st = new Date();
   let run = true;
+  // eslint-disable-next-line no-undef
   await sleep(Math.min(maxEventRuntime, interval) + 100);
   const _e = obj;
   let tries = 0;
   const mx = Math.min(maxEventRuntime, Math.ceil(interval * 6));
   while (run === true) {
-    tries++;
+    tries += 1;
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line no-restricted-properties
     await sleep(Math.min(2000, Math.pow(2, tries)));
     const diff = new Date().getTime() - _st.getTime();
     if (diff >= mx) {

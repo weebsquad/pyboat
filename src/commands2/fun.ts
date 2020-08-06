@@ -8,32 +8,32 @@ const kv = new pylon.KVNamespace('commands_fun');
 export const _groupOptions = {
   additionalPrefixes: [],
   description: 'Fun commands',
-  filters: []
+  filters: [],
 };
 
 const optsGroup = commands2.getOpts(
-  _groupOptions
-) as discord.command.ICommandGroupOptions;
+  _groupOptions,
+);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
 export const count = discord.command.handler(
   (ctx) => ({ countArg: ctx.stringOptional() }),
   async (msg, { countArg }) => {
-    let arg1 = countArg;
+    const arg1 = countArg;
     let addition = 1;
-    let count = await kv.get('count');
-    if (!count) {
+    let countm = await kv.get('count');
+    if (!countm) {
       await kv.put('count', 0);
-      count = 0;
+      countm = 0;
     }
-    count = parseFloat(count.toString());
+    countm = parseFloat(countm.toString());
     let showMathCalcs: any = false;
     if (arg1 && arg1.indexOf(' ') === -1 && utils.isNormalInteger(arg1)) {
-      addition = parseInt(arg1);
+      addition = parseInt(arg1, 10);
     } else if (arg1) {
-      let mathe = arg1;
-      let res = utils.mathEval(mathe);
-      if (typeof res == 'boolean' && res == false) {
+      const mathe = arg1;
+      const res = utils.mathEval(mathe);
+      if (typeof res === 'boolean' && res === false) {
         await msg.reply('Invalid math');
         return;
       }
@@ -50,20 +50,20 @@ export const count = discord.command.handler(
       _desccalcs = `__Input Math__: **${showMathCalcs}** = **${addition}**\n`;
     }
     await msg.reply(
-      _desccalcs +
-        '__Count__: **' +
-        count +
-        '** ' +
-        symbolad +
-        ' **' +
-        Math.abs(addition) +
-        '** = **' +
-        (count + addition) +
-        '**'
+      `${_desccalcs
+      }__Count__: **${
+        countm
+      }** ${
+        symbolad
+      } **${
+        Math.abs(addition)
+      }** = **${
+        countm + addition
+      }**`,
     );
-    count += addition;
-    await kv.put('count', count);
-  }
+    countm += addition;
+    await kv.put('count', countm);
+  },
 );
 
 export const yoda = discord.command.handler(
@@ -71,19 +71,20 @@ export const yoda = discord.command.handler(
   async (message, { text }) => {
     const opts = {
       allowedMentions: {},
-      content: ''
+      content: '',
     };
     const apiResult = await fetch(
-      'https://api.funtranslations.com/translate/yoda.json?text=' + text
+      `https://api.funtranslations.com/translate/yoda.json?text=${text}`,
     );
     const result = await apiResult.json();
     if (result.success) {
       opts.content = result.contents.translated;
       await message.reply(opts);
     }
-    if (result.error)
+    if (result.error) {
       await message.reply(
-        `Error ${result.error.code}: ${result.error.message}`
+        `Error ${result.error.code}: ${result.error.message}`,
       );
-  }
+    }
+  },
 );

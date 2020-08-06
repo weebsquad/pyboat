@@ -5,8 +5,8 @@
   "scripts": {
     "build": "rollup -c",
     "publish": "node ./publish.js",
-    "lint": "eslint rollup.config.js publish.js src/ --ext=ts",
-    "lintfix": "eslint rollup.config.js publish.js src/ --ext=ts --fix"
+    "lint": "eslint publish.js src/ --ext=ts",
+    "lintfix": "eslint publish.js src/ --ext=ts --fix --quiet"
   },
   "author": "",
   "license": "MIT",

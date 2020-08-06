@@ -6,7 +6,7 @@ export let cmdgroups = [];
 export let modulegroups = new Map<string, Array<any>>();
 const cmdChannels = new Array<any>().concat(config.modules.counting.channels);
 
-export function getOpts(curr: any) {
+export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
   /*let filterNoCmds = F.silent(
     F.not(F.or(F.isAdministrator(), F.channelIdIn(cmdChannels)))
@@ -15,7 +15,7 @@ export function getOpts(curr: any) {
     label: 'default',
     description: 'default',
     defaultPrefix: config.modules.commands.prefix,
-    register: false,
+    register: <boolean>false,
     filters: []
   };
   if (typeof curr === 'object') {
@@ -38,13 +38,14 @@ export function getOpts(curr: any) {
   /*console.log('before', opts.filters);
   opts['filters'].unshift(filterNoCmds);
   console.log('after', opts.filters);*/
-  return opts;
+  let newo = <any>opts;
+  return newo;
 }
 
 export async function handleCommand(message: discord.Message) {
   if (cmdChannels.indexOf(message.channelId) > -1) return false;
   for (var key in cmdgroups) {
-    let obj = cmdgroups[key] as discord.command.CommandGroup;
+    let obj: discord.command.CommandGroup = cmdgroups[key];
     let ret = await obj.checkMessage(message);
     if (ret === true) {
       //console.log('handleCom', `Found ${message.content} at ${key}`);
@@ -75,7 +76,7 @@ export function InitializeCommands2() {
         continue;
       }
       newKeys[keyCmd] = objCmd;
-      count++;
+      count+=1;
     }
 
     if (Object.keys(newKeys).length < 1) continue;

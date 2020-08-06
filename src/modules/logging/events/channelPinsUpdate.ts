@@ -11,7 +11,6 @@ export function getKeys(
 }
 
 export function isAuditLog(log: discord.AuditLogEntry, key: string) {
-  return false;
   return log instanceof discord.AuditLogEntry;
 }
 

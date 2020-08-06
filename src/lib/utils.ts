@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { config } from '../config';
 import * as constants from '../constants/constants';
 
@@ -56,12 +57,12 @@ export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
   return out;
 }
 
-export async function getPresentableRequestData(resp: Response) {
+export async function getPresentableRequestData(resp: globalThis.Response) {
   let jsn;
   try {
     jsn = await resp.json();
   } catch (e) {}
-  const newData = {};
+  const newData: {[key: string]: any} = {};
   if (typeof jsn !== 'undefined') {
     newData.jsonResponse = jsn;
   }
@@ -84,7 +85,7 @@ export function strToObj(str, val) {
   const obj = {};
   const strarr = str.split('.');
   let x = obj;
-  for (i = 0; i < strarr.length - 1; i++) {
+  for (i = 0; i < strarr.length - 1; i += 1) {
     x = x[strarr[i]] = {};
   }
   x[strarr[i]] = val;
@@ -253,7 +254,7 @@ export function deepCompare(...args: any) {
     // throw "Need two or more arguments to compare";
   }
 
-  for (i = 1, l = args.length; i < l; i++) {
+  for (i = 1, l = args.length; i < l; i += 1) {
     leftChain = []; // Todo: this can be cached
     rightChain = [];
 

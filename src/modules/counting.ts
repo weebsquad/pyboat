@@ -91,7 +91,8 @@ export async function OnMessageCreate(
     return false;
   }
   if (message.author.bot === true) {
-    return await delet(message);
+    await delet(message);
+    return;
   }
 
   if (
@@ -107,7 +108,8 @@ export async function OnMessageCreate(
       `**Count has been reset by ${message.author.getTag()}**`,
     );
     await updateTopic(message.channelId);
-    return await delet(message);
+    await delet(message);
+    return;
   } if (
     cont.split(' ')[0] === 'SET'
     && cont !== 'SET'
@@ -123,10 +125,12 @@ export async function OnMessageCreate(
       `**Count has been set to ${num} by ${message.author.getTag()}**`,
     );
     await updateTopic(message.channelId);
-    return await delet(message);
+    await delet(message);
+    return;
   }
   if (!isNormalInteger(cont)) {
-    return await delet(message);
+    await delet(message);
+    return;
   }
   let num = 0;
 
@@ -137,7 +141,8 @@ export async function OnMessageCreate(
     }
   } catch (e) {}
   if (cont !== (num + 1).toString()) {
-    return await delet(message);
+    await delet(message);
+    return;
   }
   let lastUsr;
   try {
@@ -147,7 +152,8 @@ export async function OnMessageCreate(
     }
   } catch (e) {}
   if (typeof lastUsr === 'string' && lastUsr === message.author.id) {
-    return await delet(message);
+    await delet(message);
+    return;
   }
 
   kv.put(`${cfgMod.keyLastMid}${message.channelId}`, message.id);
@@ -252,11 +258,12 @@ export async function OnMessageUpdate(
   const contNew = message.content;
   const contOld = oldMessage.content;
   if (isNormalInteger(contOld) && !isNormalInteger(contNew)) {
-    return await delet(message);
+    await delet(message);
+    return;
   }
   if (contOld === contNew) {
     return;
   }
 
-  return await delet(message);
+  await delet(message);
 }

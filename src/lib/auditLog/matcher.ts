@@ -7,12 +7,12 @@ const kv = new pylon.KVNamespace('auditLogMatcher');
 /*const entryPool = 'pool'; // Array*/
 const kvlogEntryTimeout = 11 * 60 * 1000;
 const logEntryLimiter = 15 * 1000;
-const waits = {
+const waits: {[key: string]: number} = {
   //discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD
   22: 400,
   //discord.AuditLogEntry.ActionType.MEMBER_BAN_REMOVE
   23: 400
-} as any;
+}
 const logsPerSecond = 15; // used to determine how many entries to show
 const groupingActions = [
   discord.AuditLogEntry.ActionType.MESSAGE_DELETE,
@@ -118,7 +118,7 @@ async function savePoolEntry(entry: discord.AuditLogEntry) {
       entry instanceof discord.AuditLogEntry.MemberDisconnect
     ) {
       _en = JSON.parse(JSON.stringify(entry));
-      _en.options.count++;
+      _en.options.count+=1;
     }
     if (_en === undefined) _en = entry;
     await kv.put(entry.id, _en, { ttl: kvlogEntryTimeout });
@@ -174,7 +174,7 @@ export async function validateAuditEvent(
   const valsCheck = ['newValue', 'oldValue'];
   for (let key in auditLogEntry.changes) {
     if (typeof auditLogEntry.changes[key] !== 'object') continue;
-    for (var i = 0; i < valsCheck.length; i++) {
+    for (var i = 0; i < valsCheck.length; i+=1) {
       if (typeof auditLogEntry.changes[key][valsCheck[i]] === 'undefined')
         continue;
       if (i > 0 && !Array.isArray(parsedData)) continue; // Incase parsedData is a single value, we only check new values, not old (cached)

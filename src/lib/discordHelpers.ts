@@ -64,7 +64,7 @@ export function getPermsBitfieldArray(bitf: number) {
   let bitField = 0;
 
   let bitperms = [];
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < 32; i+=1) {
     bitperms[i] = (bitf >> i) & 1;
     if (!((bitField & bitperms[i]) === bitperms[i])) {
       bitField += bitf >> i;
@@ -93,7 +93,7 @@ export async function getGuildMemberPermissions(member: discord.GuildMember) {
   roles.forEach(function(role: discord.Role) {
     let perms = role.permissions;
     let bitperms = [];
-    for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < 32; i+=1) {
       bitperms[i] = (perms >> i) & 1;
       if (!((bitField & bitperms[i]) === bitperms[i])) {
         bitField += perms >> i;
@@ -114,7 +114,7 @@ export function getSnowflakeDate(snowflake: string) {
 function parseBigInt(str, base: any=10) {
     base = BigInt(base)
     var bigint = BigInt(0)
-    for (var i = 0; i < str.length; i++) {
+    for (var i = 0; i < str.length; i+=1) {
       var code = str[str.length-1-i].charCodeAt(0) - 48; if(code >= 10) code -= 39
       bigint += base**BigInt(i) * BigInt(code)
     }
@@ -126,7 +126,7 @@ export function composeSnowflake(timestamp: any = Date.now()) {
   if (timestamp instanceof Date) timestamp = timestamp.getTime();
   if (INCREMENT >= 4095) INCREMENT = 0;
   const BINARY = `${pad((timestamp - Epoch).toString(2), 42)}0000100000${pad(
-    (INCREMENT++).toString(2),
+    (INCREMENT+=1).toString(2),
     12
   )}`;
   const _ret = parseBigInt(BINARY, 2).toString();

@@ -36,7 +36,7 @@ export class BitField {
     return Object.freeze(this);
   }
   add(...bits: any[]) {
-    let total = <any>0;
+    let total: any = 0;
     for (const bit of bits) {
       total |= this.resolve(bit);
     }

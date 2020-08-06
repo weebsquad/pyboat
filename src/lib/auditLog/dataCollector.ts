@@ -43,7 +43,7 @@ EVENT: {
     auditLogEntries: discord.AuditLogEntry.ActionType. ,
 }
 */
-export const auditLogDefinitions = <any>{
+export const auditLogDefinitions: {[key: string]: any} = {
   CHANNEL_CREATE: {
     guildId: function(dt: any[]) {
       return dt[0].guildId;
@@ -85,7 +85,7 @@ export const auditLogDefinitions = <any>{
       return dt[0].guildId;
     },
     validate: function(dt: any[], log: discord.AuditLogEntry, store: any) {
-      const ev = dt[0] as discord.Event.IChannelPinsUpdate;
+      const ev: discord.Event.IChannelPinsUpdate = dt[0];
       if(log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_PIN && log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_UNPIN) return false;
       if (typeof log['options'] === 'object' && ev.channelId !== log['options'].channelId) return false;
       if (
@@ -263,7 +263,7 @@ export const auditLogDefinitions = <any>{
         if (key === '$remove') cc = removes;
         let anydiff = obj.find((ele: any) => cc.indexOf(ele.id) === -1);
         if (typeof anydiff !== 'undefined') continue;
-        verifs++;
+        verifs+=1;
       }
       if (verifs === Object.keys(log.changes).length) return true;
       return false;
@@ -431,8 +431,8 @@ export const auditLogDefinitions = <any>{
     beforeFetch: function(dt: any[]) {
       if (dt.length !== 2) return false;
       if (dt[1] === null) return false;
-      let voiceState = dt[0] as discord.VoiceState;
-      let oldVoiceState = dt[1] as discord.VoiceState;
+      let voiceState: discord.VoiceState = dt[0];
+      let oldVoiceState: discord.VoiceState = dt[1];
       if (
         voiceState.channelId !== oldVoiceState.channelId &&
         voiceState.mute !== oldVoiceState.mute &&
@@ -446,8 +446,8 @@ export const auditLogDefinitions = <any>{
     },
     // MEMBER_UPDATE
     24: (dt: any, log: discord.AuditLogEntry.MemberUpdate) => {
-      let voiceState = dt[0] as discord.VoiceState;
-      let oldVoiceState = dt[1] as discord.VoiceState;
+      let voiceState: discord.VoiceState = dt[0]
+      let oldVoiceState: discord.VoiceState = dt[1]
       if (voiceState.channelId === null) return false;
       if (
         voiceState.mute === oldVoiceState.mute &&
@@ -477,8 +477,8 @@ export const auditLogDefinitions = <any>{
       log: discord.AuditLogEntry.MemberMove,
       store: discord.AuditLogEntry.MemberMove
     ) => {
-      let voiceState = dt[0] as discord.VoiceState;
-      let oldVoiceState = dt[1] as discord.VoiceState;
+      let voiceState: discord.VoiceState = dt[0]
+      let oldVoiceState: discord.VoiceState = dt[1]
       if (
         voiceState.channelId === oldVoiceState.channelId ||
         voiceState.channelId !== log.options.channelId
@@ -497,8 +497,8 @@ export const auditLogDefinitions = <any>{
       log: discord.AuditLogEntry.MemberDisconnect,
       store: discord.AuditLogEntry.MemberDisconnect
     ) => {
-      let voiceState = dt[0] as discord.VoiceState;
-      let oldVoiceState = dt[1] as discord.VoiceState;
+      let voiceState: discord.VoiceState = dt[0]
+      let oldVoiceState: discord.VoiceState = dt[1]
       if (
         voiceState.channelId === oldVoiceState.channelId ||
         voiceState.channelId !== null

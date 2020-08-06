@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { handleEvent, getUserTag, getMemberTag } from '../main';
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {

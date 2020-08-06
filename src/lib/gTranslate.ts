@@ -1,6 +1,6 @@
 import { config } from '../config';
 // const key = config.global.googleApi.key;
-const { key } = config.modules.translation.googleApi;
+const { apiKey } = config.modules.translation.googleApi;
 const endpointTranslate = 'https://translation.googleapis.com/language/translate/v2';
 const endpointDetect = 'https://translation.googleapis.com/language/translate/v2/detect';
 
@@ -23,7 +23,7 @@ function formGAPIParams(key: string, query: string, target: string) {
 }
 
 export async function translate(query: string, target: string) {
-  const queryParams = `?${formGAPIParams(key, query, target)}`;
+  const queryParams = `?${formGAPIParams(apiKey, query, target)}`;
   const fullUrl = `${endpointTranslate}${queryParams}`;
   const req = new Request(fullUrl, {
     method: 'POST',
@@ -46,7 +46,7 @@ export async function translate(query: string, target: string) {
 export async function detectLanguage(query: string) {
   const params = {
     q: query,
-    key,
+    apiKey,
   };
   const queryParams = `?${formParams(params)}`;
   const fullUrl = `${endpointDetect}${queryParams}`;

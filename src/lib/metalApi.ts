@@ -7,7 +7,7 @@ export async function metalApiRequest(
   body: any,
 ) {
   protocol = protocol.toUpperCase();
-  const realBody = {
+  const realBody: {[key: string]: any} = {
     key: config.global.metalApi.key, // My api key
     protocol,
     apiUrl: apiPath,
@@ -32,5 +32,6 @@ export async function metalApiRequest(
     method: 'POST',
     body: JSON.stringify(realBody),
   });
-  return await fetch(req);
+  const resp = await fetch(req);
+  return resp;
 }

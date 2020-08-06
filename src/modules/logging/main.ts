@@ -1,3 +1,4 @@
+/* eslint-disable */
 //todo
 import * as conf from '../../config';
 const config = conf.config.modules.logging;
@@ -82,7 +83,7 @@ async function sendInLogChannel(
       if (channel === null || opts.length < 1) continue;
       if (isWh && opts.length > 1) {
         let embeds = [];
-        for (let i = 0; i < opts.length; i++) {
+        for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
           if (opt.embed instanceof discord.Embed) {
             if (
@@ -116,12 +117,12 @@ async function sendInLogChannel(
             });
           } else {
             let newE = new Array<any[]>();
-            for (var i = 0; i < embeds.length; i++) {
+            for (var i = 0; i < embeds.length; i+=1) {
               let indexArr = Math.floor(i / 10);
               if (!Array.isArray(newE[indexArr])) newE[indexArr] = [];
               newE[indexArr].push(embeds[i]);
             }
-            for (let i = 0; i < newE.length; i++) {
+            for (let i = 0; i < newE.length; i+=1) {
               await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
                 embeds: newE[i],
                 avatar_url: botAvatar.getAvatarUrl(),
@@ -138,7 +139,7 @@ async function sendInLogChannel(
           });
         }
       } else {
-        for (let i = 0; i < opts.length; i++) {
+        for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
           if (opt.content === '' && !(opt.embed instanceof discord.Embed))
             continue;
@@ -515,7 +516,7 @@ function combineMessages(
         let lines = contents.split('\n');
         //lines = lines.slice(0, lines.length - 1);
         let accum = [];
-        for (var i = 0; i < lines.length; i++) {
+        for (var i = 0; i < lines.length; i+=1) {
           let currl = (accum.join('\n') + lines[i]).length;
           if (currl > 1985 && i !== lines.length - 1) {
             let thism = accum.join('\n');
@@ -556,7 +557,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       return e;
     })
   );
-  for (var i = 0; i < q.length; i++) {
+  for (var i = 0; i < q.length; i+=1) {
     let qev = q[i];
     if (qev.eventName === 'DEBUG' && !config.debug) return;
     let date = new Date(utils2.decomposeSnowflake(qev.id).timestamp);
@@ -587,6 +588,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
     let chansTemp = await parseChannelsData(undefined, obj);
     let messagesTemp = await getMessages(qev.guildId, chansTemp, obj);
     for (let [guildId, data] of messagesTemp) {
+      if(!data) continue;
       for (let [chid, opts] of data) {
         if (!messages.has(qev.guildId))
           messages.set(

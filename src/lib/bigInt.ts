@@ -63,7 +63,7 @@ export var bigInt = (function(undefined) {
     function createArray(length) {
       var x = new Array(length);
       var i = -1;
-      while (++i < length) {
+      while (+=1i < length) {
         x[i] = 0;
       }
       return x;
@@ -80,7 +80,7 @@ export var bigInt = (function(undefined) {
         base = BASE,
         sum,
         i;
-      for (i = 0; i < l_b; i++) {
+      for (i = 0; i < l_b; i+=1) {
         sum = a[i] + b[i] + carry;
         carry = sum >= base ? 1 : 0;
         r[i] = sum - carry * base;
@@ -88,7 +88,7 @@ export var bigInt = (function(undefined) {
       while (i < l_a) {
         sum = a[i] + carry;
         carry = sum === base ? 1 : 0;
-        r[i++] = sum - carry * base;
+        r[i+=1] = sum - carry * base;
       }
       if (carry > 0) r.push(carry);
       return r;
@@ -103,14 +103,14 @@ export var bigInt = (function(undefined) {
         base = BASE,
         sum,
         i;
-      for (i = 0; i < l; i++) {
+      for (i = 0; i < l; i+=1) {
         sum = a[i] - base + carry;
         carry = Math.floor(sum / base);
         r[i] = sum - carry * base;
         carry += 1;
       }
       while (carry > 0) {
-        r[i++] = carry % base;
+        r[i+=1] = carry % base;
         carry = Math.floor(carry / base);
       }
       return r;
@@ -154,7 +154,7 @@ export var bigInt = (function(undefined) {
         base = BASE,
         i,
         difference;
-      for (i = 0; i < b_l; i++) {
+      for (i = 0; i < b_l; i+=1) {
         difference = a[i] - borrow - b[i];
         if (difference < 0) {
           difference += base;
@@ -162,16 +162,16 @@ export var bigInt = (function(undefined) {
         } else borrow = 0;
         r[i] = difference;
       }
-      for (i = b_l; i < a_l; i++) {
+      for (i = b_l; i < a_l; i+=1) {
         difference = a[i] - borrow;
         if (difference < 0) difference += base;
         else {
-          r[i++] = difference;
+          r[i+=1] = difference;
           break;
         }
         r[i] = difference;
       }
-      for (; i < a_l; i++) {
+      for (; i < a_l; i+=1) {
         r[i] = a[i];
       }
       trim(r);
@@ -199,7 +199,7 @@ export var bigInt = (function(undefined) {
         base = BASE,
         i,
         difference;
-      for (i = 0; i < l; i++) {
+      for (i = 0; i < l; i+=1) {
         difference = a[i] + carry;
         carry = Math.floor(difference / base);
         difference %= base;
@@ -272,9 +272,9 @@ export var bigInt = (function(undefined) {
         i,
         a_i,
         b_j;
-      for (i = 0; i < a_l; ++i) {
+      for (i = 0; i < a_l; +=1i) {
         a_i = a[i];
-        for (var j = 0; j < b_l; ++j) {
+        for (var j = 0; j < b_l; +=1j) {
           b_j = b[j];
           product = a_i * b_j + r[i + j];
           carry = Math.floor(product / base);
@@ -292,13 +292,13 @@ export var bigInt = (function(undefined) {
         carry = 0,
         product,
         i;
-      for (i = 0; i < l; i++) {
+      for (i = 0; i < l; i+=1) {
         product = a[i] * b + carry;
         carry = Math.floor(product / base);
         r[i] = product - carry * base;
       }
       while (carry > 0) {
-        r[i++] = carry % base;
+        r[i+=1] = carry % base;
         carry = Math.floor(carry / base);
       }
       return r;
@@ -393,10 +393,10 @@ export var bigInt = (function(undefined) {
         i,
         a_i,
         a_j;
-      for (i = 0; i < l; i++) {
+      for (i = 0; i < l; i+=1) {
         a_i = a[i];
         carry = 0 - a_i * a_i;
-        for (var j = i; j < l; j++) {
+        for (var j = i; j < l; j+=1) {
           a_j = a[j];
           product = 2 * (a_i * a_j) + r[i + j] + carry;
           carry = Math.floor(product / base);
@@ -448,7 +448,7 @@ export var bigInt = (function(undefined) {
         carry = 0;
         borrow = 0;
         l = divisor.length;
-        for (i = 0; i < l; i++) {
+        for (i = 0; i < l; i+=1) {
           carry += quotientDigit * divisor[i];
           q = Math.floor(carry / base);
           borrow += remainder[shift + i] - (carry - q * base);
@@ -464,7 +464,7 @@ export var bigInt = (function(undefined) {
         while (borrow !== 0) {
           quotientDigit -= 1;
           carry = 0;
-          for (i = 0; i < l; i++) {
+          for (i = 0; i < l; i+=1) {
             carry += remainder[shift + i] - base + divisor[i];
             if (carry < 0) {
               remainder[shift + i] = carry + base;
@@ -877,8 +877,8 @@ export var bigInt = (function(undefined) {
         t,
         i,
         x;
-      while (b.isEven()) (b = b.divide(2)), r++;
-      next: for (i = 0; i < a.length; i++) {
+      while (b.isEven()) (b = b.divide(2)), r+=1;
+      next: for (i = 0; i < a.length; i+=1) {
         if (n.lesser(a[i])) continue;
         x = bigInt(a[i]).modPow(b, n);
         if (x.isUnit() || x.equals(nPrev)) continue;
@@ -900,7 +900,7 @@ export var bigInt = (function(undefined) {
         return millerRabinTest(n, [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]);
       var logN = Math.log(2) * bits.toJSNumber();
       var t = Math.ceil(strict === true ? 2 * Math.pow(logN, 2) : logN);
-      for (var a = [], i = 0; i < t; i++) {
+      for (var a = [], i = 0; i < t; i+=1) {
         a.push(bigInt(i + 2));
       }
       return millerRabinTest(n, a);
@@ -912,7 +912,7 @@ export var bigInt = (function(undefined) {
       if (isPrime !== undefined) return isPrime;
       var n = this.abs();
       var t = iterations === undefined ? 5 : iterations;
-      for (var a = [], i = 0; i < t; i++) {
+      for (var a = [], i = 0; i < t; i+=1) {
         a.push(bigInt.randBetween(2, n.minus(2)));
       }
       return millerRabinTest(n, a);
@@ -1174,7 +1174,7 @@ export var bigInt = (function(undefined) {
       var digits = toBase(range, BASE).value;
       var result = [],
         restricted = true;
-      for (var i = 0; i < digits.length; i++) {
+      for (var i = 0; i < digits.length; i+=1) {
         var top = restricted ? digits[i] : BASE;
         var digit = truncate(Math.random() * top);
         result.push(digit);
@@ -1193,10 +1193,10 @@ export var bigInt = (function(undefined) {
       var i;
       var absBase = Math.abs(base);
       var alphabetValues = {};
-      for (i = 0; i < alphabet.length; i++) {
+      for (i = 0; i < alphabet.length; i+=1) {
         alphabetValues[alphabet[i]] = i;
       }
-      for (i = 0; i < length; i++) {
+      for (i = 0; i < length; i+=1) {
         var c = text[i];
         if (c === '-') continue;
         if (c in alphabetValues) {
@@ -1209,13 +1209,13 @@ export var bigInt = (function(undefined) {
       base = parseValue(base);
       var digits = [];
       var isNegative = text[0] === '-';
-      for (i = isNegative ? 1 : 0; i < text.length; i++) {
+      for (i = isNegative ? 1 : 0; i < text.length; i+=1) {
         var c = text[i];
         if (c in alphabetValues) digits.push(parseValue(alphabetValues[c]));
         else if (c === '<') {
           var start = i;
           do {
-            i++;
+            i+=1;
           } while (text[i] !== '>' && i < text.length);
           digits.push(parseValue(text.slice(start + 1, i)));
         } else throw new Error(c + ' is not a valid character');
@@ -1424,7 +1424,7 @@ export var bigInt = (function(undefined) {
       }
       return v;
     }
-    for (var i = 0; i < 1e3; i++) {
+    for (var i = 0; i < 1e3; i+=1) {
       Integer[i] = parseValue(i);
       if (i > 0) Integer[-i] = parseValue(-i);
     }

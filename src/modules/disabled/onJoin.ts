@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { config } from '../config';
 import * as utils from '../lib/utils';
 
