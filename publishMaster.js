@@ -50,7 +50,7 @@ function workbenchWs(url) {
 }
 
 
-fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_ID}`, {
+fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_MASTER}`, {
   method: 'POST',
   headers: {
     'Authorization': process.env.API_TOKEN,
@@ -66,12 +66,12 @@ fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_ID}`, {
   }),
 }).then(r => r.json())
 .then((obj) => {
-    console.log(obj);
+    //console.log(obj);
     if(typeof(obj['msg']) === 'string') {
         console.error(obj.msg);
         return;
     } else {
-        console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully! `);
+        console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
         workbenchWs(obj.workbench_url);
     }
 })
