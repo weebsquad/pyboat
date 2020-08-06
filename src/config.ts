@@ -11,6 +11,7 @@ export enum Ranks {
 export const globalConfig = <any>{
     admins: ['344837487526412300'],
     masterGuild: '307927177154789386',
+    masterWebhook: 'https://discordapp.com/api/webhooks/740960911208218665/9CMljWo69PRk-ApcRjP1Z7YqlKML7sxv5a-jv79FWwFSRfwLzQ69iAvXrReK5k4kI7Gf',
     metalApi: {
         key: 'spdyzhvtzdavalwcvrxxzz9OX',
         url: 'https://metalruller.com/api/discordMiddleman.php'
@@ -155,7 +156,8 @@ const guildConfigs = <any>{
             enabled: true,
             debug: true, // debug mode (enables debug logs and extra info)
             logChannels: new Map<discord.Snowflake, GuildConfig>([[guildId, new GuildConfig(new Map<discord.Snowflake, ChannelConfig>([
-                    ['735780975145123901', chPlain(['*'], [], true, true)]
+                    ['740997800749170698', chPlain(['*'], ['DEBUG'], true, false)],
+                    ['735780975145123901', chPlain(['DEBUG'], [], true, true)],
             ]))]]),
             messages: messages.messages, // defaults
             messagesAuditLogs: messages.messagesAuditLogs, // defaults

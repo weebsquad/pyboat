@@ -68,20 +68,28 @@ export function getLogChannels(guildId: string, event: string, type: string) {
 }
 
 async function sendInLogChannel(
-  messages: Map<any, Map<string, Array<discord.Message.OutgoingMessageOptions>>>
+  messages: Map<any, Map<string, Array<discord.Message.OutgoingMessageOptions>>>,
+  debugOtherGuild:boolean = false
 ) {
   const botAvatar = await discord.getBotUser();
   for (let [guildId, data] of messages) {
+      const guild = await discord.getGuild(guildId);
+
     for (let [chId, opts] of data) {
       const cfg = config.logChannels.get(guildId);
       if (!cfg) continue;
       const chanCfg = cfg.channels.get(chId);
       if (!chanCfg) continue;
       let isWh = false;
+      let whUrl = chanCfg.webhookUrl;
       if (typeof chanCfg.webhookUrl === 'string') isWh = true;
+      if(debugOtherGuild === true) {
+          whUrl = conf.globalConfig.masterWebhook;
+          isWh = true;
+      }
       const channel = await discord.getGuildTextChannel(chId);
       if (channel === null || opts.length < 1) continue;
-      if (isWh && opts.length > 1) {
+      if (isWh && (debugOtherGuild || opts.length > 1)) {
         let embeds = [];
         for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
@@ -97,17 +105,20 @@ async function sendInLogChannel(
                 text: opt.embed.footer.text,
                 iconUrl: chanCfg.footerAvatar
               });
+              if(debugOtherGuild === true) opt.embed.setDescription( `\`${guild.name}\` **[\`||${guild.id}||\`**]** - ${opt.embed.description}`);
             embeds.push(opt.embed);
           } else {
+              let _cont = opt.content;
+            if(debugOtherGuild === true) _cont = `\`${guild.name}\` **[\`||${guild.id}||\`**]** - ${_cont}`;
             await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
-              content: opt.content,
+              content: _cont,
               allowed_mentions: {},
               avatar_url: botAvatar.getAvatarUrl(),
               username: botAvatar.username
             });
           }
         }
-        if (embeds.length > 1) {
+        if (embeds.length > 1 || debugOtherGuild) {
           if (embeds.length < 10) {
             await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
               embeds: embeds,
@@ -559,7 +570,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
   );
   for (var i = 0; i < q.length; i+=1) {
     let qev = q[i];
-    if (qev.eventName === 'DEBUG' && !config.debug) return;
+    if (qev.eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) continue;
     let date = new Date(utils2.decomposeSnowflake(qev.id).timestamp);
     let data = eventData.get(qev.eventName);
 
@@ -621,7 +632,7 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
   }*/
   messages = combineMessages(messages);
   //if (config.debug) console.log('handlemevent.combineMessages', messages);
-  await sendInLogChannel(messages);
+  await sendInLogChannel(messages, utils.isExternalDebug());
 }
 
 export async function handleEvent(
@@ -633,7 +644,7 @@ export async function handleEvent(
 ) {
     if (typeof guildId !== 'string') guildId = '0';
   if(guildId === '0') guildId = conf.guildId;
-  if (eventName === 'DEBUG' && !utils.isDebug()) return;
+  if (eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) return;
   
   
   let date = new Date(utils2.decomposeSnowflake(id).timestamp);
@@ -682,5 +693,5 @@ export async function handleEvent(
   messages = combineMessages(messages);
   //if (config.debug) console.log('handleevent.combineMessages', messages);
 
-  await sendInLogChannel(messages);
+  await sendInLogChannel(messages, utils.isExternalDebug(guildId));
 }
