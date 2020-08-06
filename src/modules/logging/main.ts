@@ -92,11 +92,11 @@ async function sendInLogChannel(
         for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
           if (opt.embed instanceof discord.Embed) {
-            if(alwaysWh) opt.embed.setDescription(`\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]** ${opt.embed.description}`);
+            if(alwaysWh) opt.embed.setDescription(`\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${opt.embed.description}`);
             embeds.push(opt.embed);
           } else {
               let _cont = opt.content;
-              if(alwaysWh) _cont = `\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]** ${_cont}`;
+              if(alwaysWh) _cont = `\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
             await utils2.sendWebhookPostComplex(whUrl, {
               content: _cont,
               allowed_mentions: {},
