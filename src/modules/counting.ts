@@ -209,6 +209,7 @@ export async function OnMessageDelete(
   messageDelete: discord.Event.IMessageDelete,
   oldMessage: discord.GuildMemberMessage | null,
 ) {
+    console.log('counting',cfgMod);
   if (cfgMod.channels.indexOf(messageDelete.channelId) === -1) {
     return;
   }
