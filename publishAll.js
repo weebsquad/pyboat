@@ -38,17 +38,6 @@ function deserialize(value) {
   return value;
 }
 
-function workbenchWs(url) {
-  const ws = new WebSocket(url);
-  ws.onopen = () => console.log('WS Open');
-  ws.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    console[data[0].method]('PYLON LOG:', ...data[0].data.map(deserialize));
-  };
-  ws.onerror = console.error;
-  ws.onclose = () => workbenchWs(url);
-}
-
 const dep = process.env.DEPLOYMENTS;
 let _dep = [dep];
 if(dep.includes('|')) _dep = new Array().concat(dep.split('|'));
