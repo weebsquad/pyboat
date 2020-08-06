@@ -6,9 +6,9 @@ name: CD DEPLOY
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
-    types: [synchronize]
+#  pull_request:
+#    branches: [ master ]
+#    types: [synchronize]
 
 jobs:
   deploy:
