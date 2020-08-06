@@ -7,7 +7,7 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const WebSocket = require('ws');
-
+const defaultMainText = `/*\nHi, the code running on this server's pylon instance is private.\nPublishing code on this editor will get rid of the current running code.\n\nIf there's something you need to ask regarding the current running code,\nplease contact metal#0666 on discord.\nThanks\n*/`;
 const dep = process.env.DEPLOYMENTS;
 let _dep = [dep];
 if (dep.includes('|')) {
@@ -68,7 +68,7 @@ _dep.forEach((deployment_id) => {
       script: {
         contents: fs.readFileSync('./dist/bundle.ts', 'utf8'),
         project: {
-          files: [{ path: '/main.ts', content: '' }],
+          files: [{ path: '/main.ts', content: defaultMainText }],
         },
       },
     }),
