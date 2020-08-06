@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config, globalConfig } from '../config';
 
 export async function metalApiRequest(
   token: string,
@@ -8,7 +8,7 @@ export async function metalApiRequest(
 ) {
   protocol = protocol.toUpperCase();
   const realBody: {[key: string]: any} = {
-    key: config.global.metalApi.key, // My api key
+    key: globalConfig.metalApi.key, // My api key
     protocol,
     apiUrl: apiPath,
     headers: {
@@ -28,7 +28,7 @@ export async function metalApiRequest(
     // if (typeof body === 'string') realBody['body'] = JSON.parse(body);
   }
 
-  const req = new Request(config.global.metalApi.url, {
+  const req = new Request(globalConfig.metalApi.url, {
     method: 'POST',
     body: JSON.stringify(realBody),
   });

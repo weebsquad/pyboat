@@ -4,7 +4,6 @@ import * as conf from '../../config';
 const config = conf.config.modules.logging;
 import { ChannelConfig } from './classes';
 import { getTimestamp } from './messages';
-const gConfig = conf.config;
 export * from './utils';
 import * as utils from './utils';
 import * as utils2 from '../../lib/utils';
@@ -41,14 +40,13 @@ class Event {
 const regexUrls = /(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/gim;
 const regexClickableMarkdown = /\<[^<>@&!\-=_]*\>\[[^\[\]@&!\-=_]*\]\(https:.*channels\/[^ ]{18}\/[^ ]{18}\/[^ ]{18}\)$/g;
 
-export function getLogChannels(guildId: string, event: string, type: string) {
+export function getLogChannels(gid: string, event: string, type: string) {
+    console.log(event, type);
   let arr = new Array<string>();
-
-  let mp = config.logChannels.get(guildId);
-
+    const gconf = conf.getGuildConfig(gid);
+  let mp = gconf.modules.logging.logChannels;
   if (!mp) return arr;
-
-  mp.channels.forEach(function(v: ChannelConfig, k) {
+  for(const [k, v] of mp) {
     if (
       v.scopes.include.includes('*') ||
       v.scopes.include.includes(event) ||
@@ -63,54 +61,44 @@ export function getLogChannels(guildId: string, event: string, type: string) {
         return;
       arr.push(k);
     }
-  });
+  }
   return arr;
 }
 
 async function sendInLogChannel(
-  messages: Map<any, Map<string, Array<discord.Message.OutgoingMessageOptions>>>,
-  debugOtherGuild:boolean = false
+    gid: string,
+  messages: Map<string, Array<discord.Message.OutgoingMessageOptions>>,
+  alwaysWh: boolean = false,
+  whUrlAlt: string | undefined = undefined,
 ) {
+  const thisGuild = await discord.getGuild(conf.guildId);
+  if(thisGuild === null) return;
   const botAvatar = await discord.getBotUser();
-  for (let [guildId, data] of messages) {
-      const guild = await discord.getGuild(guildId);
-
-    for (let [chId, opts] of data) {
-      const cfg = config.logChannels.get(guildId);
-      if (!cfg) continue;
-      const chanCfg = cfg.channels.get(chId);
+    for (let [chId, opts] of messages) {
+        const gconf = conf.getGuildConfig(gid);
+        let mp = gconf.modules.logging.logChannels;
+      const chanCfg = mp.get(chId);
       if (!chanCfg) continue;
       let isWh = false;
       let whUrl = chanCfg.webhookUrl;
       if (typeof chanCfg.webhookUrl === 'string') isWh = true;
-      if(debugOtherGuild === true) {
-          whUrl = conf.globalConfig.masterWebhook;
+      if(alwaysWh && typeof(whUrlAlt) === 'string') {
           isWh = true;
+          whUrl = whUrlAlt;
       }
       const channel = await discord.getGuildTextChannel(chId);
-      if (channel === null || opts.length < 1) continue;
-      if (isWh && (debugOtherGuild || opts.length > 1)) {
+      if ((channel === null && !isWh) || opts.length < 1) continue;
+      if (isWh && (alwaysWh || opts.length > 1)) {
         let embeds = [];
         for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
           if (opt.embed instanceof discord.Embed) {
-            if (
-              typeof chanCfg.footerAvatar === 'string' &&
-              chanCfg.footerAvatar !== '' &&
-              typeof opt.embed !== 'undefined' &&
-              opt.embed !== null &&
-              opt.embed.footer !== null
-            )
-              opt.embed.setFooter({
-                text: opt.embed.footer.text,
-                iconUrl: chanCfg.footerAvatar
-              });
-              if(debugOtherGuild === true) opt.embed.setDescription( `\`${guild.name}\` **[\`||${guild.id}||\`**]** - ${opt.embed.description}`);
+            if(alwaysWh) opt.embed.setDescription(`\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]** ${opt.embed.description}`);
             embeds.push(opt.embed);
           } else {
               let _cont = opt.content;
-            if(debugOtherGuild === true) _cont = `\`${guild.name}\` **[\`||${guild.id}||\`**]** - ${_cont}`;
-            await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
+              if(alwaysWh) _cont = `\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]** ${_cont}`;
+            await utils2.sendWebhookPostComplex(whUrl, {
               content: _cont,
               allowed_mentions: {},
               avatar_url: botAvatar.getAvatarUrl(),
@@ -118,9 +106,9 @@ async function sendInLogChannel(
             });
           }
         }
-        if (embeds.length > 1 || debugOtherGuild) {
+        if (embeds.length > 1 || alwaysWh) {
           if (embeds.length < 10) {
-            await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
+            await utils2.sendWebhookPostComplex(whUrl, {
               embeds: embeds,
               avatar_url: botAvatar.getAvatarUrl(),
               allowed_mentions: {}, // just in case
@@ -134,7 +122,7 @@ async function sendInLogChannel(
               newE[indexArr].push(embeds[i]);
             }
             for (let i = 0; i < newE.length; i+=1) {
-              await utils2.sendWebhookPostComplex(chanCfg.webhookUrl, {
+              await utils2.sendWebhookPostComplex(whUrl, {
                 embeds: newE[i],
                 avatar_url: botAvatar.getAvatarUrl(),
                 allowed_mentions: {}, // just in case
@@ -154,32 +142,17 @@ async function sendInLogChannel(
           const opt = opts[i];
           if (opt.content === '' && !(opt.embed instanceof discord.Embed))
             continue;
-          if (
-            typeof chanCfg.footerAvatar === 'string' &&
-            chanCfg.footerAvatar !== '' &&
-            typeof opt.embed !== 'undefined' &&
-            opt.embed !== null &&
-            opt.embed.footer !== null
-          ) {
-            opt.embed.setFooter({
-              text: opt.embed.footer.text,
-              iconUrl: chanCfg.footerAvatar
-            });
-          }
           channel.sendMessage(opt);
         }
       }
     }
   }
-}
+
 
 async function parseChannelsData(
-  _ch: Map<string, Array<Map<string, string>>> | undefined,
   ev: Event
 ) {
-  let chans = _ch;
-  if (typeof chans === 'undefined')
-    chans = new Map<string, Array<Map<string, string>>>(); // this typing lmfao
+  let chans = new Map<string, Array<Map<string, string>>>(); // this typing lmfao
   let k2 = [];
   await Promise.all(
     ev.keys.map(async function(el: string) {
@@ -246,23 +219,21 @@ async function getMessages(
   ev: Event
 ) {
   //if (avatar === '') avatar = (await discord.getBotUser()).getAvatarUrl();
-  let msgs = new Map<
-    any,
-    Map<string, Array<discord.Message.OutgoingMessageOptions>>
-  >();
-  if (!msgs.has(guildId))
+  let msgs = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
+  /*if (!msgs.has(guildId))
     msgs.set(
       guildId,
       new Map<string, Array<discord.Message.OutgoingMessageOptions>>()
     );
   let guild = msgs.get(guildId);
-  if (!guild) throw new Error('h');
+  if (!guild) throw new Error('h');*/
   let date = new Date(utils2.decomposeSnowflake(ev.id).timestamp);
   for (let [chId, v] of chans) {
     /* Parse Messages */
-    const cfgG = config.logChannels.get(guildId);
+    const confUse = conf.getGuildConfig(guildId);
+    const cfgG = confUse.modules.logging.logChannels;
     if(!cfgG) continue;
-    const cfg = cfgG.channels.get(chId);
+    const cfg = cfgG.get(chId);
     if (!cfg) throw new Error('h'); // just to void that error below, lol, this should never be undefined
 
     if (!cfg.embed) {
@@ -270,7 +241,7 @@ async function getMessages(
       let ts = getTimestamp(date);
       if (typeof ts !== 'string' || ts === '')
         throw new Error('logging timestamps improperly formatted!');
-      v.forEach(function(map) {
+        v.forEach(function(map) {
         if (map === undefined || map === null) return;
         let type = '' + map.get('_TYPE_');
         let isAuditLog = false;
@@ -307,16 +278,22 @@ async function getMessages(
         }
 
         txt += `${final}`;
-      });
+    });
+    /*
       if (!guild.has(chId)) {
         guild.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
         msgs.set(guildId, guild);
       }
-      let _act = guild.get(chId);
-      if (_act && txt !== '' && txt.length > 0) {
-        _act.push({ content: txt, allowedMentions: {} });
-        guild.set(chId, _act);
-        msgs.set(guildId, guild);
+      let _act = guild.get(chId);*/
+      if (txt !== '' && txt.length > 0) {
+        if(!msgs.has(chId)) msgs.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
+          let _chan = msgs.get(chId);
+          if(_chan) {
+              _chan.push({ content: txt, allowedMentions: {} });
+              msgs.set(chId, _chan);
+          }
+        /*guild.set(chId, _act);
+        msgs.set(guildId, guild);*/
       }
     } else {
       let embeds = new Array<discord.Embed>();
@@ -431,6 +408,7 @@ async function getMessages(
             ]);
           }
           em.setDescription(msg);
+
           if (cfg.showTimestamps) em.setTimestamp(date.toISOString());
           if (cfg.showEventName) {
             let event = ev.eventName;
@@ -482,13 +460,18 @@ async function getMessages(
                 }
               ]);
           }
-          if (footr !== '') em.setFooter({ text: footr });
+          let icoFooter;
+          if (
+            typeof cfg.footerAvatar === 'string' &&
+            cfg.footerAvatar !== ''
+          ) icoFooter = cfg.footerAvatar;
+          if (footr !== '') em.setFooter({ text: footr, iconUrl: icoFooter });
           embeds.push(em);
         })
-      );
+        );
 
       embeds.forEach(async function(em) {
-        if (!guild) return;
+       /* if (!guild) return;
         if (!guild.has(chId))
           guild.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
         let _act = guild.get(chId);
@@ -500,7 +483,18 @@ async function getMessages(
           });
           guild.set(chId, _act);
           msgs.set(guildId, guild);
-        }
+        }*/
+
+         if(!msgs.has(chId)) msgs.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
+          let _chan = msgs.get(chId);
+          if(_chan) {
+              _chan.push({
+                content: '',
+                embed: em,
+                allowedMentions: {}
+              });
+              msgs.set(chId, _chan);
+          }
       });
     }
   }
@@ -508,11 +502,10 @@ async function getMessages(
 }
 
 function combineMessages(
-  msgs: Map<any, Map<string, Array<discord.Message.OutgoingMessageOptions>>>
+  msgs: Map<string, Array<discord.Message.OutgoingMessageOptions>>
 ) {
   let n = msgs;
-  for (let [guildId, data] of n) {
-    for (let [chId, opts] of data) {
+    for (let [chId, opts] of msgs) {
       let newarr = new Array<discord.Message.OutgoingMessageOptions>();
       let contents = '';
       if (opts.length < 1) continue;
@@ -549,18 +542,16 @@ function combineMessages(
         newarr.push({ content: contents, allowedMentions: {} });
       }
       if (contents === '' || contents.length < 1) continue;
-      data.set(chId, newarr);
-      n.set(guildId, data);
+      n.set(chId, newarr);
+      //n.set(guildId, data);
     }
-  }
+  
   return n;
 }
 
+
 export async function handleMultiEvents(q: Array<QueuedEvent>) {
-  let messages = new Map<
-    any,
-    Map<string, Array<discord.Message.OutgoingMessageOptions>>
-  >();
+  let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
   let tdiff = new Date().getTime();
   q = await Promise.all(
     q.map(function(e) {
@@ -568,6 +559,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       return e;
     })
   );
+  const guildId = config.guildId;
   for (var i = 0; i < q.length; i+=1) {
     let qev = q[i];
     if (qev.eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) continue;
@@ -584,7 +576,6 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       continue;
 
     let keys = await data.getKeys(qev.auditLogEntry, ...qev.payload);
-    //if (config.debug) console.log('handleMultiEvent.keys', keys);
     //let isAuditLog = false;
         const al = <any>qev.auditLogEntry;
     let obj = new Event(
@@ -596,29 +587,29 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       al,
       ...qev.payload
     );
-    let chansTemp = await parseChannelsData(undefined, obj);
+    let chansTemp = await parseChannelsData(obj);
     let messagesTemp = await getMessages(qev.guildId, chansTemp, obj);
-    for (let [guildId, data] of messagesTemp) {
-      if(!data) continue;
-      for (let [chid, opts] of data) {
-        if (!messages.has(qev.guildId))
+
+    for (let [chid, opts] of messagesTemp) {
+
+  
+       /* if (!messages.has(qev.guildId))
           messages.set(
             qev.guildId,
             new Map<string, Array<discord.Message.OutgoingMessageOptions>>()
           );
         let guild = messages.get(qev.guildId);
-        if (!guild) return;
-        if (!guild.has(chid))
-          guild.set(chid, new Array<discord.Message.OutgoingMessageOptions>());
-        let _arr = guild.get(chid);
+        if (!guild) return;*/
+        if (!messages.has(chid))
+        messages.set(chid, new Array<discord.Message.OutgoingMessageOptions>());
+        let _arr = messages.get(chid);
         if (_arr) {
           _arr.push(...opts);
-          guild.set(chid, _arr);
-          messages.set(qev.guildId, guild);
+          messages.set(chid, _arr);
         }
       }
     }
-  }
+  
 
   //sort!
   /*
@@ -631,8 +622,7 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     messages.set(chId, sorted);
   }*/
   messages = combineMessages(messages);
-  //if (config.debug) console.log('handlemevent.combineMessages', messages);
-  await sendInLogChannel(messages, utils.isExternalDebug());
+  await sendInLogChannel(guildId, messages);
 }
 
 export async function handleEvent(
@@ -646,7 +636,8 @@ export async function handleEvent(
   if(guildId === '0') guildId = conf.guildId;
   if (eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) return;
   
-  
+  let isExt = eventName === 'DEBUG' && utils.isExternalDebug();
+  if(isExt) guildId = conf.globalConfig.masterGuild;
   let date = new Date(utils2.decomposeSnowflake(id).timestamp);
   let data = eventData.get(eventName);
   /*if (
@@ -659,7 +650,7 @@ export async function handleEvent(
 
   if (!data) {
     if (config.debug)
-      console.log('handleEvent missing data definition for event ' + eventName);
+      console.error('handleEvent missing data definition for event ' + eventName);
     return;
   }
   if (
@@ -683,9 +674,16 @@ export async function handleEvent(
     log,
     ...args
   );
+  if(isExt) {
+    let chans = await parseChannelsData(obj);
+    let messages = await getMessages(guildId, chans, obj);
+    messages = combineMessages(messages);
+    await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook)
+    return;
+  }
   //if (config.debug) console.log('logging trigger', eventName, obj);
 
-  let chans = await parseChannelsData(undefined, obj);
+  let chans = await parseChannelsData(obj);
   //if (config.debug) console.log('handleevent.parseChannelData', chans);
   let messages = await getMessages(guildId, chans, obj);
   //if (config.debug) console.log('handleevent.getMessages', messages);
@@ -693,5 +691,5 @@ export async function handleEvent(
   messages = combineMessages(messages);
   //if (config.debug) console.log('handleevent.combineMessages', messages);
 
-  await sendInLogChannel(messages, utils.isExternalDebug(guildId));
+  await sendInLogChannel(guildId, messages);
 }

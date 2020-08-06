@@ -306,6 +306,7 @@ const embedsRemaps = {
   }
 } as any;
 export async function sendWebhookPostComplex(webhook_id: string, data: any) {
+    if(webhook_id === undefined) throw new Error('webhook_id not defined');
   webhook_id = webhook_id
     .split('https://discord.com/api/webhooks/')
     .join('')

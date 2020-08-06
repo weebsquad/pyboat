@@ -42,7 +42,7 @@ const guildConfigs = <any>{
             queue: true, // eventhandler auto queueing on ratelimits
             logging: { // event logging module
                 enabled: true,
-                logChannels: new Map<discord.Snowflake, GuildConfig>([[guildId, new GuildConfig(new Map<discord.Snowflake, ChannelConfig>([
+                logChannels: new Map<discord.Snowflake, ChannelConfig>([
                     ['729980275550846978', chPlain(['*'], ['DEBUG'], true, true)],
                     [
                         '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
@@ -52,7 +52,7 @@ const guildConfigs = <any>{
                         false)
                     ],
                     ['738432465819009084', chPlain(['DEBUG'], [], true, false)]
-                ]))]]),
+                ]),
                 messages: messages.messages, // defaults
                 messagesAuditLogs: messages.messagesAuditLogs, // defaults
                 userTag: '_MENTION_',
@@ -155,10 +155,10 @@ const guildConfigs = <any>{
         logging: { // event logging module
             enabled: true,
             debug: true, // debug mode (enables debug logs and extra info)
-            logChannels: new Map<discord.Snowflake, GuildConfig>([[guildId, new GuildConfig(new Map<discord.Snowflake, ChannelConfig>([
+            logChannels: new Map<discord.Snowflake, ChannelConfig>([
                     ['740997800749170698', chPlain(['*'], ['DEBUG'], true, false)],
-                    ['735780975145123901', chPlain(['DEBUG'], [], true, true)],
-            ]))]]),
+                    ['740997800749170698', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN'], true, true)],
+            ]),
             messages: messages.messages, // defaults
             messagesAuditLogs: messages.messagesAuditLogs, // defaults
             userTag: '_MENTION_',
