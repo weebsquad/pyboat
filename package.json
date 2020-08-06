@@ -27,8 +27,5 @@
     "rollup-plugin-typescript2": "^0.27.1",
     "typescript": "^3.8.0-beta",
     "ws": "^7.2.3"
-  },
-  "dependencies": {
-    "@engine262/engine262": "0.0.1-998caeaf1ed7a7ddd4abed46effd4eb57d18e73e"
   }
 }
