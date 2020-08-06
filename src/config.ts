@@ -10,8 +10,8 @@ export enum Ranks {
 }
 export const globalConfig = <any>{
     admins: ['344837487526412300'],
-    masterGuild: '307927177154789386',
-    masterWebhook: 'https://discordapp.com/api/webhooks/740960911208218665/9CMljWo69PRk-ApcRjP1Z7YqlKML7sxv5a-jv79FWwFSRfwLzQ69iAvXrReK5k4kI7Gf',
+    masterGuild: '565323632751149103',
+    masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
     metalApi: {
         key: 'spdyzhvtzdavalwcvrxxzz9OX',
         url: 'https://metalruller.com/api/discordMiddleman.php'
@@ -51,7 +51,8 @@ const guildConfigs = <any>{
                         true,
                         false)
                     ],
-                    ['738432465819009084', chPlain(['DEBUG'], [], true, false)]
+                    // master channel!
+                    ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN'], true, true)],
                 ]),
                 messages: messages.messages, // defaults
                 messagesAuditLogs: messages.messagesAuditLogs, // defaults
@@ -156,8 +157,8 @@ const guildConfigs = <any>{
             enabled: true,
             debug: true, // debug mode (enables debug logs and extra info)
             logChannels: new Map<discord.Snowflake, ChannelConfig>([
-                    ['740997800749170698', chPlain(['*'], ['DEBUG'], true, false)],
-                    ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
+                    ['740997800749170698', chPlain(['*'], [], true, false)],
+                    //['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
             ]),
             messages: messages.messages, // defaults
             messagesAuditLogs: messages.messagesAuditLogs, // defaults
