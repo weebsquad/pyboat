@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "skipLibCheck": true,
+        "downlevelIteration": true,
+      "lib": [
+        "es2018", "ESNext"
+      ],
+      "types": []
+    },
+    "include": [
+      "./"
+    ]
+  }

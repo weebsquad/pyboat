@@ -1,0 +1,7 @@
+{
+    "resolution": "typings/",
+    "globalDependencies": {
+      "discord": "github:pylonbot/pylon-sdk-types/runtime-discord/pylon-runtime-discord.d.ts",
+      "pylon": "github:pylonbot/pylon-sdk-types/runtime/pylon-runtime.d.ts"
+    }
+  }
