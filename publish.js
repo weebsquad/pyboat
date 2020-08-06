@@ -14,7 +14,7 @@ let _dep = [dep];
 if (dep.includes('|')) {
   _dep = new Array().concat(dep.split('|'));
 }
-const isDebug = !!(_dep.length === 1 && _dep.includes('71541889924333568'));
+const isDebug = _dep.length === 1;
 
 function deserialize(value) {
   if (typeof value === 'object' && value !== null) {
