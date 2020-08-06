@@ -11,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [14.x]
@@ -31,7 +29,7 @@ jobs:
       run: npm run build --if-present
     - name: Publish to all guilds
       run: npm run publish --if-present
-      if: github.event.push
+      if: (github.event.push || github.event.pull_request.merged)
       env:
         DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
