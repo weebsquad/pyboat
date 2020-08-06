@@ -7,12 +7,11 @@ export function isDebug() {
   return conf.guildId === conf.globalConfig.masterGuild && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
-
 export function isMasterInDebug() {
-    return conf.getGuildConfig(conf.globalConfig.masterGuild).modules.logging.debug === true;
+  return conf.getGuildConfig(conf.globalConfig.masterGuild).modules.logging.debug === true;
 }
 export function isExternalDebug(gid: string = conf.guildId) {
-    return isMasterInDebug() && gid !== conf.globalConfig.masterGuild;
+  return isMasterInDebug() && gid !== conf.globalConfig.masterGuild;
 }
 
 export function getMemberTag(member: discord.GuildMember) {

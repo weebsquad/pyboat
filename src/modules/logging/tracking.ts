@@ -1,6 +1,6 @@
 // add all events here
 import * as utils from '../../lib/utils';
-import * as utilsLogging from './utils'
+import * as utilsLogging from './utils';
 import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { handleMultiEvents } from './main';
 import * as custom from './events/custom';
@@ -88,7 +88,9 @@ eventData.set(discord.Event.CHANNEL_PINS_UPDATE, channelPinsUpdate);
 
 export const _ForceIndividualEvents = false;
 export async function AL_OnBatchEvents(q: Array<QueuedEvent>) {
-  if(utilsLogging.isDebug()) console.log('AL_OnBatchEvents', q);
+  if (utilsLogging.isDebug()) {
+    console.log('AL_OnBatchEvents', q);
+  }
   await handleMultiEvents(q);
 }
 

@@ -5,7 +5,7 @@ import { config } from '../config';
 import { logDebug, logCustom } from './logging/events/custom';
 
 async function HandleDM(msg: discord.Message) {
-  //console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
+  // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 
 async function HandleChat(msg: discord.Message) {

@@ -21,8 +21,8 @@ export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
 export const mylevel = discord.command.rawHandler(
   async (msg) => {
-       await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${conf.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`)
-    }
+    await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${conf.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+  },
 );
 
 export const ping = discord.command.rawHandler(async (msg) => {
@@ -88,7 +88,7 @@ export const snowflake = discord.command.handler(
   },
 );
 
-/*export const rolelb = discord.command.rawHandler(
+/* export const rolelb = discord.command.rawHandler(
   async (message) => {
     await message.reply(async () => {
       const ms = new Date();
@@ -125,7 +125,7 @@ export const snowflake = discord.command.handler(
       return board;
     });
   },
-);*/
+); */
 
 /* export const translate = discord.command.handler(
   (ctx) => ({ lang: ctx.string(), text: ctx.text() }),

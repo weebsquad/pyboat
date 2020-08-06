@@ -7,7 +7,6 @@ import * as logging from './logging/tracking';
 import * as utilities from './utilities';
 import * as antiPing from './antiPing';
 
-
 export const moduleDefinitions: {[key: string]: object} = {
   logging,
   antiPing,

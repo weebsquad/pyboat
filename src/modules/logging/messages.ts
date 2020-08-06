@@ -36,7 +36,6 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   },
   GUILD_MEMBER_REMOVE: {
     MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ left the server`,
-    MEMBER_KICKED: 'wat',
   },
   GUILD_BAN_ADD: {
     MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _USERTAG_ was banned from the server`,
@@ -156,19 +155,19 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     USER_UPDATED: `${discord.decor.Emojis.GEAR} bot user was updated _USERTAG_ **[**||\`_USER_ID_\`||**]**`,
   },
   VOICE_STATE_UPDATE: {
-    SERVER_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ was server deafened in \`_CHANNEL_NAME_\``,
-    SERVER_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ was server undeafened in \`_CHANNEL_NAME_\``,
-    SERVER_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server muted in \`_CHANNEL_NAME_\``,
-    SERVER_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server unmuted in \`_CHANNEL_NAME_\``,
-    SELF_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ deafened themselves in \`_CHANNEL_NAME_\``,
-    SELF_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ undeafened themselves in \`_CHANNEL_NAME_\``,
-    SELF_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ muted themselves in \`_CHANNEL_NAME_\``,
-    SELF_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ unmuted themselves in \`_CHANNEL_NAME_\``,
-    START_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ started streaming in \`_CHANNEL_NAME_\``,
-    STOP_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ stopped streaming in \`_CHANNEL_NAME_\``,
-    ENTERED_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ joined \`_CHANNEL_NAME_\``,
-    LEFT_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ left \`_CHANNEL_NAME_\``,
-    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from \`_OLD_CHANNEL_NAME_\` to \`_NEW_CHANNEL_NAME_\``,
+    SERVER_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ was server deafened in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ was server undeafened in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server muted in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server unmuted in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ deafened themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ undeafened themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ muted themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ unmuted themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    START_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ started streaming in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    STOP_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ stopped streaming in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    ENTERED_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ joined \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    LEFT_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ left \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from \`_OLD_CHANNEL_NAME_\` **[**||\`_OLD_CHANNEL_ID_\`||**]** to \`_NEW_CHANNEL_NAME_\` **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
   },
   VOICE_SERVER_UPDATE: {
     CONNECTED: 'connected to voice @`_ENDPOINT_` with token ||`_TOKEN_`||',
@@ -190,41 +189,28 @@ export const messages: {[key: string]: {[key: string]: string}} = {
 
 export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   CHANNEL_PINS_UPDATE: {
-    MESSAGE_PINNED:
-      `${discord.decor.Emojis.PUSHPIN
-      } _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${
-        messageJump}`,
-    MESSAGE_UNPINNED:
-      `${discord.decor.Emojis.PUSHPIN
-      } _ACTORTAG_ unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${
-        messageJump}`,
+    MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
+    MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
   },
   GUILD_MEMBER_ADD: {
-    BOT_ADDED:
-      '<:bot:735780703945490542> _ACTORTAG_ added _USERTAG_ to the server',
+    BOT_ADDED: '<:bot:735780703945490542> _ACTORTAG_ added _USERTAG_ to the server',
   },
   GUILD_MEMBER_REMOVE: {
-    MEMBER_KICKED:
-      `${discord.decor.Emojis.BOOT}_ACTORTAG_ kicked _USERTAG_ from the server`,
+    MEMBER_KICKED: `${discord.decor.Emojis.BOOT}_ACTORTAG_ kicked _USERTAG_ from the server`,
   },
   GUILD_BAN_ADD: {
-    MEMBER_BANNED:
-      `${discord.decor.Emojis.HAMMER
-      } _ACTORTAG_ banned _USERTAG_ from the server`,
+    MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ banned _USERTAG_ from the server`,
   },
   GUILD_BAN_REMOVE: {
     MEMBER_UNBANNED:
-      `${discord.decor.Emojis.CYCLONE
-      } _ACTORTAG_ unbanned _USERTAG_ from the server`,
+      `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ unbanned _USERTAG_ from the server`,
   },
   GUILD_MEMBER_UPDATE: {
     NICK_ADDED: "_ACTORTAG_ added _USERTAG_ 's nickname : `_NEW_NICK_`",
-    NICK_CHANGED:
-      "_ACTORTAG_ changed _USERTAG_ 's nickname from `_OLD_NICK_` to `_NEW_NICK_`",
+    NICK_CHANGED: "_ACTORTAG_ changed _USERTAG_ 's nickname from `_OLD_NICK_` to `_NEW_NICK_`",
     NICK_REMOVED: "_ACTORTAG_ removed _USERTAG_ 's nickname of `_OLD_NICK_`",
     ROLES_ADDED: '_ACTORTAG_ added role(s) to _USERTAG_ : _ADDED_ROLES_',
-    ROLES_REMOVED:
-      '_ACTORTAG_ removed role(s) from _USERTAG_ : _REMOVED_ROLES_',
+    ROLES_REMOVED: '_ACTORTAG_ removed role(s) from _USERTAG_ : _REMOVED_ROLES_',
     ROLES_CHANGED: '_ACTORTAG_ changed roles of _USERTAG_ : _CHANGED_ROLES_',
   },
   // sadly hardcoded :v
@@ -234,80 +220,47 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
     REMOVED_EMOJIS: `${discord.decor.Emojis.SLIGHT_SMILE} _ACTORTAG_ _MESSAGE_`,
   },
   GUILD_UPDATE: {
-    NAME_CHANGED:
-      '_ACTORTAG_ changed server name from `_OLD_NAME_` to `_NEW_NAME_`',
-    REGION_CHANGED:
-      '_ACTORTAG_ changed server region from **_OLD_REGION_** to **_NEW_REGION_**',
-    DESCRIPTION_CHANGED:
-      '_ACTORTAG_ changed server description from `_OLD_DESC_` to `_NEW_DESC_`',
-    DMN_CHANGED:
-      '_ACTORTAG_ changed server default message notifications from **_OLD_DMN_** to **_NEW_DMN_**',
-    EXPLICIT_FILTER_CHANGED:
-      '_ACTORTAG_ changed server explicit content filter from **_OLD_FILTER_** to **_NEW_FILTER_**',
-    VERIFICATION_LEVEL_CHANGED:
-      '_ACTORTAG_ changed server verification level from **_OLD_LEVEL_** to **_NEW_LEVEL_**',
+    NAME_CHANGED: '_ACTORTAG_ changed server name from `_OLD_NAME_` to `_NEW_NAME_`',
+    REGION_CHANGED: '_ACTORTAG_ changed server region from **_OLD_REGION_** to **_NEW_REGION_**',
+    DESCRIPTION_CHANGED: '_ACTORTAG_ changed server description from `_OLD_DESC_` to `_NEW_DESC_`',
+    DMN_CHANGED: '_ACTORTAG_ changed server default message notifications from **_OLD_DMN_** to **_NEW_DMN_**',
+    EXPLICIT_FILTER_CHANGED: '_ACTORTAG_ changed server explicit content filter from **_OLD_FILTER_** to **_NEW_FILTER_**',
+    VERIFICATION_LEVEL_CHANGED: '_ACTORTAG_ changed server verification level from **_OLD_LEVEL_** to **_NEW_LEVEL_**',
     BANNER_ADDED: '_ACTORTAG_ added server banner _NEW_BANNER_',
     BANNER_REMOVED: '_ACTORTAG_ removed server banner',
     BANNER_CHANGED: '_ACTORTAG_ changed server banner to _NEW_BANNER_',
     ICON_ADDED: '_ACTORTAG_ added server icon _NEW_ICON_',
     ICON_REMOVED: '_ACTORTAG_ removed server icon',
     ICON_CHANGED: '_ACTORTAG_ changed server icon to _NEW_ICON_',
-    MFA_LEVEL_CHANGED:
-      '_ACTORTAG_ changed server 2fa requirement for moderation from **_OLD_LEVEL_** to **_NEW_LEVEL_**',
-    OWNER_CHANGED:
-      '<@!_OLD_OWNER_> transferred server ownership to <@!_NEW_OWNER_>',
-    AFKCHANNEL_ADDED:
-      '_ACTORTAG_ set server voice afk channel to <#_NEW_CHANNEL_>',
-    AFKCHANNEL_REMOVED:
-      '_ACTORTAG_ removed server voice afk channel: <#_OLD_CHANNEL_>',
-    AFKCHANNEL_CHANGED:
-      '_ACTORTAG_ changed server voice afk channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
-    AFKTIMEOUT_CHANGED:
-      '_ACTORTAG_ changed server voice afk timeout from **_OLD_TIMEOUT_**s to **_NEW_TIMEOUT_**s',
-    PREFERRED_LOCALE_CHANGED:
-      '_ACTORTAG_ changed server preferred locale from `_OLD_LOCALE_` to `_NEW_LOCALE_`',
+    MFA_LEVEL_CHANGED: '_ACTORTAG_ changed server 2fa requirement for moderation from **_OLD_LEVEL_** to **_NEW_LEVEL_**',
+    OWNER_CHANGED: '<@!_OLD_OWNER_> transferred server ownership to <@!_NEW_OWNER_>',
+    AFKCHANNEL_ADDED: '_ACTORTAG_ set server voice afk channel to <#_NEW_CHANNEL_>',
+    AFKCHANNEL_REMOVED: '_ACTORTAG_ removed server voice afk channel: <#_OLD_CHANNEL_>',
+    AFKCHANNEL_CHANGED: '_ACTORTAG_ changed server voice afk channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
+    AFKTIMEOUT_CHANGED: '_ACTORTAG_ changed server voice afk timeout from **_OLD_TIMEOUT_**s to **_NEW_TIMEOUT_**s',
+    PREFERRED_LOCALE_CHANGED: '_ACTORTAG_ changed server preferred locale from `_OLD_LOCALE_` to `_NEW_LOCALE_`',
     SPLASH_ADDED: '_ACTORTAG_ added server splash _NEW_SPLASH_',
     SPLASH_REMOVED: '_ACTORTAG_ removed server splash',
     SPLASH_CHANGED: '_ACTORTAG_ changed server splash to _NEW_SPLASH_',
-    SYSTEM_CHANNEL_ADDED:
-      '_ACTORTAG_ added server system channel <#_NEW_CHANNEL_>',
-    SYSTEM_CHANNEL_REMOVED:
-      '_ACTORTAG_ removed server system channel <#_OLD_CHANNEL_>',
-    SYSTEM_CHANNEL_CHANGED:
-      '_ACTORTAG_ changed server system channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
+    SYSTEM_CHANNEL_ADDED: '_ACTORTAG_ added server system channel <#_NEW_CHANNEL_>',
+    SYSTEM_CHANNEL_REMOVED: '_ACTORTAG_ removed server system channel <#_OLD_CHANNEL_>',
+    SYSTEM_CHANNEL_CHANGED: '_ACTORTAG_ changed server system channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
     VANITY_URL_ADDED: '_ACTORTAG_ added server vanity url `_NEW_VANITY_`',
     VANITY_URL_REMOVED: '_ACTORTAG_ removed server vanity url `_OLD_VANITY_`',
-    VANITY_URL_CHANGED:
-      '_ACTORTAG_ changed server vanity url from `_OLD_VANITY_` to `_NEW_VANITY_`',
-    WIDGET_CHANGED:
-      '_ACTORTAG_ changed server widget from **_OLD_WIDGET_** to **_NEW_WIDGET_**',
-    WIDGET_CHANNEL_ADDED:
-      '_ACTORTAG_ changed server widget channel to <#_NEW_CHANNEL_>',
-    WIDGET_CHANNEL_REMOVED:
-      '_ACTORTAG_ removed server widget channel from <#_OLD_CHANNEL_>',
-    WIDGET_CHANNEL_CHANGED:
-      '_ACTORTAG_ changed server widget channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
+    VANITY_URL_CHANGED: '_ACTORTAG_ changed server vanity url from `_OLD_VANITY_` to `_NEW_VANITY_`',
+    WIDGET_CHANGED: '_ACTORTAG_ changed server widget from **_OLD_WIDGET_** to **_NEW_WIDGET_**',
+    WIDGET_CHANNEL_ADDED: '_ACTORTAG_ changed server widget channel to <#_NEW_CHANNEL_>',
+    WIDGET_CHANNEL_REMOVED: '_ACTORTAG_ removed server widget channel from <#_OLD_CHANNEL_>',
+    WIDGET_CHANNEL_CHANGED: '_ACTORTAG_ changed server widget channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
   },
   GUILD_ROLE_CREATE: {
-    NEW_ROLE:
-      `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ created new role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** `,
+    NEW_ROLE: `${discord.decor.Emojis.GEAR} _ACTORTAG_ created new role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** `,
   },
   GUILD_ROLE_UPDATE: {
-    NAME_CHANGED:
-      `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** name:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
-    COLOR_CHANGED:
-      `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** color: \`#_OLD_COLOR_\` ${
-        discord.decor.Emojis.ARROW_RIGHT
-      } \`#_NEW_COLOR_\``,
-    HOIST_CHANGED:
-      `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** hoist state to \`_NEW_HOIST_\` `,
-    MENTIONABLE_CHANGED:
-      `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** mentionable state to \`_NEW_MENTIONABLE_\` `,
+    NAME_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** name:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
+    COLOR_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** color: \`#_OLD_COLOR_\` ${discord.decor.Emojis.ARROW_RIGHT} \`#_NEW_COLOR_\``,
+    HOIST_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** hoist state to \`_NEW_HOIST_\` `,
+    MENTIONABLE_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** mentionable state to \`_NEW_MENTIONABLE_\` `,
     POSITION_CHANGED:
       `${discord.decor.Emojis.GEAR
       } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** position: \`_OLD_POSITION_\` ${

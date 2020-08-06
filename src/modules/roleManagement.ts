@@ -1,5 +1,6 @@
 import * as config from '../config';
 import * as utils from '../lib/utils';
+
 const cfgMod = config.config.modules.roleManagement;
 
 async function refreshGuildMember(gid: string, uid: string) {

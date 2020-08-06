@@ -7,7 +7,8 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const WebSocket = require('ws');
-const defaultMainText = `/*\n\tHi, the code running on this server's pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there's something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tThanks\n*/`;
+
+const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tThanks\n*/';
 const dep = process.env.DEPLOYMENTS;
 const wh = process.env.WEBHOOK_URL;
 let _dep = [dep];
@@ -59,20 +60,24 @@ function workbenchWs(url) {
 }
 
 function sendWebhook(txt) {
-    if(typeof(wh) !== 'string' || isDebug) return;
-    fetch(wh, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            content: txt,
-            username: 'Pyboat Publish'
-        })
-    });
+  if (typeof (wh) !== 'string' || isDebug) {
+    return;
+  }
+  fetch(wh, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      content: txt,
+      username: 'Pyboat Publish',
+    }),
+  });
 }
 
-if(typeof(wh) === 'string' && _dep.length > 1) sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
+if (typeof (wh) === 'string' && _dep.length > 1) {
+  sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
+}
 let _cp = 0;
 _dep.forEach((deployment_id) => {
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
@@ -91,13 +96,15 @@ _dep.forEach((deployment_id) => {
     }),
   }).then((r) => r.json())
     .then((obj) => {
-       //console.log(obj);
+      // console.log(obj);
       if (typeof (obj.msg) === 'string') {
         console.error(obj.msg);
       } else {
         _cp++;
         console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
-        if(typeof(wh) === 'string') sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);
+        if (typeof (wh) === 'string') {
+          sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);
+        }
         if (isDebug) {
           workbenchWs(obj.workbench_url);
         }

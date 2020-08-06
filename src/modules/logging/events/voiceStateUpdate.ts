@@ -74,7 +74,6 @@ export function getKeys(
     keys.push('stopStream');
   }
 
-
   return keys;
 }
 
@@ -337,12 +336,12 @@ export const messages = {
       ['_TYPE_', 'MOVED_CHANNEL'],
       ['_OLD_CHANNEL_ID_', voiceState.channelId],
       [
-        '_OLD_CHANNEL_NAME_',
+        '_NEW_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
       ],
       ['_NEW_CHANNEL_ID_', oldVoiceState.channelId],
       [
-        '_NEW_CHANNEL_NAME_',
+        '_OLD_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(oldChan.name)}`,
       ],
     ]);
