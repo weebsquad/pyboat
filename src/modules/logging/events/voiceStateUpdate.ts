@@ -7,6 +7,24 @@ export function getKeys(
   oldVoiceState: discord.VoiceState,
 ) {
   const keys = [];
+  if (voiceState.channelId !== oldVoiceState.channelId) {
+    if (
+      (voiceState.channelId === null || voiceState.channelId === undefined)
+      && oldVoiceState.channelId !== null
+      && oldVoiceState.channelId !== undefined
+    ) {
+      keys.push('channelLeft');
+    } else if (
+      voiceState.channelId !== null
+      && voiceState.channelId !== undefined
+      && (oldVoiceState.channelId === null
+        || oldVoiceState.channelId === undefined)
+    ) {
+      keys.push('channelJoined');
+    } else {
+      keys.push('channelMove');
+    }
+  }
   if (voiceState.deaf !== oldVoiceState.deaf && voiceState.deaf === true) {
     keys.push('serverDeaf');
   }
@@ -55,24 +73,7 @@ export function getKeys(
   ) {
     keys.push('stopStream');
   }
-  if (voiceState.channelId !== oldVoiceState.channelId) {
-    if (
-      (voiceState.channelId === null || voiceState.channelId === undefined)
-      && oldVoiceState.channelId !== null
-      && oldVoiceState.channelId !== undefined
-    ) {
-      keys.push('channelLeft');
-    } else if (
-      voiceState.channelId !== null
-      && voiceState.channelId !== undefined
-      && (oldVoiceState.channelId === null
-        || oldVoiceState.channelId === undefined)
-    ) {
-      keys.push('channelJoined');
-    } else {
-      keys.push('channelMove');
-    }
-  }
+
 
   return keys;
 }
