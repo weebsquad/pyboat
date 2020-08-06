@@ -57,7 +57,7 @@ export function getLogChannels(gid: string, event: string, type: string) {
         v.scopes.exclude.includes(event + '.*') ||
         v.scopes.exclude.includes(event + '.' + type)
       )
-        return;
+        continue;
       arr.push(k);
     }
   }
@@ -175,7 +175,7 @@ async function parseChannelsData(
     el.set('isAuditLog', isAuditLog);
     if (
       ev.auditLogEntry instanceof discord.AuditLogEntry &&
-      !(['MESSAGE_DELETE', 'MESSAGE_DELETE_BULK'].includes(ev.eventName))
+      !(['MESSAGE_DELETE', 'MESSAGE_DELETE_BULK', 'VOICE_STATE_UPDATE'].includes(ev.eventName))
     ) {
       let oldD = utils2.decomposeSnowflake(ev.id).timestamp;
 

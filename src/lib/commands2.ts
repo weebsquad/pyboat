@@ -18,7 +18,6 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
     description: 'default',
     defaultPrefix: config.modules.commands.prefix,
     register: <boolean>false,
-    filters: []
   };
   if (typeof curr === 'object') {
     for (var key in curr) {
@@ -36,8 +35,9 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
       });
     }
   }*/
-
-  if(Array.isArray(opts['filters'])) opts['filters'].unshift(filterNoCmds);
+// todo: cmds channels
+  //if(Array.isArray(opts['filters'])) opts['filters'].unshift(filterNoCmds);
+  //if(Array.isArray(opts['filters']) && opts['filters'].length === 0) delete opts['filters'];
   let newo = <any>opts;
   return newo;
 }

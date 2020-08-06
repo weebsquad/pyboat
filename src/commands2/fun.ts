@@ -8,7 +8,6 @@ const kv = new pylon.KVNamespace('commands_fun');
 export const _groupOptions = {
   additionalPrefixes: [],
   description: 'Fun commands',
-  filters: [],
 };
 
 const optsGroup = commands2.getOpts(
