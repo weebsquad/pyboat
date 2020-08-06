@@ -1,8 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "https://raw.githubusercontent.com/pylonbot/pylon-sdk-types/master/runtime-discord/pylon-runtime-discord.d.ts",
-    "raw": "github:pylonbot/pylon-sdk-types/runtime-discord/pylon-runtime-discord.d.ts",
-    "typings": "https://raw.githubusercontent.com/pylonbot/pylon-sdk-types/master/runtime-discord/pylon-runtime-discord.d.ts"
-  }
-}
