@@ -7,7 +7,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    types: [closed]
+    types: [closed, opened, synchronize]
 
 jobs:
   build:
