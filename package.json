@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "rollup -c",
-    "publish": "rollup -c && node ./publishAll.js",
+    "publish": "node ./publishAll.js",
     "lint": "eslint rollup.config.js publishMaster.js src/ --ext=ts",
     "lintfix": "eslint rollup.config.js publishMaster.js src/ --ext=ts --fix"
   },
