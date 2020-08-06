@@ -34,3 +34,4 @@ jobs:
       env:
         DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
+        WEBHOOK_URL: ${{secrets.WEBHOOK_URL}}
