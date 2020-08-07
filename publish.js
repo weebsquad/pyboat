@@ -13,7 +13,7 @@ const dep = process.env.DEPLOYMENTS;
 const wh = process.env.WEBHOOK_URL;
 let _dep = [dep];
 if (dep.includes('|')) {
-  _dep = new Array().concat(dep.split('|'));
+  _dep = [].concat(dep.split('|'));
 }
 const isDebug = _dep.length === 1;
 
@@ -79,9 +79,11 @@ if (typeof (wh) === 'string' && _dep.length > 1) {
   sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
 }
 
-let doneGuilds = [];
+const doneGuilds = [];
 _dep.forEach((deployment_id) => {
-  if(doneGuilds.includes(deployment_id)) return;
+  if (doneGuilds.includes(deployment_id)) {
+    return;
+  }
   doneGuilds.push(deployment_id);
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
     method: 'POST',
