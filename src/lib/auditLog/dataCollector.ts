@@ -72,7 +72,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
     guildId(dt: any[]) {
       return dt[0].guildId;
     },
-    validate(dt: any[], log: discord.AuditLogEntry, store: any) {
+    validate(dt: any[], log: discord.AuditLogEntry | any, store: any) {
       const ev: discord.Event.IChannelPinsUpdate = dt[0];
       if (log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_PIN && log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_UNPIN) {
         return false;
