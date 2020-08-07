@@ -103,7 +103,7 @@ _dep.forEach((deployment_id) => {
     .then((obj) => {
       // console.log(obj);
       if (typeof (obj.msg) === 'string') {
-        console.error(obj.msg);
+        console.error('Publish error: ' + obj.msg);
         process.exit(1);
       } else {
         console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
