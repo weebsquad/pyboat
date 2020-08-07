@@ -7,12 +7,23 @@ export const modulegroups = new Map<string, Array<any>>();
 // let cmdChannels = [];
 
 function getCmdChannels() {
-  return [].concat(config.modules.counting.channels);
+  if (typeof (config.modules.counting) === 'undefined') {
+    return ['1'];
+  }
+  if (typeof (config.modules.counting.channels) === 'undefined') {
+    return ['1'];
+  }
+
+  return ['1'].concat(config.modules.counting.channels);
 }
 
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
   const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
+  let pref = '!';
+  if (config.modules.commands !== undefined && typeof config.modules.commands.prefix === 'string') {
+    pref = config.modules.commands.prefix;
+  }
   const opts = {
     label: 'default',
     description: 'default',

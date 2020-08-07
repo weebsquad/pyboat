@@ -22,6 +22,104 @@ export const globalConfig = <any>{
 };
 
 const guildConfigs = <any>{
+  '741400923410006036': { // pyboat upload testing guild!!!
+    levels: {
+      users: {},
+      roles: {},
+    },
+    modules: {
+      queue: false,
+      logging: { // event logging module
+        enabled: false,
+        logChannels: new Map<discord.Snowflake, ChannelConfig>(),
+        messages: messages.messages, // defaults
+        messagesAuditLogs: messages.messagesAuditLogs, // defaults
+        userTag: '_MENTION_',
+        actorTag: '_MENTION_',
+        reasonPrefix: ' with reason `_REASON_RAW_`',
+        suffixReasonToAuditlog: true,
+      },
+      commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
+        enabled: false,
+        prefix: ['$'],
+        allowMentionPrefix: true,
+        seperator: ' ',
+        prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
+      },
+      translation: { // translation module, react with flags on messages to trigger translation for them
+        enabled: false,
+        googleApi: {
+          key: '',
+        },
+      },
+      utilities: { // todo
+        enabled: false,
+      },
+      roleManagement: { // for group srv only
+        enabled: false,
+        lowestHoistRole: '',
+        botRoleRP: '',
+        botRole: '',
+        memberRole: '',
+        memberRoleRP: '',
+      },
+      antiPing: { // owo
+        enabled: false,
+        logChannel: '',
+        actualCaughtMessage: '',
+        caughtMessages: [],
+        instaDeletePings: false,
+        banOnLeave: false,
+        pingsForAutoMute: 3,
+        emojiActions: {
+          '👌': 'IgnoreOnce',
+          '☑️': 'Ignore',
+          '🔇': 'Mute',
+          '👢': 'Kick',
+          '🔨': 'Ban',
+        },
+        targets: {
+          users: {
+            whitelist: [],
+            blacklist: [],
+          },
+          roles: {
+            whitelist: [],
+            blacklist: [],
+          },
+          channels: {
+            whitelist: [],
+            blacklist: [],
+          },
+          categories: {
+            whitelist: [],
+            blacklist: [],
+          },
+        },
+        staff: [],
+        bypass: {
+          users: [],
+          roles: [],
+        },
+        muteRole: '',
+      },
+      counting: { // counting module
+        enabled: false,
+        channels: [],
+        keyCount: 'counting_current',
+        keyLastUser: 'counting_lastuser',
+        keyLastMid: 'counting_lastmid',
+        autoPins: {
+          single: [1, 69, 100, 200, 420, 666, 1000, 1337, 6969, 9001, 10000, 99999], // Individual === check
+          repeating: [1000], // Modulus check
+          repeatingLast: [69], // Everytime these digits are found on last X of current number, it will trigger
+        },
+        useWebhook: false,
+        webhook: '',
+      },
+    },
+  },
+
   '565323632751149103': { // pink
     levels: {
       users: {
@@ -140,10 +238,11 @@ const guildConfigs = <any>{
           repeatingLast: [69], // Everytime these digits are found on last X of current number, it will trigger
         },
         useWebhook: false,
-        webhook: '712259047080067113/Kr5f2pcumxiHHQ35klk1cyCHv3UlN7cK2bw0Wx6dSwpAUZFVeygvPFasrgLyishGe66k',
+        webhook: '',
       },
     },
   },
+
   '307927177154789386': { // metals test srv
     levels: {
       users: {
@@ -246,7 +345,7 @@ const guildConfigs = <any>{
           repeatingLast: [69], // Everytime these digits are found on last X of current number, it will trigger
         },
         useWebhook: false,
-        webhook: '712259047080067113/Kr5f2pcumxiHHQ35klk1cyCHv3UlN7cK2bw0Wx6dSwpAUZFVeygvPFasrgLyishGe66k',
+        webhook: '',
       },
     },
   },
