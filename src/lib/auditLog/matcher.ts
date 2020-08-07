@@ -489,11 +489,11 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
       if (dateSn < lf) {
         break;
       }
-      const _f = false;
+      // const _f = false;
       let tmpstore: any;
       _events = await Promise.all(
         _events.map(async (e) => {
-          if (_f === true || e.auditLogEntry !== null) {
+          if (e.auditLogEntry !== null) {
             return e;
           }
           const def = auditLogDefinitions[e.eventName];

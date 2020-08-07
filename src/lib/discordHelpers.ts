@@ -222,7 +222,7 @@ export async function getUserEntitlements(
     null,
   );
   const data = await res.json();
-  const mainData = {
+  const mainData: any = {
     branches: {},
     type: 'none',
   };
