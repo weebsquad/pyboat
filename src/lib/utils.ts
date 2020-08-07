@@ -105,8 +105,8 @@ export function text2Binary(string) {
     .join(' ');
 }
 
-export function swapKV(json) {
-  const ret = {};
+export function swapKV(json): any {
+  const ret: any = {};
   for (const key in json) {
     ret[json[key]] = key;
   }

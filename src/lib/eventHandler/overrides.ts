@@ -1,24 +1,24 @@
-export let EventOverrides = <any>{};
+export const EventOverrides = <any>{};
 
-EventOverrides['GUILD_ROLE_CREATE'] = function(
-  roleUpdate: discord.Event.IGuildRoleCreate
+EventOverrides.GUILD_ROLE_CREATE = function (
+  roleUpdate: discord.Event.IGuildRoleCreate,
 ) {
   return [roleUpdate.role];
 };
-/*EventOverrides['CHANNELS_PINS_UPDATE'] = function(
+/* EventOverrides['CHANNELS_PINS_UPDATE'] = function(
   ch: discord.Event.IChannelPinsUpdate
 ) {
   return [ch];
-};*/
-EventOverrides['GUILD_ROLE_UPDATE'] = function(
+}; */
+EventOverrides.GUILD_ROLE_UPDATE = function (
   roleUpdate: discord.Event.IGuildRoleUpdate,
-  oldRole: discord.Role
+  oldRole: discord.Role,
 ) {
   return [roleUpdate.role, oldRole];
 };
-EventOverrides['GUILD_ROLE_DELETE'] = function(
+EventOverrides.GUILD_ROLE_DELETE = function (
   roleUpdate: discord.Event.IGuildRoleDelete,
-  oldRole: discord.Role
+  oldRole: discord.Role,
 ) {
   return [oldRole];
 };

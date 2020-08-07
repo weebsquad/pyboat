@@ -15,48 +15,66 @@ class PooledMessage {
 }
 
 async function cleanPool() {
-  let pool = await kv.get('translatedMessages');
-  if (!Array.isArray(pool)) return;
-  let newP = pool.filter(function(mid: any) {
+  const pool = await kv.get('translatedMessages');
+  if (!Array.isArray(pool)) {
+    return;
+  }
+  const newP = pool.filter(function(mid: any) {
     //if (!(mid instanceof PooledMessage)) return false;
-    let date = new Date(utils.decomposeSnowflake(mid.id).timestamp).getTime();
-    let now = new Date().getTime();
-    let diff = now - date;
-    if (now - date > 10 * 60 * 60 * 1000) return false;
+    const date = new Date(utils.decomposeSnowflake(mid.id).timestamp).getTime();
+    const now = new Date().getTime();
+    const diff = now - date;
+    if (now - date > 10 * 60 * 60 * 1000) {
+      return false;
+    }
     return true;
   });
-  if (!utils.deepCompare(newP, pool)) await kv.put('translatedMessages', newP);
+  if (!utils.deepCompare(newP, pool)) {
+    await kv.put('translatedMessages', newP);
+  }
 }
 
 async function pirateSpeak(query: string) {
   const endpoint = 'https://api.funtranslations.com/translate/pirate.json';
   //let queryParams = '?' + gTranslate.formParams({ text: query });
   //let fullUrl = `${endpoint}${queryParams}`;
-  let req = new Request(endpoint, {
+  const req = new Request(endpoint, {
     method: 'POST',
     body: JSON.stringify({ text: query }),
     headers: {
       'Content-Type': 'application/json',
-      Accept: 'application/json'
+      "Accept": 'application/json'
     }
   });
-  let request = await (await fetch(req)).json();
-  if (typeof request.contents !== 'object') return request;
+  const request = await (await fetch(req)).json();
+  if (typeof request.contents !== 'object') {
+    return request;
+  }
   return request.contents.translated;
 }
 
 function getLanguageFromFlag(flag: string) {
-  if (flag === discord.decor.Emojis.RAINBOW_FLAG) return 'pride';
-  if (flag === discord.decor.Emojis.PIRATE_FLAG) return 'piratespeak';
-  let country = constants.countries.find((e) => {
-    if (typeof e.flag === 'string') return e.flag === flag;
+  if (flag === discord.decor.Emojis.RAINBOW_FLAG) {
+    return 'pride';
+  }
+  if (flag === discord.decor.Emojis.PIRATE_FLAG) {
+    return 'piratespeak';
+  }
+  const country = constants.countries.find((e) => {
+    if (typeof e.flag === 'string') {
+      return e.flag === flag;
+    }
     return e.flag.indexOf(flag) > -1;
   });
-  if (typeof country === 'undefined') return null;
-  let lang = constants.languages.find(
+  if (typeof country === 'undefined') {
+    return null;
+  }
+  const lang = constants.languages.find(
     (e) => e.shortcode === country.mainLanguage
   );
-  if (typeof lang === 'undefined') return null;
+  if (typeof lang === 'undefined') {
+    return null;
+  }
   return lang;
 }
 
@@ -79,13 +97,15 @@ function getLanguageFromFlag(flag: string) {
 }*/
 
 async function saveToPool(pool: any, mid: string, lang: string) {
-  if (!Array.isArray(pool)) pool = [];
-  let pfi = pool.findIndex((e: any) => e.id === mid);
-  let newObj = new PooledMessage(mid);
+  if (!Array.isArray(pool)) {
+    pool = [];
+  }
+  const pfi = pool.findIndex((e: any) => e.id === mid);
+  const newObj = new PooledMessage(mid);
   newObj.translations.push(lang);
   if (!Array.isArray(pool) || pool === null) {
     // idk how to do this better lmao
-    let pool2 = [];
+    const pool2 = [];
     pool2.push(newObj);
     await kv.put('translatedMessages', pool2);
     return;
@@ -135,45 +155,62 @@ export async function OnMessageReactionAdd(
   guildId: string,
   reaction: discord.Event.IMessageReactionAdd
 ) {
-  if (!(reaction.member instanceof discord.GuildMember)) return;
+  if (!(reaction.member instanceof discord.GuildMember)) {
+    return;
+  }
   //if (reaction.userId !== '344837487526412300') return;
   if (
     reaction.emoji.type !== 'UNICODE' ||
     reaction.emoji.animated === true ||
     typeof reaction.emoji.name !== 'string' ||
     reaction.emoji.id !== null
-  )
+  ) {
     return;
+  }
 
-  if (reaction.member === null) return;
-  if (reaction.member.user.bot === true) return;
+  if (reaction.member === null) {
+    return;
+  }
+  if (reaction.member.user.bot === true) {
+    return;
+  }
 
-  let emoji = reaction.emoji;
-  let lang = getLanguageFromFlag(emoji.name);
-  if (lang === null) return;
-  let channel = await discord.getChannel(reaction.channelId);
-  if (!(channel instanceof discord.GuildTextChannel)) return; // Also stops GuildNewsChannels which might be a good idea since people might want to react on them
-  if (!channel.canMember(reaction.member, discord.Permissions.SEND_MESSAGES))
-    return; // If they don't have Send Messages, we probably don't want them triggering it.
+  const emoji = reaction.emoji;
+  const lang = getLanguageFromFlag(emoji.name);
+  if (lang === null) {
+    return;
+  }
+  const channel = await discord.getChannel(reaction.channelId);
+  if (!(channel instanceof discord.GuildTextChannel)) {
+    return;
+  } // Also stops GuildNewsChannels which might be a good idea since people might want to react on them
+  if (!channel.canMember(reaction.member, discord.Permissions.SEND_MESSAGES)) {
+    return;
+  } // If they don't have Send Messages, we probably don't want them triggering it.
 
-  let message = await channel.getMessage(reaction.messageId);
-  if (message === null) return;
+  const message = await channel.getMessage(reaction.messageId);
+  if (message === null) {
+    return;
+  }
   if (
     message.content.length < 3 ||
     message.webhookId !== null ||
     message.author === null ||
     message.author.bot === true
-  )
+  ) {
     return;
+  }
   //if (!(message instanceof discord.GuildMemberMessage)) return;
   await cleanPool();
-  let pool = await kv.get('translatedMessages');
-  let guild = await channel.getGuild();
-  let memBot = await guild.getMember(discord.getBotId());
+  const pool = await kv.get('translatedMessages');
+  const guild = await channel.getGuild();
+  const memBot = await guild.getMember(discord.getBotId());
   let shortCode = lang;
-  if (typeof lang === 'object') shortCode = lang.shortcode;
+  if (typeof lang === 'object') {
+    shortCode = lang.shortcode;
+  }
   if (Array.isArray(pool)) {
-    let pf = pool.find((e: any) => {
+    const pf = pool.find((e: any) => {
       return e.id === message.id && e.translations.indexOf(shortCode) > -1;
     });
     if (typeof pf !== 'undefined') {
@@ -181,8 +218,9 @@ export async function OnMessageReactionAdd(
       if (
         memBot !== null &&
         channel.canMember(memBot, discord.Permissions.MANAGE_MESSAGES)
-      )
+      ) {
         await message.deleteReaction(reaction.emoji.name, reaction.userId);
+      }
       return false;
     }
   }
@@ -193,8 +231,8 @@ export async function OnMessageReactionAdd(
     return false;
   } else if (lang === 'piratespeak') {
     await saveToPool(pool, message.id, lang);
-    let langTyped = await gTranslate.detectLanguage(message.content);
-    let foundEn = langTyped.find((e: any) => {
+    const langTyped = await gTranslate.detectLanguage(message.content);
+    const foundEn = langTyped.find((e: any) => {
       return e.language === 'en' && e.confidence >= 0.9;
     });
     if (typeof foundEn === 'undefined') {
@@ -204,7 +242,7 @@ export async function OnMessageReactionAdd(
       );
       return false;
     }
-    let pirateey = await pirateSpeak(message.content);
+    const pirateey = await pirateSpeak(message.content);
     if (typeof pirateey !== 'string') {
       await channel.sendMessage(
         reaction.member.toMention() +
@@ -230,13 +268,15 @@ export async function OnMessageReactionAdd(
     );
     return false;
   }
-  if (!(lang instanceof constants.Language)) return;
+  if (!(lang instanceof constants.Language)) {
+    return;
+  }
 
-  let translation = await gTranslate.translate(message.content, lang.shortcode);
-  let sourceLang = constants.languages.find(
+  const translation = await gTranslate.translate(message.content, lang.shortcode);
+  const sourceLang = constants.languages.find(
     (e) => e.shortcode === translation.detectedSourceLanguage
   );
-  let ll = sourceLang.name ?? translation.detectedSourceLanguage;
+  const ll = sourceLang.name ?? translation.detectedSourceLanguage;
   await saveToPool(pool, message.id, lang.shortcode);
 
   if (
@@ -249,8 +289,9 @@ export async function OnMessageReactionAdd(
     if (
       memBot !== null &&
       channel.canMember(memBot, discord.Permissions.MANAGE_MESSAGES)
-    )
+    ) {
       await message.deleteReaction(reaction.emoji.name, reaction.userId);
+    }
     return false;
   }
   await translationEmbed(

@@ -66,9 +66,10 @@ async function getPool() {
 }
 async function savePool(data: any[]) {
   if (globals) {
-    return (poolGlob = data);
+    poolGlob = data;
+    return poolGlob;
   }
-  return await kv.put(eventPool, JSON.stringify(data));
+  await kv.put(eventPool, JSON.stringify(data));
 }
 
 // for adding stuff to tracking ONLY
@@ -136,12 +137,7 @@ export async function isRatelimit(
 
   const tracks = await getPool();
 
-  function runChecks(
-    eventName: string,
-    type: string,
-    tracks: Array<PoolEntry>,
-    time: number,
-  ) {
+  function runChecks() {
     let allowedKeys;
     if (type === 'all') {
       allowedKeys = [
@@ -203,5 +199,5 @@ export async function isRatelimit(
     }
     return false;
   }
-  return runChecks(eventName, type, tracks, time);
+  return runChecks();
 }

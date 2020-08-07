@@ -591,17 +591,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
     let messagesTemp = await getMessages(qev.guildId, chansTemp, obj);
 
     for (let [chid, opts] of messagesTemp) {
-
-  
-       /* if (!messages.has(qev.guildId))
-          messages.set(
-            qev.guildId,
-            new Map<string, Array<discord.Message.OutgoingMessageOptions>>()
-          );
-        let guild = messages.get(qev.guildId);
-        if (!guild) return;*/
-        if (!messages.has(chid))
-        messages.set(chid, new Array<discord.Message.OutgoingMessageOptions>());
+        if (!messages.has(chid)) { messages.set(chid, []); }
         let _arr = messages.get(chid);
         if (_arr) {
           _arr.push(...opts);

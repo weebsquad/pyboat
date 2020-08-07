@@ -1,14 +1,12 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Deploy global
+name: Deploy PyBoat Globally
 
 on:
   push:
-    branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
-#    types: [synchronize]
+    branches:
+      - master
 
 jobs:
   deploy:
@@ -34,3 +32,17 @@ jobs:
         DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
         WEBHOOK_URL: ${{secrets.WEBHOOK_URL}}
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false

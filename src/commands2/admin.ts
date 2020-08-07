@@ -2,7 +2,7 @@ import * as conf from '../config';
 import * as utils from '../lib/utils';
 import * as commands2 from '../lib/commands2';
 
-const { config } = conf;
+// const { config } = conf;
 const ADMIN_ROLE = '567988684193005568';
 const OP_ROLE = '565325264981327873';
 

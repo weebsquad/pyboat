@@ -48,7 +48,7 @@ export function getUserTag(user: discord.User) {
 
 export async function parseMessageContent(
   msg: discord.Message,
-  update: boolean = false,
+  update = false,
 ) {
   let cont = msg.content;
   let MAXLEN = 1400;

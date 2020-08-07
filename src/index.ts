@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path="../typings/index.d.ts" />
 
 import { InitializeEvents } from './lib/eventHandler/handler';
