@@ -6,9 +6,6 @@ name: Deploy global
 on:
   push:
     branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
-#    types: [synchronize]
 
 jobs:
   deploy:
