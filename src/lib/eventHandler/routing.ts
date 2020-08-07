@@ -26,8 +26,8 @@ import {
 import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
 
-export let rl = false;
-export async function _Initialize() {
+let rl = false;
+async function _Initialize() {
   if (rl === true) {
     return;
   }
@@ -364,7 +364,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   }
 
   const modulesSendIndividual = [];
-  for (var moduleName in moduleDefinitions) {
+  for (const moduleName in moduleDefinitions) {
     const module = moduleDefinitions[moduleName];
     if (typeof module !== 'object' || module === null) {
       continue;
@@ -375,6 +375,8 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
     const forceInd = module[eventFunctionVarForceIndividuals];
     const eventFunction = module[eventFunctionQueue];
     const eventAuditLogFunction = module[eventFunctionPrefixAuditLog + eventFunctionQueue];
+    /* eslint-disable-next-line vars-on-top */
+    /* eslint-disable-next-line no-var */
     let existsOne = eventFunction instanceof Function;
     if (!existsOne) {
       existsOne = isAlQueueEnabled() && eventAuditLogFunction instanceof Function;
@@ -383,8 +385,8 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
       modulesSendIndividual.push(moduleName);
     }
   }
-  function pQueue(p: Array<QueuedEvent>, q: Array<QueuedEvent>) {
-    q = q.map((e: QueuedEvent) => {
+  function pQueue(p: Array<QueuedEvent>, q2: Array<QueuedEvent>) {
+    q2 = q2.map((e: QueuedEvent) => {
       const { guildId } = config;
       e.guildId = guildId;
       const proc = p.find((p2) => p2.id === e.id);
@@ -393,15 +395,15 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
       }
       return e;
     });
-    const unProc = q.filter((e) => !e.processed);
-    return q;
+    const unProc = q2.filter((e) => !e.processed);
+    return q2;
   }
   procQueue = procQueue.map((e: QueuedEvent) => {
     e.processed = true;
     return e;
   });
   queue = pQueue(procQueue, queue);
-  for (var moduleName in moduleDefinitions) {
+  for (const moduleName in moduleDefinitions) {
     const module = moduleDefinitions[moduleName];
     if (typeof module !== 'object' || module === null) {
       continue;
@@ -417,16 +419,16 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
       const test = await Promise.all(
         procQueue.map(async (e: QueuedEvent) => {
           const eventFunctionName = eventFunctions[e.eventName];
-          const eventFunction = module[eventFunctionName];
+          const eventFunctionInd = module[eventFunctionName];
           const eventFunctionAuditLog = module[eventFunctionPrefixAuditLog + eventFunctionName];
           const { guildId } = config;
-          if (eventFunction instanceof Function) {
+          if (eventFunctionInd instanceof Function) {
             let _e;
             try {
               if (asyncModules.includes(moduleName)) {
-                eventFunction(e.id, guildId, ...e.payload);
+                eventFunctionInd(e.id, guildId, ...e.payload);
               } else {
-                const returnVal = await eventFunction(
+                const returnVal = await eventFunctionInd(
                   e.id,
                   guildId,
                   ...e.payload,

@@ -13,7 +13,7 @@ const dep = process.env.DEPLOYMENTS;
 const wh = process.env.WEBHOOK_URL;
 let _dep = [dep];
 if (dep.includes('|')) {
-  _dep = new Array().concat(dep.split('|'));
+  _dep = [].concat(dep.split('|'));
 }
 const isDebug = _dep.length === 1;
 
@@ -78,7 +78,7 @@ function sendWebhook(txt) {
 if (typeof (wh) === 'string' && _dep.length > 1) {
   sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
 }
-let _cp = 0;
+
 _dep.forEach((deployment_id) => {
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
     method: 'POST',
@@ -100,7 +100,6 @@ _dep.forEach((deployment_id) => {
       if (typeof (obj.msg) === 'string') {
         console.error(obj.msg);
       } else {
-        _cp++;
         console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string') {
           sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);

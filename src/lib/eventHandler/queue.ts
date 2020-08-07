@@ -7,9 +7,9 @@ export class QueuedEvent {
   eventName: string;
   payload: Array<any>;
   guildId: string | undefined = undefined;
-  processed: boolean = false;
-  verified: boolean = false;
-  auditLogEntry: null | discord.AuditLogEntry.AnyAction | Object = null;
+  processed = false;
+  verified = false;
+  auditLogEntry: null | discord.AuditLogEntry.AnyAction | unknown = null;
   constructor(event: string, ...args: any) {
     this.id = utils.composeSnowflake();
     this.eventName = event;

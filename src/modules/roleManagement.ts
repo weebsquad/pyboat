@@ -90,7 +90,7 @@ export async function checkUserRoles(mem: discord.GuildMember) {
     member: discord.GuildMember,
     normal: string,
     reduced: string,
-    replaceOnly: boolean = false,
+    replaceOnly = false,
   ) {
     const hasReduced = roles.find((o) => o.id === reduced);
     const hasNormal = roles.find((o) => o.id === normal);

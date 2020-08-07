@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import * as conf from '../config';
 import * as utils from '../lib/utils';
 import * as commands2 from '../lib/commands2';
@@ -6,7 +7,7 @@ import * as loggingEvents from '../modules/logging/tracking';
 import { logCustom } from '../modules/logging/events/custom';
 import * as constants from '../constants/constants';
 
-const config = conf.config;
+const { config } = conf;
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
 
@@ -15,39 +16,39 @@ export const _groupOptions = {
   description: 'Dev commands',
   filters: F.custom(
     (message) => conf.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin'
-  )
+    'Must be bot global admin',
+  ),
 };
 
-const optsGroup = commands2.getOpts(_groupOptions)
+const optsGroup = commands2.getOpts(_groupOptions);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-let optsEval = commands2.getOpts(_groupOptions)
+const optsEval = commands2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.filters = F.silent(
   F.custom(
     (message) => conf.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin'
-  )
+    'Must be bot global admin',
+  ),
 );
 
 export const cmdGroupEval = new discord.command.CommandGroup(optsEval);
 
-
-
 cmdGroupEval.raw(
-  { name: '$', aliases: ['p/eval'], onError: function() {} },
+  { name: '$', aliases: ['p/eval'], onError() {} },
   async (msg) => {
-    if (msg.content.length < 4 || !msg.content.includes(' '))
+    if (msg.content.length < 4 || !msg.content.includes(' ')) {
       throw new TypeError('No eval argument specified');
-    let code = msg.content
+    }
+    const code = msg.content
       .split(' ')
       .splice(1)
       .join(' ');
-    if (code === null || code.length < 3)
+    if (code === null || code.length < 3) {
       throw new TypeError('No eval argument specified');
-    const AsyncFunction = Object.getPrototypeOf(async function() {})
+    }
+    const AsyncFunction = Object.getPrototypeOf(async () => {})
       .constructor;
     const fakeConsole = new utils.FakeConsole(await msg.getChannel());
     const _args = ['console', 'msg', 'discord', 'pylon', 'fetch'];
@@ -58,7 +59,7 @@ cmdGroupEval.raw(
     } catch (e) {
       fakeConsole.log(e);
     }
-  }
+  },
 );
 export const falseupdate = discord.command.handler(
   (ctx) => ({ member: ctx.guildMember() }),
@@ -66,18 +67,16 @@ export const falseupdate = discord.command.handler(
     await member.edit({
       nick: typeof member.nick === 'string' ? member.nick : undefined,
       roles: member.roles,
-      //mute: false,
-      //deaf: false
-      channelId: null
+      // mute: false,
+      // deaf: false
+      channelId: null,
     });
     await msg.reply('done');
-  }
+  },
 );
 
-
-
 const test = cmdGroup.subcommand('test', (sub) => {
-  /*sub.raw('queue', async (m) => {
+  /* sub.raw('queue', async (m) => {
     const kve = new pylon.KVNamespace('loggingQueue');
     let q = await getKvPayloads('GUILD_UPDATE', '1');
     if (Array.isArray(q) && typeof q[0].getAuditLogs === 'function') {
@@ -85,9 +84,9 @@ const test = cmdGroup.subcommand('test', (sub) => {
     } else {
       await m.reply({ content: 'Fail' });
     }
-  });*/
+  }); */
   sub.raw('type', async (m) => {
-    await m.reply({ content: '' + typeof m });
+    await m.reply({ content: `${typeof m}` });
   });
 
   sub.raw('error', async (m) => {
@@ -98,27 +97,27 @@ const test = cmdGroup.subcommand('test', (sub) => {
     await m.reply('done');
   });
   sub.raw('queueenabled', async (m) => {
-    let isQ = routing.isQueueEnabled();
-    await m.reply({ content: '' + isQ });
+    const isQ = routing.isQueueEnabled();
+    await m.reply({ content: `${isQ}` });
   });
   sub.raw('embed', async (m) => {
-    let embed = new discord.Embed();
+    const embed = new discord.Embed();
     embed.setDescription('does this even look good');
     let txt = '';
-    for (var i = 0; i < 1900; i+=1) {
+    for (let i = 0; i < 1900; i += 1) {
       txt += Math.floor(Math.random() * 10).toString();
     }
-    //txt = '.' + '\n'.repeat(1000) + '.';
+    // txt = '.' + '\n'.repeat(1000) + '.';
     embed.setFooter({ text: txt });
     embed.setTimestamp(new Date().toISOString());
 
-    await m.reply({ embed: embed });
+    await m.reply({ embed });
   });
   sub.raw('guildcreate', async (m) => {
     await loggingEvents.OnGuildCreate(
       utils.composeSnowflake(),
       m.guildId,
-      await m.getGuild()
+      await m.getGuild(),
     );
     await m.reply('done');
   });
@@ -126,7 +125,7 @@ const test = cmdGroup.subcommand('test', (sub) => {
     await loggingEvents.OnUserUpdate(
       utils.composeSnowflake(),
       m.guildId,
-      m.author
+      m.author,
     );
     await m.reply('done');
   });
@@ -134,78 +133,82 @@ const test = cmdGroup.subcommand('test', (sub) => {
     await loggingEvents.OnGuildIntegrationsUpdate(
       utils.composeSnowflake(),
       m.guildId,
-      { guildId: m.guildId }
+      { guildId: m.guildId },
     );
     await m.reply('done');
   });
   sub.raw('join', async (m) => {
-    let ch = await discord.getChannel('691752063134203974');
-    if (!(ch instanceof discord.GuildVoiceChannel)) return;
+    const ch = await discord.getChannel('691752063134203974');
+    if (!(ch instanceof discord.GuildVoiceChannel)) {
+      return;
+    }
     await ch.voiceConnect();
     await m.reply('done');
   });
   sub.raw('perms', async (m) => {
     let permsVal = <any>'17179869186';
     permsVal = m.member.permissions;
-    let p = new utils.Permissions(permsVal);
-    let mp = p.serialize();
-    for (var k in mp) {
-      if (mp[k] === false) delete mp[k];
+    const p = new utils.Permissions(permsVal);
+    const mp = p.serialize();
+    for (const k in mp) {
+      if (mp[k] === false) {
+        delete mp[k];
+      }
     }
     await m.reply(
-      'Test: `' + permsVal + 'n`\n```json\n' + JSON.stringify(mp) + '\n```'
+      `Test: \`${permsVal}n\`\n\`\`\`json\n${JSON.stringify(mp)}\n\`\`\``,
     );
   });
   sub.raw('massEvents', async (m) => {
-    let count = 30;
-    let event = 'MESSAGE_DELETE';
-    let args = [
+    const count = 30;
+    const event = 'MESSAGE_DELETE';
+    const args = [
       {
         id: m.id,
         channelId: m.channelId,
-        guildId: m.guildId
+        guildId: m.guildId,
       },
-      m
+      m,
     ];
     let cc = 0;
-    //await pylon.requestCpuBurst(async function() {
-    for (var i = 0; i < count; i+=1) {
+    // await pylon.requestCpuBurst(async function() {
+    for (let i = 0; i < count; i += 1) {
       routing.OnEvent(
         'MESSAGE_DELETE',
         utils.composeSnowflake(new Date().getTime()),
-        ...args
+        ...args,
       );
       await sleep(30);
-      cc+=1;
+      cc += 1;
     }
-    //}, 300);
-    await m.reply('sent ' + cc + ' ' + event + ' events!');
+    // }, 300);
+    await m.reply(`sent ${cc} ${event} events!`);
   });
 });
 
 export const clearkv = discord.command.handler(
-  (ctx) => ({ kv: ctx.string() }),
-  async (msg, { kv }) => {
-    const kve = new pylon.KVNamespace(kv);
+  (ctx) => ({ kvep: ctx.string() }),
+  async (msg, { kvep }) => {
+    const kve = new pylon.KVNamespace(kvep);
     await kve.clear();
     await msg.reply('done');
-  }
+  },
 );
 
 export const listkv = discord.command.handler(
-  (ctx) => ({ kv: ctx.string() }),
-  async (msg, { kv }) => {
-    const kve = new pylon.KVNamespace(kv);
-    let items = await kve.items();
-    await msg.reply('```json\n' + JSON.stringify(items) + '\n```');
-  }
+  (ctx) => ({ kvep: ctx.string() }),
+  async (msg, { kvep }) => {
+    const kve = new pylon.KVNamespace(kvep);
+    const items = await kve.items();
+    await msg.reply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
+  },
 );
 
 export const getemoji = discord.command.handler(
   (ctx) => ({ emj: ctx.string() }),
   async (msg, { emj }) => {
-    let guild = await msg.getGuild();
-    let emoji = await guild.getEmoji(emj);
-    await msg.reply('```\n' + JSON.stringify(emoji) + '\n```');
-  }
+    const guild = await msg.getGuild();
+    const emoji = await guild.getEmoji(emj);
+    await msg.reply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
+  },
 );

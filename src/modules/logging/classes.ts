@@ -15,22 +15,22 @@ export class ChannelScopes {
 }
 
 export class ChannelConfig {
-    description: string = '';
+    description = '';
     scopes: ChannelScopes;
-    embed: boolean = false;
+    embed = false;
     footerAvatar: string | undefined = undefined;
     webhookUrl: string | undefined = undefined;
-    showEventName: boolean = false;
-    showTimestamps: boolean = false;
+    showEventName = false;
+    showTimestamps = false;
     constructor(
       desc: string,
       includes: Array<string>,
       excludes: Array<string> = [],
-      embed: boolean = false,
+      embed = false,
       footer: string | undefined = undefined,
       webhook: string | undefined = undefined,
-      showEventName: boolean = false,
-      showTimestamps: boolean = false,
+      showEventName = false,
+      showTimestamps = false,
     ) {
       this.description = desc;
       this.scopes = new ChannelScopes(includes, excludes);

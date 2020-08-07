@@ -28,7 +28,7 @@ const SNIPE_DELAY = 2 * 60 * 1000;
 export async function AL_OnMessageDelete(
   id: string,
   guildId: string,
-  log: discord.AuditLogEntry | Object,
+  log: discord.AuditLogEntry | unknown,
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
