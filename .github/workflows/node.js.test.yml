@@ -34,6 +34,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - run: npm i
+    - name: Lint
+      run: npm run lint --if-present
+    - name: Build
+      run: npm run build --if-present
     - name: Publish to testing guild
       run: npm run publish --if-present
       env:
