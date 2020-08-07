@@ -104,6 +104,7 @@ _dep.forEach((deployment_id) => {
       // console.log(obj);
       if (typeof (obj.msg) === 'string') {
         console.error(obj.msg);
+        process.exit(1);
       } else {
         console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string') {
@@ -115,7 +116,6 @@ _dep.forEach((deployment_id) => {
       }
     })
     .catch((e) => {
-      console.log(`API KEY IS ${process.env.API_TOKEN}`);
       console.error(e);
       process.exit(1);
     });
