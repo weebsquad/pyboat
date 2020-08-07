@@ -79,7 +79,11 @@ if (typeof (wh) === 'string' && _dep.length > 1) {
   sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
 }
 
+
+let doneGuilds = [];
 _dep.forEach((deployment_id) => {
+  if(doneGuilds.includes(deployment_id)) return;
+  doneGuilds.push(deployment_id);
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
     method: 'POST',
     headers: {
