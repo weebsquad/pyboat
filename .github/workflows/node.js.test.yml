@@ -42,5 +42,5 @@ jobs:
     - name: Publish to testing guild
       run: npm run publish --if-present
       env:
-        DEPLOYMENTS: ${{PYLON_API_DEPLOYMENTS_TEST_DEPLOY}}
+        DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS_TEST_DEPLOY}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
