@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag } from '../main';
+import * as utils from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -117,8 +118,8 @@ export const messages = {
   ) {
     return new Map([
       ['_TYPE_', 'NAME_CHANGED'],
-      ['_OLD_NAME_', oldGuild.name],
-      ['_NEW_NAME_', guild.name],
+      ['_OLD_NAME_', utils.escapeString(oldGuild.name)],
+      ['_NEW_NAME_', utils.escapeString(guild.name)],
     ]);
   },
   region(
@@ -139,8 +140,8 @@ export const messages = {
   ) {
     return new Map([
       ['_TYPE_', 'DESCRIPTION_CHANGED'],
-      ['_OLD_DESC_', oldGuild.description],
-      ['_NEW_DESC_', guild.description],
+      ['_OLD_DESC_', utils.escapeString(oldGuild.description)],
+      ['_NEW_DESC_', utils.escapeString(guild.description)],
     ]);
   },
   defaultMessageNotifications(

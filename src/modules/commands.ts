@@ -1,8 +1,10 @@
 // import { HandleCommand } from '../lib/commands';
 import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
-import { config } from '../config';
+import * as conf from '../config';
 import { logDebug, logCustom } from './logging/events/custom';
+
+const { config } = conf;
 
 async function HandleDM(msg: discord.Message) {
   // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
@@ -60,7 +62,9 @@ export async function OnMessageCreate(
     } else {
       // original cmd errored!
       const _e:Error = isCmd;
-      console.error(_e);
+      if (guildId === conf.globalConfig.masterGuild) {
+        console.error(_e);
+      }
       await logDebug(
         'BOT_ERROR',
         new Map<string, any>([

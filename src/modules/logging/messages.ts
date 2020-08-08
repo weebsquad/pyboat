@@ -30,6 +30,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} new channel created: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
     DM_CHANNEL_OPENED: `${discord.decor.Emojis.BOOKMARK_TABS} _USERTAG_ opened a dm with the bot`,
   },
+  CHANNEL_DELETE: {
+    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+  },
   CHANNEL_PINS_UPDATE: {
     MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
     MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
@@ -194,6 +197,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
 export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   CHANNEL_CREATE: {
     CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ created new channel: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+  },
+  CHANNEL_DELETE: {
+    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ deleted channel: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   CHANNEL_PINS_UPDATE: {
     MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,

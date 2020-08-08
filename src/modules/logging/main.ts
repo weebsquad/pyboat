@@ -9,6 +9,7 @@ import * as utils from './utils';
 import * as utils2 from '../../lib/utils';
 import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { eventData } from './tracking';
+import { logDebug } from './events/custom';
 
 class Event {
   id: string;
@@ -559,6 +560,7 @@ function combineMessages(
 
 
 export async function handleMultiEvents(q: Array<QueuedEvent>) {
+    try {
   let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
   let tdiff = new Date().getTime();
   q = await Promise.all(
@@ -621,6 +623,12 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
   }*/
   messages = combineMessages(messages);
   await sendInLogChannel(guildId, messages);
+} catch(e) {
+    if(utils.isDebug()) console.error(e);
+    await logDebug('BOT_ERROR',new Map<string, any>([
+        ['ERROR', `Error at logging.handleMultiEvents\n${e.stack}`],
+      ]))   
+}
 }
 
 export async function handleEvent(
@@ -630,6 +638,7 @@ export async function handleEvent(
   log: discord.AuditLogEntry | undefined | null,
   ...args: any
 ) {
+    try {
     if (typeof guildId !== 'string') guildId = '0';
   if(guildId === '0') guildId = conf.guildId;
   if (eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) return;
@@ -690,4 +699,11 @@ export async function handleEvent(
   //if (config.debug) console.log('handleevent.combineMessages', messages);
 
   await sendInLogChannel(guildId, messages);
+    } catch(e) {
+        if(utils.isDebug()) console.error(e);
+        await logDebug('BOT_ERROR',new Map<string, any>([
+            ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
+          ]),
+          id)   
+    }
 }

@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+import * as conf from '../config';
 import * as commands from './commands';
 import * as roleManagement from './roleManagement';
 import * as counting from './counting';

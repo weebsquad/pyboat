@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag, getChannelEmoji } from '../main';
+import * as utils from '../../../lib/utils';
 
 export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM) {
@@ -20,7 +21,12 @@ export function isAuditLog(
 
 export const messages = {
   async channelCreated(log: discord.AuditLogEntry, chan: discord.GuildChannel) {
-    return new Map([['_TYPE_', 'CHANNEL_CREATED'], ['_CHANNEL_ID_', chan.id], ['_CHANNEL_NAME_', chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${chan.name}\``]]);
+    const parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
+    return new Map([
+      ['_TYPE_', 'CHANNEL_CREATED'],
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_NAME_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`],
+    ]);
   },
   async dmChannelOpened(log: discord.AuditLogEntry, chan: discord.DmChannel) {
     const usr = await discord.getUser(chan.id);

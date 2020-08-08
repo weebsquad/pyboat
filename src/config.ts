@@ -151,7 +151,7 @@ const guildConfigs = <any>{
                                           false),
           ],
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
+          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
