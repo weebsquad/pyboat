@@ -30,18 +30,24 @@ export async function OnMessageCreate(
   if (msg.author === null) {
     return;
   }
-  if (!utils.isCommandsAuthorized(msg.member)) {
-    if (!msg.author.bot) {
-      await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
-    }
-    return;
-  }
+
   if (!msg.member) {
     // is a DM
     await HandleDM(msg);
   } else {
-    const isCmd = await commands2.handleCommand(msg);
-    if (typeof isCmd === 'boolean' && isCmd === true) {
+    if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
+      return;
+    }
+    const validCmd = await commands2.isCommand(msg);
+    if (!validCmd) {
+      return;
+    }
+    if (!utils.isCommandsAuthorized(msg.member)) {
+      await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
+      return;
+    }
+    const cmdExec = await commands2.handleCommand(msg);
+    if (typeof cmdExec === 'boolean' && cmdExec === true) {
       /* console.log(
         `#[CMD (<${new Date(
           utils.decomposeSnowflake(id).timestamp
@@ -60,12 +66,12 @@ export async function OnMessageCreate(
 
       return false;
     }
-    if (typeof isCmd === 'boolean' && !isCmd) {
+    if (typeof cmdExec === 'boolean' && !cmdExec) {
       /* let isCmd2 = await HandleCommand(msg);
         if (!isCmd2) await HandleChat(msg); */
     } else {
       // original cmd errored!
-      const _e:Error = isCmd;
+      const _e:Error = cmdExec;
       if (guildId === conf.globalConfig.masterGuild) {
         console.error(_e);
       }

@@ -63,8 +63,8 @@ export function isCommandsAuthorized(member: discord.GuildMember) {
 
 const reportingCooldowns = new pylon.KVNamespace('blacklistReportCooldownds');
 export async function reportBlockedAction(member: discord.GuildMember, action: string) {
-    const keyCdGlobal = `GLOBAL_${member.user.id}`;
-    const keyCdLocal = `SERVER_${member.user.id}`;
+  const keyCdGlobal = `GLOBAL_${member.user.id}`;
+  const keyCdLocal = `SERVER_${member.user.id}`;
   if (isGlobalAdmin(member.user.id)) {
     return;
   }
@@ -72,15 +72,19 @@ export async function reportBlockedAction(member: discord.GuildMember, action: s
     return;
   }
   if (isGlobalBlacklisted(member.user.id)) {
-      const _cd = await reportingCooldowns.get(keyCdGlobal);
-      if(_cd) return;
+    const _cd = await reportingCooldowns.get(keyCdGlobal);
+    if (_cd) {
+      return;
+    }
+    await reportingCooldowns.put(keyCdGlobal, true, { ttl: 10 * 1000 });
     await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
-    await reportingCooldowns.put(keyCdGlobal, true, { ttl: 10000});
   }
   if (isBlacklisted(member, true)) {
     const _cd = await reportingCooldowns.get(keyCdGlobal);
-    if(_cd) return;
+    if (_cd) {
+      return;
+    }
+    await reportingCooldowns.put(keyCdLocal, true, { ttl: 10 * 1000 });
     await logCustom('CORE', 'BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
-    await reportingCooldowns.put(keyCdLocal, true, { ttl: 10000});
   }
 }

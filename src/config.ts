@@ -26,7 +26,7 @@ export const globalConfig = <any>{
   ranks: Ranks,
   // userid blacklist (no commands usage, mostly)
   blacklist: [
-    '343241331746930699', // 8888#8888 (testing)
+    //'343241331746930699', // 8888#8888 (testing)
   ],
   // userids of bot accounts that can use pyboat commands!
   botsCommands: [],

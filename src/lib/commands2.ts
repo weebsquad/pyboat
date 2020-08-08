@@ -55,6 +55,20 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   return newo;
 }
 
+export async function isCommand(message: discord.Message) {
+  if (getCmdChannels().includes(message.channelId)) {
+    return false;
+  }
+  for (const key in cmdgroups) {
+    const obj: discord.command.CommandGroup = cmdgroups[key];
+    const ret = await obj.checkMessage(message);
+    if (ret === true) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function handleCommand(message: discord.Message) {
   if (getCmdChannels().includes(message.channelId)) {
     return false;
