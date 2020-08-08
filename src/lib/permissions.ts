@@ -1,5 +1,6 @@
-import { logDebug } from '../modules/logging/events/custom';
+import { logDebug, logCustom } from '../modules/logging/events/custom';
 import * as conf from '../config';
+import { getMemberTag } from '../modules/logging/main';
 
 const { globalConfig } = conf;
 const { config } = conf;
@@ -55,7 +56,7 @@ export function isGlobalBlacklisted(userid: string) {
 }
 export function isCommandsAuthorized(member: discord.GuildMember) {
   if (!member.user.bot) {
-    return isBlacklisted(member);
+    return !isBlacklisted(member);
   }
   return member.user.bot === true && globalConfig.botsCommands.includes(member.user.id) && !isBlacklisted(member);
 }
@@ -64,5 +65,9 @@ export async function reportBlockedAction(member: discord.GuildMember, action: s
   if (!isBlacklisted(member)) {
     return;
   }
-  await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', member.toMention()], ['_ACTION_', action]]));
+  if(isGlobalBlacklisted(member.user.id)) {
+  await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
+  } else {
+      await logCustom('CORE','BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
+  }
 }

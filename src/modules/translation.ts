@@ -1,6 +1,7 @@
 import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as utils from '../lib/utils';
+import {messageJump} from '../modules/logging/messages';
 
 const kv = new pylon.KVNamespace('translation');
 
@@ -173,6 +174,11 @@ export async function OnMessageReactionAdd(
   }
   if (reaction.member.user.bot === true) {
     return;
+  }
+  if(utils.isBlacklisted(reaction.member)) {
+      const jmp = messageJump.split('_CHANNEL_ID_').join(reaction.channelId).split('_GUILD_ID_').join(guildId).split('_MESSAGE_ID_').join(reaction.messageId);
+    await utils.reportBlockedAction(reaction.member, `translation reaction attempt on <#${reaction.channelId}> on a message by <@!${reaction.userId}> ${jmp}`);
+  return;
   }
 
   const emoji = reaction.emoji;
