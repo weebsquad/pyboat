@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
+import * as utils from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -32,6 +33,7 @@ export const messages = {
     const mp = new Map();
     mp.set('_TYPE_', 'MEMBER_JOIN');
     mp.set('_USER_ID_', member.user.id);
+    mp.set('_ACCOUNT_AGE_', utils.getLongAgoFormat(utils.decomposeSnowflake(member.user.id).timestamp, 2));
     mp.set('_USERTAG_', getMemberTag(member));
     return mp;
   },

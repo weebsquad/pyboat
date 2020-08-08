@@ -161,49 +161,6 @@ export const snowflake = discord.command.handler(
   }
 ); */
 
-const timeMap = new Map([
-  ['decade', 1000 * 60 * 60 * 24 * 365 * 10],
-  ['year', 1000 * 60 * 60 * 24 * 365],
-  ['month', 1000 * 60 * 60 * 24 * 31],
-  ['week', 1000 * 60 * 60 * 24 * 7],
-  ['day', 1000 * 60 * 60 * 24],
-  ['hour', 1000 * 60 * 60],
-  ['minute', 1000 * 60],
-  ['second', 1000],
-  ['milisecond', 1],
-]);
-function getLongAgoFormat(ts: number, limiter: number) {
-  let runcheck = ts + 0;
-  const txt = new Map();
-  for (const [k, v] of timeMap) {
-    if (runcheck < v || txt.entries.length >= limiter) {
-      continue;
-    }
-    const runs = Math.ceil(runcheck / v) + 1;
-    for (let i = 0; i <= runs; i += 1) {
-      if (runcheck < v) {
-        break;
-      }
-      if (txt.has(k)) {
-        txt.set(k, txt.get(k) + 1);
-      } else {
-        txt.set(k, 1);
-      }
-      runcheck -= v;
-    }
-  }
-  const txtret = [];
-  let runsc = 0;
-  for (const [key, value] of txt) {
-    if (runsc >= limiter) {
-      break;
-    }
-    const cc = value > 1 ? `${key}s` : key;
-    txtret.push(`${value} ${cc}`);
-    runsc += 1;
-  }
-  return txtret.join(', ');
-}
 export const server = discord.command.rawHandler(async (message) => {
   const edmsg = message.reply('<a:loading:735794724480483409>');
   const embed = new discord.Embed();
@@ -220,8 +177,7 @@ export const server = discord.command.rawHandler(async (message) => {
     iconUrl: 'https://cdn.discordapp.com/emojis/735781410509684786.png?v=1',
   });
   const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
-  const diff = new Date(new Date().getTime() - dtCreation.getTime()).getTime();
-  const tdiff = getLongAgoFormat(diff, 2);
+  const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2);
   if (icon !== null) {
     embed.setThumbnail({ url: icon });
   }

@@ -282,7 +282,7 @@ async function getMessages(
 
     if (!cfg.embed) {
       let txt = '';
-      const ts = getTimestamp(date);
+      const ts = getTimestamp(utils.changeLoggingTimezone(date));
       if (typeof ts !== 'string' || ts === '') {
         throw new Error('logging timestamps improperly formatted!');
       }
@@ -480,6 +480,7 @@ async function getMessages(
           if (cfg.showTimestamps) {
             em.setTimestamp(date.toISOString());
           }
+          if(cfg.embedColor) em.setColor(cfg.embedColor);
           if (cfg.showEventName) {
             let event = ev.eventName;
             if (event.substr(0, 1) === '|' || event === 'DEBUG') {
@@ -771,6 +772,18 @@ export async function handleEvent(
     ) {
       throw new Error(`handleEvent missing getKeys/messages definitions for event ${eventName}`);
     }
+    if (log instanceof discord.AuditLogEntry && config.ignores) {
+      if (discord.getBotId() === log.userId) {
+        if (config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+          return;
+        }
+      } else if (config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+        return;
+      }
+    }
+    if (log instanceof discord.AuditLogEntry && config.auditLogs === false) {
+      log = null;
+    }
     let keys: any;
     if (typeof data.getKeys === 'function') {
       keys = await data.getKeys(log, ...args);
@@ -781,15 +794,7 @@ export async function handleEvent(
     // let isAuditLog = false;
 
     // check ignores
-    if (log instanceof discord.AuditLogEntry && config.ignores) {
-      if (discord.getBotId() === log.userId) {
-        if (config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(log.userId)) {
-          return;
-        }
-      } else if (config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
-        return;
-      }
-    }
+
     const obj = new Event(
       utils2.composeSnowflake(date.getTime()),
       guildId,

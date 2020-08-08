@@ -12,7 +12,71 @@ export function isNormalInteger(str, checkPositive = false) {
   const n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && (n >= 0 || !checkPositive);
 }
+function stdTimezoneOffset(dt: Date) {
+    var jan = new Date(dt.getFullYear(), 0, 1);
+    var jul = new Date(dt.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
 
+function isDateDst(dt: Date) {
+    return dt.getTimezoneOffset() === stdTimezoneOffset(dt);
+}
+export function changeTimezone(date, ianatz) {
+    // suppose the date is 12:00 UTC
+    var invdate = new Date(date.toLocaleString('en-US', {
+      timeZone: ianatz
+    }));
+    let diff = date.getTime() - invdate.getTime();
+    const _extra = Math.floor(diff/(1000*60*60))*(1000*60*60); // wipe miliseconds diff lmao
+    const newd = new Date(date.getTime() + _extra);
+    console.log(`Extra: ${_extra}\nDiff: ${diff}\nHours: ${newd.getHours()}\nNew Date: ${newd}`);
+    return newd;
+  }
+  
+const timeMap = new Map([
+    ['decade', 1000 * 60 * 60 * 24 * 365 * 10],
+    ['year', 1000 * 60 * 60 * 24 * 365],
+    ['month', 1000 * 60 * 60 * 24 * 31],
+    ['week', 1000 * 60 * 60 * 24 * 7],
+    ['day', 1000 * 60 * 60 * 24],
+    ['hour', 1000 * 60 * 60],
+    ['minute', 1000 * 60],
+    ['second', 1000],
+    ['milisecond', 1],
+  ]);
+  export function getLongAgoFormat(ts: number, limiter: number) {
+    ts = new Date(new Date().getTime() - ts).getTime();
+    let runcheck = ts + 0;
+    const txt = new Map();
+    for (const [k, v] of timeMap) {
+      if (runcheck < v || txt.entries.length >= limiter) {
+        continue;
+      }
+      const runs = Math.ceil(runcheck / v) + 1;
+      for (let i = 0; i <= runs; i += 1) {
+        if (runcheck < v) {
+          break;
+        }
+        if (txt.has(k)) {
+          txt.set(k, txt.get(k) + 1);
+        } else {
+          txt.set(k, 1);
+        }
+        runcheck -= v;
+      }
+    }
+    const txtret = [];
+    let runsc = 0;
+    for (const [key, value] of txt) {
+      if (runsc >= limiter) {
+        break;
+      }
+      const cc = value > 1 ? `${key}s` : key;
+      txtret.push(`${value} ${cc}`);
+      runsc += 1;
+    }
+    return txtret.join(', ');
+  }
 export function isNumber(n: string) {
   return /^-?[\d.]+(?:e-?\d+)?$/.test(n);
 }

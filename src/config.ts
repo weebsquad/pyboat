@@ -69,6 +69,8 @@ const defaultConfig = { // for non-defined configs!
       suffixReasonToAuditlog: true,
       // reason suffix to append
       reasonSuffix: ' with reason `_REASON_RAW_`',
+      // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      timezone: 'Etc/GMT+0',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
       enabled: false,
@@ -180,6 +182,7 @@ const guildConfigs = <any>{
           [
             '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
                                           'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
+                                          0x00ff00,
                                           'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
                                           true,
                                           false),
@@ -202,6 +205,7 @@ const guildConfigs = <any>{
         actorTag: '_MENTION_',
         reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
+        timezone: 'Etc/GMT+0',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,
@@ -299,7 +303,7 @@ const guildConfigs = <any>{
       logging: { // event logging module
         enabled: true,
         debug: true,
-        auditLogs: false,
+        auditLogs: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['740997800749170698', chPlain(['*'], [], true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
@@ -319,6 +323,7 @@ const guildConfigs = <any>{
         actorTag: '_MENTION_',
         reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
+        timezone: 'Etc/GMT+3',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,

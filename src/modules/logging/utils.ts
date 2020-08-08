@@ -7,6 +7,13 @@ export function isDebug(bypassMaster = false) {
   return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
+export function changeLoggingTimezone(dt: Date) {
+  if (!config.timezone) {
+    return dt;
+  }
+  return utils.changeTimezone(dt, config.timezone);
+}
+
 export function isIgnoredChannel(channel: discord.GuildChannel | string) {
   if (channel instanceof discord.GuildChannel) {
     channel = channel.id;

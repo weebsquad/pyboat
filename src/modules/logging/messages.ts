@@ -63,7 +63,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   },
   'GUILD_MEMBER_ADD': {
     BOT_ADDED: '<:bot:735780703945490542> _USERTAG_ **[**||\`_USER_ID_\`||**]** was added to the server',
-    MEMBER_JOIN: `${discord.decor.Emojis.INBOX_TRAY} _USERTAG_ **[**||\`_USER_ID_\`||**]** joined the server`,
+    MEMBER_JOIN: `${discord.decor.Emojis.INBOX_TRAY} _USERTAG_ **[**||\`_USER_ID_\`||**]** joined the server (account created _ACCOUNT_AGE_ ago)`,
   },
   'GUILD_MEMBER_REMOVE': {
     MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ **[**||\`_USER_ID_\`||**]** left the server`,
