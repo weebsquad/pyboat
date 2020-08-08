@@ -107,7 +107,7 @@ _dep.forEach((deployment_id) => {
         console.error(`Publish error: ${obj.msg}`);
         process.exit(1);
       } else {
-        console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
+        console.log(`Published to${obj.guild.name} ${isGh === false ? ` (${obj.guild.id})` : ''} successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
           sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);
         }
