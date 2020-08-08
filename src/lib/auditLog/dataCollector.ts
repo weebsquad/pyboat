@@ -1,6 +1,5 @@
 import * as utils from '../utils';
 
-
 /*
 EVENT: {
     // returning false prevents audit log data from being pulled
