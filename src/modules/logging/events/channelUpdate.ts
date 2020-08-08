@@ -1,6 +1,7 @@
 import { handleEvent, getUserTag, getChannelEmoji } from '../main';
 import * as utils from '../../../lib/utils';
 import { ChannelScopes } from '../classes';
+import * as constants from '../../../constants/constants';
 
 export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel, oldChan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM || oldChan.type === discord.Channel.Type.DM) {
@@ -92,6 +93,18 @@ export const messages = {
       ['_CHANNEL_MENTION_', mention],
       ['_NEW_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`` : `\`${parExists}\``],
       ['_OLD_MENTION_', parentOld !== null ? `${getChannelEmoji(parentOld)}\`${utils.escapeString(parentOld.name)}\`` : `\`${oldParExists}\``],
+    ]);
+  },
+  async type(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
+    const mention = await getChannelMention(chan);
+    const newType = constants.channelTypeMap.get(chan.type);
+    const oldType = constants.channelTypeMap.get(oldChan.type);
+    return new Map([
+      ['_TYPE_', 'TYPE_CHANGED'],
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_TYPE_', newType],
+      ['_OLD_TYPE_', oldType],
     ]);
   },
 };

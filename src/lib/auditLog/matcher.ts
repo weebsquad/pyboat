@@ -36,6 +36,8 @@ const objectRemaps = <any>{
   1: {
     // GUILD_UPDATE
     iconHash: 'icon',
+    rulesChannelId: null,
+    publicUpdatesChannelId: null,
   },
   30: {
     // ROLE_CREATE
@@ -49,6 +51,7 @@ const objectRemaps = <any>{
     // ROLE_DELETE
     permissionsNew: null,
   },
+
 };
 
 // dont check objects with these values... lol

@@ -692,16 +692,16 @@ export async function handleEvent(
   if (utils.isDebug(true)) console.log('logging trigger', eventName, obj);
 
   let chans = await parseChannelsData(obj);
-  if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
+  //if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
   let messages = await getMessages(guildId, chans, obj);
-  if (utils.isDebug(true)) console.log('handleevent.getMessages', messages);
+  //if (utils.isDebug(true)) console.log('handleevent.getMessages', messages);
 
   messages = combineMessages(messages);
-  if (utils.isDebug(true)) console.log('handleevent.combineMessages', messages);
+  //if (utils.isDebug(true)) console.log('handleevent.combineMessages', messages);
 
   await sendInLogChannel(guildId, messages);
     } catch(e) {
-        if(utils.isDebug(true)) console.error(e);
+        if(utils.isDebug()) console.error(e);
         await logDebug('BOT_ERROR',new Map<string, any>([
             ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
           ]),
