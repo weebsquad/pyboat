@@ -24,7 +24,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },
   '|COMMANDS': {
-    COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNELID_> : \`_COMMANDNAME_\``,
+    COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
   '|ANTIPING': {
     ANTIPING_FAIL_MARK_MEMBER_NOT_FOUND: ' antiping fail mark member not found _ACTION_ _MESSAGE_ID_ _USERTAG_ _CHANNEL_ID_ _ACTORTAG_',
@@ -48,7 +48,6 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     USERLIMIT_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed user limit: **_OLD_LIMIT_** => **_NEW_LIMIT_**`,
     PERMS_SYNCED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions synchronized with _PARENT_MENTION_`,
     PERMS_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions changed: _CHANGES_`,
-
   },
   'CHANNEL_DELETE': {
     CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
@@ -217,6 +216,18 @@ export const messages: {[key: string]: {[key: string]: string}} = {
 export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   CHANNEL_CREATE: {
     CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ created new channel: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
+  },
+  CHANNEL_UPDATE: {
+    NAME_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** name updated: \`_OLD_NAME_\` => \`_NEW_NAME_\``,
+    CATEGORY_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed category: _OLD_MENTION_ => _NEW_MENTION_`,
+    TYPE_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed type: \`_OLD_TYPE_\` => \`_NEW_TYPE_\``,
+    NSFW_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** nsfw status set to **_NEW_NSFW_**`,
+    TOPIC_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed topic: \`_OLD_TOPIC_\` => \`_NEW_TOPIC_\``,
+    SLOWMODE_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed slowmode: **_OLD_SLOWMODE_s** => **_NEW_SLOWMODE_s**`,
+    BITRATE_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed bitrated: **_OLD_BITRATE_kbps** => **_NEW_BITRATE_kbps**`,
+    USERLIMIT_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed user limit: **_OLD_LIMIT_** => **_NEW_LIMIT_**`,
+    PERMS_SYNCED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions synchronized with _PARENT_MENTION_`,
+    PERMS_CHANGED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ edited channel _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions changed: _CHANGES_`,
   },
   CHANNEL_DELETE: {
     CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ deleted channel: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,

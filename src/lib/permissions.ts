@@ -5,32 +5,38 @@ import { getMemberTag } from '../modules/logging/main';
 const { globalConfig } = conf;
 const { config } = conf;
 
-export function getUserAuth(mem: discord.GuildMember) {
+export function getUserAuth(mem: discord.GuildMember | string) {
+  const id = typeof mem === 'string' ? mem : mem.user.id;
   let highest = 0;
   let lowest = 0;
-  const usrLevel = config.levels.users[mem.user.id];
+  const usrLevel = config.levels.users[id];
   if (typeof usrLevel === 'number' && usrLevel > highest) {
     highest = usrLevel;
   } else if (typeof usrLevel === 'number' && usrLevel < 0) {
     lowest = -1;
   }
-  for (const key in config.levels.roles) {
-    const roleLevel = config.levels.roles[key];
-    if (mem.roles.includes(key) && roleLevel > highest) {
-      highest = roleLevel;
+  if (mem instanceof discord.GuildMember) {
+    for (const key in config.levels.roles) {
+      const roleLevel = config.levels.roles[key];
+      if (mem.roles.includes(key) && roleLevel > highest) {
+        highest = roleLevel;
+      }
     }
   }
-  if (lowest < 0 && !isGlobalAdmin(mem.user.id)) {
+  if (lowest < 0 && !isGlobalAdmin(id)) {
     highest = lowest;
   } // blacklist!
   return highest;
 }
 
-export function isBlacklisted(member: discord.GuildMember, noCheckGlobal = false) {
-  if (isGlobalAdmin(member.user.id)) {
+export function isBlacklisted(member: discord.GuildMember | string, noCheckGlobal = false) {
+  if (member instanceof discord.GuildMember) {
+    member = member.user.id;
+  }
+  if (isGlobalAdmin(member)) {
     return false;
   }
-  if (isGlobalBlacklisted(member.user.id) && !noCheckGlobal) {
+  if (isGlobalBlacklisted(member) && !noCheckGlobal) {
     return true;
   }
   const usrLevel = getUserAuth(member);

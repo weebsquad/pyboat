@@ -57,10 +57,11 @@ export async function OnMessageCreate(
         'COMMANDS',
         'COMMAND_USED',
         new Map<string, any>([
-          ['commandname', msg.content],
-          ['author', msg.author],
-          ['member', msg.member],
-          ['channelid', msg.channelId],
+          ['_COMMAND_NAME_', msg.content],
+          ['_AUTHOR_', msg.author],
+          ['_USER_ID_', msg.author.id],
+          ['_MEMBER_', msg.member],
+          ['_CHANNEL_ID_', msg.channelId],
         ]),
       );
 

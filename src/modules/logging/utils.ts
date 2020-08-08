@@ -15,6 +15,13 @@ export function isIgnoredChannel(channel: discord.GuildChannel | string) {
   if (!ignores) {
     return false;
   }
+  let chans = [].concat(ignores.channels);
+  if (ignores.logChannels === true) {
+    const _lc: any = Array.from(config.logChannels.keys());
+    console.log(_lc);
+    chans = chans.concat(_lc);
+  }
+  return chans.includes(channel);
 }
 
 export function isIgnoredUser(user: string | discord.User | discord.GuildMember) {
@@ -28,6 +35,14 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   if (!ignores) {
     return false;
   }
+  const usrs = [].concat(ignores.users);
+  if (ignores.self === true) {
+    usrs.push(discord.getBotId());
+  }
+  if (ignores.blacklistedUsers && utils.isBlacklisted(user)) {
+    return true;
+  }
+  return usrs.includes(user);
 }
 
 export function isMasterInDebug() {

@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 import * as conf from '../../../config';
 import * as utils from '../../../lib/utils';
 
@@ -55,6 +55,9 @@ export async function logCustom(
   id: string = utils.composeSnowflake(),
 ) {
   cat = cat.toUpperCase();
+  if (placeholders && placeholders.has('_USER_ID_') && isIgnoredUser(placeholders.get('_USER_ID_'))) {
+    return;
+  }
   if (cat.substr(0, 1) !== '|') {
     cat = `|${cat}`;
   }

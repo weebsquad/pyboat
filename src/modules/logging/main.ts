@@ -171,7 +171,7 @@ async function parseChannelsData(
     let type = el.get('_TYPE_') ?? '';
     let key = el.get('_KEY_');
     let isAuditLog =
-      ev.auditLogEntry instanceof discord.AuditLogEntry
+      ev.auditLogEntry instanceof discord.AuditLogEntry && config.auditLogs === true
         ? ev.data.isAuditLog(ev.auditLogEntry, key, ...ev.payload)
         : false;
     if (!el.has('_GUILD_ID_')) el.set('_GUILD_ID_', ev.guildId);
@@ -193,7 +193,7 @@ async function parseChannelsData(
       el.set('_ACTORTAG_', utils.getActorTag(ev.auditLogEntry));
       if (reason !== '') {
         el.set('_REASON_RAW_', reason);
-        el.set('_REASON_', config.reasonPrefix.replace('_REASON_RAW_', reason));
+        el.set('_REASON_', config.reasonSuffix.replace('_REASON_RAW_', reason));
       } else {
         el.set('_REASON_', '');
         el.set('_REASON_RAW_', '');
@@ -586,7 +586,17 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       typeof data['messages'] !== 'object'
     )
       continue;
-
+      if (qev.auditLogEntry instanceof discord.AuditLogEntry && config.ignores) {
+        if(discord.getBotId() === qev.auditLogEntry.userId) {
+            if(config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
+                return;
+            }
+        } else {
+            if(config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
+                return;
+            }
+        }
+    }
     let keys = await data.getKeys(qev.auditLogEntry, ...qev.payload);
     //let isAuditLog = false;
         const al = <any>qev.auditLogEntry;
@@ -674,6 +684,18 @@ export async function handleEvent(
   if(!Array.isArray(keys)) throw new Error('handleEvent keys not an array!')
   //let isAuditLog = false;
 
+  // check ignores
+    if (log instanceof discord.AuditLogEntry && config.ignores) {
+        if(discord.getBotId() === log.userId) {
+            if(config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+                return;
+            }
+        } else {
+            if(config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+                return;
+            }
+        }
+    }
   let obj = new Event(
     utils2.composeSnowflake(date.getTime()),
     guildId,

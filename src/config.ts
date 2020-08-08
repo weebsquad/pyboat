@@ -26,7 +26,7 @@ export const globalConfig = <any>{
   ranks: Ranks,
   // userid blacklist (no commands usage, mostly)
   blacklist: [
-    //'343241331746930699', // 8888#8888 (testing)
+    // '343241331746930699', // 8888#8888 (testing)
   ],
   // userids of bot accounts that can use pyboat commands!
   botsCommands: [],
@@ -40,21 +40,35 @@ const defaultConfig = { // for non-defined configs!
     queue: false,
     logging: { // event logging module
       enabled: false,
+      // should we try to pull audit log data for every event, or just display raw data??
+      auditLogs: true,
       logChannels: new Map<discord.Snowflake, ChannelConfig>(),
       messages: messages.messages, // defaults
       messagesAuditLogs: messages.messagesAuditLogs, // defaults
       ignores: {
+        // array of channel ids to ignore (any event scoped to this channel (messages, typing, updates, etc))
         channels: [],
+        // array of user ids to ignore (any event related to this user (member updates, message deletes, message updates, etc))
         users: [],
-        self: true,
-        extendUsersToAuditLogs: true,
+        // ignore the self bot account ?
+        self: false,
+        // also ignore actions performed by the bot account?
         selfAuditLogs: false,
+        // also ignore actions performed by users in the ignored users array?
+        extendUsersToAuditLogs: true,
+        // ignore all blacklisted user actions from logging (if audit log extension is enabled, will also be checked!)
+        blacklistedUsers: false,
+        // automatically ignore all channels used as log channels from logging themselves!
         logChannels: true,
       },
-      userTag: '',
-      actorTag: '',
-      reasonPrefix: '',
-      suffixReasonToAuditlog: false,
+      // tag type to use for users
+      userTag: '_MENTION_',
+      // tag type to use for actors
+      actorTag: '_MENTION_',
+      // automatically append reason suffix below when reason not already found on the message?
+      suffixReasonToAuditlog: true,
+      // reason suffix to append
+      reasonSuffix: ' with reason `_REASON_RAW_`',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
       enabled: false,
@@ -160,6 +174,7 @@ const guildConfigs = <any>{
       logging: { // event logging module
         enabled: true,
         debug: true,
+        auditLogs: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['729980275550846978', chPlain(['*'], ['DEBUG'], true, true)],
           [
@@ -176,15 +191,16 @@ const guildConfigs = <any>{
           channels: [],
           users: [],
           self: true,
-          extendUsersToAuditLogs: true,
           selfAuditLogs: true,
+          extendUsersToAuditLogs: true,
+          blacklistedUsers: false,
           logChannels: true,
         },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
         actorTag: '_MENTION_',
-        reasonPrefix: ' with reason `_REASON_RAW_`',
+        reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
@@ -283,23 +299,25 @@ const guildConfigs = <any>{
       logging: { // event logging module
         enabled: true,
         debug: true,
+        auditLogs: false,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['740997800749170698', chPlain(['*'], [], true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
         ]),
         ignores: {
           channels: [],
-          users: [],
+          users: ['343241331746930699'],
           self: true,
-          extendUsersToAuditLogs: true,
-          selfAuditLogs: false,
+          selfAuditLogs: true,
+          extendUsersToAuditLogs: false,
+          blacklistedUsers: false,
           logChannels: true,
         },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
         actorTag: '_MENTION_',
-        reasonPrefix: ' with reason `_REASON_RAW_`',
+        reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2

@@ -142,8 +142,7 @@ export function isAuditLog(
   chan: discord.Channel.AnyChannel,
   oldChan: discord.Channel.AnyChannel,
 ) {
-  return false;
-  if (['userLimit', 'position', 'parentId'].includes(key)) {
+  if (['userLimit', 'position', 'parentId', 'parentPermissionSynchronization'].includes(key)) {
     return false;
   }
   return log instanceof discord.AuditLogEntry;
