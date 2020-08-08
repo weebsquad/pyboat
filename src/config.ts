@@ -12,16 +12,25 @@ export enum Ranks {
 }
 
 export const globalConfig = <any>{
-  admins: ['344837487526412300'],
+  // Global Admin
+  admins: [
+    '344837487526412300', // metal#0666
+  ],
+  // used for logging debugging mostly
   masterGuild: '565323632751149103',
+  // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
   },
   ranks: Ranks,
-  blacklist: ['343241331746930699'], // userid blacklist (no commands usage, mostly)
-  botsCommands: [], // userids of bot accounts that can use pylon commands!
+  // userid blacklist (no commands usage, mostly)
+  blacklist: [
+    '343241331746930699', // 8888#8888 (testing)
+  ],
+  // userids of bot accounts that can use pyboat commands!
+  botsCommands: [],
 };
 const defaultConfig = { // for non-defined configs!
   levels: {

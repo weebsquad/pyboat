@@ -15,7 +15,7 @@ export const _groupOptions = {
   additionalPrefixes: ['p/'],
   description: 'Dev commands',
   filters: F.custom(
-    (message) => conf.isGlobalAdmin(message.member.user.id),
+    (message) => utils.isGlobalAdmin(message.member.user.id),
     'Must be bot global admin',
   ),
 };
@@ -28,7 +28,7 @@ optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.filters = F.silent(
   F.custom(
-    (message) => conf.isGlobalAdmin(message.member.user.id),
+    (message) => utils.isGlobalAdmin(message.member.user.id),
     'Must be bot global admin',
   ),
 );

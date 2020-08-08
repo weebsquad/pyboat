@@ -35,20 +35,16 @@ const eventFilters = <any>{
         }
       }
       if (member.roles.length !== oldMember.roles.length) {
-        return true;
+        return false;
       }
       const mismatch1 = member.roles.filter((ele) => {
-        if (
-          typeof oldMember.roles.find((ele2) => ele2 === ele) !== 'undefined'
-        ) {
+        if (oldMember.roles.find((ele2) => ele2 === ele)) {
           return false;
         }
         return true;
       });
-      const mismatch2 = member.roles.filter((ele) => {
-        if (
-          typeof oldMember.roles.find((ele2) => ele2 === ele) !== 'undefined'
-        ) {
+      const mismatch2 = oldMember.roles.filter((ele) => {
+        if (member.roles.find((ele2) => ele2 === ele)) {
           return false;
         }
         return true;

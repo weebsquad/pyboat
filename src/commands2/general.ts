@@ -21,7 +21,7 @@ export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
 export const mylevel = discord.command.rawHandler(
   async (msg) => {
-    await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${conf.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+    await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
   },
 );
 
