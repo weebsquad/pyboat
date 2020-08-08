@@ -257,7 +257,7 @@ const guildConfigs = <any>{
         enabled: true,
         debug: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['740997800749170698', chPlain(['*'], [], true, false)],
+          ['740997800749170698', chPlain(['*'], [], true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
         ]),
         messages: messages.messages, // defaults

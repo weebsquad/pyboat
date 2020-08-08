@@ -54,14 +54,16 @@ export async function logCustom(
   placeholders: Map<string, any> | undefined = undefined,
   id: string = utils.composeSnowflake(),
 ) {
-    cat = cat.toUpperCase();
-    if(cat.substr(0,1) !== '|') cat = `|${cat}`;
+  cat = cat.toUpperCase();
+  if (cat.substr(0, 1) !== '|') {
+    cat = `|${cat}`;
+  }
   const evCat = config.messages[cat];
   if (!evCat) {
     throw new Error(`Tried to log ${cat}.${subtype} but category not defined in messages!`);
   }
   const evMsg = evCat[subtype];
-  if(!evMsg) {
+  if (!evMsg) {
     throw new Error(`Tried to log ${cat}.${subtype} but subtype not defined in messages!`);
   }
   await handleEvent(
