@@ -130,7 +130,6 @@ export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.
     }
   }
 
-
   return keys;
 }
 
@@ -247,7 +246,6 @@ export const messages = {
   },
   async permissionsChanged(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
     const changes = getPermDiffs(chan, oldChan);
-    console.log('perms changed: ', changes);
     const mention = await getChannelMention(chan);
     let txt = '';
     const { added } = changes;
@@ -272,13 +270,64 @@ export const messages = {
     allIds.forEach((e) => {
       const oldV = oldChan.permissionOverwrites.find((obj) => obj.id === e);
       const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
-      const objectPing = `${newV.type === 'role' ? `<@&${newV.id}>` : `<@!${newV.id}>`}`;
+      const _type = newV !== undefined ? newV.type : oldV.type;
+      const _id = newV !== undefined ? newV.id : oldV.id;
+      const objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
+      const permsAllowOld = oldV !== undefined ? new utils.Permissions(oldV.allow).serialize() : new utils.Permissions(0).serialize();
+      const permsDenyOld = oldV !== undefined ? new utils.Permissions(oldV.deny).serialize() : new utils.Permissions(0).serialize();
+      const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize() : new utils.Permissions(0).serialize();
+      const permsDenyNew = newV !== undefined ? new utils.Permissions(newV.deny).serialize() : new utils.Permissions(0).serialize();
       if (!oldV && newV) { // Added!
         txt += `\nAdded ${newV.type} ${objectPing}`;
       } else if (oldV && !newV) {
         txt += `\nRemoved ${oldV.type} ${oldV.type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
       } else if (oldV && newV) {
         txt += `\nChanged ${newV.type} ${objectPing}`;
+      }
+      const serOld: {[key: string]: number} = {};
+      const serNew: {[key: string]: number} = {};
+      for (const key in permsAllowOld) {
+        if (permsAllowOld[key] === true) {
+          serOld[key] = 1;
+        } else if (permsDenyOld[key] === true) {
+          serOld[key] = -1;
+        } else {
+          serOld[key] = 0;
+        }
+      }
+      for (const key in permsAllowNew) {
+        if (permsAllowNew[key] === true) {
+          serNew[key] = 1;
+        } else if (permsDenyNew[key] === true) {
+          serNew[key] = -1;
+        } else {
+          serNew[key] = 0;
+        }
+      }
+      const diffs: {[key: string]: number} = {};
+      for (const key in serOld) {
+        if (serOld[key] !== serNew[key]) {
+          diffs[key] = serNew[key];
+        }
+      }
+      if (Object.keys(diffs).length > 0) {
+        txt += '\n```diff\n';
+        for (const key in diffs) {
+          const val = diffs[key];
+          let symbol = '';
+          if (val === 0) {
+            symbol = '•';
+          } else if (val === 1) {
+            symbol = '+';
+          } else if (val === -1) {
+            symbol = '-';
+          }
+          if (symbol === '') {
+            continue;
+          }
+          txt += `\n${symbol} ${key}`;
+        }
+        txt += '\n```\n';
       }
     });
     return new Map([
