@@ -9,12 +9,11 @@ on:
       - master
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x]
-
+        node-version: [10.x, 12.x, 14.x]
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -24,6 +23,21 @@ jobs:
     - run: npm i
     - name: Lint
       run: npm run lint --if-present
+    - name: Build
+      run: npm run build --if-present
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i
     - name: Build
       run: npm run build --if-present
     - name: Publish to all guilds
