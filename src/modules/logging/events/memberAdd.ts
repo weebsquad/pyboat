@@ -1,9 +1,10 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.GuildMember,
 ) {
+    if(isIgnoredUser(member)) return [];
   if (member.user.bot) {
     return ['botAdd'];
   }

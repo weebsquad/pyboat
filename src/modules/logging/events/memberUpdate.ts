@@ -1,10 +1,11 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
+    if(isIgnoredUser(member)) return [];
   const keys = [];
   if (member.nick !== oldMember.nick) {
     keys.push('nickname');

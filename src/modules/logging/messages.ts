@@ -27,6 +27,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     BOT_STARTED: `${discord.decor.Emojis.WHITE_CHECK_MARK} Bot code reloaded`,
     RAW_EVENT: `${discord.decor.Emojis.INBOX_TRAY} received \`_EVENT_\` / Queue: **_QUEUE_**`,
     CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
+    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`
   },
   'CHANNEL_CREATE': {
     CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} new channel created: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,

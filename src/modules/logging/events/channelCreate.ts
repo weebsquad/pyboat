@@ -1,10 +1,11 @@
-import { handleEvent, getUserTag, getChannelEmoji } from '../main';
+import { handleEvent, getUserTag, getChannelEmoji, isIgnoredChannel } from '../main';
 import * as utils from '../../../lib/utils';
 
 export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM) {
     return ['dmChannelOpened'];
   }
+  if(isIgnoredChannel(chan)) return [];
   return ['channelCreated'];
 }
 

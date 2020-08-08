@@ -1,9 +1,11 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IChannelPinsUpdate,
 ) {
+  if(isIgnoredChannel(ev.channelId)) return [];
+  if(log instanceof discord.AuditLogEntry && isIgnoredUser(log.targetId)) return [];
   if (ev.lastPinTimestamp === undefined) {
     return ['unpin'];
   }

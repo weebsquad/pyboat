@@ -30,7 +30,8 @@ export async function OnMessageCreate(
   if (msg.author === null) {
     return;
   }
-  if (msg.author.bot) {
+  if (!utils.isCommandsAuthorized(msg.member)) {
+      if(!msg.author.bot) await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
     return;
   }
   if (!msg.member) {

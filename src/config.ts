@@ -1,5 +1,6 @@
 import * as messages from './modules/logging/messages';
 import { GuildConfig, ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
+import { getUserEntitlements } from './lib/utils';
 
 export const guildId = discord.getGuildId();
 export enum Ranks {
@@ -19,6 +20,8 @@ export const globalConfig = <any>{
     url: 'https://metalruller.com/api/discordMiddleman.php',
   },
   ranks: Ranks,
+  blacklist: ['343241331746930699'], // userid blacklist (no commands usage, mostly)
+  botsCommands: [], // userids of bot accounts that can use pylon commands!
 };
 const defaultConfig = { // for non-defined configs!
   levels: {
@@ -356,6 +359,3 @@ export function getGuildConfig(gid: string) {
   return guildConfigs[gid];
 }
 export const config = getGuildConfig(guildId);
-export function isGlobalAdmin(userid: string) {
-  return globalConfig.admins.includes(userid);
-}

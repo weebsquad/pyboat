@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 import * as utils from '../../../lib/utils';
 import * as utils2 from '../utils';
 
@@ -7,7 +7,9 @@ export function getKeys(
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
+    if(msg !== null && isIgnoredUser(msg.author.id)) return [];
   if (ev.guildId) {
+    if(isIgnoredChannel(ev.channelId)) return [];
     if (
       log instanceof discord.AuditLogEntry
       && log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD

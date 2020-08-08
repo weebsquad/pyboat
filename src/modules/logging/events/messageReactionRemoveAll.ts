@@ -1,9 +1,10 @@
-import { handleEvent } from '../main';
+import { handleEvent, isIgnoredChannel } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IMessageReactionRemoveAll,
 ) {
+    if(isIgnoredChannel(ev.channelId)) return [];
   return ['reaction'];
 }
 

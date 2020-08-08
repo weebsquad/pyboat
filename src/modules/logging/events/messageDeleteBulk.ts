@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel } from '../main';
 import * as utils from '../../../lib/utils';
 import * as utils2 from '../utils';
 
@@ -6,6 +6,7 @@ export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IMessageDeleteBulk,
 ) {
+    if(isIgnoredChannel(ev.channelId)) return [];
   return ['messagesDeleted'];
 }
 

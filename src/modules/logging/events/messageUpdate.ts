@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 import * as utils from '../../../lib/utils';
 import * as utils2 from '../utils';
 
@@ -10,6 +10,7 @@ export function getKeys(
   if (oldMessage === null) {
     return [];
   }
+  if(isIgnoredUser(message.author)) return [];
   const ret = new Array<string>();
   if (message.guildId === null) {
     // dms
@@ -17,6 +18,7 @@ export function getKeys(
       ret.push('dmMessageContent');
     }
   } else if (message.content !== oldMessage.content) {
+    if(isIgnoredChannel(message.channelId)) return [];
     ret.push('guildMessageContent');
   }
   return ret;

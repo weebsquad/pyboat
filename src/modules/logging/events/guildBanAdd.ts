@@ -1,6 +1,7 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 
 export function getKeys(log: discord.AuditLogEntry, ban: discord.GuildBan) {
+    if(isIgnoredUser(ban.user.id)) return [];
   return ['memberBanned'];
 }
 

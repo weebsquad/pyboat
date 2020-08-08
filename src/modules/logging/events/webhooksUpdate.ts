@@ -1,6 +1,7 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag , isIgnoredChannel} from '../main';
 
 export async function getKeys(log: null, ev: discord.Event.IWebhooksUpdate) {
+    if(isIgnoredChannel(ev.channelId)) return [];
   return ['webhooksUpdate'];
 }
 
