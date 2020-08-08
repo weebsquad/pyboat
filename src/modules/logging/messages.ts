@@ -13,16 +13,16 @@ export function getTimestamp(dt: Date) {
   ).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}]\``;
 }
 export const messages: {[key: string]: {[key: string]: string}} = {
-    'DEBUG': {
-        BOT_ERROR: `${discord.decor.Emojis.NO_ENTRY} Bot error\n\`\`\`js\n_ERROR_\n\`\`\``,
-        BOT_STARTED: `${discord.decor.Emojis.WHITE_CHECK_MARK} Bot code reloaded`,
-        RAW_EVENT: `${discord.decor.Emojis.INBOX_TRAY} received \`_EVENT_\` / Queue: **_QUEUE_**`,
-        CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
-        BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_ tried to perform _ACTION_`,
-      },
-    '|CORE': {
-        BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
-    },
+  'DEBUG': {
+    BOT_ERROR: `${discord.decor.Emojis.NO_ENTRY} Bot error\n\`\`\`js\n_ERROR_\n\`\`\``,
+    BOT_STARTED: `${discord.decor.Emojis.WHITE_CHECK_MARK} Bot code reloaded`,
+    RAW_EVENT: `${discord.decor.Emojis.INBOX_TRAY} received \`_EVENT_\` / Queue: **_QUEUE_**`,
+    CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
+    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_ tried to perform _ACTION_`,
+  },
+  '|CORE': {
+    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
+  },
   '|COMMANDS': {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNELID_> : \`_COMMANDNAME_\``,
   },
@@ -32,7 +32,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     ANTIPING_MARK_SUCCESS: 'antiping mark success',
     ANTIPING_LEFT_BANNED: 'antiping left banned',
   },
-  
+
   'CHANNEL_CREATE': {
     CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} new channel created: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
     DM_CHANNEL_OPENED: `${discord.decor.Emojis.BOOKMARK_TABS} _USERTAG_ opened a dm with the bot`,

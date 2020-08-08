@@ -20,17 +20,17 @@ export function getUserAuth(mem: discord.GuildMember) {
       highest = roleLevel;
     }
   }
-  if (lowest < 0) {
+  if (lowest < 0 && !isGlobalAdmin(mem.user.id)) {
     highest = lowest;
   } // blacklist!
   return highest;
 }
 
-export function isBlacklisted(member: discord.GuildMember) {
+export function isBlacklisted(member: discord.GuildMember, noCheckGlobal = false) {
   if (isGlobalAdmin(member.user.id)) {
     return false;
   }
-  if (isGlobalBlacklisted(member.user.id)) {
+  if (isGlobalBlacklisted(member.user.id) && !noCheckGlobal) {
     return true;
   }
   const usrLevel = getUserAuth(member);
@@ -61,13 +61,26 @@ export function isCommandsAuthorized(member: discord.GuildMember) {
   return member.user.bot === true && globalConfig.botsCommands.includes(member.user.id) && !isBlacklisted(member);
 }
 
+const reportingCooldowns = new pylon.KVNamespace('blacklistReportCooldownds');
 export async function reportBlockedAction(member: discord.GuildMember, action: string) {
+    const keyCdGlobal = `GLOBAL_${member.user.id}`;
+    const keyCdLocal = `SERVER_${member.user.id}`;
+  if (isGlobalAdmin(member.user.id)) {
+    return;
+  }
   if (!isBlacklisted(member)) {
     return;
   }
-  if(isGlobalBlacklisted(member.user.id)) {
-  await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
-  } else {
-      await logCustom('CORE','BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
+  if (isGlobalBlacklisted(member.user.id)) {
+      const _cd = await reportingCooldowns.get(keyCdGlobal);
+      if(_cd) return;
+    await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
+    await reportingCooldowns.put(keyCdGlobal, true, { ttl: 10000});
+  }
+  if (isBlacklisted(member, true)) {
+    const _cd = await reportingCooldowns.get(keyCdGlobal);
+    if(_cd) return;
+    await logCustom('CORE', 'BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_ACTION_', action]]));
+    await reportingCooldowns.put(keyCdLocal, true, { ttl: 10000});
   }
 }

@@ -2,7 +2,6 @@ import * as messages from './modules/logging/messages';
 import { GuildConfig, ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
 import { getUserEntitlements } from './lib/utils';
 
-export const guildId = discord.getGuildId();
 export enum Ranks {
     'Guest' = 0,
     'Authorized' = 10,
@@ -27,7 +26,7 @@ export const globalConfig = <any>{
   ranks: Ranks,
   // userid blacklist (no commands usage, mostly)
   blacklist: [
-    //'343241331746930699', // 8888#8888 (testing)
+    '343241331746930699', // 8888#8888 (testing)
   ],
   // userids of bot accounts that can use pyboat commands!
   botsCommands: [],
@@ -44,6 +43,14 @@ const defaultConfig = { // for non-defined configs!
       logChannels: new Map<discord.Snowflake, ChannelConfig>(),
       messages: messages.messages, // defaults
       messagesAuditLogs: messages.messagesAuditLogs, // defaults
+      ignores: {
+        channels: [],
+        users: [],
+        self: true,
+        extendUsersToAuditLogs: true,
+        selfAuditLogs: false,
+        logChannels: true,
+      },
       userTag: '',
       actorTag: '',
       reasonPrefix: '',
@@ -165,6 +172,14 @@ const guildConfigs = <any>{
           // master channel!
           ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
+        ignores: {
+          channels: [],
+          users: [],
+          self: true,
+          extendUsersToAuditLogs: true,
+          selfAuditLogs: true,
+          logChannels: true,
+        },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
@@ -272,6 +287,14 @@ const guildConfigs = <any>{
           ['740997800749170698', chPlain(['*'], [], true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
         ]),
+        ignores: {
+          channels: [],
+          users: [],
+          self: true,
+          extendUsersToAuditLogs: true,
+          selfAuditLogs: false,
+          logChannels: true,
+        },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
@@ -287,9 +310,9 @@ const guildConfigs = <any>{
         prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
-        enabled: false,
+        enabled: true,
         googleApi: {
-          key: '',
+          key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
         },
       },
       utilities: { // todo
@@ -367,4 +390,6 @@ export function getGuildConfig(gid: string) {
   }
   return guildConfigs[gid];
 }
+export const guildId = discord.getGuildId();
+
 export const config = getGuildConfig(guildId);
