@@ -273,7 +273,7 @@ async function getMessages(
         if (cfg.showTimestamps) txt += `${ts} `;
         if (cfg.showEventName) {
           let event = ev.eventName;
-          if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event}.${type}`;
+          if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event.substr(0,1) === '|' ? event.substr(1) : event} - ${type}`;
           if (event.includes('_')) event = event.split('_').join(' ');
           event = event
             .split(' ')
@@ -423,7 +423,7 @@ async function getMessages(
           if (cfg.showTimestamps) em.setTimestamp(date.toISOString());
           if (cfg.showEventName) {
             let event = ev.eventName;
-            if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event}.${type}`;
+            if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event.substr(0,1) === '|' ? event.substr(1) : event} - ${type}`;
             if (event.includes('_')) event = event.split('_').join(' ');
             event = event
               .split(' ')
