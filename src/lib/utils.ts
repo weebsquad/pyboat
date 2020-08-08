@@ -29,7 +29,7 @@ export function changeTimezone(date, ianatz) {
     let diff = date.getTime() - invdate.getTime();
     const _extra = Math.floor(diff/(1000*60*60))*(1000*60*60); // wipe miliseconds diff lmao
     const newd = new Date(date.getTime() + _extra);
-    console.log(`Extra: ${_extra}\nDiff: ${diff}\nHours: ${newd.getHours()}\nNew Date: ${newd}`);
+    //console.log(`Extra: ${_extra}\nDiff: ${diff}\nHours: ${newd.getHours()}\nNew Date: ${newd}`);
     return newd;
   }
   
