@@ -273,7 +273,7 @@ async function getMessages(
         if (cfg.showTimestamps) txt += `${ts} `;
         if (cfg.showEventName) {
           let event = ev.eventName;
-          if (event === 'CUSTOM' || event === 'DEBUG') event = type;
+          if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event}.${type}`;
           if (event.includes('_')) event = event.split('_').join(' ');
           event = event
             .split(' ')
@@ -423,7 +423,7 @@ async function getMessages(
           if (cfg.showTimestamps) em.setTimestamp(date.toISOString());
           if (cfg.showEventName) {
             let event = ev.eventName;
-            if (event === 'CUSTOM' || event === 'DEBUG') event = type;
+            if (event.substr(0,1) === '|' || event === 'DEBUG') event = `${event}.${type}`;
             if (event.includes('_')) event = event.split('_').join(' ');
             event = event
               .split(' ')
@@ -649,6 +649,7 @@ export async function handleEvent(
   if(isExt) guildId = conf.globalConfig.masterGuild;
   let date = new Date(utils2.decomposeSnowflake(id).timestamp);
   let data = eventData.get(eventName);
+  if(!data && eventName.substr(0,1) === '|') data = eventData.get('CUSTOM');
   /*if (
     config.debug &&
     !(log instanceof discord.AuditLogEntry) &&

@@ -49,21 +49,27 @@ export const messages = {
 };
 
 export async function logCustom(
-  type: string,
+  cat: string,
+  subtype: string,
   placeholders: Map<string, any> | undefined = undefined,
   id: string = utils.composeSnowflake(),
 ) {
-  const evData = config.messages.CUSTOM[type];
-  if (evData === undefined) {
-    console.error(`Tried to log ${type} but not defined in config!`); // because our error tracking stuff sometimes fails, too
-    throw new Error(`Tried to log ${type} but not defined in config!`);
+    cat = cat.toUpperCase();
+    if(cat.substr(0,1) !== '|') cat = `|${cat}`;
+  const evCat = config.messages[cat];
+  if (!evCat) {
+    throw new Error(`Tried to log ${cat}.${subtype} but category not defined in messages!`);
+  }
+  const evMsg = evCat[subtype];
+  if(!evMsg) {
+    throw new Error(`Tried to log ${cat}.${subtype} but subtype not defined in messages!`);
   }
   await handleEvent(
     id,
     conf.guildId, // todo: change!
-    'CUSTOM',
+    cat,
     null,
-    type,
+    subtype,
     placeholders,
   );
 }

@@ -62,7 +62,7 @@ export { AL_OnChannelDelete } from './events/channelDelete';
 export { AL_OnChannelUpdate } from './events/channelUpdate';
 
 export const eventData: Map<string, any> = new Map();
-eventData.set('CUSTOM', custom);
+eventData.set('CUSTOM', custom); // needs to be here for custom logs to work!
 eventData.set('DEBUG', custom);
 eventData.set(discord.Event.GUILD_MEMBER_UPDATE, memberUpdate);
 eventData.set(discord.Event.GUILD_UPDATE, guildUpdate);

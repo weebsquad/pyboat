@@ -45,6 +45,7 @@ export async function OnMessageCreate(
         ).toISOString()})>]:${msg.author.getTag()} > ${msg.content}`
       ); */
       await logCustom(
+          'COMMANDS',
         'COMMAND_USED',
         new Map<string, any>([
           ['commandname', msg.content],

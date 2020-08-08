@@ -88,10 +88,14 @@ const eventFilters = <any>{
       channel: discord.Channel.AnyChannel,
       oldChannel: discord.Channel.AnyChannel,
     ) => {
+      if (channel === null || oldChannel === null) {
+        return true;
+      }
       if (deepCompare(channel, oldChannel)) {
         return true;
       }
       const wipeProps = ['position'];
+
       const n: any = JSON.parse(JSON.stringify(channel));
       const o: any = JSON.parse(JSON.stringify(oldChannel));
       wipeProps.map((e) => {

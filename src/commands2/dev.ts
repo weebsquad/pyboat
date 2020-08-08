@@ -4,7 +4,7 @@ import * as utils from '../lib/utils';
 import * as commands2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
-import { logCustom } from '../modules/logging/events/custom';
+import { logDebug } from '../modules/logging/events/custom';
 import * as constants from '../constants/constants';
 
 const { config } = conf;
@@ -93,7 +93,7 @@ const test = cmdGroup.subcommand('test', (sub) => {
     throw new Error('testing pls ignore');
   });
   sub.raw('started', async (m) => {
-    logCustom('BOT_STARTED');
+    logDebug('BOT_STARTED');
     await m.reply('done');
   });
   sub.raw('queueenabled', async (m) => {

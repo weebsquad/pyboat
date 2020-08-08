@@ -13,8 +13,10 @@ export function getTimestamp(dt: Date) {
   ).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}]\``;
 }
 export const messages: {[key: string]: {[key: string]: string}} = {
-  CUSTOM: {
+  '|COMMANDS': {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNELID_> : \`_COMMANDNAME_\``,
+  },
+  '|ANTIPING': {
     ANTIPING_FAIL_MARK_MEMBER_NOT_FOUND: ' antiping fail mark member not found _ACTION_ _MESSAGE_ID_ _USERTAG_ _CHANNEL_ID_ _ACTORTAG_',
     ANTIPING_FAIL_MARK_UNMUTE: 'antiping mark fail unmute',
     ANTIPING_MARK_SUCCESS: 'antiping mark success',

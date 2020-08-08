@@ -100,11 +100,11 @@ export const messages = {
     const newType = constants.channelTypeMap.get(chan.type);
     const oldType = constants.channelTypeMap.get(oldChan.type);
     return new Map([
-      ['_TYPE_', 'TYPE_CHANGED'],
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
       ['_NEW_TYPE_', newType],
       ['_OLD_TYPE_', oldType],
+      ['_TYPE_', 'TYPE_CHANGED'],
     ]);
   },
 };
