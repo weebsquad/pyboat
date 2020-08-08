@@ -107,6 +107,56 @@ export const messages = {
       ['_TYPE_', 'TYPE_CHANGED'],
     ]);
   },
+  async nsfw(log: discord.AuditLogEntry, chan: discord.GuildTextChannel | discord.GuildNewsChannel, oldChan: discord.GuildTextChannel| discord.GuildNewsChannel) {
+    const mention = await getChannelMention(chan);
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_NSFW_', chan.nsfw === true ? 'Yes' : 'No'],
+      ['_OLD_NSFW_', oldChan.nsfw === true ? 'Yes' : 'No'],
+      ['_TYPE_', 'NSFW_CHANGED'],
+    ]);
+  },
+  async topic(log: discord.AuditLogEntry, chan: discord.GuildTextChannel | discord.GuildNewsChannel, oldChan: discord.GuildTextChannel| discord.GuildNewsChannel) {
+    const mention = await getChannelMention(chan);
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_TOPIC_', utils.escapeString(chan.topic)],
+      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic)],
+      ['_TYPE_', 'TOPIC_CHANGED'],
+    ]);
+  },
+  async rateLimitPerUser(log: discord.AuditLogEntry, chan: discord.GuildTextChannel, oldChan: discord.GuildTextChannel) {
+    const mention = await getChannelMention(chan);
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_SLOWMODE_', chan.rateLimitPerUser.toString()],
+      ['_OLD_SLOWMODE_', oldChan.rateLimitPerUser.toString()],
+      ['_TYPE_', 'SLOWMODE_CHANGED'],
+    ]);
+  },
+  async bitrate(log: discord.AuditLogEntry, chan: discord.GuildVoiceChannel, oldChan: discord.GuildVoiceChannel) {
+    const mention = await getChannelMention(chan);
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_BITRATE_', chan.bitrate.toString()],
+      ['_OLD_BITRATE_', oldChan.bitrate.toString()],
+      ['_TYPE_', 'BITRATE_CHANGED'],
+    ]);
+  },
+  async userLimit(log: discord.AuditLogEntry, chan: discord.GuildVoiceChannel, oldChan: discord.GuildVoiceChannel) {
+    const mention = await getChannelMention(chan);
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_NEW_BITRATE_', chan.userLimit.toString()],
+      ['_OLD_BITRATE_', oldChan.userLimit.toString()],
+      ['_TYPE_', 'USERLIMIT_CHANGED'],
+    ]);
+  },
 };
 
 export async function AL_OnChannelUpdate(

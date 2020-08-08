@@ -35,7 +35,13 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   'CHANNEL_UPDATE': {
     NAME_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** name updated: \`_OLD_NAME_\` => \`_NEW_NAME_\``,
     CATEGORY_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed category: _OLD_MENTION_ => _NEW_MENTION_`,
-    TYPE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed type: _OLD_TYPE_ => _NEW_TYPE_`,
+    TYPE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed type: \`_OLD_TYPE_\` => \`_NEW_TYPE_\``,
+    NSFW_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** nsfw status set to _NEW_NSFW_`,
+    TOPIC_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed topic: \`_OLD_TOPIC_\` => \`_NEW_TOPIC_\``,
+    SLOWMODE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed slowmode: **_OLD_SLOWMODE_**s => **_NEW_SLOWMODE_**s`,
+    BITRATE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed bitrated: **_OLD_BITRATE_**kbps => **_NEW_BITRATE_**kbps`,
+    USERLIMIT_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed user limit: **_OLD_LIMIT_** => **_NEW_LIMIT_**`,
+
   },
   'CHANNEL_DELETE': {
     CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
