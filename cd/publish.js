@@ -9,13 +9,14 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tThanks\n*/';
-const dep = process.env.DEPLOYMENTS;
+const dep = process.env.DEPLOYMENTS.split('<GH>').join('');
+const isGh = process.env.DEPLOYMENTS.includes('<GH>');
 const wh = process.env.WEBHOOK_URL;
 let _dep = [dep];
 if (dep.includes('|')) {
   _dep = [].concat(dep.split('|'));
 }
-const isDebug = _dep.length === 1;
+const isDebug = !isGh && _dep.length === 1;
 
 function deserialize(value) {
   if (typeof value === 'object' && value !== null) {
