@@ -115,7 +115,6 @@ const eventFilters = <any>{
   auditlog: {
     // Stops audit log pulling data for events that match this
     GUILD_EMOJIS_UPDATE: (...args: any[]) => {
-      console.log('filter.auditlog.emojis.args', args);
       // check if we're missing cached data
       if (!Array.isArray(args)) {
         return true;

@@ -185,7 +185,7 @@ async function parseChannelsData(
       ev.id = ev.auditLogEntry.id; // get real date while we're at it
       /*if (config.debug) {
         let _d = oldD - utils2.decomposeSnowflake(ev.id).timestamp;
-        if (_d > 10 || _d < -10) console.log(ev.eventName, `event => auditlog reception ${_d}ms diff`);
+        if (_d > 10 || _d < -10) c onsole.log(ev.eventName, `event => auditlog reception ${_d}ms diff`);
       }*/
     }
     if (isAuditLog && ev.auditLogEntry instanceof discord.AuditLogEntry) {
@@ -660,13 +660,6 @@ export async function handleEvent(
   let date = new Date(utils2.decomposeSnowflake(id).timestamp);
   let data = eventData.get(eventName);
   if(!data && eventName.substr(0,1) === '|') data = eventData.get('CUSTOM');
-  /*if (
-    config.debug &&
-    !(log instanceof discord.AuditLogEntry) &&
-    typeof log !== 'undefined' &&
-    log !== null
-  )
-    console.log('handleEvent missing audit log', eventName, log, data);*/
 
   if (!data) {
     throw new Error('handleEvent missing data definition for event ' + eventName);

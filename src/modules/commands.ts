@@ -7,12 +7,12 @@ import { logDebug, logCustom } from './logging/events/custom';
 const { config } = conf;
 
 async function HandleDM(msg: discord.Message) {
-  // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
+  // c onsole.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 
 async function HandleChat(msg: discord.Message) {
   // let channel = (await msg.getChannel()) as discord.GuildTextChannel;
-  // console.log(`#${channel.name}:${msg.author.getTag()}>${msg.content}`);
+  // c onsole.log(`#${channel.name}:${msg.author.getTag()}>${msg.content}`);
 }
 
 export async function OnMessageCreate(
@@ -48,11 +48,6 @@ export async function OnMessageCreate(
     }
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
-      /* console.log(
-        `#[CMD (<${new Date(
-          utils.decomposeSnowflake(id).timestamp
-        ).toISOString()})>]:${msg.author.getTag()} > ${msg.content}`
-      ); */
       await logCustom(
         'COMMANDS',
         'COMMAND_USED',

@@ -306,7 +306,7 @@ const guildConfigs = <any>{
         ]),
         ignores: {
           channels: [],
-          users: ['343241331746930699'],
+          users: [],
           self: true,
           selfAuditLogs: true,
           extendUsersToAuditLogs: false,
