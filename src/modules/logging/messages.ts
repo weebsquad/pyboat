@@ -1,4 +1,5 @@
 import * as gconf from '../../config';
+
 const config = gconf.config.modules.logging;
 const jumpMessageText = 'Jump to message';
 const fieldName = '...';
@@ -72,7 +73,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     MEMBER_UNBANNED: `${discord.decor.Emojis.CYCLONE} _USERTAG_ **[**||\`_USER_ID_\`||**]** was unbanned from the server`,
   },
   'GUILD_MEMBER_UPDATE': {
-    NICK_ADDED:  `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\`` ,
+    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\``,
     NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'changed their nickname' : 'nickname changed'} from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
     NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'removed their nickname' : 'nickname removed'} of \`_OLD_NICK_\``,
     ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'added role(s) to themselves' : 'role(s) added'}: _ADDED_ROLES_`,
