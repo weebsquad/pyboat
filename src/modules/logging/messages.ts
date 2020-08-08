@@ -41,6 +41,8 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     SLOWMODE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed slowmode: **_OLD_SLOWMODE_s** => **_NEW_SLOWMODE_s**`,
     BITRATE_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed bitrated: **_OLD_BITRATE_kbps** => **_NEW_BITRATE_kbps**`,
     USERLIMIT_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed user limit: **_OLD_LIMIT_** => **_NEW_LIMIT_**`,
+    PERMS_SYNCED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions synchronized with _PARENT_MENTION_`,
+    PERMS_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** permissions changed: _CHANGES_`,
 
   },
   'CHANNEL_DELETE': {

@@ -4,7 +4,76 @@ import { ChannelScopes } from '../classes';
 import * as constants from '../../../constants/constants';
 import { eventData } from '../tracking';
 
-export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel, oldChan: discord.Channel.AnyChannel) {
+async function isParentPermSync(chan: discord.GuildChannel) {
+  if (typeof chan.parentId !== 'string') {
+    return false;
+  }
+  const parent = await discord.getGuildCategory(chan.parentId);
+  const newOv = chan.permissionOverwrites;
+  const parOv = parent.permissionOverwrites;
+  let isSync = true;
+  newOv.map((e) => {
+    const _f = parOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      isSync = false;
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      isSync = false;
+    }
+  });
+  parOv.map((e) => {
+    const _f = newOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      isSync = false;
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      isSync = false;
+    }
+  });
+  return isSync;
+}
+
+async function getChannelMention(chan: discord.GuildChannel, parent: undefined | discord.GuildCategory = undefined) {
+  if (parent === undefined) {
+    parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
+  }
+  return `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`;
+}
+
+function getPermDiffs(chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
+  const ret: {[key: string]: Array<discord.Channel.IPermissionOverwrite>} = {
+    added: [],
+    removed: [],
+    changed: [],
+  };
+  const newOv = chan.permissionOverwrites;
+  const oldOv = oldChan.permissionOverwrites;
+  newOv.map((e) => {
+    const _f = oldOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      if (!ret.added.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.added.push(e);
+      }
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.changed.push(e);
+      }
+    }
+  });
+  oldOv.map((e) => {
+    const _f = newOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      if (!ret.removed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.removed.push(e);
+      }
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.changed.push(e);
+      }
+    }
+  });
+  return ret;
+}
+
+export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel, oldChan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM || oldChan.type === discord.Channel.Type.DM) {
     return [];
   }
@@ -51,11 +120,16 @@ export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyCha
     }
   }
 
-  // todo check perms (and check parent perms for syncing)
-
-  if (keys.length > 0) {
-    console.log('onChUpdate', keys);
+  const pDiffs = getPermDiffs(chan, oldChan);
+  if (pDiffs.added.length > 0 || pDiffs.changed.length > 0 || pDiffs.removed.length > 0) {
+    const isSync = await isParentPermSync(chan);
+    if (isSync) {
+      keys.push('parentPermissionSynchronization');
+    } else {
+      keys.push('permissionsChanged');
+    }
   }
+
 
   return keys;
 }
@@ -71,12 +145,6 @@ export function isAuditLog(
     return false;
   }
   return log instanceof discord.AuditLogEntry;
-}
-async function getChannelMention(chan: discord.GuildChannel, parent: undefined | discord.GuildCategory = undefined) {
-  if (parent === undefined) {
-    parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
-  }
-  return `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`;
 }
 
 export const messages = {
@@ -164,6 +232,60 @@ export const messages = {
       ['_NEW_BITRATE_', chan.userLimit.toString()],
       ['_OLD_BITRATE_', oldChan.userLimit.toString()],
       ['_TYPE_', 'USERLIMIT_CHANGED'],
+    ]);
+  },
+  async parentPermissionSynchronization(log: discord.AuditLogEntry, chan: discord.GuildChannel) {
+    const mention = await getChannelMention(chan);
+    const parExists = typeof chan.parentId === 'string' ? chan.parentId : 'None';
+    const parent = parExists !== 'None' ? await discord.getGuildCategory(chan.parentId) : null;
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_PARENT_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`` : `\`${parExists}\``],
+      ['_TYPE_', 'PERMS_SYNCED'],
+    ]);
+  },
+  async permissionsChanged(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
+    const changes = getPermDiffs(chan, oldChan);
+    console.log('perms changed: ', changes);
+    const mention = await getChannelMention(chan);
+    let txt = '';
+    const { added } = changes;
+    const { removed } = changes;
+    const edited = changes.changed;
+    const allIds = new Array<string>();
+    added.map((e) => {
+      if (!allIds.includes(e.id)) {
+        allIds.push(e.id);
+      }
+    });
+    edited.map((e) => {
+      if (!allIds.includes(e.id)) {
+        allIds.push(e.id);
+      }
+    });
+    removed.map((e) => {
+      if (!allIds.includes(e.id)) {
+        allIds.push(e.id);
+      }
+    });
+    allIds.forEach((e) => {
+      const oldV = oldChan.permissionOverwrites.find((obj) => obj.id === e);
+      const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
+      const objectPing = `${newV.type === 'role' ? `<@&${newV.id}>` : `<@!${newV.id}>`}`;
+      if (!oldV && newV) { // Added!
+        txt += `\nAdded ${newV.type} ${objectPing}`;
+      } else if (oldV && !newV) {
+        txt += `\nRemoved ${oldV.type} ${oldV.type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
+      } else if (oldV && newV) {
+        txt += `\nChanged ${newV.type} ${objectPing}`;
+      }
+    });
+    return new Map([
+      ['_CHANNEL_ID_', chan.id],
+      ['_CHANNEL_MENTION_', mention],
+      ['_CHANGES_', txt],
+      ['_TYPE_', 'PERMS_CHANGED'],
     ]);
   },
 };
