@@ -76,7 +76,7 @@ function sendWebhook(txt) {
   });
 }
 
-if (typeof (wh) === 'string' && _dep.length > 1) {
+if (typeof (wh) === 'string' && _dep.length > 1 && isGh && !isDebug) {
   sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
 }
 
@@ -108,10 +108,10 @@ _dep.forEach((deployment_id) => {
         process.exit(1);
       } else {
         console.log(`Published to ${obj.guild.name} (${obj.guild.id}) successfully (Revision ${obj.revision})! `);
-        if (typeof (wh) === 'string') {
+        if (typeof (wh) === 'string' && isGh && !isDebug) {
           sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);
         }
-        if (isDebug) {
+        if (isDebug && !isGh) {
           workbenchWs(obj.workbench_url);
         }
       }
