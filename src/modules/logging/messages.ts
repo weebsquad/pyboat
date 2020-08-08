@@ -1,6 +1,8 @@
-import * as gconf from '../../config';
+// import { config } from '../../config';
 
-const config = gconf.config.modules.logging;
+// const _c = config.modules.logging.auditLogs === true;
+
+const _c = false; // todo: reflect auditlogs config abvoe
 const jumpMessageText = 'Jump to message';
 const fieldName = '...';
 //  <' + fieldName + '>[' +jumpMessageText +'](https://discord.com/channels/_GUILD_ID_/_CHANNEL_ID_/_MESSAGE_ID_)',
@@ -73,12 +75,12 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     MEMBER_UNBANNED: `${discord.decor.Emojis.CYCLONE} _USERTAG_ **[**||\`_USER_ID_\`||**]** was unbanned from the server`,
   },
   'GUILD_MEMBER_UPDATE': {
-    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\``,
-    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'changed their nickname' : 'nickname changed'} from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
-    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'removed their nickname' : 'nickname removed'} of \`_OLD_NICK_\``,
-    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'added role(s) to themselves' : 'role(s) added'}: _ADDED_ROLES_`,
-    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'removed role(s) from themselves' : 'role(s) removed'}: _REMOVED_ROLES_`,
-    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${config.auditLogs === true ? 'changed own roles' : 'roles changed'}: _CHANGED_ROLES_`,
+    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\``,
+    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'changed their nickname' : 'nickname changed'} from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
+    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'removed their nickname' : 'nickname removed'} of \`_OLD_NICK_\``,
+    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'added role(s) to themselves' : 'role(s) added'}: _ADDED_ROLES_`,
+    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'removed role(s) from themselves' : 'role(s) removed'}: _REMOVED_ROLES_`,
+    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'changed own roles' : 'roles changed'}: _CHANGED_ROLES_`,
     AVATAR_ADDED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** added avatar : _NEW_AVATAR_`,
     AVATAR_REMOVED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** removed their avatar : _OLD_AVATAR_`,
     AVATAR_CHANGED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their avatar from _OLD_AVATAR_ to _NEW_AVATAR_`,
