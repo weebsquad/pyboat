@@ -93,11 +93,11 @@ async function sendInLogChannel(
         for (let i = 0; i < opts.length; i+=1) {
           const opt = opts[i];
           if (opt.embed instanceof discord.Embed) {
-            if(alwaysWh) opt.embed.setDescription(`\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${opt.embed.description}`);
+            if(alwaysWh) opt.embed.setDescription(`__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${opt.embed.description}`);
             embeds.push(opt.embed);
           } else {
               let _cont = opt.content;
-              if(alwaysWh) _cont = `\`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
+              if(alwaysWh) _cont = `__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
             await utils2.sendWebhookPostComplex(whUrl, {
               content: _cont,
               allowed_mentions: {},
@@ -158,13 +158,15 @@ async function parseChannelsData(
     ev.keys.map(async function(el: string) {
       if (typeof ev.data.messages[el] !== 'function') return null;
       let res = await ev.data.messages[el](ev.auditLogEntry, ...ev.payload);
-      if (res instanceof Map) res.set('_KEY_', el);
+      if (res instanceof Map) {res.set('_KEY_', el);
       k2.push(res);
+    }
     })
   );
-  k2.filter(function(el: any) {
+  k2=k2.filter(function(el: any) {
     return el instanceof Map && el.has('_TYPE_');
-  }).map(function(el: Map<string, string>) {
+  });
+  k2.map(function(el: Map<string, string>) {
     if (!el.has('_TYPE_') || !el.has('_KEY_')) return;
     let type = el.get('_TYPE_') ?? '';
     let key = el.get('_KEY_');
@@ -656,20 +658,19 @@ export async function handleEvent(
     console.log('handleEvent missing audit log', eventName, log, data);*/
 
   if (!data) {
-    if (config.debug)
-      console.error('handleEvent missing data definition for event ' + eventName);
-    return;
+    throw new Error('handleEvent missing data definition for event ' + eventName);
   }
   if (
     typeof data['getKeys'] !== 'function' ||
     typeof data['messages'] !== 'object'
-  )
-    return;
+  ) {
+    throw new Error('handleEvent missing getKeys/messages definitions for event ' + eventName);
+  }
   let keys: any;
   if (typeof data['getKeys'] === 'function') {
     keys = await data.getKeys(log, ...args);
-  } else {
   }
+  if(!Array.isArray(keys)) throw new Error('handleEvent keys not an array!')
   //let isAuditLog = false;
 
   let obj = new Event(
@@ -688,19 +689,19 @@ export async function handleEvent(
     await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook)
     return;
   }
-  //if (config.debug) console.log('logging trigger', eventName, obj);
+  if (utils.isDebug(true)) console.log('logging trigger', eventName, obj);
 
   let chans = await parseChannelsData(obj);
-  //if (config.debug) console.log('handleevent.parseChannelData', chans);
+  if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
   let messages = await getMessages(guildId, chans, obj);
-  //if (config.debug) console.log('handleevent.getMessages', messages);
+  if (utils.isDebug(true)) console.log('handleevent.getMessages', messages);
 
   messages = combineMessages(messages);
-  //if (config.debug) console.log('handleevent.combineMessages', messages);
+  if (utils.isDebug(true)) console.log('handleevent.combineMessages', messages);
 
   await sendInLogChannel(guildId, messages);
     } catch(e) {
-        if(utils.isDebug()) console.error(e);
+        if(utils.isDebug(true)) console.error(e);
         await logDebug('BOT_ERROR',new Map<string, any>([
             ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
           ]),

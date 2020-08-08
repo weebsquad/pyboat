@@ -31,6 +31,7 @@ import * as guildEmojisUpdate from './events/guildEmojisUpdate';
 import * as channelPinsUpdate from './events/channelPinsUpdate';
 import * as channelCreate from './events/channelCreate';
 import * as channelDelete from './events/channelDelete';
+import * as channelUpdate from './events/channelUpdate';
 
 export { AL_OnGuildMemberUpdate } from './events/memberUpdate';
 export { AL_OnGuildUpdate } from './events/guildUpdate';
@@ -58,6 +59,7 @@ export { AL_OnGuildEmojisUpdate } from './events/guildEmojisUpdate';
 export { AL_OnChannelPinsUpdate } from './events/channelPinsUpdate';
 export { AL_OnChannelCreate } from './events/channelCreate';
 export { AL_OnChannelDelete } from './events/channelDelete';
+export { AL_OnChannelUpdate } from './events/channelUpdate';
 
 export const eventData: Map<string, any> = new Map();
 eventData.set('CUSTOM', custom);
@@ -91,6 +93,7 @@ eventData.set(discord.Event.GUILD_EMOJIS_UPDATE, guildEmojisUpdate);
 eventData.set(discord.Event.CHANNEL_PINS_UPDATE, channelPinsUpdate);
 eventData.set(discord.Event.CHANNEL_CREATE, channelCreate);
 eventData.set(discord.Event.CHANNEL_DELETE, channelDelete);
+eventData.set(discord.Event.CHANNEL_UPDATE, channelUpdate);
 
 export const _ForceIndividualEvents = false;
 export async function AL_OnBatchEvents(q: Array<QueuedEvent>) {

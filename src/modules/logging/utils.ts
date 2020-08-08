@@ -3,8 +3,8 @@ import * as utils from '../../lib/utils';
 
 const config = conf.config.modules.logging;
 
-export function isDebug() {
-  return conf.guildId === conf.globalConfig.masterGuild && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
+export function isDebug(bypassMaster = false) {
+  return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
 export function isMasterInDebug() {

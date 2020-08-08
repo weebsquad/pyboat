@@ -255,6 +255,7 @@ const guildConfigs = <any>{
       queue: true, // eventhandler auto queueing on ratelimits
       logging: { // event logging module
         enabled: true,
+        debug: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['740997800749170698', chPlain(['*'], [], true, false)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],

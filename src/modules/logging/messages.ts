@@ -27,11 +27,15 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
   },
   CHANNEL_CREATE: {
-    CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} new channel created: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+    CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} new channel created: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
     DM_CHANNEL_OPENED: `${discord.decor.Emojis.BOOKMARK_TABS} _USERTAG_ opened a dm with the bot`,
   },
+  CHANNEL_UPDATE: {
+    NAME_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** name updated: \`_OLD_NAME_\` => \`_NEW_NAME_\``,
+    CATEGORY_CHANGED: `${discord.decor.Emojis.WRENCH} channel edited: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]** changed category: _OLD_MENTION_ => _NEW_MENTION_`,
+  },
   CHANNEL_DELETE: {
-    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   CHANNEL_PINS_UPDATE: {
     MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
@@ -196,10 +200,10 @@ export const messages: {[key: string]: {[key: string]: string}} = {
 
 export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   CHANNEL_CREATE: {
-    CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ created new channel: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+    CHANNEL_CREATED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ created new channel: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   CHANNEL_DELETE: {
-    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ deleted channel: _CHANNEL_NAME_ **[**||\`_CHANNEL_ID_\`||**]**`,
+    CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ deleted channel: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   CHANNEL_PINS_UPDATE: {
     MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,

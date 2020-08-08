@@ -505,5 +505,6 @@ export async function AL_OnGuildUpdate(
   log: any,
   ...args: any
 ) {
+    console.log('OnGuildUpdate', log);
   await handleEvent(id, guildId, discord.Event.GUILD_UPDATE, log, ...args);
 }

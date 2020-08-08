@@ -9,13 +9,11 @@ const eventFilters = <any>{
       if (deepCompare(message, oldMessage)) {
         return true;
       }
-      return false;
     },
     GUILD_UPDATE: (guild: discord.Guild, oldGuild: discord.Guild) => {
       if (deepCompare(guild, oldGuild)) {
         return true;
       }
-      return false;
     },
     GUILD_MEMBER_UPDATE: (
       member: discord.GuildMember,
@@ -36,7 +34,7 @@ const eventFilters = <any>{
           return false;
         }
       }
-      if (member.roles.length === oldMember.roles.length) {
+      if (member.roles.length !== oldMember.roles.length) return true;
         const mismatch1 = member.roles.filter((ele) => {
           if (
             typeof oldMember.roles.find((ele2) => ele2 === ele) !== 'undefined'
@@ -53,13 +51,9 @@ const eventFilters = <any>{
           }
           return true;
         });
-        if (mismatch1.length !== 0 || mismatch2.length !== 0) {
-          return false;
+        if (mismatch1.length === 0 && mismatch2.length === 0) {
+          return true;
         }
-      } else {
-        return false;
-      }
-      return true;
     },
     GUILD_EMOJIS_UPDATE: (
       emojis: discord.Event.IGuildEmojisUpdate,
@@ -68,27 +62,21 @@ const eventFilters = <any>{
       if (deepCompare(emojis, oldEmojis)) {
         return true;
       }
-      return false;
     },
     GUILD_ROLE_UPDATE: (role: discord.Role, oldRole: discord.Role) => {
       // let role = roleUpdate.role;
       if (deepCompare(role, oldRole)) {
         return true;
       }
-      if (
-        role.name === oldRole.name
-        && role.color === oldRole.color
-        && role.hoist === oldRole.hoist
-        && role.id === oldRole.id
-        && role.managed === oldRole.managed
-        && role.mentionable === oldRole.mentionable
-        && role.permissions === oldRole.permissions
-        && role.position === oldRole.position
-      ) {
-        return true;
-      }
+            // we dont care abt role positions
+            const n: any = JSON.parse(JSON.stringify(role));
+            const o: any = JSON.parse(JSON.stringify(oldRole));
+            delete n.position;
+            delete o.position;
+            if (deepCompare(n, o)) {
+              return true;
+            }
 
-      return false;
     },
     CHANNEL_UPDATE: (
       channel: discord.Channel.AnyChannel,
@@ -97,13 +85,18 @@ const eventFilters = <any>{
       if (deepCompare(channel, oldChannel)) {
         return true;
       }
-      return false;
+      const wipeProps = ['position'];
+      const n: any = JSON.parse(JSON.stringify(channel));
+      const o: any = JSON.parse(JSON.stringify(oldChannel));
+      wipeProps.map(function(e) { delete n[e]; delete o[e]; })
+      if (deepCompare(n, o)) {
+        return true;
+      }
     },
     MESSAGE_CREATE: (message: discord.Message) => {
       if (message.author !== null && message.author.id === discord.getBotId()) {
         return true;
       }
-      return false;
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
       if (ev.userId === discord.getBotId()) {
@@ -113,13 +106,57 @@ const eventFilters = <any>{
   },
   auditlog: {
     // Stops audit log pulling data for events that match this
+    GUILD_EMOJIS_UPDATE: (...args: any[]) => {
+        console.log('filter.auditlog.emojis.args', args);
+          // check if we're missing cached data
+          if (!Array.isArray(args)) {
+            return true;
+          }
+          if (args.length !== 2) {
+            return true;
+          }
+        },
+        GUILD_MEMBER_ADD: (mem: discord.GuildMember) => {
+            if(!mem.user.bot) return true;
+        },
+        MESSAGE_DELETE: (msg: discord.Event.IMessageDelete, oldMsg: discord.Message.AnyMessage | null) => {
+            if (oldMsg === null) {
+                return true;
+              }
+              const msg_: discord.Message = oldMsg;
+              if (msg_.type !== discord.Message.Type.DEFAULT) {
+                return true;
+              }
+        },
+        VOICE_STATE_UPDATE: (vc: discord.VoiceState, oldVc: discord.VoiceState) => {
+        if (vc === null || oldVc === null) {
+            return true;
+          }
+          if (
+            vc.channelId !== oldVc.channelId
+            && vc.mute !== oldVc.mute
+            && vc.deaf !== oldVc.deaf
+          ) {
+            return true;
+          }
+        },
+        GUILD_UPDATE: (guild: discord.Guild, oldGuild: discord.Guild) => {
+            const wipeProps = ['applicationId', 'features', 'maxPresences', 'memberCount', 'premiumSubscriptionCount', 'premiumTier'];
+            const n: any = JSON.parse(JSON.stringify(guild));
+            const o: any = JSON.parse(JSON.stringify(oldGuild));
+            wipeProps.map(function(e) { delete n[e]; delete o[e]; })
+            if (deepCompare(n, o)) {
+              return true;
+            }
+        }
   },
 };
 
 // Returns true if it IS filtered
 export function isFiltered(event: string, type: string, ...args: any) {
   if (eventFilters[type][event] instanceof Function) {
-    return eventFilters[type][event](...args);
+    const _ret = eventFilters[type][event](...args);
+    if(typeof(_ret) !== 'boolean') return false;
   }
   return false;
 }
