@@ -190,8 +190,10 @@ export async function validateAuditEvent(
     if (typeof auditLogEntry.changes[key] !== 'object') {
       continue;
     }
+
     for (let i = 0; i < valsCheck.length; i += 1) {
-      if (typeof auditLogEntry.changes[key][valsCheck[i]] === 'undefined') {
+      const al = auditLogEntry.changes[key][valsCheck[i]];
+      if (typeof al === 'undefined') {
         continue;
       }
       if (i > 0 && !Array.isArray(parsedData)) {
@@ -215,21 +217,21 @@ export async function validateAuditEvent(
         }
       }
 
-      if (typeof cck !== typeof auditLogEntry.changes[key][valsCheck[i]]) {
+      if (typeof cck !== typeof al) {
         // check disabled
         if (
           disableAliases.indexOf(cck) > -1
-          && disableAliases.indexOf(auditLogEntry.changes[key][valsCheck[i]]) > -1
+          && disableAliases.indexOf(al) > -1
         ) {
           continue;
         }
         // check artificial
         if (
-          typeof artificialMatches[auditLogEntry.changes[key][valsCheck[i]]]
+          typeof artificialMatches[al]
           !== 'undefined'
         ) {
           if (
-            artificialMatches[auditLogEntry.changes[key][valsCheck[i]]].indexOf(
+            artificialMatches[al].indexOf(
               cc[key],
             ) > -1
           ) {
@@ -248,11 +250,37 @@ export async function validateAuditEvent(
         return false;
       }
       if (typeof cck === 'object' && cck !== null) {
-        if (!utils.deepCompare(cck, auditLogEntry.changes[key][valsCheck[i]])) {
+        if (!utils.deepCompare(cck, al)) {
+          if (key === 'permissionOverwrites' && Array.isArray(cck) && Array.isArray(al)) {
+            const adiff1 = cck.filter((obj: discord.Channel.IPermissionOverwrite) => {
+              const _f: discord.Channel.IPermissionOverwrite | undefined = al.find((obj2) => obj2.id === obj.id);
+              if (!_f || _f === undefined) {
+                return true;
+              }
+              if (_f.allow !== obj.allow || _f.deny !== obj.deny || _f.type !== obj.type) {
+                return true;
+              }
+              return false;
+            });
+            const adiff2 = al.filter((obj: discord.Channel.IPermissionOverwrite) => {
+              const _f: discord.Channel.IPermissionOverwrite | undefined = cck.find((obj2) => obj2.id === obj.id);
+              if (!_f || _f === undefined) {
+                return true;
+              }
+              if (_f.allow !== obj.allow || _f.deny !== obj.deny || _f.type !== obj.type) {
+                return true;
+              }
+              return false;
+            });
+            if (adiff1.length === 0 && adiff2.length === 0) {
+              return true;
+            }
+            return false;
+          }
           console.log('validate', 'failed obj Compare', key, auditLogEntry);
           return false;
         }
-      } else if (cck !== auditLogEntry.changes[key][valsCheck[i]]) {
+      } else if (cck !== al) {
         console.log('validate', 'failed key Compare', key, auditLogEntry);
         return false;
       }

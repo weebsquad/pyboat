@@ -196,6 +196,14 @@ async function parseChannelsData(
         el.set('_REASON_RAW_', '');
       }
     }
+    if(el.has('_USERTAG_') && !el.has('_USER_ID_')) {
+    let usrid = '' + el.get('_USERTAG_');
+    if (config.userTag === '_MENTION_') {
+                  usrid = usrid.substr(2).slice(0, -1);
+                  if (usrid.includes('!')) usrid = usrid.substr(1);
+                  el.set('_USER_ID_', usrid);
+                }
+            }
 
     /*let txt = utils.getLogMessage(eventName, type, isAuditLog);
       let final = utils.replacePlaceholders(txt, el);*/

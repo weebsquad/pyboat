@@ -255,7 +255,6 @@ const guildConfigs = <any>{
       queue: true, // eventhandler auto queueing on ratelimits
       logging: { // event logging module
         enabled: true,
-        debug: true, // debug mode (enables debug logs and extra info)
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['740997800749170698', chPlain(['*'], [], true, false)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
@@ -275,13 +274,13 @@ const guildConfigs = <any>{
         prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
-        enabled: true,
+        enabled: false,
         googleApi: {
-          key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
+          key: '',
         },
       },
       utilities: { // todo
-        enabled: true,
+        enabled: false,
       },
       roleManagement: { // for group srv only
         enabled: false,
@@ -332,7 +331,7 @@ const guildConfigs = <any>{
         muteRole: '576330934010511361',
       },
       counting: { // counting module
-        enabled: true,
+        enabled: false,
         channels: ['740880532325531659'],
         keyCount: 'counting_current',
         keyLastUser: 'counting_lastuser',

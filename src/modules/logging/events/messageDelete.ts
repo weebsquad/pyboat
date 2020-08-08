@@ -71,6 +71,7 @@ export const messages = {
     // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
     const mp = new Map();
     mp.set('_AUTHOR_', getUserTag(msg.author));
+    mp.set('_USER_ID_', msg.author.id);
     mp.set('_USERTAG_', getUserTag(msg.author));
     mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD');
     mp.set('_CHANNEL_ID_', ev.channelId);

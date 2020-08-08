@@ -3,13 +3,13 @@ import * as utils from '../../lib/utils';
 import * as utilsLogging from './utils';
 import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { handleMultiEvents } from './main';
+
 import * as custom from './events/custom';
 import * as memberUpdate from './events/memberUpdate';
 import * as guildUpdate from './events/guildUpdate';
 import * as typingStart from './events/typingStart';
 import * as messageDelete from './events/messageDelete';
 import * as messageUpdate from './events/messageUpdate';
-
 import * as messageDeleteBulk from './events/messageDeleteBulk';
 import * as messageReactionAdd from './events/messageReactionAdd';
 import * as messageReactionRemove from './events/messageReactionRemove';
@@ -29,6 +29,7 @@ import * as voiceStateUpdate from './events/voiceStateUpdate';
 import * as voiceServerUpdate from './events/voiceServerUpdate';
 import * as guildEmojisUpdate from './events/guildEmojisUpdate';
 import * as channelPinsUpdate from './events/channelPinsUpdate';
+import * as channelCreate from './events/channelCreate';
 
 export { AL_OnGuildMemberUpdate } from './events/memberUpdate';
 export { AL_OnGuildUpdate } from './events/guildUpdate';
@@ -54,6 +55,7 @@ export { AL_OnVoiceStateUpdate } from './events/voiceStateUpdate';
 export { OnVoiceServerUpdate } from './events/voiceServerUpdate';
 export { AL_OnGuildEmojisUpdate } from './events/guildEmojisUpdate';
 export { AL_OnChannelPinsUpdate } from './events/channelPinsUpdate';
+export { AL_OnChannelCreate } from './events/channelCreate';
 
 export const eventData: Map<string, any> = new Map();
 eventData.set('CUSTOM', custom);
@@ -85,6 +87,7 @@ eventData.set(discord.Event.VOICE_STATE_UPDATE, voiceStateUpdate);
 eventData.set(discord.Event.VOICE_SERVER_UPDATE, voiceServerUpdate);
 eventData.set(discord.Event.GUILD_EMOJIS_UPDATE, guildEmojisUpdate);
 eventData.set(discord.Event.CHANNEL_PINS_UPDATE, channelPinsUpdate);
+eventData.set(discord.Event.CHANNEL_CREATE, channelCreate);
 
 export const _ForceIndividualEvents = false;
 export async function AL_OnBatchEvents(q: Array<QueuedEvent>) {

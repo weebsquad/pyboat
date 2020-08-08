@@ -425,20 +425,20 @@ export const server = discord.command.rawHandler(async (message) => {
         && key !== 'listening'
         && key !== 'watching'
         && key !== 'game'
-        && !prestext.includes('****')
+        && !prestext.includes('  󠇰')
         && !nolb
       ) {
         if (prestext.length === 0) {
           nolb = true;
         } else {
-          prestext += '\n****'; // add linebreak
+          prestext += '\n  󠇰'; // add linebreak
         }
       }
       prestext += `\n ${emj} **-** ${obj}`;
     }
   }
   let bottxt = `\n <:bot:735780703945490542> **-** ${memberCounts.bot}
-****`;
+    󠇰`;
   if (memberCounts.bot <= 0) {
     bottxt = '';
   }

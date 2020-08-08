@@ -14,6 +14,25 @@ export function isExternalDebug(gid: string = conf.guildId) {
   return isMasterInDebug() && gid !== conf.globalConfig.masterGuild;
 }
 
+export function getChannelEmoji(ch: discord.GuildChannel) {
+  if (ch.type === discord.GuildChannel.Type.GUILD_TEXT) {
+    return '<:channel:735780703983239218> ';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
+    return '<:voice:735780703928844319> ';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
+    return '<:store:735780704130170880> ';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_NEWS) {
+    return '<:news:735780703530385470> ';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) {
+    return '<:rich_presence:735781410509684786> ';
+  }
+  return '';
+}
+
 export function getMemberTag(member: discord.GuildMember) {
   const nick = member.nick ?? member.user.username;
   const map = new Map([
