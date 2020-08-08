@@ -10,7 +10,9 @@ export function getKeys(
   if (oldMessage === null) {
     return [];
   }
-  if(isIgnoredUser(message.author)) return [];
+  if (isIgnoredUser(message.author)) {
+    return [];
+  }
   const ret = new Array<string>();
   if (message.guildId === null) {
     // dms
@@ -18,7 +20,9 @@ export function getKeys(
       ret.push('dmMessageContent');
     }
   } else if (message.content !== oldMessage.content) {
-    if(isIgnoredChannel(message.channelId)) return [];
+    if (isIgnoredChannel(message.channelId)) {
+      return [];
+    }
     ret.push('guildMessageContent');
   }
   return ret;

@@ -7,9 +7,13 @@ export function getKeys(
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
-    if(msg !== null && isIgnoredUser(msg.author.id)) return [];
+  if (msg !== null && isIgnoredUser(msg.author.id)) {
+    return [];
+  }
   if (ev.guildId) {
-    if(isIgnoredChannel(ev.channelId)) return [];
+    if (isIgnoredChannel(ev.channelId)) {
+      return [];
+    }
     if (
       log instanceof discord.AuditLogEntry
       && log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD

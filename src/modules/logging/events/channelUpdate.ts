@@ -77,7 +77,9 @@ export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.
   if (chan.type === discord.Channel.Type.DM || oldChan.type === discord.Channel.Type.DM) {
     return [];
   }
-  if(isIgnoredChannel(chan)) return [];
+  if (isIgnoredChannel(chan)) {
+    return [];
+  }
   const keys = [];
   if (chan.type !== discord.Channel.Type.GUILD_CATEGORY && oldChan.type !== discord.Channel.Type.GUILD_CATEGORY && (chan.parentId !== oldChan.parentId || typeof chan.parentId !== typeof oldChan.parentId)) {
     keys.push('parentId');

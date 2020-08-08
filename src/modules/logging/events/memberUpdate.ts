@@ -5,7 +5,9 @@ export function getKeys(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
-    if(isIgnoredUser(member)) return [];
+  if (isIgnoredUser(member)) {
+    return [];
+  }
   const keys = [];
   if (member.nick !== oldMember.nick) {
     keys.push('nickname');

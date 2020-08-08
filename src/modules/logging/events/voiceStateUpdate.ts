@@ -6,8 +6,12 @@ export function getKeys(
   voiceState: discord.VoiceState,
   oldVoiceState: discord.VoiceState,
 ) {
-    if(isIgnoredChannel(voiceState.channelId)) return [];
-    if(isIgnoredUser(voiceState.userId)) return [];
+  if (isIgnoredChannel(voiceState.channelId)) {
+    return [];
+  }
+  if (isIgnoredUser(voiceState.userId)) {
+    return [];
+  }
   const keys = [];
   if (voiceState.channelId !== oldVoiceState.channelId) {
     if (

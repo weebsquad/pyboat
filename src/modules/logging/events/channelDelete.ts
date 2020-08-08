@@ -1,11 +1,13 @@
-import { handleEvent, getUserTag, getChannelEmoji , isIgnoredChannel} from '../main';
+import { handleEvent, getUserTag, getChannelEmoji, isIgnoredChannel } from '../main';
 import * as utils from '../../../lib/utils';
 
 export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM) {
     return [];
   }
-  if(isIgnoredChannel(chan)) return [];
+  if (isIgnoredChannel(chan)) {
+    return [];
+  }
   return ['channelDeleted'];
 }
 

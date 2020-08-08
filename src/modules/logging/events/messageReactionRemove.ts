@@ -1,14 +1,18 @@
-import { handleEvent, getUserTag, getMemberTag , isIgnoredChannel, isIgnoredUser} from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IMessageReactionRemove,
 ) {
-    if(ev.userId && ev.userId !== null && isIgnoredUser(ev.userId)) return [];
+  if (ev.userId && ev.userId !== null && isIgnoredUser(ev.userId)) {
+    return [];
+  }
   if (ev.guildId === null || ev.guildId === undefined) {
     return ['dmReaction'];
   }
-  if(isIgnoredChannel(ev.channelId)) return [];
+  if (isIgnoredChannel(ev.channelId)) {
+    return [];
+  }
   return ['guildReaction'];
 }
 

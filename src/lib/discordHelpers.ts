@@ -265,8 +265,6 @@ export async function getUserEntitlements(
   return mainData;
 }
 
-
-
 export async function sendWebhookPost(
   webhook_id: string,
   content: string | Array<discord.Embed>,

@@ -4,7 +4,9 @@ export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.GuildMember,
 ) {
-    if(isIgnoredUser(member)) return [];
+  if (isIgnoredUser(member)) {
+    return [];
+  }
   if (member.user.bot) {
     return ['botAdd'];
   }

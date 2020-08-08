@@ -4,7 +4,9 @@ export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IMessageReactionRemoveAll,
 ) {
-    if(isIgnoredChannel(ev.channelId)) return [];
+  if (isIgnoredChannel(ev.channelId)) {
+    return [];
+  }
   return ['reaction'];
 }
 

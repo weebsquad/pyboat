@@ -6,7 +6,9 @@ export function getKeys(
   log: discord.AuditLogEntry,
   ev: discord.Event.IMessageDeleteBulk,
 ) {
-    if(isIgnoredChannel(ev.channelId)) return [];
+  if (isIgnoredChannel(ev.channelId)) {
+    return [];
+  }
   return ['messagesDeleted'];
 }
 

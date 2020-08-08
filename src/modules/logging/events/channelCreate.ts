@@ -5,7 +5,9 @@ export function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyCha
   if (chan.type === discord.Channel.Type.DM) {
     return ['dmChannelOpened'];
   }
-  if(isIgnoredChannel(chan)) return [];
+  if (isIgnoredChannel(chan)) {
+    return [];
+  }
   return ['channelCreated'];
 }
 

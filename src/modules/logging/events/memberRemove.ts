@@ -4,7 +4,9 @@ export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.Event.IGuildMemberRemove,
 ) {
-    if(isIgnoredUser(member.user.id)) return [];
+  if (isIgnoredUser(member.user.id)) {
+    return [];
+  }
   if (!(log instanceof discord.AuditLogEntry)) {
     return ['memberLeft'];
   }

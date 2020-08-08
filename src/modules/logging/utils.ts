@@ -7,18 +7,27 @@ export function isDebug(bypassMaster = false) {
   return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
-
 export function isIgnoredChannel(channel: discord.GuildChannel | string) {
-    if(channel instanceof discord.GuildChannel) channel = channel.id;
-    const ignores = config.ignores;
-    if(!ignores) return false;
+  if (channel instanceof discord.GuildChannel) {
+    channel = channel.id;
+  }
+  const { ignores } = config;
+  if (!ignores) {
+    return false;
+  }
 }
 
 export function isIgnoredUser(user: string | discord.User | discord.GuildMember) {
-    if(user instanceof discord.User) user = user.id;
-    if(user instanceof discord.GuildMember) user = user.user.id;
-    const ignores = config.ignores;
-    if(!ignores) return false;
+  if (user instanceof discord.User) {
+    user = user.id;
+  }
+  if (user instanceof discord.GuildMember) {
+    user = user.user.id;
+  }
+  const { ignores } = config;
+  if (!ignores) {
+    return false;
+  }
 }
 
 export function isMasterInDebug() {
