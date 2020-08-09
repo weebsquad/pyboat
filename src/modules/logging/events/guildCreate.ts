@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag } from '../main';
+import * as utils from '../../../lib/utils';
 
 export async function getKeys(log: null, guild: discord.Guild) {
   const _me = await guild.getMember(discord.getBotId());
@@ -21,7 +22,7 @@ export const messages = {
     return new Map([
       ['_TYPE_', 'RECONNECTED'],
       ['_GUILD_ID_', guild.id],
-      ['_GUILD_NAME_', guild.name],
+      ['_GUILD_NAME_', utils.escapeString(guild.name)],
     ]);
   },
   newGuild(log: discord.AuditLogEntry, guild: discord.Guild) {

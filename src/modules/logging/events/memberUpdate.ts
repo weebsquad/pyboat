@@ -1,10 +1,13 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
+  if (isIgnoredUser(member)) {
+    return [];
+  }
   const keys = [];
   if (member.nick !== oldMember.nick) {
     keys.push('nickname');
@@ -55,7 +58,7 @@ export const messages = {
     member: discord.GuildMember,
     oldMember: discord.GuildMember,
   ) {
-    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]);
     let type = '';
     if (member.premiumSince !== null && oldMember.premiumSince === null) {
       type = 'BOOSTING_STARTED';
@@ -81,6 +84,7 @@ export const messages = {
       ['_TYPE_', 'DISCRIMINATOR_CHANGED'],
       ['_OLD_DISCRIMINATOR_', oldMember.user.discriminator],
       ['_NEW_DISCRIMINATOR_', member.user.discriminator],
+      ['_USER_ID_', member.user.id],
     ]);
     return mp;
   },
@@ -94,6 +98,7 @@ export const messages = {
       ['_TYPE_', 'USERNAME_CHANGED'],
       ['_OLD_USERNAME_', oldMember.user.username],
       ['_NEW_USERNAME_', member.user.username],
+      ['_USER_ID_', member.user.id],
     ]);
     return mp;
   },
@@ -102,7 +107,7 @@ export const messages = {
     member: discord.GuildMember,
     oldMember: discord.GuildMember,
   ) {
-    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]);
     let type = '';
     if (member.user.avatar === null && oldMember.user.avatar !== null) {
       type = 'AVATAR_REMOVED';
@@ -126,7 +131,7 @@ export const messages = {
     const rolesAdded = [];
     const rolesRemoved = [];
     let type = '';
-    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]);
     member.roles.forEach((rl) => {
       if (oldMember.roles.indexOf(rl) === -1) {
         rolesAdded.push(rl);
@@ -174,7 +179,7 @@ export const messages = {
     oldMember: discord.GuildMember,
   ) {
     let type = '';
-    const mp = new Map([['_USERTAG_', getMemberTag(member)]]);
+    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]);
     if (oldMember.nick === null && member.nick !== null) {
       type = 'NICK_ADDED';
       mp.set('_NEW_NICK_', member.nick);

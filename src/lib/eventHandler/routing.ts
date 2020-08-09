@@ -1,4 +1,4 @@
-import { config } from '../../config';
+import * as conf from '../../config';
 import {
   eventFunctions,
   eventFunctionPrefixAuditLog,
@@ -25,6 +25,8 @@ import {
 } from './queue';
 import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
+
+const { config } = conf;
 
 let rl = false;
 async function _Initialize() {
@@ -91,13 +93,16 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     }
     await ExecuteModules(event, ts, null, ...args);
   } catch (e) {
-    console.error(e);
     const err: Error = e;
+    if (conf.guildId === conf.globalConfig.masterGuild) {
+      console.error(e);
+    }
     await logDebug(
       'BOT_ERROR',
       new Map<string, any>([
         ['ERROR', `Error at event ${event}\n${err.stack}`],
       ]),
+      ts,
     );
     /*
       let ch = await discord.getGuildTextChannel(config.modules.errorsChannel);
@@ -222,7 +227,7 @@ export async function ExecuteModules(
     auditLogData = await getEventAuditLogData(event, tm, ...args);
   }
 
-  const { guildId } = config;
+  const { guildId } = conf;
 
   for (const moduleName in moduleDefinitions) {
     const tdiff = new Date().getTime();
@@ -230,17 +235,17 @@ export async function ExecuteModules(
     if (typeof module !== 'object' || module === null) {
       continue;
     }
-    if (!isModuleEnabled(moduleName)) {
-      continue;
-    }
-    if (moduleTarget !== null && moduleName !== moduleTarget) {
-      continue;
-    }
-    const eventFunction = module[eventFuncName];
-    const eventAny = module[eventFunctionEveryEvent];
-    if (eventAny instanceof Function) {
-      let _e;
-      try {
+    let _err: any;
+    try {
+      if (!isModuleEnabled(moduleName)) {
+        continue;
+      }
+      if (moduleTarget !== null && moduleName !== moduleTarget) {
+        continue;
+      }
+      const eventFunction = module[eventFuncName];
+      const eventAny = module[eventFunctionEveryEvent];
+      if (eventAny instanceof Function) {
         if (asyncModules.includes(moduleName)) {
           eventAny(event, id, guildId, ...args);
         } else {
@@ -249,24 +254,8 @@ export async function ExecuteModules(
             return;
           }
         }
-      } catch (e) {
-        _e = new Error(
-          `${event
-          }.ExecuteModules.${
-            moduleName
-          }.${
-            eventFuncName
-          }\n${
-            e.stack}`,
-        );
       }
-      if (_e !== undefined) {
-        throw _e;
-      }
-    }
-    if (eventFunction instanceof Function) {
-      let _e;
-      try {
+      if (eventFunction instanceof Function) {
         if (asyncModules.includes(moduleName)) {
           eventFunction(id, guildId, ...args);
         } else {
@@ -275,36 +264,20 @@ export async function ExecuteModules(
             return;
           }
         }
-      } catch (e) {
-        _e = new Error(
-          `${event
-          }.ExecuteModules.${
-            moduleName
-          }.${
-            eventFuncName
-          }\n${
-            e.stack}`,
-        );
       }
-      if (_e !== undefined) {
-        throw _e;
-      }
-    }
 
-    if (typeof auditLogData !== 'undefined') {
+      if (typeof auditLogData !== 'undefined') {
       // Now run audit log stuff
-      const eventAuditLogFunction = module[eventFunctionPrefixAuditLog + eventFuncName];
-      if (eventAuditLogFunction instanceof Function) {
-        if (eventFunction instanceof Function) {
-          console.warn(
-            'WARNING: Dual AuditLog/Normal variants of the same event just ran in the same module!',
-          );
-        }
-        if (!Array.isArray(auditLogData)) {
-          auditLogData = [auditLogData, ...args];
-        }
-        let _e;
-        try {
+        const eventAuditLogFunction = module[eventFunctionPrefixAuditLog + eventFuncName];
+        if (eventAuditLogFunction instanceof Function) {
+          if (eventFunction instanceof Function) {
+            console.warn(
+              'WARNING: Dual AuditLog/Normal variants of the same event just ran in the same module!',
+            );
+          }
+          if (!Array.isArray(auditLogData)) {
+            auditLogData = [auditLogData, ...args];
+          }
           if (asyncModules.includes(moduleName)) {
             eventAuditLogFunction(id, guildId, ...auditLogData);
           } else {
@@ -317,22 +290,13 @@ export async function ExecuteModules(
               return;
             }
           }
-        } catch (e) {
-          _e = new Error(
-            `${event
-            }.ExecuteModules.${
-              moduleName
-            }.${
-              eventFunctionPrefixAuditLog
-            }${eventFuncName
-            }\n${
-              e.stack}`,
-          );
-        }
-        if (_e !== undefined) {
-          throw _e;
         }
       }
+    } catch (e) {
+      _err = `${event}.ExecuteModules.${moduleName}.${eventFuncName}\n${e.stack}`;
+    }
+    if (_err !== undefined) {
+      throw new Error(_err);
     }
   }
 }
@@ -387,7 +351,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   }
   function pQueue(p: Array<QueuedEvent>, q2: Array<QueuedEvent>) {
     q2 = q2.map((e: QueuedEvent) => {
-      const { guildId } = config;
+      const { guildId } = conf;
       e.guildId = guildId;
       const proc = p.find((p2) => p2.id === e.id);
       if (proc) {
@@ -421,7 +385,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
           const eventFunctionName = eventFunctions[e.eventName];
           const eventFunctionInd = module[eventFunctionName];
           const eventFunctionAuditLog = module[eventFunctionPrefixAuditLog + eventFunctionName];
-          const { guildId } = config;
+          const { guildId } = conf;
           if (eventFunctionInd instanceof Function) {
             let _e;
             try {

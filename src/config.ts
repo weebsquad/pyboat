@@ -1,7 +1,7 @@
 import * as messages from './modules/logging/messages';
 import { GuildConfig, ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
+import { getUserEntitlements } from './lib/utils';
 
-export const guildId = discord.getGuildId();
 export enum Ranks {
     'Guest' = 0,
     'Authorized' = 10,
@@ -11,14 +11,25 @@ export enum Ranks {
 }
 
 export const globalConfig = <any>{
-  admins: ['344837487526412300'],
+  // Global Admin
+  admins: [
+    '344837487526412300', // metal#0666
+  ],
+  // used for logging debugging mostly
   masterGuild: '565323632751149103',
+  // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
   },
   ranks: Ranks,
+  // userid blacklist (no commands usage, mostly)
+  blacklist: [
+    // '343241331746930699', // 8888#8888 (testing)
+  ],
+  // userids of bot accounts that can use pyboat commands!
+  botsCommands: [],
 };
 const defaultConfig = { // for non-defined configs!
   levels: {
@@ -29,13 +40,37 @@ const defaultConfig = { // for non-defined configs!
     queue: false,
     logging: { // event logging module
       enabled: false,
+      // should we try to pull audit log data for every event, or just display raw data??
+      auditLogs: true,
       logChannels: new Map<discord.Snowflake, ChannelConfig>(),
       messages: messages.messages, // defaults
       messagesAuditLogs: messages.messagesAuditLogs, // defaults
-      userTag: '',
-      actorTag: '',
-      reasonPrefix: '',
-      suffixReasonToAuditlog: false,
+      ignores: {
+        // array of channel ids to ignore (any event scoped to this channel (messages, typing, updates, etc))
+        channels: [],
+        // array of user ids to ignore (any event related to this user (member updates, message deletes, message updates, etc))
+        users: [],
+        // ignore the self bot account ?
+        self: false,
+        // also ignore actions performed by the bot account?
+        selfAuditLogs: false,
+        // also ignore actions performed by users in the ignored users array?
+        extendUsersToAuditLogs: true,
+        // ignore all blacklisted user actions from logging (if audit log extension is enabled, will also be checked!)
+        blacklistedUsers: false,
+        // automatically ignore all channels used as log channels from logging themselves!
+        logChannels: true,
+      },
+      // tag type to use for users
+      userTag: '_MENTION_',
+      // tag type to use for actors
+      actorTag: '_MENTION_',
+      // automatically append reason suffix below when reason not already found on the message?
+      suffixReasonToAuditlog: true,
+      // reason suffix to append
+      reasonSuffix: ' with reason `_REASON_RAW_`',
+      // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      timezone: 'Etc/GMT+0',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
       enabled: false,
@@ -141,24 +176,36 @@ const guildConfigs = <any>{
       logging: { // event logging module
         enabled: true,
         debug: true,
+        auditLogs: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['729980275550846978', chPlain(['*'], ['DEBUG'], true, true)],
           [
             '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
                                           'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
+                                          0x228b22,
                                           'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
                                           true,
                                           false),
           ],
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
+          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
+        ignores: {
+          channels: [],
+          users: [],
+          self: true,
+          selfAuditLogs: true,
+          extendUsersToAuditLogs: true,
+          blacklistedUsers: false,
+          logChannels: true,
+        },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
         actorTag: '_MENTION_',
-        reasonPrefix: ' with reason `_REASON_RAW_`',
+        reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
+        timezone: 'Etc/GMT+1',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,
@@ -255,17 +302,28 @@ const guildConfigs = <any>{
       queue: true, // eventhandler auto queueing on ratelimits
       logging: { // event logging module
         enabled: true,
-        debug: true, // debug mode (enables debug logs and extra info)
+        debug: true,
+        auditLogs: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['740997800749170698', chPlain(['*'], [], true, false)],
+          ['740997800749170698', chPlain(['*'], [], true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
         ]),
+        ignores: {
+          channels: [],
+          users: [],
+          self: true,
+          selfAuditLogs: true,
+          extendUsersToAuditLogs: false,
+          blacklistedUsers: false,
+          logChannels: true,
+        },
         messages: messages.messages, // defaults
         messagesAuditLogs: messages.messagesAuditLogs, // defaults
         userTag: '_MENTION_',
         actorTag: '_MENTION_',
-        reasonPrefix: ' with reason `_REASON_RAW_`',
+        reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
+        timezone: 'Etc/GMT+1',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,
@@ -281,7 +339,7 @@ const guildConfigs = <any>{
         },
       },
       utilities: { // todo
-        enabled: true,
+        enabled: false,
       },
       roleManagement: { // for group srv only
         enabled: false,
@@ -332,7 +390,7 @@ const guildConfigs = <any>{
         muteRole: '576330934010511361',
       },
       counting: { // counting module
-        enabled: true,
+        enabled: false,
         channels: ['740880532325531659'],
         keyCount: 'counting_current',
         keyLastUser: 'counting_lastuser',
@@ -355,7 +413,5 @@ export function getGuildConfig(gid: string) {
   }
   return guildConfigs[gid];
 }
+export const guildId = discord.getGuildId();
 export const config = getGuildConfig(guildId);
-export function isGlobalAdmin(userid: string) {
-  return globalConfig.admins.includes(userid);
-}

@@ -1,9 +1,15 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 
 export function getKeys(
   log: discord.AuditLogEntry,
   tpdata: discord.Event.ITypingStart,
 ) {
+  if (isIgnoredChannel(tpdata.channelId)) {
+    return [];
+  }
+  if (isIgnoredUser(tpdata.userId)) {
+    return [];
+  }
   const keys = new Array('startTyping');
   return keys;
 }

@@ -3,8 +3,52 @@ import * as utils from '../../lib/utils';
 
 const config = conf.config.modules.logging;
 
-export function isDebug() {
-  return conf.guildId === conf.globalConfig.masterGuild && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
+export function isDebug(bypassMaster = false) {
+  return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
+}
+
+export function changeLoggingTimezone(dt: Date) {
+  if (!config.timezone) {
+    return dt;
+  }
+  return utils.changeTimezone(dt, config.timezone);
+}
+
+export function isIgnoredChannel(channel: discord.GuildChannel | string) {
+  if (channel instanceof discord.GuildChannel) {
+    channel = channel.id;
+  }
+  const { ignores } = config;
+  if (!ignores) {
+    return false;
+  }
+  let chans = [].concat(ignores.channels);
+  if (ignores.logChannels === true) {
+    const _lc: any = Array.from(config.logChannels.keys());
+    chans = chans.concat(_lc);
+  }
+  return chans.includes(channel);
+}
+
+export function isIgnoredUser(user: string | discord.User | discord.GuildMember) {
+  if (user instanceof discord.User) {
+    user = user.id;
+  }
+  if (user instanceof discord.GuildMember) {
+    user = user.user.id;
+  }
+  const { ignores } = config;
+  if (!ignores) {
+    return false;
+  }
+  const usrs = [].concat(ignores.users);
+  if (ignores.self === true) {
+    usrs.push(discord.getBotId());
+  }
+  if (ignores.blacklistedUsers && utils.isBlacklisted(user)) {
+    return true;
+  }
+  return usrs.includes(user);
 }
 
 export function isMasterInDebug() {
@@ -12,6 +56,25 @@ export function isMasterInDebug() {
 }
 export function isExternalDebug(gid: string = conf.guildId) {
   return isMasterInDebug() && gid !== conf.globalConfig.masterGuild;
+}
+
+export function getChannelEmoji(ch: discord.GuildChannel) {
+  if (ch.type === discord.GuildChannel.Type.GUILD_TEXT) {
+    return '<:channel:735780703983239218>';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
+    return '<:voice:735780703928844319>';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
+    return '<:store:735780704130170880>';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_NEWS) {
+    return '<:news:735780703530385470>';
+  }
+  if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) {
+    return '<:rich_presence:735781410509684786>';
+  }
+  return '';
 }
 
 export function getMemberTag(member: discord.GuildMember) {

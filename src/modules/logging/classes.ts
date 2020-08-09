@@ -22,6 +22,7 @@ export class ChannelConfig {
     webhookUrl: string | undefined = undefined;
     showEventName = false;
     showTimestamps = false;
+    embedColor: number | undefined = undefined;
     constructor(
       desc: string,
       includes: Array<string>,
@@ -65,6 +66,7 @@ export function chEmbed(
   inc: Array<string>,
   exc: Array<string> = [],
   footerUrl: string | undefined = undefined,
+  embedColor: number | undefined = undefined,
   webhook: string | undefined = undefined,
   showTimestamps = true,
   showEventName = false,

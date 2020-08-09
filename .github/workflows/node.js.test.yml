@@ -48,3 +48,4 @@ jobs:
       env:
         DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS_TEST_DEPLOY}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
+        GITHUB: true

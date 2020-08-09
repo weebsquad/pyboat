@@ -167,7 +167,7 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
   if (actor instanceof discord.User) {
     extras.set('_ACTORTAG_', logUtils.getUserTag(usr));
   }
-  await logCustom(`ANTIPING_${type}`, extras);
+  await logCustom('ANTIPING', `${type}`, extras);
   /*
   let chan = (await discord.getChannel(
     cfgMod.logChannel

@@ -265,29 +265,6 @@ export async function getUserEntitlements(
   return mainData;
 }
 
-export function getUserAuth(mem: discord.GuildMember) {
-  let highest = 0;
-  const usrLevel = config.levels.users[mem.user.id];
-  if (typeof usrLevel === 'number' && usrLevel > highest) {
-    highest = usrLevel;
-  }
-  for (const key in config.levels.roles) {
-    const roleLevel = config.levels.roles[key];
-    if (mem.roles.includes(key) && roleLevel > highest) {
-      highest = roleLevel;
-    }
-  }
-  return highest;
-}
-
-export function canMemberRun(neededLevel: number, member: discord.GuildMember) {
-  if (conf.isGlobalAdmin(member.user.id)) {
-    return true;
-  } // todo: OVERRIDES
-  const usrLevel = getUserAuth(member);
-  return usrLevel >= neededLevel;
-}
-
 export async function sendWebhookPost(
   webhook_id: string,
   content: string | Array<discord.Embed>,

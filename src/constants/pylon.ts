@@ -28,3 +28,11 @@ export const discordEventsMap: {[key: string]: any} = {
   WEBHOOKS_UPDATE: discord.Event.WEBHOOKS_UPDATE,
   USER_UPDATE: discord.Event.USER_UPDATE,
 };
+
+export const channelTypeMap = new Map<discord.Channel.Type, string>();
+channelTypeMap.set(discord.Channel.Type.DM, 'Direct Message');
+channelTypeMap.set(discord.Channel.Type.GUILD_TEXT, 'Text');
+channelTypeMap.set(discord.Channel.Type.GUILD_VOICE, 'Voice');
+channelTypeMap.set(discord.Channel.Type.GUILD_CATEGORY, 'Category');
+channelTypeMap.set(discord.Channel.Type.GUILD_NEWS, 'News');
+channelTypeMap.set(discord.Channel.Type.GUILD_STORE, 'Store');

@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
 import * as utils from '../../../lib/utils';
 
 export function getKeys(
@@ -6,6 +6,12 @@ export function getKeys(
   voiceState: discord.VoiceState,
   oldVoiceState: discord.VoiceState,
 ) {
+  if (isIgnoredChannel(voiceState.channelId)) {
+    return [];
+  }
+  if (isIgnoredUser(voiceState.userId)) {
+    return [];
+  }
   const keys = [];
   if (voiceState.channelId !== oldVoiceState.channelId) {
     if (

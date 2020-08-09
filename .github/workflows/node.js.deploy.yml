@@ -24,7 +24,7 @@ jobs:
       run: npm i
     - name: Lint js/ts
       run: npm run lint --if-present
-    - name: Build
+    - name: Build Rollup
       run: npm run build --if-present
 
   deploy:
@@ -49,3 +49,4 @@ jobs:
         DEPLOYMENTS: ${{secrets.PYLON_API_DEPLOYMENTS}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
         WEBHOOK_URL: ${{secrets.WEBHOOK_URL}}
+        GITHUB: true
