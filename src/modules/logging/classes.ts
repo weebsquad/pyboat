@@ -18,16 +18,17 @@ export class ChannelConfig {
     description = '';
     scopes: ChannelScopes;
     embed = false;
+    embedColor: number | undefined = undefined;
     footerAvatar: string | undefined = undefined;
     webhookUrl: string | undefined = undefined;
     showEventName = false;
     showTimestamps = false;
-    embedColor: number | undefined = undefined;
     constructor(
       desc: string,
       includes: Array<string>,
       excludes: Array<string> = [],
       embed = false,
+      embedColor: number | undefined = undefined,
       footer: string | undefined = undefined,
       webhook: string | undefined = undefined,
       showEventName = false,
@@ -36,6 +37,7 @@ export class ChannelConfig {
       this.description = desc;
       this.scopes = new ChannelScopes(includes, excludes);
       this.embed = embed;
+      this.embedColor = embedColor;
       this.webhookUrl = webhook;
       this.footerAvatar = footer;
       this.showEventName = showEventName;
@@ -57,6 +59,7 @@ export function chPlain(
     false,
     undefined,
     undefined,
+    undefined,
     showEventName,
     timestamps,
   );
@@ -76,6 +79,7 @@ export function chEmbed(
     inc,
     exc,
     true,
+    embedColor,
     footerUrl,
     webhook,
     showEventName,
