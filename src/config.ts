@@ -182,7 +182,7 @@ const guildConfigs = <any>{
           [
             '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
                                           'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
-                                          0x00ff00,
+                                          0x228b22,
                                           'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
                                           true,
                                           false),
