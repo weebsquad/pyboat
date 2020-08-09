@@ -97,7 +97,7 @@ eventData.set(discord.Event.CHANNEL_UPDATE, channelUpdate);
 
 export const _ForceIndividualEvents = false;
 export async function AL_OnBatchEvents(q: Array<QueuedEvent>) {
-  if (utilsLogging.isDebug(true)) {
+  if (utilsLogging.isDebug()) {
     console.log('AL_OnBatchEvents', q);
   }
   await handleMultiEvents(q);

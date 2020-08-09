@@ -1,8 +1,8 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
-import * as conf from '../../../config';
+import { guildId, config } from '../../../config';
 import * as utils from '../../../lib/utils';
 
-const config = conf.config.modules.logging;
+const cfgMod = config.modules.logging;
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
   return ['customLog'];
@@ -61,7 +61,7 @@ export async function logCustom(
   if (cat.substr(0, 1) !== '|') {
     cat = `|${cat}`;
   }
-  const evCat = config.messages[cat];
+  const evCat = cfgMod.messages[cat];
   if (!evCat) {
     throw new Error(`Tried to log ${cat}.${subtype} but category not defined in messages!`);
   }
@@ -71,7 +71,7 @@ export async function logCustom(
   }
   await handleEvent(
     id,
-    conf.guildId, // todo: change!
+    guildId, // todo: change!
     cat,
     null,
     subtype,
@@ -84,14 +84,14 @@ export async function logDebug(
   placeholders: Map<string, any> | undefined = undefined,
   id: string = utils.composeSnowflake(),
 ) {
-  // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'));
-  const evData = config.messages.DEBUG[type];
+  // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'))
+  const evData = cfgMod.messages.DEBUG[type];
   if (evData === undefined) {
     throw new Error(`Tried to log ${type} but not defined in config!`);
   }
   await handleEvent(
     id,
-    conf.guildId, // todo: change!
+    guildId, // todo: change!
     'DEBUG',
     null,
     type,

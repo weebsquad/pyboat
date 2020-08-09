@@ -200,7 +200,7 @@ const guildConfigs = <any>{
                                           false),
           ],
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
+          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
         ignores: {
           channels: [],
