@@ -30,6 +30,8 @@ export const globalConfig = <any>{
   ],
   // userids of bot accounts that can use pyboat commands!
   botsCommands: [],
+  // prefix for dev commands
+  devPrefix: 'p/',
 };
 const defaultConfig = { // for non-defined configs!
   levels: {

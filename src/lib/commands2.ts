@@ -1,6 +1,6 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
-import { config } from '../config';
+import { config, globalConfig } from '../config';
 
 export const cmdgroups = [];
 export const modulegroups = new Map<string, Array<any>>();
@@ -19,7 +19,7 @@ function getCmdChannels() {
 
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
-  const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
+  // const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
   let pref = '!';
   if (config.modules.commands !== undefined && typeof config.modules.commands.prefix === 'string') {
     pref = config.modules.commands.prefix;
@@ -29,6 +29,8 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
     description: 'default',
     defaultPrefix: config.modules.commands.prefix,
     register: <boolean>false,
+    mentionPrefix: true,
+    additionalPrefixes: [],
   };
   if (typeof curr === 'object') {
     for (const key in curr) {
@@ -37,6 +39,9 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
       }
       opts[key] = curr[key];
     }
+  }
+  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix)) {
+    opts.additionalPrefixes.push(globalConfig.devPrefix);
   }
   /*
   if (typeof curr['filters'] !== 'undefined') {

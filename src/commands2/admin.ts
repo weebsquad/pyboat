@@ -12,7 +12,7 @@ const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_admin');
 
 const optsAdmin = {
-  additionalPrefixes: ['p/'],
+  additionalPrefixes: [conf.globalConfig.devPrefix],
   description: 'Admin commands',
   filters: F.or(
     F.isOwner(),
@@ -23,7 +23,7 @@ const optsAdmin = {
   ),
 };
 const optsOp = {
-  additionalPrefixes: ['p/'],
+  additionalPrefixes: [conf.globalConfig.devPrefix],
   description: 'Op commands',
   filters: F.or(
     F.isOwner(),

@@ -12,6 +12,7 @@ const kv = new pylon.KVNamespace('commands_general');
 export const _groupOptions = {
   additionalPrefixes: [],
   description: 'General commands',
+  mentionPrefix: false,
 };
 
 const optsGroup = commands2.getOpts(

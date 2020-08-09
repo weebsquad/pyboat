@@ -12,7 +12,7 @@ const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
 
 export const _groupOptions = {
-  additionalPrefixes: ['p/'],
+  additionalPrefixes: [conf.globalConfig.devPrefix],
   description: 'Dev commands',
   filters: F.custom(
     (message) => utils.isGlobalAdmin(message.member.user.id),
@@ -26,6 +26,7 @@ export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 const optsEval = commands2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
+optsEval.mentionPrefix = false;
 optsEval.filters = F.silent(
   F.custom(
     (message) => utils.isGlobalAdmin(message.member.user.id),
@@ -36,7 +37,7 @@ optsEval.filters = F.silent(
 export const cmdGroupEval = new discord.command.CommandGroup(optsEval);
 
 cmdGroupEval.raw(
-  { name: '$', aliases: ['p/eval'], onError() {} },
+  { name: '$', aliases: [`${conf.globalConfig.devPrefix}eval`], onError() {} },
   async (msg) => {
     if (msg.content.length < 4 || !msg.content.includes(' ')) {
       throw new TypeError('No eval argument specified');

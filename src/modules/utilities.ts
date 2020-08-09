@@ -4,23 +4,22 @@
 // TODO: jumbo, urban, kittyapi
 import * as utils from '../lib/utils';
 import * as config from '../config';
+import * as commands2 from '../lib/commands2';
 
-/*
 const F = discord.command.filters;
 export const _groupOptions = {
-  additionalPrefixes: ['p/'],
-  description: 'Dev commands',
+  additionalPrefixes: [],
+  description: 'Utility Commands',
   filters: F.custom(
     (message) => utils.getUserAuth(message.author.id) >= 4,
-    'Must be bot admin'
-  )
+    'Must be bot admin',
+  ),
 };
 
 const optsGroup = commands2.getOpts(
-  _groupOptions
-) as discord.command.ICommandGroupOptions;
+  _groupOptions,
+);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
-*/
 
 /* SNIPE */
 const snipekvs = new pylon.KVNamespace('snipe');
