@@ -1,6 +1,7 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig } from '../config';
+import * as utils from './utils';
 
 export const cmdgroups = [];
 export const modulegroups = new Map<string, Array<any>>();
@@ -17,6 +18,14 @@ function getCmdChannels() {
   return ['1'].concat(config.modules.counting.channels);
 }
 
+export const filterReturnMessages: {[key: string]: string} = {
+  filterAuthorized: 'Must be authorized',
+};
+export function filterAuthorized(message: discord.GuildMemberMessage): boolean {
+  const _check = utils.canMemberRun(globalConfig.Ranks.Authorized, message.member);
+  return _check;
+}
+
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
   // const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
@@ -29,7 +38,7 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
     description: 'default',
     defaultPrefix: config.modules.commands.prefix,
     register: <boolean>false,
-    mentionPrefix: true,
+    mentionPrefix: config.modules.commands.allowMentionPrefix,
     additionalPrefixes: [],
   };
   if (typeof curr === 'object') {
@@ -40,7 +49,7 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
       opts[key] = curr[key];
     }
   }
-  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix)) {
+  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix) && opts.defaultPrefix.length > 0) {
     opts.additionalPrefixes.push(globalConfig.devPrefix);
   }
   /*
@@ -67,6 +76,7 @@ export async function isCommand(message: discord.Message) {
   for (const key in cmdgroups) {
     const obj: discord.command.CommandGroup = cmdgroups[key];
     const ret = await obj.checkMessage(message);
+    // console.log(`Checking ${message.content} against`, obj, ` returned ${ret}`);
     if (ret === true) {
       return true;
     }
@@ -94,10 +104,12 @@ export async function handleCommand(message: discord.Message) {
 }
 
 export function InitializeCommands2() {
+  if (config.modules.commands.enabled !== true) {
+    return;
+  }
+  // raw commands!
   for (const key in commandsTable) {
     const obj = commandsTable[key];
-
-    let commandGroup;
     let count = 0;
 
     const newKeys = {};
@@ -123,5 +135,23 @@ export function InitializeCommands2() {
     const newC = new discord.command.CommandGroup(opts).attach(newKeys);
     cmdgroups.push(newC);
     // console.info('Loaded ' + count + ' cmds from commands2.' + key);
+  }
+  // modules!
+  for (const key in moduleDefinitions) {
+    if (!config.modules[key]) {
+      continue;
+    }
+    if (!config.modules[key].enabled || config.modules[key].enabled !== true) {
+      continue;
+    }
+    const obj: any = moduleDefinitions[key];
+    for (const keyVar in obj) {
+      const objCmd = obj[keyVar];
+      if (objCmd instanceof discord.command.CommandGroup) {
+        // console.log(key, keyVar, objCmd);
+        cmdgroups.push(objCmd);
+        continue;
+      }
+    }
   }
 }

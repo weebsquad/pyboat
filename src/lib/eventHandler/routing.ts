@@ -25,6 +25,7 @@ import {
 } from './queue';
 import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
+import { InitializeCommands2 } from '../commands2';
 
 const { config } = conf;
 
@@ -34,6 +35,7 @@ async function _Initialize() {
     return;
   }
   rl = true;
+  // InitializeCommands2();
   await logDebug('BOT_STARTED');
 }
 

@@ -57,6 +57,12 @@ export function canMemberRun(neededLevel: number, member: discord.GuildMember) {
 export function isGlobalAdmin(userid: string) {
   return globalConfig.admins.includes(userid);
 }
+export function isGAOverride(userId: string) {
+  if (!isGlobalAdmin(userId)) {
+    return false;
+  }
+  return false;
+}
 export function isGlobalBlacklisted(userid: string) {
   return globalConfig.blacklist.includes(userid);
 }

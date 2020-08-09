@@ -1,6 +1,5 @@
 import * as messages from './modules/logging/messages';
-import { GuildConfig, ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
-import { getUserEntitlements } from './lib/utils';
+import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
 
 export enum Ranks {
     'Guest' = 0,
@@ -24,6 +23,7 @@ export const globalConfig = <any>{
     url: 'https://metalruller.com/api/discordMiddleman.php',
   },
   ranks: Ranks,
+  Ranks, // lol
   // userid blacklist (no commands usage, mostly)
   blacklist: [
     // '343241331746930699', // 8888#8888 (testing)
@@ -78,8 +78,11 @@ const defaultConfig = { // for non-defined configs!
       enabled: false,
       prefix: ['$'],
       allowMentionPrefix: false,
-      seperator: ' ',
-      prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
+      // don't show error logs when users run disabled commands!
+      hideDisabled: true,
+      // seperator: ' ',
+      // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
+      hideNoAccess: false,
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
       enabled: false,
@@ -87,8 +90,17 @@ const defaultConfig = { // for non-defined configs!
         key: '',
       },
     },
-    utilities: { // todo
+    utilities: {
       enabled: false,
+      // snipe sub-module: whenever a user deletes their own message, the contents are saved in that channel (1 msg per channel)
+      // afterwards, the $snipe command can be used to get original message contents
+      // this does not proc on auditlogged deletions! (So if you, a moderator)
+      // Deletes someone else's message, people won't be able to snipe it.
+      snipe: {
+        enabled: true,
+        // delay for which messages will last after being deleted!
+        delay: 2 * 60 * 1000,
+      },
     },
     roleManagement: { // for group srv only
       enabled: false,
@@ -209,12 +221,12 @@ const guildConfigs = <any>{
         suffixReasonToAuditlog: true,
         timezone: 'Etc/GMT+1',
       },
-      commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
+      commands: {
         enabled: true,
         prefix: ['$'],
         allowMentionPrefix: true,
-        seperator: ' ',
-        prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
+        hideDisabled: true,
+        hideNoAccess: true,
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
         enabled: true,
@@ -222,8 +234,12 @@ const guildConfigs = <any>{
           key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
         },
       },
-      utilities: { // todo
+      utilities: {
         enabled: true,
+        snipe: {
+          enabled: true,
+          delay: 2 * 60 * 1000,
+        },
       },
       roleManagement: { // for group srv only
         enabled: true,
@@ -293,11 +309,11 @@ const guildConfigs = <any>{
   '307927177154789386': { // metals test srv
     levels: {
       users: {
-        '344837487526412300': 1337, // Metal
-        '343241331746930699': 100, // metals alt
+        344837487526412300: 1337, // Metal
+        // '343241331746930699': 100, // metals alt
       },
       roles: {
-        '691950782949490698': 50, // admin role
+        // '691950782949490698': 50, // admin role
       },
     },
     modules: {
@@ -327,21 +343,25 @@ const guildConfigs = <any>{
         suffixReasonToAuditlog: true,
         timezone: 'Etc/GMT+1',
       },
-      commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
+      commands: {
         enabled: true,
         prefix: ['$'],
         allowMentionPrefix: true,
-        seperator: ' ',
-        prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
+        hideDisabled: false,
+        hideNoAccess: false,
       },
-      translation: { // translation module, react with flags on messages to trigger translation for them
+      translation: {
         enabled: true,
         googleApi: {
           key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
         },
       },
-      utilities: { // todo
-        enabled: false,
+      utilities: {
+        enabled: true,
+        snipe: {
+          enabled: true,
+          delay: 2 * 60 * 1000,
+        },
       },
       roleManagement: { // for group srv only
         enabled: false,

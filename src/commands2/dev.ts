@@ -12,7 +12,6 @@ const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
 
 export const _groupOptions = {
-  additionalPrefixes: [conf.globalConfig.devPrefix],
   description: 'Dev commands',
   filters: F.custom(
     (message) => utils.isGlobalAdmin(message.member.user.id),

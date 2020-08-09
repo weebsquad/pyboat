@@ -1,4 +1,4 @@
-// import { config } from '../../config';
+// import { config, globalConfig } from '../../config';
 
 // const _c = config.modules.logging.auditLogs === true;
 

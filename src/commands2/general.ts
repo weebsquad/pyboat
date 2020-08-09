@@ -10,9 +10,7 @@ const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_general');
 
 export const _groupOptions = {
-  additionalPrefixes: [],
   description: 'General commands',
-  mentionPrefix: false,
 };
 
 const optsGroup = commands2.getOpts(
@@ -34,49 +32,6 @@ export const ping = discord.command.rawHandler(async (msg) => {
   await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
 });
 
-const snipekvs = new pylon.KVNamespace('snipe');
-export const snipe = discord.command.rawHandler(async (msg) => {
-  let _sn: any = await snipekvs.get(msg.channelId);
-  if (typeof _sn === 'string') {
-    _sn = JSON.parse(_sn);
-  }
-  if (
-    _sn === undefined
-    || typeof _sn.author !== 'object'
-    || typeof _sn.id !== 'string' || !(_sn instanceof discord.Message)
-  ) {
-    await msg.reply('Nothing to snipe.');
-    return;
-  }
-  if (
-    _sn.author.id === msg.author.id
-    && !msg.member.can(discord.Permissions.ADMINISTRATOR)
-  ) {
-    await msg.reply('Nothing to snipe.');
-    return;
-  }
-  const emb = new discord.Embed();
-  const _usr = await discord.getUser(_sn.author.id);
-  if (!_usr) {
-    return;
-  }
-  emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
-  emb.setTimestamp(
-    new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
-  );
-  emb.setFooter({
-    iconUrl: msg.author.getAvatarUrl(),
-    text: `Requested by: ${msg.author.getTag()}`,
-  });
-  emb.setDescription(_sn.content);
-  emb.setColor(0x03fc52);
-  await snipekvs.delete(msg.channelId);
-  await msg.reply({
-    embed: emb,
-    content: `${_usr.toMention()} said ...`,
-    allowedMentions: {},
-  });
-});
 export const snowflake = discord.command.handler(
   (ctx) => ({ snowflakee: ctx.string() }),
   async (msg, { snowflakee }) => {
