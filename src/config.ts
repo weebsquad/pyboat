@@ -30,7 +30,7 @@ export const globalConfig = <any>{
   ],
   // userids of bot accounts that can use pyboat commands!
   botsCommands: [],
-  // prefix for dev commands
+  // prefix for dev commands (included as additional prefix in every command in case users change the default one)
   devPrefix: 'p/',
 };
 const defaultConfig = { // for non-defined configs!
@@ -200,7 +200,7 @@ const guildConfigs = <any>{
                                           false),
           ],
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
+          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
         ignores: {
           channels: [],
@@ -344,7 +344,7 @@ const guildConfigs = <any>{
         enabled: true,
         prefix: ['$'],
         allowMentionPrefix: true,
-        hideNoAccess: true,
+        hideNoAccess: false,
       },
       translation: {
         enabled: true,

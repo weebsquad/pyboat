@@ -17,9 +17,9 @@ export class QueuedEvent {
   }
 }
 
-const cpuTimePerEvent = 8; // to determine when to use burst :P
+const cpuTimePerEvent = 10; // to determine when to use burst :P
 const interval = 5000;
-const maxEventRuntime = 16000;
+const maxEventRuntime = 13000;
 let queue = new Array<QueuedEvent>();
 // let timeout: any;
 // const kv = new pylon.KVNamespace('loggingQueue');
@@ -53,8 +53,9 @@ export async function resolveQueue() {
   if (typeof (pylon.getCpuTime) === 'function') {
     usedCpu = (await pylon.getCpuTime());
   }
-  const neededCpuTime = Math.floor(cpuTimePerEvent * procQueue.length);
+  const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   const cpuT = usedCpu + neededCpuTime;
+  console.log(`Used CPU: ${usedCpu}\nNeeded: ${neededCpuTime}\nTo Process: ${len}\nTotal In Queue: ${queue.length}`);
   try {
     if (cpuT >= 100) {
       try {

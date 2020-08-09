@@ -56,6 +56,35 @@ export function isGlobalAdmin(userid: string) {
   return globalConfig.admins.includes(userid);
 }
 
+const overrideKv = new pylon.KVNamespace('globalAdminOverrides');
+export async function insertGaOverride(uid: string, ms: number) {
+  if (!isGlobalAdmin(uid)) {
+    return 'user not a global admin';
+  }
+  if (guildId === globalConfig.masterGuild) {
+    return 'user already overriding';
+  }
+  const kvcheck = await overrideKv.get(uid);
+  if (kvcheck) {
+    return 'user already overriding';
+  }
+  await overrideKv.put(uid, new Date().getTime() + ms, { ttl: ms });
+  return true;
+}
+export async function deleteGaOverride(uid: string) {
+  if (!isGlobalAdmin(uid)) {
+    return 'user not a global admin';
+  }
+  if (guildId === globalConfig.masterGuild) {
+    return 'Can\'t remove a override in the master guild.';
+  }
+  const checkov = await isGAOverride(uid);
+  if (checkov === false) {
+    return 'user not overriding';
+  }
+  await overrideKv.delete(uid);
+  return true;
+}
 export async function isGAOverride(userId: string) {
   if (!isGlobalAdmin(userId)) {
     return false;
@@ -63,7 +92,19 @@ export async function isGAOverride(userId: string) {
   if (guildId === globalConfig.masterGuild) {
     return true;
   }
-  return false;
+  const checkkv = await overrideKv.get(userId);
+  return checkkv !== undefined;
+}
+export async function getOverrideTimeLeft(userId: string) {
+  if (!isGAOverride(userId)) {
+    return 0;
+  }
+  const checkkv = await overrideKv.get(userId);
+  if (typeof checkkv !== 'number') {
+    return 0;
+  }
+  const df = new Date(checkkv).getTime() - new Date().getTime();
+  return df;
 }
 export function isGlobalBlacklisted(userid: string) {
   return globalConfig.blacklist.includes(userid);

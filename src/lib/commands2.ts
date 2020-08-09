@@ -41,7 +41,6 @@ export function filterGlobalAdmin(message: discord.GuildMemberMessage): boolean 
 }
 export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMessage): Promise<boolean> {
   const _ret = await utils.isGAOverride(message.author.id);
-  console.log('filterOverridingGlobalAdmin', _ret);
   return _ret;
 }
 
@@ -64,6 +63,7 @@ export function getFilters(...args: any): discord.command.filters.ICommandFilter
     let filter = F.custom(async (msg) => {
       const val = await fnCheck(msg); return val;
     }, msgRet);
+    // if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
     if ((fnName === 'filterOverridingGlobalAdmin' || fnName === 'filterGlobalAdmin') || (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true)) {
       filter = F.silent(filter);
     } else {
@@ -101,7 +101,7 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
       opts[key] = curr[key];
     }
   }
-  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix) && opts.defaultPrefix.length > 0) {
+  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix) && opts.defaultPrefix.length > 0 && opts.defaultPrefix !== globalConfig.devPrefix) {
     opts.additionalPrefixes.push(globalConfig.devPrefix);
   }
   /*
