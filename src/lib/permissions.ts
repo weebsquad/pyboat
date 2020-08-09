@@ -1,9 +1,6 @@
 import { logDebug, logCustom } from '../modules/logging/events/custom';
-import * as conf from '../config';
+import { config, globalConfig, guildId } from '../config';
 import { getMemberTag } from '../modules/logging/main';
-
-const { globalConfig } = conf;
-const { config } = conf;
 
 export function getUserAuth(mem: discord.GuildMember | string) {
   const id = typeof mem === 'string' ? mem : mem.user.id;
@@ -23,7 +20,7 @@ export function getUserAuth(mem: discord.GuildMember | string) {
       }
     }
   }
-  if (lowest < 0 && !isGlobalAdmin(id)) {
+  if (lowest < 0 && !isGlobalAdmin(id)) { // global admins cant be blacklisted (even when not overriding)
     highest = lowest;
   } // blacklist!
   return highest;
@@ -46,10 +43,11 @@ export function isBlacklisted(member: discord.GuildMember | string, noCheckGloba
   return false;
 }
 
-export function canMemberRun(neededLevel: number, member: discord.GuildMember) {
-  if (isGlobalAdmin(member.user.id)) {
+export async function canMemberRun(neededLevel: number, member: discord.GuildMember) {
+  const ov = await isGAOverride(member.user.id);
+  if (ov === true) {
     return true;
-  } // todo: OVERRIDES
+  }
   const usrLevel = getUserAuth(member);
   return usrLevel >= neededLevel;
 }
@@ -57,9 +55,13 @@ export function canMemberRun(neededLevel: number, member: discord.GuildMember) {
 export function isGlobalAdmin(userid: string) {
   return globalConfig.admins.includes(userid);
 }
-export function isGAOverride(userId: string) {
+
+export async function isGAOverride(userId: string) {
   if (!isGlobalAdmin(userId)) {
     return false;
+  }
+  if (guildId === globalConfig.masterGuild) {
+    return true;
   }
   return false;
 }

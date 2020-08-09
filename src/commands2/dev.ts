@@ -1,42 +1,33 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import * as conf from '../config';
+import { config, globalConfig, guildId } from '../config';
 import * as utils from '../lib/utils';
-import * as commands2 from '../lib/commands2';
+import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
 import * as constants from '../constants/constants';
 
-const { config } = conf;
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
 
 export const _groupOptions = {
   description: 'Dev commands',
-  filters: F.custom(
-    (message) => utils.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin',
-  ),
+  filters: c2.getFilters(c2.filterOverridingGlobalAdmin),
 };
 
-const optsGroup = commands2.getOpts(_groupOptions);
+const optsGroup = c2.getOpts(_groupOptions);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-const optsEval = commands2.getOpts(_groupOptions);
+const optsEval = c2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.mentionPrefix = false;
-optsEval.filters = F.silent(
-  F.custom(
-    (message) => utils.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin',
-  ),
-);
+optsEval.filters = c2.getFilters(c2.filterOverridingGlobalAdmin);
 
 export const cmdGroupEval = new discord.command.CommandGroup(optsEval);
 
 cmdGroupEval.raw(
-  { name: '$', aliases: [`${conf.globalConfig.devPrefix}eval`], onError() {} },
+  { name: '$', aliases: [`${globalConfig.devPrefix}eval`], onError() {} },
   async (msg) => {
     if (msg.content.length < 4 || !msg.content.includes(' ')) {
       throw new TypeError('No eval argument specified');

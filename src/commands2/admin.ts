@@ -1,6 +1,6 @@
-import * as conf from '../config';
+import { config, globalConfig, guildId } from '../config';
 import * as utils from '../lib/utils';
-import * as commands2 from '../lib/commands2';
+import * as c2 from '../lib/commands2';
 
 // const { config } = conf;
 const ADMIN_ROLE = '567988684193005568';
@@ -10,32 +10,31 @@ const GENERAL_CHANNEL = '565325743278653461';
 
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_admin');
-
+/*
 const optsAdmin = {
-  additionalPrefixes: [conf.globalConfig.devPrefix],
+  additionalPrefixes: [globalConfig.devPrefix],
   description: 'Admin commands',
-  filters: F.or(
+  filters: F.or(+
     F.isOwner(),
     F.custom(
-      (message) => utils.canMemberRun(conf.Ranks.Administrator, message.member),
+      (message) => utils.canMemberRun(globalConfig.Ranks.Administrator, message.member),
       'Must be server admin',
     ),
   ),
+}; */
+const optsAdmin = {
+  additionalPrefixes: [globalConfig.devPrefix],
+  description: 'Admin commands',
+  filters: c2.getFilters(c2.filterAdmin, c2.filterLevelOwner, c2.filterActualOwner, c2.filterOverridingGlobalAdmin),
 };
 const optsOp = {
-  additionalPrefixes: [conf.globalConfig.devPrefix],
+  additionalPrefixes: [globalConfig.devPrefix],
   description: 'Op commands',
-  filters: F.or(
-    F.isOwner(),
-    F.custom(
-      (message) => utils.canMemberRun(conf.Ranks.Owner, message.member),
-      'Must be server op',
-    ),
-  ),
+  filters: c2.getFilters(c2.filterLevelOwner, c2.filterActualOwner, c2.filterOverridingGlobalAdmin),
 };
 
-export const cmdGroupAdmin = new discord.command.CommandGroup(commands2.getOpts(optsAdmin));
-export const cmdGroupOp = new discord.command.CommandGroup(commands2.getOpts(optsOp));
+export const cmdGroupAdmin = new discord.command.CommandGroup(c2.getOpts(optsAdmin));
+export const cmdGroupOp = new discord.command.CommandGroup(c2.getOpts(optsOp));
 
 const admin = cmdGroupAdmin.raw('admin', async (message) => {
   const { member } = message;

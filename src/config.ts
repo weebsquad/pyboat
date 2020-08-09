@@ -78,8 +78,6 @@ const defaultConfig = { // for non-defined configs!
       enabled: false,
       prefix: ['$'],
       allowMentionPrefix: false,
-      // don't show error logs when users run disabled commands!
-      hideDisabled: true,
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       hideNoAccess: false,
@@ -225,7 +223,6 @@ const guildConfigs = <any>{
         enabled: true,
         prefix: ['$'],
         allowMentionPrefix: true,
-        hideDisabled: true,
         hideNoAccess: true,
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
@@ -347,8 +344,7 @@ const guildConfigs = <any>{
         enabled: true,
         prefix: ['$'],
         allowMentionPrefix: true,
-        hideDisabled: false,
-        hideNoAccess: false,
+        hideNoAccess: true,
       },
       translation: {
         enabled: true,

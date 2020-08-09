@@ -4,8 +4,6 @@ import { config, globalConfig } from '../config';
 import * as utils from './utils';
 
 export const cmdgroups = [];
-export const modulegroups = new Map<string, Array<any>>();
-// let cmdChannels = [];
 
 function getCmdChannels() {
   if (typeof (config.modules.counting) === 'undefined') {
@@ -18,12 +16,66 @@ function getCmdChannels() {
   return ['1'].concat(config.modules.counting.channels);
 }
 
-export const filterReturnMessages: {[key: string]: string} = {
-  filterAuthorized: 'Must be authorized',
-};
-export function filterAuthorized(message: discord.GuildMemberMessage): boolean {
-  const _check = utils.canMemberRun(globalConfig.Ranks.Authorized, message.member);
-  return _check;
+export async function filterAuthorized(message: discord.GuildMemberMessage): Promise<boolean> {
+  const _ret = await utils.canMemberRun(globalConfig.Ranks.Authorized, message.member);
+  return _ret;
+}
+export async function filterModerator(message: discord.GuildMemberMessage): Promise<boolean> {
+  const _ret = await utils.canMemberRun(globalConfig.Ranks.Moderator, message.member);
+  return _ret;
+}
+export async function filterAdmin(message: discord.GuildMemberMessage): Promise<boolean> {
+  const _ret = await utils.canMemberRun(globalConfig.Ranks.Administrator, message.member);
+  return _ret;
+}
+export async function filterLevelOwner(message: discord.GuildMemberMessage): Promise<boolean> {
+  const _ret = await utils.canMemberRun(globalConfig.Ranks.Owner, message.member);
+  return _ret;
+}
+export async function filterActualOwner(message: discord.GuildMemberMessage): Promise<boolean> {
+  const guildThis = await message.getGuild();
+  return guildThis.ownerId === message.author.id;
+}
+export function filterGlobalAdmin(message: discord.GuildMemberMessage): boolean {
+  return utils.isGlobalAdmin(message.author.id);
+}
+export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMessage): Promise<boolean> {
+  const _ret = await utils.isGAOverride(message.author.id);
+  console.log('filterOverridingGlobalAdmin', _ret);
+  return _ret;
+}
+
+export function getFilters(...args: any): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
+  const filterReturnMessages: {[key: string]: string} = {
+    filterAuthorized: 'Must be authorized',
+    filterModerator: 'Must be moderator',
+    filterAdmin: 'Must be admin',
+    filterLevelOwner: 'Must be owner (level)',
+    filterActualOwner: 'Must be the server owner',
+    filterGlobalAdmin: 'Must be a global admin',
+    filterOverridingGlobalAdmin: 'Must be a **overriding** global admin',
+  };
+  const _checks = new Array<discord.command.filters.ICommandFilter>();
+  const F = discord.command.filters;
+  let anyNonSilent = false;
+  args.forEach((fnCheck: any) => {
+    const fnName = fnCheck.name;
+    const msgRet = filterReturnMessages[fnName];
+    let filter = F.custom(async (msg) => {
+      const val = await fnCheck(msg); return val;
+    }, msgRet);
+    if ((fnName === 'filterOverridingGlobalAdmin' || fnName === 'filterGlobalAdmin') || (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true)) {
+      filter = F.silent(filter);
+    } else {
+      anyNonSilent = true;
+    }
+    _checks.push(filter);
+  });
+  let _f = _checks.length > 1 ? F.or(..._checks) : _checks[0];
+  if (anyNonSilent === false) {
+    _f = F.silent(_f);
+  }
+  return _f;
 }
 
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
