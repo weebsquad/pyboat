@@ -22,7 +22,7 @@ export class ChannelConfig {
     webhookUrl: string | undefined = undefined;
     showEventName = false;
     showTimestamps = false;
-    embedColor: number | undefined = undefined; 
+    embedColor: number | undefined = undefined;
     constructor(
       desc: string,
       includes: Array<string>,

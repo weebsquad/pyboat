@@ -480,7 +480,9 @@ async function getMessages(
           if (cfg.showTimestamps) {
             em.setTimestamp(date.toISOString());
           }
-          if(cfg.embedColor) em.setColor(cfg.embedColor);
+          if (cfg.embedColor) {
+            em.setColor(cfg.embedColor);
+          }
           if (cfg.showEventName) {
             let event = ev.eventName;
             if (event.substr(0, 1) === '|' || event === 'DEBUG') {

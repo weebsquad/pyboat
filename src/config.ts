@@ -205,7 +205,7 @@ const guildConfigs = <any>{
         actorTag: '_MENTION_',
         reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
-        timezone: 'Etc/GMT+0',
+        timezone: 'Etc/GMT+1',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,
@@ -323,7 +323,7 @@ const guildConfigs = <any>{
         actorTag: '_MENTION_',
         reasonSuffix: ' with reason `_REASON_RAW_`',
         suffixReasonToAuditlog: true,
-        timezone: 'Etc/GMT+3',
+        timezone: 'Etc/GMT+1',
       },
       commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
         enabled: true,
