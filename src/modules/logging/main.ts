@@ -824,9 +824,9 @@ export async function handleEvent(
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;
     }
-    /* if (utils.isDebug()) {
+    if (utils.isDebug()) {
       console.log('logging trigger', eventName, obj);
-    } */
+    }
 
     const chans = await parseChannelsData(obj);
     // if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
