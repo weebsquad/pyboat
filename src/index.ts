@@ -8,7 +8,3 @@ import * as crons from './lib/crons';
 c2.InitializeCommands2();
 ev.InitializeEvents();
 crons.InitializeCrons();
-
-discord.on(discord.Event.GUILD_MEMBER_UPDATE, async (mem, oldMem) => {
-  console.log('onMemUpdateRaw', mem, oldMem);
-});

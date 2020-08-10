@@ -96,6 +96,9 @@ async function sendInLogChannel(
       isWh = true;
       whUrl = whUrlAlt;
     }
+    if (isWh && whUrl.length < 3) {
+      isWh = false;
+    }
     const channel = await discord.getGuildTextChannel(chId);
     if ((channel === null && !isWh) || opts.length < 1) {
       continue;
@@ -506,7 +509,7 @@ async function getMessages(
             em.setTitle(event);
           }
           let footr = '';
-          if (config.debug) {
+          if (utils.isDebug()) {
             footr += `${ev.eventName}.${type}`;
           }
           if (

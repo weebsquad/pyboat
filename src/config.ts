@@ -321,13 +321,14 @@ const guildConfigs = <any>{
         auditLogs: true,
         logChannels: new Map<discord.Snowflake, ChannelConfig>([
           ['740997800749170698', chPlain(['*'], [], true, true)],
+          ['742317770875863051', chEmbed('embeds test', ['*'], [], '', 0x11c6e2, 'https://discord.com/api/webhooks/742321345567784980/d6rk3anTgA6njmcl-hw2mR-d9h2NnOf_k4YyaeoIU0L1kaWYXIFmyPJmQtNkMxVhKTL7', true, true)],
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
         ]),
         ignores: {
           channels: [],
           users: [],
-          self: true,
-          selfAuditLogs: true,
+          self: false,
+          selfAuditLogs: false,
           extendUsersToAuditLogs: false,
           blacklistedUsers: false,
           logChannels: true,
