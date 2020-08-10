@@ -37,7 +37,9 @@ const eventFilters = <any>{
       if (member.roles.length !== oldMember.roles.length) {
         return false;
       }
-      if(member.user.avatar !== oldMember.user.avatar || member.user.discriminator !== oldMember.user.discriminator || member.user.username !== oldMember.user.username || member.premiumSince !== oldMember.premiumSince) return false;
+      if (member.user.avatar !== oldMember.user.avatar || member.user.discriminator !== oldMember.user.discriminator || member.user.username !== oldMember.user.username || member.premiumSince !== oldMember.premiumSince) {
+        return false;
+      }
       const mismatch1 = member.roles.filter((ele) => {
         if (oldMember.roles.find((ele2) => ele2 === ele)) {
           return false;
