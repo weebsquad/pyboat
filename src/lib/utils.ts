@@ -7,7 +7,6 @@ export * from './discordHelpers';
 export * from './bitField';
 export * from './permissions';
 export * from './gTranslate';
-export * from './deepMerge';
 
 export function isNormalInteger(str, checkPositive = false) {
   const n = Math.floor(Number(str));

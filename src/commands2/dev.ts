@@ -1,4 +1,4 @@
-import { config, globalConfig, guildId } from '../config';
+import { config, globalConfig, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
@@ -12,7 +12,7 @@ const kv = new pylon.KVNamespace('commands_dev');
 export const _groupOptions = {
   description: 'Dev commands',
   defaultPrefix: globalConfig.devPrefix,
-  filters: c2.getFilters(c2.filterOverridingGlobalAdmin),
+  filters: c2.getFilters(0, false, true),
 };
 
 const optsGroup = c2.getOpts(_groupOptions);
@@ -22,10 +22,10 @@ const optsEval = c2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.mentionPrefix = false;
-optsEval.filters = c2.getFilters(c2.filterOverridingGlobalAdmin);
+optsEval.filters = c2.getFilters(0, false, true);
 
 const optsOverrides = c2.getOpts(_groupOptions);
-optsOverrides.filters = c2.getFilters(c2.filterGlobalAdmin);
+optsOverrides.filters = c2.getFilters(0, false, true);
 export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
 
 cmdGroupOverrides.on('override',

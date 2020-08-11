@@ -313,8 +313,8 @@ export const guildConfigs = <any>{
   '307927177154789386': { // metals test srv
     levels: {
       users: {
-        344837487526412300: 1337, // Metal
-        // '343241331746930699': 100, // metals alt
+        '344837487526412300': 1337, // Metal
+        '343241331746930699': 100, // metals alt
       },
       roles: {
         // '691950782949490698': 50, // admin role
@@ -432,7 +432,6 @@ export const guildConfigs = <any>{
     },
   },
 };
-
 
 export function getGuildConfig(gid: string) {
   if (typeof (guildConfigs[gid]) === 'undefined') {

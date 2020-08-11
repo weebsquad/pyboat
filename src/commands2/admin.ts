@@ -1,4 +1,4 @@
-import { config, globalConfig, guildId } from '../config';
+import { config, globalConfig, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 
@@ -25,12 +25,12 @@ const optsAdmin = {
 const optsAdmin = {
   additionalPrefixes: [globalConfig.devPrefix],
   description: 'Admin commands',
-  filters: c2.getFilters(c2.filterAdmin, c2.filterLevelOwner, c2.filterActualOwner, c2.filterOverridingGlobalAdmin),
+  filters: c2.getFilters(Ranks.Administrator),
 };
 const optsOp = {
   additionalPrefixes: [globalConfig.devPrefix],
   description: 'Op commands',
-  filters: c2.getFilters(c2.filterLevelOwner, c2.filterActualOwner, c2.filterOverridingGlobalAdmin),
+  filters: c2.getFilters(Ranks.Owner),
 };
 
 export const cmdGroupAdmin = new discord.command.CommandGroup(c2.getOpts(optsAdmin));

@@ -23,7 +23,8 @@ export function getUserAuth(mem: discord.GuildMember | string) {
   if (lowest < 0 && !isGlobalAdmin(id)) { // global admins cant be blacklisted (even when not overriding)
     highest = lowest;
   } // blacklist!
-  return highest;
+  
+  return Math.min(999, highest);
 }
 
 export function isBlacklisted(member: discord.GuildMember | string, noCheckGlobal = false) {

@@ -4,7 +4,7 @@
 // TODO: jumbo, urban, kittyapi
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
-import { config, globalConfig } from '../config';
+import { config, globalConfig, Ranks } from '../config';
 
 const utilsConf = config.modules.utilities;
 const snipeConf = utilsConf.snipe;
@@ -43,7 +43,7 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
-  if (!utils.canMemberRun(snipeConf.collectLevel, msg.member)) {
+  if (!utils.canMemberRun(snipeConf.collectLevel ?? Ranks.Guest, msg.member)) {
     return;
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
@@ -56,7 +56,7 @@ export async function AL_OnMessageDelete(
   });
 }
 if (snipeConf.enabled === true) {
-  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters(snipeConf.commandLevel) }, async (msg) => {
+  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters(snipeConf.commandLevel ?? Ranks.Authorized) }, async (msg) => {
     let _sn: any = await snipekvs.get(msg.channelId);
     if (typeof _sn === 'string') {
       _sn = JSON.parse(_sn);
