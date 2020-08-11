@@ -5,5 +5,5 @@ config:
 - src/config.ts
 
 # Add 'source' label to any change to src files within the source dir EXCEPT for the docs sub-folder
-source:
-- any: ['src/**/*.ts', '!src/config.ts']
+#source:
+#- any: ['src/**/*.ts', '!src/config.ts']
