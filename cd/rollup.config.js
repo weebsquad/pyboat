@@ -7,6 +7,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 const { terser } = require('rollup-plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const ignore = require('rollup-plugin-ignore');
+const path = require('path');
 
 module.exports = () => ({
   input: './src/index.ts',
@@ -23,11 +24,13 @@ module.exports = () => ({
     replace({
       __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
     }),
-    typescript({
-        
-    }),
+    
     nodeResolve({
       extensions: ['.ts'],
+      rootDir: path.join(process.cwd(), '..')
+    }),
+    typescript({
+        
     }),
     terser(),
   ],
