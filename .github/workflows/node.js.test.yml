@@ -11,6 +11,10 @@ on:
     paths:
       - '**.ts'
     branches-ignore: [master]
+  pull_request:
+    paths:
+      - '**.ts'
+    branches-ignore: [master]
 
 jobs:
   testdeploy:
