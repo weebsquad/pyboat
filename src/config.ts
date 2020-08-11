@@ -444,6 +444,5 @@ export function getGuildConfig(gid: string) {
   }
   return guildConfigs[gid];
 }
-
 export const guildId = discord.getGuildId();
 export const config = getGuildConfig(guildId);
