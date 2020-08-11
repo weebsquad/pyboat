@@ -1,9 +1,8 @@
-#repo:
-#  - ./*
+repo:
+  - ./*
 
+config:
+- src/config.ts
 
-#"config change":
-#- src/config.ts
-
-source:
-- any: ['src/**/*', '!src/config.ts']
+#source:
+#- any: ['src/**/*', '!src/config.ts']
