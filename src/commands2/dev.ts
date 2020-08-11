@@ -60,7 +60,10 @@ cmdGroupOverrides.on('override',
                            }
                          }
                        }
-
+                    if(globalConfig.masterGuild === msg.guildId) {
+                        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} You have an override active in this guild permanently due to it being the control guild.`);
+                        return;
+                    }
                        const tmleft = hasActiveOv === true ? await utils.getOverrideTimeLeft(msg.author.id) : 0;
                        const parsedTimeLeft = utils.getLongAgoFormat(tmleft, 2, false, 'second');
                        let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires in ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
