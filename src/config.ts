@@ -208,8 +208,12 @@ export const guildConfigs = <any>{
           ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
         ]),
         ignores: {
-          channels: [],
-          users: ['134133271750639616'],
+          channels: [
+              '741450591678496829', // github webhooks channel
+          ],
+          users: [
+              '134133271750639616' // blargbot
+            ],
           self: true,
           selfAuditLogs: true,
           extendUsersToAuditLogs: false,
