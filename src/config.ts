@@ -210,6 +210,7 @@ export const guildConfigs = <any>{
         ignores: {
           channels: [
             '741450591678496829', // github webhooks channel
+            '565334557361045523', // invites logch
           ],
           users: [
             '134133271750639616', // blargbot
@@ -443,5 +444,6 @@ export function getGuildConfig(gid: string) {
   }
   return guildConfigs[gid];
 }
+
 export const guildId = discord.getGuildId();
 export const config = getGuildConfig(guildId);
