@@ -5,6 +5,8 @@ name: Deployment
 
 on:
   push:
+    paths:
+      - '**.ts'
     branches:
       - master
 
