@@ -1,7 +1,9 @@
 'use strict';
 
 import typescript from 'rollup-plugin-typescript2';
-const resolve = require('@rollup/plugin-node-resolve');
+
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+
 const { terser } = require('rollup-plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const ignore = require('rollup-plugin-ignore');
@@ -24,7 +26,7 @@ module.exports = () => ({
     typescript({
         
     }),
-    resolve({
+    nodeResolve({
       extensions: ['.ts'],
     }),
     terser(),
