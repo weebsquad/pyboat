@@ -4,5 +4,5 @@ repo:
 config:
 - src/config.ts
 
-#source:
-#- any: ['src/**/*', '!src/config.ts']
+source:
+- any: ['src/*', '!src/config.ts']
