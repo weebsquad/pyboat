@@ -209,10 +209,10 @@ export const guildConfigs = <any>{
         ]),
         ignores: {
           channels: [],
-          users: [],
+          users: ['134133271750639616'],
           self: true,
           selfAuditLogs: true,
-          extendUsersToAuditLogs: true,
+          extendUsersToAuditLogs: false,
           blacklistedUsers: false,
           logChannels: true,
         },
