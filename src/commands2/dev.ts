@@ -1,42 +1,80 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-import * as conf from '../config';
+import { config, globalConfig, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
-import * as commands2 from '../lib/commands2';
+import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
 import * as constants from '../constants/constants';
 
-const { config } = conf;
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
 
 export const _groupOptions = {
-  additionalPrefixes: ['p/'],
   description: 'Dev commands',
-  filters: F.custom(
-    (message) => utils.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin',
-  ),
+  defaultPrefix: globalConfig.devPrefix,
+  filters: c2.getFilters(0, false, true),
 };
 
-const optsGroup = commands2.getOpts(_groupOptions);
+const optsGroup = c2.getOpts(_groupOptions);
 export const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-const optsEval = commands2.getOpts(_groupOptions);
+const optsEval = c2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
-optsEval.filters = F.silent(
-  F.custom(
-    (message) => utils.isGlobalAdmin(message.member.user.id),
-    'Must be bot global admin',
-  ),
-);
+optsEval.mentionPrefix = false;
+optsEval.filters = c2.getFilters(0, false, true);
+
+const optsOverrides = c2.getOpts(_groupOptions);
+optsOverrides.filters = c2.getFilters(0, false, true);
+export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
+
+cmdGroupOverrides.on('override',
+                     (ctx) => ({ txt: ctx.textOptional() }),
+                     async (msg, { txt }) => {
+                       const hasActiveOv = await utils.isGAOverride(msg.author.id);
+                       if (typeof (txt) === 'string' && txt.length > 0) {
+                         if (hasActiveOv) {
+                           if (['disable', 'delete', 'remove'].includes(txt.toLowerCase())) {
+                             const rtv = await utils.deleteGaOverride(msg.author.id);
+                             if (rtv !== true) {
+                               await msg.reply(`Error while deleting override: ${rtv}`);
+                             } else {
+                               await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} Override disabled!`);
+                             }
+                             return;
+                           }
+                         } else {
+                           const msd = utils.timeArgumentToMs(txt);
+                           if (msd !== 0) {
+                             if (msd < 60 * 1000 || msd > 7 * 24 * 60 * 60 * 1000) {
+                               await msg.reply('time to override must be at least 1 minute and at most 7 days');
+                               return;
+                             }
+                             const retv = await utils.insertGaOverride(msg.author.id, msd);
+                             if (retv !== true) {
+                               await msg.reply(`Error while adding override: ${retv}`);
+                             } else {
+                               await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} Override added!`);
+                               return;
+                             }
+                           }
+                         }
+                       }
+
+                       const tmleft = hasActiveOv === true ? await utils.getOverrideTimeLeft(msg.author.id) : 0;
+                       const parsedTimeLeft = utils.getLongAgoFormat(tmleft, 2, false, 'second');
+                       let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires in ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
+                       txtR += hasActiveOv === true ? `\nTo revoke this override, please run the command \`${globalConfig.devPrefix}override disable\`` : `\nTo active an override, please run the command \`${globalConfig.devPrefix}override <time>\``;
+                       await msg.reply(txtR);
+                     });
 
 export const cmdGroupEval = new discord.command.CommandGroup(optsEval);
-
 cmdGroupEval.raw(
-  { name: '$', aliases: ['p/eval'], onError() {} },
+  { name: '$',
+    aliases: [`${globalConfig.devPrefix}eval`],
+    onError(e: any) {
+      return e;
+    } },
   async (msg) => {
     if (msg.content.length < 4 || !msg.content.includes(' ')) {
       throw new TypeError('No eval argument specified');
@@ -48,6 +86,7 @@ cmdGroupEval.raw(
     if (code === null || code.length < 3) {
       throw new TypeError('No eval argument specified');
     }
+    // eslint-disable-next-line
     const AsyncFunction = Object.getPrototypeOf(async () => {})
       .constructor;
     const fakeConsole = new utils.FakeConsole(await msg.getChannel());
@@ -160,7 +199,7 @@ const test = cmdGroup.subcommand('test', (sub) => {
     );
   });
   sub.raw('massEvents', async (m) => {
-    const count = 30;
+    const count = 20;
     const event = 'MESSAGE_DELETE';
     const args = [
       {

@@ -1,6 +1,7 @@
 import * as utils from '../utils';
 import * as routing from './routing';
 import { logDebug } from '../../modules/logging/events/custom';
+import { guildId } from '../../config';
 
 export class QueuedEvent {
   id: string;
@@ -14,12 +15,14 @@ export class QueuedEvent {
     this.id = utils.composeSnowflake();
     this.eventName = event;
     this.payload = args;
+    this.guildId = guildId;
+    return this;
   }
 }
 
-const cpuTimePerEvent = 8; // to determine when to use burst :P
+const cpuTimePerEvent = 10; // to determine when to use burst :P
 const interval = 5000;
-const maxEventRuntime = 16000;
+const maxEventRuntime = 13000;
 let queue = new Array<QueuedEvent>();
 // let timeout: any;
 // const kv = new pylon.KVNamespace('loggingQueue');
@@ -30,6 +33,15 @@ export function getProcQueueSize() {
   procQueue = procQueue.filter((e) => !e.processed);
   return procQueue.length;
 }
+export function checkLocks() {
+  if (_lock !== undefined && typeof _lock === 'number') {
+    const diff = new Date().getTime() - _lock;
+    if (diff < interval) {
+      return interval - diff;
+    }
+  }
+  return true;
+}
 export async function resolveQueue() {
   // if (timeout === undefined) return;
   if (_lock !== undefined && typeof _lock === 'number') {
@@ -39,8 +51,6 @@ export async function resolveQueue() {
     }
   }
   _lock = new Date().getTime();
-  /* timeout = undefined;
-  clearTimeout(timeout); */
   queue = cleanQueue(queue);
   let procQueue = new Array<QueuedEvent>().concat(queue);
   procQueue = procQueue.filter((e) => !e.processed);
@@ -53,11 +63,13 @@ export async function resolveQueue() {
   if (typeof (pylon.getCpuTime) === 'function') {
     usedCpu = (await pylon.getCpuTime());
   }
-  const neededCpuTime = Math.floor(cpuTimePerEvent * procQueue.length);
+  const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   const cpuT = usedCpu + neededCpuTime;
+  // console.log(`Used CPU: ${usedCpu}\nNeeded: ${neededCpuTime}\nTo Process: ${len}\nTotal In Queue: ${queue.length}`);
   try {
     if (cpuT >= 100) {
       try {
+        // console.log('bursting!');
         await pylon.requestCpuBurst(async () => {
           await routing.ExecuteQueuedEvents(procQueue);
         }, Math.max(200, Math.floor(cpuT * 1.2)));
@@ -66,7 +78,7 @@ export async function resolveQueue() {
           !(err instanceof pylon.CpuBurstRequestError)
           && typeof err.bucketRemainingMs !== 'number'
         ) {
-          // console.error(e);
+          // console.error(err);
 
           const canFit = Math.min(
             procQueue.length - 1,
@@ -101,8 +113,17 @@ export async function resolveQueue() {
     } else {
       await routing.ExecuteQueuedEvents(queue);
     }
-  } catch (e) {
-    console.error(e);
+  } catch (_e) {
+    await logDebug(
+      'BOT_ERROR',
+      new Map<string, any>([
+        [
+          'ERROR',
+          `Error while executing event queue': ${_e.message}\n${_e.stack}`,
+        ],
+      ]),
+    );
+    // console.error(e);
   }
   procQueue.map((e) => {
     const _f = queue.findIndex((e2) => e.id === e2.id);
@@ -133,12 +154,16 @@ export function cleanQueue(q: Array<QueuedEvent> | undefined = undefined) {
   return q;
 }
 
-async function resetInterval() {
+async function resetInterval(retry = true) {
   // if (timeout instanceof timeout) return;
   // timeout = setTimeout(resolveQueue, Math.min(15000, interval));
-  const _r = await resolveQueue();
-  if (_r === false) {
+  const _r = checkLocks();
+  if (_r === true) {
     setTimeout(resolveQueue, Math.min(15000, interval));
+  } else {
+    setTimeout(() => {
+      resetInterval(false);
+    }, _r);
   }
 }
 export async function checkObject(obj: QueuedEvent) {

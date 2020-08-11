@@ -1,10 +1,3 @@
-export class GuildConfig {
-    channels: Map<discord.Snowflake, ChannelConfig>;
-    constructor(channels: Map<discord.Snowflake, ChannelConfig>) {
-      this.channels = channels;
-      return this;
-    }
-}
 export class ChannelScopes {
     include: Array<string> = new Array<string>();
     exclude: Array<string> = new Array<string>();

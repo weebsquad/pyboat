@@ -25,6 +25,7 @@ import {
 } from './queue';
 import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
+import { InitializeCommands2 } from '../commands2';
 
 const { config } = conf;
 
@@ -34,6 +35,7 @@ async function _Initialize() {
     return;
   }
   rl = true;
+  // InitializeCommands2();
   await logDebug('BOT_STARTED');
 }
 
@@ -302,6 +304,7 @@ export async function ExecuteModules(
 }
 
 export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
+  const { guildId } = conf;
   await logDebug(
     'RAW_EVENT',
     new Map<string, any>([
@@ -351,7 +354,6 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   }
   function pQueue(p: Array<QueuedEvent>, q2: Array<QueuedEvent>) {
     q2 = q2.map((e: QueuedEvent) => {
-      const { guildId } = conf;
       e.guildId = guildId;
       const proc = p.find((p2) => p2.id === e.id);
       if (proc) {
@@ -363,6 +365,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
     return q2;
   }
   procQueue = procQueue.map((e: QueuedEvent) => {
+    e.guildId = guildId;
     e.processed = true;
     return e;
   });
@@ -385,7 +388,6 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
           const eventFunctionName = eventFunctions[e.eventName];
           const eventFunctionInd = module[eventFunctionName];
           const eventFunctionAuditLog = module[eventFunctionPrefixAuditLog + eventFunctionName];
-          const { guildId } = conf;
           if (eventFunctionInd instanceof Function) {
             let _e;
             try {

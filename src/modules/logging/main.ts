@@ -9,6 +9,7 @@ import { eventData } from './tracking';
 import { logDebug } from './events/custom';
 
 const config = conf.config.modules.logging;
+const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
 
 class Event {
@@ -74,7 +75,7 @@ async function sendInLogChannel(
   alwaysWh = false,
   whUrlAlt: string | undefined = undefined,
 ) {
-  const thisGuild = await discord.getGuild(conf.guildId);
+  const thisGuild = await discord.getGuild(thisGuildId);
   if (thisGuild === null) {
     return;
   }
@@ -94,6 +95,9 @@ async function sendInLogChannel(
     if (alwaysWh && typeof (whUrlAlt) === 'string') {
       isWh = true;
       whUrl = whUrlAlt;
+    }
+    if (isWh && whUrl.length < 3) {
+      isWh = false;
     }
     const channel = await discord.getGuildTextChannel(chId);
     if ((channel === null && !isWh) || opts.length < 1) {
@@ -505,7 +509,7 @@ async function getMessages(
             em.setTitle(event);
           }
           let footr = '';
-          if (config.debug) {
+          if (utils.isDebug()) {
             footr += `${ev.eventName}.${type}`;
           }
           if (
@@ -653,24 +657,22 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
   try {
     let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
     const tdiff = new Date().getTime();
-    q = await Promise.all(
-      q.map((e) => {
-        if (typeof e.guildId !== 'string') {
-          e.guildId = '0';
-        }
-        return e;
-      }),
-    );
-    const { guildId } = config;
+
     for (let i = 0; i < q.length; i += 1) {
       const qev = q[i];
+      if (qev.guildId !== thisGuildId && typeof thisGuildId === 'string') {
+        qev.guildId = thisGuildId;
+      }
       if (qev.eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) {
         continue;
       }
       const date = new Date(utils2.decomposeSnowflake(qev.id).timestamp);
-      const data = eventData.get(qev.eventName);
+      let data = eventData.get(qev.eventName);
 
-      if (!data) {
+      if (!data && qev.eventName.substr(0, 1) === '|') {
+        data = eventData.get('CUSTOM');
+      }
+      if (!data || data === null) {
         continue;
       }
       if (
@@ -688,20 +690,30 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
           return;
         }
       }
+      if (qev.auditLogEntry instanceof discord.AuditLogEntry && config.auditLogs === false) {
+        qev.auditLogEntry = null;
+      }
+      const isExt = qev.eventName === 'DEBUG' && utils.isExternalDebug();
+      if (isExt) {
+        qev.guildId = conf.globalConfig.masterGuild;
+      }
+
       const keys = await data.getKeys(qev.auditLogEntry, ...qev.payload);
       // let isAuditLog = false;
       const al = <any>qev.auditLogEntry;
       const obj = new Event(
         utils2.composeSnowflake(date.getTime()),
-        qev.guildId,
+        thisGuildId,
         data,
         keys,
         qev.eventName,
         al,
         ...qev.payload,
       );
+
       const chansTemp = await parseChannelsData(obj);
-      const messagesTemp = await getMessages(qev.guildId, chansTemp, obj);
+
+      const messagesTemp = await getMessages(obj.guildId, chansTemp, obj);
 
       for (const [chid, opts] of messagesTemp) {
         if (!messages.has(chid)) {
@@ -725,8 +737,11 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     });
     messages.set(chId, sorted);
   } */
+    if (utils.isDebug()) {
+      console.log('logging trigger multi', messages);
+    }
     messages = combineMessages(messages);
-    await sendInLogChannel(guildId, messages);
+    await sendInLogChannel(thisGuildId, messages);
   } catch (e) {
     if (utils.isDebug()) {
       console.error(e);
@@ -749,7 +764,7 @@ export async function handleEvent(
       guildId = '0';
     }
     if (guildId === '0') {
-      guildId = conf.guildId;
+      guildId = thisGuildId;
     }
     if (eventName === 'DEBUG' && !utils.isDebug() && !utils.isMasterInDebug()) {
       return;
@@ -764,8 +779,7 @@ export async function handleEvent(
     if (!data && eventName.substr(0, 1) === '|') {
       data = eventData.get('CUSTOM');
     }
-
-    if (!data) {
+    if (!data || data === null) {
       throw new Error(`handleEvent missing data definition for event ${eventName}`);
     }
     if (
@@ -813,7 +827,9 @@ export async function handleEvent(
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;
     }
-    // if (utils.isDebug(true)) console.log('logging trigger', eventName, obj);
+    if (utils.isDebug()) {
+      console.log('logging trigger', eventName, obj);
+    }
 
     const chans = await parseChannelsData(obj);
     // if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);

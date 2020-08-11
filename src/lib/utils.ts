@@ -44,8 +44,8 @@ const timeMap = new Map([
     ['second', 1000],
     ['milisecond', 1],
   ]);
-  export function getLongAgoFormat(ts: number, limiter: number) {
-    ts = new Date(new Date().getTime() - ts).getTime();
+  export function getLongAgoFormat(ts: number, limiter: number, diffSinceNow: boolean = true, lowestUnit: string | undefined = undefined) {
+    if(diffSinceNow) ts = new Date(new Date().getTime() - ts).getTime();
     let runcheck = ts + 0;
     const txt = new Map();
     for (const [k, v] of timeMap) {
@@ -67,15 +67,62 @@ const timeMap = new Map([
     }
     const txtret = [];
     let runsc = 0;
+    let hitLowest = false;
     for (const [key, value] of txt) {
-      if (runsc >= limiter) {
+      if (runsc >= limiter || hitLowest === true) {
         break;
       }
+      if(lowestUnit === key) hitLowest = true;
       const cc = value > 1 ? `${key}s` : key;
       txtret.push(`${value} ${cc}`);
       runsc += 1;
     }
     return txtret.join(', ');
+  }
+  const timeMapArguments: {[key: string]: Array<string>} = {
+    'year': ['y', 'yr'],
+    'month': ['mo', 'mon'],
+    'week': ['w', 'we'],
+    'day': ['d', 'da'],
+    'hour': ['h', 'hr'],
+    'minute': ['m', 'min'],
+    'second': ['s', 'sec'],
+    'milisecond': ['ms'],
+  };
+  export function timeArgumentToMs(txt: string) {
+    txt = txt.split(' ').join('') + ' ';
+    let combos = new Array<Array<string | number>>();
+    let currtxt = '';
+    let currnum = '';
+    const sp = txt.split('');
+    for(var i = 0; i < sp.length; i+=1) {
+        const thischar = sp[i];
+        if(isNumber(thischar) || thischar === ' ') {
+            if(currtxt !== '') {
+                let thisarr = [parseInt(currnum, 10), currtxt];
+                combos.push(thisarr);
+                currtxt = '';
+                currnum = '';
+            }
+            currnum += thischar;
+        } else {
+            currtxt += thischar;
+        }
+    }
+    let msret = 0;
+    for(var i = 0; i < combos.length; i+=1) {
+        const thisQuant: any = combos[i][0];
+        let thisType: any = combos[i][1];
+        if(typeof thisQuant !== 'number' || typeof thisType !== 'string') continue;
+        thisType = thisType.toLowerCase();
+        for(var key in timeMapArguments) {
+            const obj = timeMapArguments[key];
+            if(key === thisType || `${key}s` === thisType || obj.includes(thisType)) {
+                msret += thisQuant * (timeMap.get(key));
+            }
+        }
+    }
+    return msret;
   }
 export function isNumber(n: string) {
   return /^-?[\d.]+(?:e-?\d+)?$/.test(n);

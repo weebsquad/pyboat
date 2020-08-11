@@ -1,4 +1,4 @@
-// import { config } from '../../config';
+// import { config, globalConfig } from '../../config';
 
 // const _c = config.modules.logging.auditLogs === true;
 
@@ -83,7 +83,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'changed own roles' : 'roles changed'}: _CHANGED_ROLES_`,
     AVATAR_ADDED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** added avatar : _NEW_AVATAR_`,
     AVATAR_REMOVED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** removed their avatar : _OLD_AVATAR_`,
-    AVATAR_CHANGED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their avatar from _OLD_AVATAR_ to _NEW_AVATAR_`,
+    AVATAR_CHANGED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their avatar to _NEW_AVATAR_`,
     USERNAME_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their username from \`_OLD_USERNAME_\` to \`_NEW_USERNAME_\``,
     DISCRIMINATOR_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their discriminator from \`_OLD_DISCRIMINATOR_\` to \`_NEW_DISCRIMINATOR_\``,
     BOOSTING_STARTED: `${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} _USERTAG_ **[**||\`_USER_ID_\`||**]** boosted the server`,
