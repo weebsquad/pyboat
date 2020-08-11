@@ -6,7 +6,8 @@
     "build": "rollup -c cd/rollup.config.js",
     "publish": "node cd/publish.js",
     "lint": "eslint cd/publish.js --config .eslintrc.js && eslint src/ --ext .ts --max-warnings 99999 --config .eslintrc.ts",
-    "lintfix": "eslint cd/publish.js --config .eslintrc.js --quiet --fix && eslint src/ --ext .ts --fix --config .eslintrc.ts --quiet"
+    "lintfix": "eslint cd/publish.js --config .eslintrc.js --quiet --fix && eslint src/ --ext .ts --fix --config .eslintrc.ts --quiet",
+    "genConfig": "tsc cd/genConfigs.ts"
   },
   "author": "",
   "license": "MIT",
@@ -29,6 +30,7 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^3.8.0",
     "@typescript-eslint/parser": "^3.8.0",
+    "path": "^0.12.7",
     "typings": "^2.1.1"
   }
 }

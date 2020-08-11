@@ -33,6 +33,7 @@ export const globalConfig = <any>{
   // prefix for dev commands (included as additional prefix in every command in case users change the default one)
   devPrefix: 'p/',
 };
+
 const defaultConfig = { // for non-defined configs!
   levels: {
     users: {},
@@ -98,6 +99,10 @@ const defaultConfig = { // for non-defined configs!
         enabled: true,
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
+        // level needed to execute the snipe command
+        commandLevel: Ranks.Authorized,
+        // level needed for messages to be collected
+        collectLevel: Ranks.Guest,
       },
     },
     roleManagement: { // for group srv only
@@ -164,7 +169,7 @@ const defaultConfig = { // for non-defined configs!
     },
   },
 };
-const guildConfigs = <any>{
+export const guildConfigs = <any>{
   '565323632751149103': { // pink
     levels: {
       users: {
@@ -235,6 +240,8 @@ const guildConfigs = <any>{
         enabled: true,
         snipe: {
           enabled: true,
+          commandLevel: Ranks.Authorized,
+          collectLevel: Ranks.Guest,
           delay: 2 * 60 * 1000,
         },
       },
@@ -425,6 +432,7 @@ const guildConfigs = <any>{
     },
   },
 };
+
 
 export function getGuildConfig(gid: string) {
   if (typeof (guildConfigs[gid]) === 'undefined') {

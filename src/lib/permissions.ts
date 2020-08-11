@@ -43,6 +43,11 @@ export function isBlacklisted(member: discord.GuildMember | string, noCheckGloba
   return false;
 }
 
+// todo change action to infractions enum!!!
+export async function canTarget(action: string, source: discord.GuildMember, target: discord.GuildMember) {
+  return true;
+}
+
 export async function canMemberRun(neededLevel: number, member: discord.GuildMember) {
   const ov = await isGAOverride(member.user.id);
   if (ov === true) {

@@ -12,7 +12,6 @@ const F = discord.command.filters;
 
 const _groupOptions = {
   description: 'Utility Commands',
-  filters: c2.getFilters(c2.filterAuthorized),
 };
 
 const optsGroup = c2.getOpts(
@@ -44,6 +43,9 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
+  if (!utils.canMemberRun(snipeConf.collectLevel, msg.member)) {
+    return;
+  }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
   if (diff >= snipeConf.delay) {
@@ -54,7 +56,7 @@ export async function AL_OnMessageDelete(
   });
 }
 if (snipeConf.enabled === true) {
-  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters(c2.filterAuthorized) }, async (msg) => {
+  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters(snipeConf.commandLevel) }, async (msg) => {
     let _sn: any = await snipekvs.get(msg.channelId);
     if (typeof _sn === 'string') {
       _sn = JSON.parse(_sn);
