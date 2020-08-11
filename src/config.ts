@@ -209,11 +209,11 @@ export const guildConfigs = <any>{
         ]),
         ignores: {
           channels: [
-              '741450591678496829', // github webhooks channel
+            '741450591678496829', // github webhooks channel
           ],
           users: [
-              '134133271750639616' // blargbot
-            ],
+            '134133271750639616', // blargbot
+          ],
           self: true,
           selfAuditLogs: true,
           extendUsersToAuditLogs: false,
