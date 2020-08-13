@@ -102,7 +102,7 @@ _dep.forEach((deployment_id) => {
         contents: bundle,
         // contents: '',
         project: {
-          files: [{ path: '/main.ts', content: '.' }],
+          files: [{ path: '/main.ts', content: defaultMainText }],
         },
       },
     }),
