@@ -1,8 +1,8 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "https://raw.githubusercontent.com/pylonbot/pylon-sdk-types/master/runtime/pylon-runtime.d.ts",
-    "raw": "github:pylonbot/pylon-sdk-types/runtime/pylon-runtime.d.ts",
-    "typings": "https://raw.githubusercontent.com/pylonbot/pylon-sdk-types/master/runtime/pylon-runtime.d.ts"
+    "src": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts",
+    "raw": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts",
+    "typings": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts"
   }
 }

@@ -99,3 +99,100 @@ if (snipeConf.enabled === true) {
     });
   });
 }
+
+/* ROLE PERSIST */
+const persistConf = utilsConf.persist;
+const persistkv = new pylon.KVNamespace('persists');
+async function savePersistData(member: discord.GuildMember) {
+  if (!persistConf || persistConf.enabled !== true) {
+    return;
+  }
+  await persistkv.put(member.user.id, {
+    roles: member.roles,
+    nick: member.nick,
+  }, { ttl: persistConf.duration });
+}
+
+async function restorePersistData(member: discord.GuildMember) {
+  if (!persistConf || persistConf.enabled !== true) {
+    return false;
+  }
+  const dt: any = await persistkv.get(member.user.id);
+  if (!dt || dt === null) {
+    return false;
+  }
+  const guild = await member.getGuild();
+  const me = await guild.getMember(discord.getBotId());
+  const myrl = await utils.getMemberHighestRole(me);
+  const rl = (await guild.getRoles()).filter((e) => dt.roles.includes(e.id) && e.position < myrl.position && !e.managed && e.id !== e.guildId).map((e) => e.id).filter((e) => {
+    if (persistConf.roleIncludes.length > 0 && !persistConf.roleIncludes.includes(e)) {
+      return false;
+    }
+    return !persistConf.roleExcludes.includes(e);
+  });
+  member.roles.forEach((e) => {
+    if (!rl.includes(e) && e !== guild.id) {
+      rl.push(e);
+    }
+  });
+  const objEdit: any = {};
+  if (persistConf.restore.roles === true) {
+    objEdit.roles = rl;
+  }
+  if (persistConf.restore.nick === true) {
+    objEdit.nick = dt.nick;
+  }
+  await member.edit(objEdit);
+  await persistkv.delete(member.user.id);
+  return true;
+}
+
+export async function AL_OnGuildMemberRemove(
+  id: string,
+  guildId: string,
+  log: any,
+  member: discord.Event.IGuildMemberRemove,
+  oldMember: discord.GuildMember,
+) {
+  console.log('onremove', log, oldMember);// asd
+  //
+  await savePersistData(oldMember);
+}
+
+export async function OnGuildMemberAdd(
+  id: string,
+  guildId: string,
+  member: discord.GuildMember,
+) {
+  await restorePersistData(member);
+}
+
+if (persistConf.enabled === true) {
+  cmdGroup.subcommand('backup', (subCommandGroup) => {
+    subCommandGroup.on({ name: 'restore', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+                       (ctx) => ({ member: ctx.guildMember() }),
+                       async (msg, { member }) => {
+                         const ret = await restorePersistData(member);
+                         if (ret === true) {
+                           await msg.reply({
+                             allowedMentions: {},
+                             content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+                           });
+                         } else {
+                           await msg.reply({
+                             allowedMentions: {},
+                             content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
+                           });
+                         }
+                       });
+    subCommandGroup.on({ name: 'save', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+                       (ctx) => ({ member: ctx.guildMember() }),
+                       async (msg, { member }) => {
+                         const ret = await savePersistData(member);
+                         await msg.reply({
+                           allowedMentions: {},
+                           content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
+                         });
+                       });
+  });
+}

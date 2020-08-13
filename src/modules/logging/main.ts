@@ -655,6 +655,9 @@ function combineMessages(
 
 export async function handleMultiEvents(q: Array<QueuedEvent>) {
   try {
+    if (config.enabled !== true) {
+      return;
+    }
     let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
     const tdiff = new Date().getTime();
 
@@ -760,6 +763,9 @@ export async function handleEvent(
   ...args: any
 ) {
   try {
+    if (config.enabled !== true) {
+      return;
+    }
     if (typeof guildId !== 'string') {
       guildId = '0';
     }

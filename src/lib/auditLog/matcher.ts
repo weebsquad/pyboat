@@ -8,14 +8,16 @@ import { config } from '../../config';
 
 const kv = new pylon.KVNamespace('auditLogMatcher');
 /* const entryPool = 'pool'; // Array */
-const kvlogEntryTimeout = 11 * 60 * 1000;
-const logEntryLimiter = 15 * 1000;
+const kvlogEntryTimeout = 11 * 60 * 1000; // for non-stateless stuff like message deletes that we need to save in kv, how long to save it for.
+// audit log entry grouping is only done within 10mins of the first in the group, so we only need to store it for that long.
+const logEntryLimiter = 10 * 1000; // how long ago a audit log entry can be since the event reception date
 const waits: {[key: string]: number} = {
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD
   22: 400,
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_REMOVE
   23: 400,
 };
+const minwait = 150;
 const logsPerSecond = 15; // used to determine how many entries to show
 const groupingActions = [
   discord.AuditLogEntry.ActionType.MESSAGE_DELETE,
@@ -296,8 +298,6 @@ export function isAuditLogEnabled(eventName: string) {
   if (typeof auditLogDefinitions[eventName] !== 'object') {
     return false;
   }
-  /* if (typeof auditLogDefinitions[eventName]['guildId'] !== 'function')
-    return false; */
   if (typeof auditLogDefinitions[eventName].auditLogEntries === 'undefined') {
     return false;
   }
@@ -335,7 +335,6 @@ export async function getAuditLogData(
       );
     }
   }
-  // let guildId = auditLogDefinitions[eventName]['guildId'](eventPayload);
   const { guildId } = config;
   const guild = await discord.getGuild(guildId);
   if (typeof guild !== 'object' || guild === null) {
@@ -368,6 +367,10 @@ export async function getAuditLogData(
   if (maxWait > 0 && diffn < maxWait) {
     await sleep(Math.max(50, maxWait - diffn));
   }
+  const diffw = new Date().getTime() - ts;
+  if (minwait > 0 && diffw < minwait) {
+    await sleep(Math.max(50, minwait - diffw));
+  }
 
   let tmpstore;
   for await (const item of guild.iterAuditLogs(opts)) {
@@ -387,10 +390,13 @@ export async function getAuditLogData(
     }
 
     if (typeof def.store === 'object') {
-      if (typeof def.returnData === 'function') {
+      if (typeof def.returnData === 'function' || def.store.ignoreFound === true) {
         tmpstore = await getPoolEntry(item.id);
+        if (tmpstore instanceof discord.AuditLogEntry && def.store.ignoreFound === true) {
+          continue;
+        }
       }
-      if (def.store.entryFound === true) {
+      if (def.store.entryFound === true || def.store.ignoreFound === true) {
         await savePoolEntry(item);
       }
     }
@@ -405,9 +411,14 @@ export async function getAuditLogData(
 
 export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
   const tdiff = new Date();
-  const guildEvents = new Map<string, Array<QueuedEvent>>();
+  let events = new Array<QueuedEvent>();
   let hasGrouping = false;
   let maxWait = 0;
+  const { guildId } = config;
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return;
+  }
   let procQueue = new Array<QueuedEvent>().concat(q).map((e) => {
     if (!isAuditLogEnabled(e.eventName)) {
       e.auditLogEntry = getAuditLogErrorJson(
@@ -424,11 +435,6 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
         );
       }
     }
-    // let guildId = auditLogDefinitions[e.eventName]['guildId'](e.payload);
-    const { guildId } = config;
-    if (typeof guildId !== 'string') {
-      return e;
-    }
     e.guildId = guildId;
     let actionsForThis = def.auditLogEntries;
     if (!Array.isArray(actionsForThis)) {
@@ -443,127 +449,100 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
       }
     });
 
-    if (!guildEvents.has(guildId)) {
-      const newh = new Array<QueuedEvent>().concat([e]);
-      guildEvents.set(guildId, newh);
-    } else {
-      const gh = guildEvents.get(guildId);
-      if (Array.isArray(gh)) {
-        gh.push(e);
-        guildEvents.set(guildId, gh);
-      }
-    }
+    events.push(e);
     return e;
   });
+  if (events.length === 0) {
+    return procQueue;
+  }
+  let highestTime = '';
+  let lowestTime = 0;
+  highestTime = utils.composeSnowflake(utils.decomposeSnowflake(events[events.length - 1].id).timestamp);
+  lowestTime = utils.decomposeSnowflake(events[0].id).timestamp;
 
-  const guilds = new Map<string, discord.Guild>();
-  const donegids = new Array<string>();
-  for (const [k, v] of guildEvents) {
-    if (donegids.includes(k)) {
-      continue;
+  if (!Array.isArray(events) || events === undefined) {
+    return;
+  } // i know this is dumb, but editor needs this check for correct typings :weary:
+
+  if (typeof highestTime !== 'string' || typeof lowestTime !== 'number') {
+    return;
+  }
+  let lowerDiff = logEntryLimiter;
+  if (hasGrouping) {
+    lowerDiff = 10 * 60 * 1000;
+  }
+  lowestTime = new Date(lowestTime).getTime() - lowerDiff; // Limit on how long ago audit log entries can be
+  const opts = {
+    limit: Math.min(450, Math.floor(procQueue.length * 1.5)),
+    before: highestTime,
+  };
+  const nd = new Date().getTime() - tdiff.getTime();
+  if (maxWait > 0 && nd < maxWait) {
+    await sleep(Math.max(50, maxWait - nd));
+  }
+  const diffw = new Date().getTime() - tdiff.getTime();
+  if (minwait > 0 && diffw < minwait) {
+    await sleep(Math.max(50, minwait - diffw));
+  }
+  events = events.reverse(); // because they're ordered from oldest to newest and audit logs are newest -> oldest
+  const usedLogs = new Array<string>();
+  for await (const item of guild.iterAuditLogs(opts)) {
+    const dateSn = new Date(
+      utils.decomposeSnowflake(item.id).timestamp,
+    ).getTime();
+    if (dateSn < lowestTime) {
+      break;
     }
-    let g;
-    if (!guilds.has(k)) {
-      g = await discord.getGuild(k);
-    }
-    if (guilds.has(k)) {
-      g = guilds.get(k);
-    }
-    if (!(g instanceof discord.Guild)) {
-      donegids.push(k);
-      continue;
-    }
-    if (!guilds.has(k)) {
-      guilds.set(k, g);
+    // const _f = false;
+    let tmpstore: any;
+    /* events = await Promise.all(
+      events.map(async (e) => { */
+    for (const key in events) {
+      const e = events[key];
+      if (e.auditLogEntry !== null) {
+        continue;
+      }
+      const def = auditLogDefinitions[e.eventName];
+      let actionsForThis = def.auditLogEntries;
+      if (!Array.isArray(actionsForThis)) {
+        actionsForThis = [actionsForThis];
+      }
+      if (actionsForThis.indexOf(item.actionType) === -1) {
+        continue;
+      }
+      const res = await validateAuditEvent(e.eventName, e.payload, item);
+      if (!res) {
+        continue;
+      }
+      if (typeof def.store === 'object') {
+        if (typeof def.returnData === 'function' || def.store.ignoreFound === true) {
+          tmpstore = await getPoolEntry(item.id);
+          if (def.store.ignoreFound === true && (usedLogs.includes(item.id) || tmpstore instanceof discord.AuditLogEntry)) {
+            continue;
+          }
+        }
+        if (def.store.entryFound === true || def.store.ignoreFound === true) {
+          await savePoolEntry(item);
+          if (!usedLogs.includes(item.id)) {
+            usedLogs.push(item.id);
+          }
+        }
+      }
+      events[key].auditLogEntry = item;
+      if (typeof def.returnData === 'function') {
+        events[key].auditLogEntry = def.returnData(item, tmpstore);
+      }
     }
   }
-
-  const highestTime = new Map<string, string>();
-  const lowestTime = new Map<string, number>();
-  for (const [guildId, events] of guildEvents) {
-    highestTime.set(
-      guildId,
-      utils.composeSnowflake(
-        utils.decomposeSnowflake(events[events.length - 1].id).timestamp,
-      ),
-    );
-    lowestTime.set(guildId, utils.decomposeSnowflake(events[0].id).timestamp);
-  }
-
-  for (const [guildId, guild] of guilds) {
-    let _events = guildEvents.get(guildId);
-    if (!Array.isArray(_events) || _events === undefined) {
-      continue;
-    } // i know this is dumb, but editor needs this check for correct typings :weary:
-    const bf = highestTime.get(guildId);
-    let lf = lowestTime.get(guildId);
-    if (typeof bf !== 'string' || typeof lf !== 'number') {
-      continue;
-    }
-    let lowerDiff = logEntryLimiter;
-    if (hasGrouping) {
-      lowerDiff = 10 * 60 * 1000;
-    }
-    lf = new Date(lf).getTime() - lowerDiff; // Limit on how long ago audit log entries can be
-    const opts = {
-      limit: Math.min(450, Math.floor(procQueue.length * 1.5)),
-      before: bf,
-    };
-    const nd = new Date().getTime() - tdiff.getTime();
-    if (maxWait > 0 && nd < maxWait) {
-      await sleep(Math.max(50, maxWait - nd));
-    }
-    for await (const item of guild.iterAuditLogs(opts)) {
-      const dateSn = new Date(
-        utils.decomposeSnowflake(item.id).timestamp,
-      ).getTime();
-      if (dateSn < lf) {
-        break;
-      }
-      // const _f = false;
-      let tmpstore: any;
-      _events = await Promise.all(
-        _events.map(async (e) => {
-          if (e.auditLogEntry !== null) {
-            return e;
-          }
-          const def = auditLogDefinitions[e.eventName];
-          let actionsForThis = def.auditLogEntries;
-          if (!Array.isArray(actionsForThis)) {
-            actionsForThis = [actionsForThis];
-          }
-          if (actionsForThis.indexOf(item.actionType) === -1) {
-            return e;
-          }
-          const res = await validateAuditEvent(e.eventName, e.payload, item);
-          if (!res) {
-            return e;
-          }
-          if (typeof def.store === 'object') {
-            if (typeof def.returnData === 'function') {
-              tmpstore = await getPoolEntry(item.id);
-            }
-            if (def.store.entryFound === true) {
-              await savePoolEntry(item);
-            }
-          }
-          e.auditLogEntry = item;
-          if (typeof def.returnData === 'function') {
-            e.auditLogEntry = def.returnData(item, tmpstore);
-          }
-          return e;
-        }),
-      );
-    }
-    _events.forEach((e) => {
-      const _i = procQueue.findIndex((e2) => {
-        e.id === e2.id;
-      });
-      if (_i > -1) {
-        procQueue[_i].auditLogEntry = e.auditLogEntry;
-      }
+  events.forEach((e) => {
+    const _i = procQueue.findIndex((e2) => {
+      e.id === e2.id;
     });
-  }
+    if (_i > -1) {
+      procQueue[_i].auditLogEntry = e.auditLogEntry;
+    }
+  });
+
   procQueue = procQueue.map((e) => {
     if (e.auditLogEntry === null) {
       if (typeof e.guildId !== 'string') {
@@ -574,6 +553,6 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
     }
     return e;
   });
-  // console.log('final!', procQueue);
+
   return procQueue;
 }

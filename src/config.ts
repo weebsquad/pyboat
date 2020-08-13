@@ -104,6 +104,20 @@ const defaultConfig = { // for non-defined configs!
         // level needed for messages to be collected
         collectLevel: Ranks.Guest,
       },
+      persist: {
+        enabled: false,
+        commandLevel: Ranks.Moderator,
+        restore: {
+          roles: true,
+          nickname: true,
+          mute: true, // todo: can't get these states atm without caching
+          deaf: true, // todo: can't get these states atm without caching
+        },
+        roleIncludes: [],
+        roleExcludes: [],
+        duration: 31 * 24 * 60 * 60 * 1000, // duration that data will be kept after a member leaves the server
+        saveOnBan: true,
+      },
     },
     roleManagement: { // for group srv only
       enabled: false,
@@ -242,12 +256,26 @@ export const guildConfigs = <any>{
         },
       },
       utilities: {
-        enabled: true,
+        enabled: false,
         snipe: {
           enabled: true,
+          delay: 2 * 60 * 1000,
           commandLevel: Ranks.Authorized,
           collectLevel: Ranks.Guest,
-          delay: 2 * 60 * 1000,
+        },
+        persist: {
+          enabled: true,
+          commandLevel: Ranks.Moderator,
+          restore: {
+            roles: true,
+            nickname: true,
+            mute: true,
+            deaf: true,
+          },
+          roleIncludes: [],
+          roleExcludes: [],
+          duration: 31 * 24 * 60 * 60 * 1000,
+          saveOnBan: true,
         },
       },
       roleManagement: { // for group srv only
@@ -370,6 +398,22 @@ export const guildConfigs = <any>{
         snipe: {
           enabled: true,
           delay: 2 * 60 * 1000,
+          commandLevel: Ranks.Authorized,
+          collectLevel: Ranks.Guest,
+        },
+        persist: {
+          enabled: true,
+          commandLevel: Ranks.Moderator,
+          restore: {
+            roles: true,
+            nickname: true,
+            mute: true,
+            deaf: true,
+          },
+          roleIncludes: [],
+          roleExcludes: [],
+          duration: 31 * 24 * 60 * 60 * 1000,
+          saveOnBan: true,
         },
       },
       roleManagement: { // for group srv only

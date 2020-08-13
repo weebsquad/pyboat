@@ -45,33 +45,30 @@ EVENT: {
 */
 export const auditLogDefinitions: {[key: string]: any} = {
   CHANNEL_CREATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => dt[0],
     auditLogEntries: discord.AuditLogEntry.ActionType.CHANNEL_CREATE,
+    store: {
+      ignoreFound: true,
+    },
   },
   CHANNEL_DELETE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => dt[0],
     auditLogEntries: discord.AuditLogEntry.ActionType.CHANNEL_DELETE,
+    store: {
+      ignoreFound: true,
+    },
   },
   CHANNEL_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
     auditLogEntries: discord.AuditLogEntry.ActionType.CHANNEL_UPDATE,
+    store: {
+      ignoreFound: true,
+    },
   },
   CHANNEL_PINS_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     validate(dt: any[], log: discord.AuditLogEntry | any, store: any) {
       const ev: discord.Event.IChannelPinsUpdate = dt[0];
       if (log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_PIN && log.actionType !== discord.AuditLogEntry.ActionType.MESSAGE_UNPIN) {
@@ -111,20 +108,20 @@ export const auditLogDefinitions: {[key: string]: any} = {
     ],
   },
   GUILD_BAN_ADD: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].user.id,
     validate: (dt: any, log: any) => dt[0].user.id === log.targetId,
     auditLogEntries: discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_BAN_REMOVE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].user.id,
     validate: (dt: any, log: any) => dt[0].user.id === log.targetId,
     auditLogEntries: discord.AuditLogEntry.ActionType.MEMBER_BAN_REMOVE,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_EMOJIS_UPDATE: {
     beforeFetch(dt: any[]) {
@@ -136,9 +133,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
         return false;
       }
       return true;
-    },
-    guildId(dt: any[]) {
-      return dt[0].guildId;
     },
     60: (dt: any, log: any) => {
       // discord.AuditLogEntry.ActionType.EMOJI_CREATE
@@ -214,22 +208,22 @@ export const auditLogDefinitions: {[key: string]: any} = {
       discord.AuditLogEntry.ActionType.EMOJI_DELETE,
       discord.AuditLogEntry.ActionType.EMOJI_UPDATE,
     ],
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_MEMBER_ADD: {
     beforeFetch(dt: any[]) {
       return dt[0].user.bot; // return false if the user is not a bot, canceling the audit log fetch
     },
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].user.id,
     validate: (dt: any, log: any) => dt[0].user.id === log.targetId,
     auditLogEntries: discord.AuditLogEntry.ActionType.BOT_ADD,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_MEMBER_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].user.id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
     // discord.AuditLogEntry.ActionType.MEMBER_ROLE_UPDATE
@@ -276,11 +270,11 @@ export const auditLogDefinitions: {[key: string]: any} = {
       discord.AuditLogEntry.ActionType.MEMBER_UPDATE,
       discord.AuditLogEntry.ActionType.MEMBER_ROLE_UPDATE,
     ],
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_MEMBER_REMOVE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].user.id,
     getCompareData: (dt: any) => dt[0],
     auditLogEntries: [
@@ -288,35 +282,35 @@ export const auditLogDefinitions: {[key: string]: any} = {
       discord.AuditLogEntry.ActionType.MEMBER_PRUNE,
       discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD,
     ],
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_ROLE_CREATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => dt[0],
     auditLogEntries: discord.AuditLogEntry.ActionType.ROLE_CREATE,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_ROLE_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
     auditLogEntries: discord.AuditLogEntry.ActionType.ROLE_UPDATE,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_ROLE_DELETE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => dt[1],
     auditLogEntries: discord.AuditLogEntry.ActionType.ROLE_DELETE,
+    store: {
+      ignoreFound: true,
+    },
   },
   GUILD_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].id;
-    },
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
     auditLogEntries: [
@@ -325,6 +319,9 @@ export const auditLogDefinitions: {[key: string]: any} = {
       discord.AuditLogEntry.ActionType.INTEGRATION_UPDATE,
       discord.AuditLogEntry.ActionType.INTEGRATION_DELETE,
     ],
+    store: {
+      ignoreFound: true,
+    },
   },
   MESSAGE_DELETE: {
     beforeFetch(dt: any[]) {
@@ -339,9 +336,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
         return false;
       }
       return true;
-    },
-    guildId(dt: any[]) {
-      return dt[0].guildId;
     },
     // discord.AuditLogEntry.ActionType.MESSAGE_DELETE
     72: (
@@ -391,9 +385,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
     ],
   },
   MESSAGE_DELETE_BULK: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
     validate: (
       dt: any,
       log: discord.AuditLogEntry.MessageBulkDelete,
@@ -453,9 +444,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
         return false;
       }
       return true;
-    },
-    guildId(dt: any[]) {
-      return dt[0].guildId;
     },
     // MEMBER_UPDATE
     24: (dt: any, log: discord.AuditLogEntry.MemberUpdate) => {
@@ -549,53 +537,4 @@ export const auditLogDefinitions: {[key: string]: any} = {
     ],
   },
 
-  // only here for guild ids
-
-  GUILD_INTEGRATIONS_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-    auditLogEntries: discord.AuditLogEntry.ActionType.INTEGRATION_UPDATE,
-  },
-  MESSAGE_REACTION_ADD: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  MESSAGE_CREATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  MESSAGE_REACTION_REMOVE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  MESSAGE_REACTION_REMOVE_ALL: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  MESSAGE_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-
-  VOICE_SERVER_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  TYPING_START: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
-  WEBHOOKS_UPDATE: {
-    guildId(dt: any[]) {
-      return dt[0].guildId;
-    },
-  },
 };

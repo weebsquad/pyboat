@@ -86,21 +86,44 @@ _dep.forEach((deployment_id) => {
     return;
   }
   doneGuilds.push(deployment_id);
-  fetch(`https://pylon.bot/api/deployments/${deployment_id}`, {
+  const bundle = fs.readFileSync('./dist/bundle.ts', 'utf8');
+  const data = {
     method: 'POST',
     headers: {
       'Authorization': process.env.API_TOKEN,
       'Content-Type': 'application/json',
+      'accept': '*/*',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
     },
     body: JSON.stringify({
       script: {
-        contents: fs.readFileSync('./dist/bundle.ts', 'utf8'),
+        contents: bundle,
+        // contents: '',
         project: {
           files: [{ path: '/main.ts', content: defaultMainText }],
         },
       },
     }),
-  }).then((r) => r.json())
+    referrer: `https://pylon.bot/studio/deployments/${deployment_id}/editor`,
+    referrerPolicy: 'no-referrer-when-downgrade',
+    mode: 'cors',
+    credentials: 'include',
+  };
+
+  fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
+    if (!r.ok) {
+      console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
+      if (!isGh) {
+        console.error(r);
+        const txt = await r.text();
+        console.error(txt);
+      }
+      process.exit(1);
+    }
+    return r.json();
+  })
     .then((obj) => {
       // console.log(obj);
       if (typeof (obj.msg) === 'string') {
@@ -112,6 +135,7 @@ _dep.forEach((deployment_id) => {
           sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**GID**:**[**||\`${obj.guild.id}\`||**]**\n**SID**:**[**||\`${obj.id}\`||**]**`);
         }
         if (isDebug && !isGh) {
+          console.log(obj);
           workbenchWs(obj.workbench_url);
         }
       }
