@@ -59,10 +59,10 @@ export async function resolveQueue() {
     _lock = undefined;
     return false;
   }
-  let usedCpu = 0;
-  if (typeof (pylon.getCpuTime) === 'function') {
+  let usedCpu = 30;
+  /*if (typeof (pylon.getCpuTime) === 'function') {
     usedCpu = (await pylon.getCpuTime());
-  }
+  }*/
   const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   const cpuT = usedCpu + neededCpuTime;
   // console.log(`Used CPU: ${usedCpu}\nNeeded: ${neededCpuTime}\nTo Process: ${len}\nTotal In Queue: ${queue.length}`);
