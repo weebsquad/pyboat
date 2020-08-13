@@ -46,11 +46,9 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     }
 
     const tdiff = new Date(utils.decomposeSnowflake(ts).timestamp).getTime();
-    console.log(`${event}.start`);
     if (!EventHasExecution(event)) {
       return;
     }
-    console.log(`${event}.hasexec`);
     if (EventHasOverride(event)) {
       args = EventOverrides[event](...args);
     }
@@ -62,7 +60,6 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     if (isF === true) {
       return;
     } // if our edge-case filtering triggers for this payload, let's not do anything
-    console.log(`${event}.isfiltered`);
     let isQ = isQueueEnabled();
 
     const tm = new Date(utils.decomposeSnowflake(ts).timestamp).getTime();
