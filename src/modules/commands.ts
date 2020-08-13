@@ -77,7 +77,7 @@ export async function OnMessageCreate(
         new Map<string, any>([
           [
             'ERROR',
-            `Command Error on '${msg.content}': ${_e.message}\n${_e.stack}`,
+            `Command Error on '${msg.content}': \n${_e.stack}`,
           ],
         ]),
       );

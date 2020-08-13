@@ -92,10 +92,6 @@ _dep.forEach((deployment_id) => {
     headers: {
       'Authorization': process.env.API_TOKEN,
       'Content-Type': 'application/json',
-      'accept': '*/*',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-origin',
     },
     body: JSON.stringify({
       script: {
@@ -106,14 +102,13 @@ _dep.forEach((deployment_id) => {
         },
       },
     }),
-    referrer: `https://pylon.bot/studio/deployments/${deployment_id}/editor`,
-    referrerPolicy: 'no-referrer-when-downgrade',
-    mode: 'cors',
-    credentials: 'include',
   };
 
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
-    if (!r.ok) {
+    try {
+      const txtJson = r.json();
+      return txtJson;
+    } catch (e) {
       console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
       if (!isGh) {
         console.error(r);
@@ -122,10 +117,8 @@ _dep.forEach((deployment_id) => {
       }
       process.exit(1);
     }
-    return r.json();
   })
     .then((obj) => {
-      // console.log(obj);
       if (typeof (obj.msg) === 'string') {
         console.error(`Publish error: ${obj.msg}`);
         process.exit(1);

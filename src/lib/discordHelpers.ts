@@ -180,9 +180,12 @@ export async function getUserRoles(member: discord.GuildMember) {
   return roles;
 }
 
-export async function getMemberHighestRole(member: discord.GuildMember) {
+export async function getMemberHighestRole(member: discord.GuildMember): Promise<discord.Role | null> {
   const gl = await member.getGuild();
   const rl = (await gl.getRoles()).filter((e) => member.roles.includes(e.id)).sort((a, b) => b.position - a.position);
+  if (Array.isArray(rl) && rl.length === 0) {
+    return null;
+  }
   return rl[0];
 }
 

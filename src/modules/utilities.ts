@@ -5,6 +5,8 @@
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks } from '../config';
+import { logCustom } from './logging/events/custom';
+import { getMemberTag } from './logging/utils';
 
 const utilsConf = config.modules.utilities;
 const snipeConf = utilsConf.snipe;
@@ -103,6 +105,25 @@ if (snipeConf.enabled === true) {
 /* ROLE PERSIST */
 const persistConf = utilsConf.persist;
 const persistkv = new pylon.KVNamespace('persists');
+
+function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
+  let lvl = utils.getUserAuth(member);
+  if (typeof levelForce !== 'undefined') {
+    lvl = levelForce;
+  }
+  let lowestConf = 1000;
+  for (const key in persistConf.levels) {
+    const thislvl = parseInt(key, 10);
+    if (thislvl >= lvl && thislvl < lowestConf) {
+      lowestConf = thislvl;
+    }
+  }
+  const toret = persistConf.levels[lowestConf.toString()];
+  if (typeof toret === 'undefined') {
+    return null;
+  }
+  return toret;
+}
 async function savePersistData(member: discord.GuildMember) {
   if (!persistConf || persistConf.enabled !== true) {
     return;
@@ -110,25 +131,33 @@ async function savePersistData(member: discord.GuildMember) {
   await persistkv.put(member.user.id, {
     roles: member.roles,
     nick: member.nick,
+    level: utils.getUserAuth(member),
   }, { ttl: persistConf.duration });
+  await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)]]));
 }
 
 async function restorePersistData(member: discord.GuildMember) {
   if (!persistConf || persistConf.enabled !== true) {
     return false;
   }
+
   const dt: any = await persistkv.get(member.user.id);
   if (!dt || dt === null) {
+    return false;
+  }
+  const thisconf = getPersistConf(member, dt.level);
+  if (thisconf === null) {
     return false;
   }
   const guild = await member.getGuild();
   const me = await guild.getMember(discord.getBotId());
   const myrl = await utils.getMemberHighestRole(me);
+  const theirrl = await utils.getMemberHighestRole(member);
   const rl = (await guild.getRoles()).filter((e) => dt.roles.includes(e.id) && e.position < myrl.position && !e.managed && e.id !== e.guildId).map((e) => e.id).filter((e) => {
-    if (persistConf.roleIncludes.length > 0 && !persistConf.roleIncludes.includes(e)) {
+    if (thisconf.roleIncludes.length > 0 && !thisconf.roleIncludes.includes(e)) {
       return false;
     }
-    return !persistConf.roleExcludes.includes(e);
+    return !thisconf.roleExcludes.includes(e);
   });
   member.roles.forEach((e) => {
     if (!rl.includes(e) && e !== guild.id) {
@@ -136,14 +165,15 @@ async function restorePersistData(member: discord.GuildMember) {
     }
   });
   const objEdit: any = {};
-  if (persistConf.restore.roles === true) {
+  if (thisconf.roles === true && rl.length > 0) {
     objEdit.roles = rl;
   }
-  if (persistConf.restore.nick === true) {
+  if (thisconf.nick === true && (theirrl === null || myrl.position > theirrl.position)) {
     objEdit.nick = dt.nick;
   }
   await member.edit(objEdit);
   await persistkv.delete(member.user.id);
+  await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)]]));
   return true;
 }
 
@@ -154,8 +184,14 @@ export async function AL_OnGuildMemberRemove(
   member: discord.Event.IGuildMemberRemove,
   oldMember: discord.GuildMember,
 ) {
-  console.log('onremove', log, oldMember);// asd
-  //
+  console.log('onremove', log, oldMember);
+  if (persistConf.saveOnBan !== true) {
+    if (log instanceof discord.AuditLogEntry) {
+      if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD) {
+        return;
+      }
+    }
+  }
   await savePersistData(oldMember);
 }
 
@@ -194,5 +230,14 @@ if (persistConf.enabled === true) {
                            content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
                          });
                        });
+    subCommandGroup.raw({ name: 'show', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+                        async (msg) => {
+                          const items = await persistkv.items();
+                          const txt = `**Users with backups: ${items.length}**\n${items.map((e: any) => `\n<@!${e.key}> : ${e.value.roles.length} roles${e.value.nick !== null ? ` , nick: \`${utils.escapeString(e.value.nick)}\`` : ''}`)}`;
+                          await msg.reply({
+                            allowedMentions: {},
+                            content: txt,
+                          });
+                        });
   });
 }

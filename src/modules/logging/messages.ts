@@ -25,6 +25,10 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },
+  '|PERSIST': {
+    SAVED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data saved.`,
+    RESTORED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data restored.`,
+  },
   '|CORE': {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },

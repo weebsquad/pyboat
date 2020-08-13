@@ -105,18 +105,32 @@ const defaultConfig = { // for non-defined configs!
         collectLevel: Ranks.Guest,
       },
       persist: {
-        enabled: false,
+        enabled: true,
+        // level needed to use !backup restore/save/show
         commandLevel: Ranks.Moderator,
-        restore: {
-          roles: true,
-          nickname: true,
-          mute: true, // todo: can't get these states atm without caching
-          deaf: true, // todo: can't get these states atm without caching
+        // configs based on the level of the members (before leaving)
+        levels: {
+          // config applied to anyone from level 101 to 1000
+          1000: {
+            roles: true,
+            nick: true,
+            mute: true,
+            deaf: true,
+            roleIncludes: [],
+            roleExcludes: [],
+          },
+          // config applied to anyone from level 0 to 100
+          100: {
+            roles: true,
+            nick: true,
+            mute: true,
+            deaf: true,
+            roleIncludes: [],
+            roleExcludes: [],
+          },
         },
-        roleIncludes: [],
-        roleExcludes: [],
-        duration: 31 * 24 * 60 * 60 * 1000, // duration that data will be kept after a member leaves the server
-        saveOnBan: true,
+        duration: 31 * 24 * 60 * 60 * 1000,
+        saveOnBan: false,
       },
     },
     roleManagement: { // for group srv only
@@ -256,26 +270,28 @@ export const guildConfigs = <any>{
         },
       },
       utilities: {
-        enabled: false,
+        enabled: true,
         snipe: {
           enabled: true,
           delay: 2 * 60 * 1000,
-          commandLevel: Ranks.Authorized,
+          commandLevel: Ranks.Guest,
           collectLevel: Ranks.Guest,
         },
         persist: {
           enabled: true,
           commandLevel: Ranks.Moderator,
-          restore: {
-            roles: true,
-            nickname: true,
-            mute: true,
-            deaf: true,
+          levels: {
+            1000: {
+              roles: true,
+              nick: true,
+              mute: true,
+              deaf: true,
+              roleIncludes: [],
+              roleExcludes: [],
+            },
           },
-          roleIncludes: [],
-          roleExcludes: [],
           duration: 31 * 24 * 60 * 60 * 1000,
-          saveOnBan: true,
+          saveOnBan: false,
         },
       },
       roleManagement: { // for group srv only
@@ -404,16 +420,18 @@ export const guildConfigs = <any>{
         persist: {
           enabled: true,
           commandLevel: Ranks.Moderator,
-          restore: {
-            roles: true,
-            nickname: true,
-            mute: true,
-            deaf: true,
+          levels: {
+            1000: {
+              roles: true,
+              nick: true,
+              mute: true,
+              deaf: true,
+              roleIncludes: [],
+              roleExcludes: [],
+            },
           },
-          roleIncludes: [],
-          roleExcludes: [],
           duration: 31 * 24 * 60 * 60 * 1000,
-          saveOnBan: true,
+          saveOnBan: false,
         },
       },
       roleManagement: { // for group srv only

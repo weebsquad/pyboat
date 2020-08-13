@@ -119,7 +119,7 @@ export async function resolveQueue() {
       new Map<string, any>([
         [
           'ERROR',
-          `Error while executing event queue': ${_e.message}\n${_e.stack}`,
+          `Error while executing event queue': \n${_e.stack}`,
         ],
       ]),
     );

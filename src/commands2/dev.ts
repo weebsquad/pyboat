@@ -28,6 +28,12 @@ const optsOverrides = c2.getOpts(_groupOptions);
 optsOverrides.filters = c2.getFilters(0, false, true);
 export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
 
+cmdGroup.default(
+  (ctx) => ({ txt: ctx.textOptional() }),
+  async (msg, { txt }) => {
+    await msg.reply('command not found!');
+  },
+);
 cmdGroupOverrides.on('override',
                      (ctx) => ({ txt: ctx.textOptional() }),
                      async (msg, { txt }) => {
@@ -118,15 +124,6 @@ export const falseupdate = discord.command.handler(
 );
 
 const test = cmdGroup.subcommand('test', (sub) => {
-  /* sub.raw('queue', async (m) => {
-    const kve = new pylon.KVNamespace('loggingQueue');
-    let q = await getKvPayloads('GUILD_UPDATE', '1');
-    if (Array.isArray(q) && typeof q[0].getAuditLogs === 'function') {
-      await m.reply({ content: 'Success!' });
-    } else {
-      await m.reply({ content: 'Fail' });
-    }
-  }); */
   sub.raw('type', async (m) => {
     await m.reply({ content: `${typeof m}` });
   });
