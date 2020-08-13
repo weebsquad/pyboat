@@ -71,6 +71,7 @@ export async function OnMessageCreate(
       if (guildId === conf.globalConfig.masterGuild) {
         console.error(_e);
       }
+
       await logDebug(
         'BOT_ERROR',
         new Map<string, any>([
@@ -80,19 +81,6 @@ export async function OnMessageCreate(
           ],
         ]),
       );
-      /*
-        if (typeof config.modules.errorsChannel === 'string') {
-          let ch = await discord.getGuildTextChannel(
-            config.modules.errorsChannel
-          );
-          if (ch !== null) {
-
-            let cc = new utils.FakeConsole(ch);
-            cc.log(
-              `Command Error on '${msg.content}' ${_e.message}\n${_e.stack}`
-            );
-          }
-        } */
     }
   }
 }

@@ -104,7 +104,7 @@ if (snipeConf.enabled === true) {
 const persistConf = utilsConf.persist;
 const persistkv = new pylon.KVNamespace('persists');
 async function savePersistData(member: discord.GuildMember) {
-  if (persistConf.enabled !== true) {
+  if (!persistConf || persistConf.enabled !== true) {
     return;
   }
   await persistkv.put(member.user.id, {
@@ -114,7 +114,7 @@ async function savePersistData(member: discord.GuildMember) {
 }
 
 async function restorePersistData(member: discord.GuildMember) {
-  if (persistConf.enabled !== true) {
+  if (!persistConf || persistConf.enabled !== true) {
     return false;
   }
   const dt: any = await persistkv.get(member.user.id);
