@@ -76,7 +76,7 @@ const defaultConfig = { // for non-defined configs!
       timezone: 'Etc/GMT+0',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
-      enabled: true,
+      enabled: false,
       prefix: ['$'],
       allowMentionPrefix: false,
       // seperator: ' ',
