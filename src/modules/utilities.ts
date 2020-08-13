@@ -155,6 +155,7 @@ export async function AL_OnGuildMemberRemove(
   oldMember: discord.GuildMember,
 ) {
   console.log('onremove', log, oldMember);// asd
+  //
   await savePersistData(oldMember);
 }
 
