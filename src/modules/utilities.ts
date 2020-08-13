@@ -102,29 +102,28 @@ if (snipeConf.enabled === true) {
 
 /* ROLE PERSIST */
 const persistConf = utilsConf.persist;
-const rolepersistkvs = new pylon.KVNamespace('rolePersist');
+const persistkv = new pylon.KVNamespace('persists');
 async function savePersistData(member: discord.GuildMember) {
   if (persistConf.enabled !== true) {
     return;
   }
-  await rolepersistkvs.put(member.user.id, {
+  await persistkv.put(member.user.id, {
     roles: member.roles,
     nick: member.nick,
-  }, { ifNotExists: true, ttl: persistConf.duration });
+  }, { ttl: persistConf.duration });
 }
 
 async function restorePersistData(member: discord.GuildMember) {
   if (persistConf.enabled !== true) {
     return false;
   }
-  const dt: any = await rolepersistkvs.get(member.user.id);
+  const dt: any = await persistkv.get(member.user.id);
   if (!dt || dt === null) {
     return false;
   }
   const guild = await member.getGuild();
   const me = await guild.getMember(discord.getBotId());
   const myrl = await utils.getMemberHighestRole(me);
-  console.log(myrl);
   const rl = (await guild.getRoles()).filter((e) => dt.roles.includes(e.id) && e.position < myrl.position && !e.managed && e.id !== e.guildId).map((e) => e.id).filter((e) => {
     if (persistConf.roleIncludes.length > 0 && !persistConf.roleIncludes.includes(e)) {
       return false;
@@ -144,7 +143,7 @@ async function restorePersistData(member: discord.GuildMember) {
     objEdit.nick = dt.nick;
   }
   await member.edit(objEdit);
-  console.log(rl);
+  await persistkv.delete(member.user.id);
   return true;
 }
 
@@ -164,25 +163,35 @@ export async function OnGuildMemberAdd(
   guildId: string,
   member: discord.GuildMember,
 ) {
-  console.log('onadd', member);
   await restorePersistData(member);
 }
 
 if (persistConf.enabled === true) {
-  cmdGroup.on({ name: 'restore', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
-              (ctx) => ({ member: ctx.guildMember() }),
-              async (msg, { member }) => {
-                const ret = await restorePersistData(member);
-                if (ret === true) {
-                  await msg.reply({
-                    allowedMentions: {},
-                    content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
-                  });
-                } else {
-                  await msg.reply({
-                    allowedMentions: {},
-                    content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
-                  });
-                }
-              });
+  cmdGroup.subcommand('backup', (subCommandGroup) => {
+    subCommandGroup.on({ name: 'restore', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+                       (ctx) => ({ member: ctx.guildMember() }),
+                       async (msg, { member }) => {
+                         const ret = await restorePersistData(member);
+                         if (ret === true) {
+                           await msg.reply({
+                             allowedMentions: {},
+                             content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+                           });
+                         } else {
+                           await msg.reply({
+                             allowedMentions: {},
+                             content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
+                           });
+                         }
+                       });
+    subCommandGroup.on({ name: 'save', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+                       (ctx) => ({ member: ctx.guildMember() }),
+                       async (msg, { member }) => {
+                         const ret = await savePersistData(member);
+                         await msg.reply({
+                           allowedMentions: {},
+                           content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
+                         });
+                       });
+  });
 }

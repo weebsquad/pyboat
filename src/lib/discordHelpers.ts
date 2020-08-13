@@ -182,7 +182,7 @@ export async function getUserRoles(member: discord.GuildMember) {
 
 export async function getMemberHighestRole(member: discord.GuildMember) {
   const gl = await member.getGuild();
-  const rl = (await gl.getRoles()).filter((e) => member.roles.includes(e.id)).sort((a, b) => a.position - b.position);
+  const rl = (await gl.getRoles()).filter((e) => member.roles.includes(e.id)).sort((a, b) => b.position - a.position);
   return rl[0];
 }
 
