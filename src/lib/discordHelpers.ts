@@ -99,7 +99,7 @@ export function parsePerms(bitf: number) {
   }
   return newp;
 }
-*/
+*//*
 export async function getGuildMemberPermissions(member: discord.GuildMember) {
   const roles = await getUserRoles(member);
   let bitField = 0;
@@ -113,8 +113,8 @@ export async function getGuildMemberPermissions(member: discord.GuildMember) {
       }
     }
   });
-}
-
+} */
+/*
 export async function guildMemberHasPermission(
   member: discord.GuildMember,
   type,
@@ -122,7 +122,7 @@ export async function guildMemberHasPermission(
   // todo
   return false;
 }
-
+*/
 export function getSnowflakeDate(snowflake: string) {
   const snowflakeData = decomposeSnowflake(snowflake);
   return snowflakeData.timestamp;
@@ -178,6 +178,12 @@ export async function getUserRoles(member: discord.GuildMember) {
     }
   });
   return roles;
+}
+
+export async function getMemberHighestRole(member: discord.GuildMember) {
+  const gl = await member.getGuild();
+  const rl = (await gl.getRoles()).filter((e) => member.roles.includes(e.id)).sort((a, b) => a.position - b.position);
+  return rl[0];
 }
 
 export async function getUser(userId: string) {

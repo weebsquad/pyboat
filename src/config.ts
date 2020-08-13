@@ -370,6 +370,22 @@ export const guildConfigs = <any>{
         snipe: {
           enabled: true,
           delay: 2 * 60 * 1000,
+          commandLevel: Ranks.Authorized,
+          collectLevel: Ranks.Guest,
+        },
+        persist: {
+          enabled: true,
+          commandLevel: Ranks.Moderator,
+          restore: {
+            roles: true,
+            nickname: true,
+            mute: true, // todo: can't get these states atm without caching
+            deaf: true, // todo: can't get these states atm without caching
+          },
+          roleIncludes: [],
+          roleExcludes: [],
+          duration: 31 * 24 * 60 * 60 * 1000, // duration that data will be kept after a member leaves the server
+          saveOnBan: true,
         },
       },
       roleManagement: { // for group srv only

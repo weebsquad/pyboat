@@ -100,7 +100,13 @@ _dep.forEach((deployment_id) => {
         },
       },
     }),
-  }).then((r) => r.json())
+  }).then((r) => {
+    if (!r.ok) {
+      console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
+      process.exit(1);
+    }
+    return r.json();
+  })
     .then((obj) => {
       // console.log(obj);
       if (typeof (obj.msg) === 'string') {
