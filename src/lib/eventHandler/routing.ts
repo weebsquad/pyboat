@@ -88,7 +88,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     // isQ = true; // debugging
     if (isQ) {
       const qObj = await addToQueue(event, ts, ...args);
-      //await checkObject(qObj);
+      // await checkObject(qObj);
       return;
     }
     await ExecuteModules(event, ts, null, ...args);
