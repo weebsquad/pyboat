@@ -6,14 +6,17 @@ on:
   push:
     paths:
       - '**.ts'
+      - 'package.json'
     branches-ignore: [master]
   create:
     paths:
       - '**.ts'
+      - 'package.json'
     branches-ignore: [master]
   pull_request:
     paths:
       - '**.ts'
+      - 'package.json'
     branches-ignore: [master]
 
 jobs:
