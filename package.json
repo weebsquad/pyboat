@@ -29,7 +29,6 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^3.8.0",
     "@typescript-eslint/parser": "^3.8.0",
-    "moment": "^2.27.0",
     "path": "^0.12.7",
     "typings": "^2.1.1"
   }
