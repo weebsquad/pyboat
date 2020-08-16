@@ -1,10 +1,9 @@
-import { config, globalConfig, guildId, Ranks } from '../config';
+import { globalConfig } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
-import * as constants from '../constants/constants';
 
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
@@ -28,12 +27,6 @@ const optsOverrides = c2.getOpts(_groupOptions);
 optsOverrides.filters = c2.getFilters(0, false, true);
 export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
 
-cmdGroup.default(
-  (ctx) => ({ txt: ctx.textOptional() }),
-  async (msg, { txt }) => {
-    await msg.reply('command not found!');
-  },
-);
 cmdGroupOverrides.on('override',
                      (ctx) => ({ txt: ctx.textOptional() }),
                      async (msg, { txt }) => {
@@ -123,7 +116,7 @@ export const falseupdate = discord.command.handler(
   },
 );
 
-const test = cmdGroup.subcommand('test', (sub) => {
+export const test = cmdGroup.subcommand('test', (sub) => {
   sub.raw('type', async (m) => {
     await m.reply({ content: `${typeof m}` });
   });

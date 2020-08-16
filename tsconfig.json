@@ -3,6 +3,10 @@
         "target": "ESNext",
         "skipLibCheck": true,
         "downlevelIteration": true,
+        "plugins": [
+          { "name": "typescript-tslint-plugin",
+            "configFile": "../eslintrc.ts", }
+        ],
       "lib": [
         "es2018", "ESNext"
       ],

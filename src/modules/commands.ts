@@ -4,13 +4,12 @@ import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
 
-
-async function HandleDM() {
-  // c onsole.log(`#DM:${msg.author.getTag()}>${msg.content}`);
+async function HandleDM(msg: discord.Message) {
+  // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 
-
 export async function OnMessageCreate(
+  id: string,
   guildId: string,
   msg: discord.Message,
 ) {
@@ -27,14 +26,16 @@ export async function OnMessageCreate(
 
   if (!msg.member) {
     // is a DM
-    await HandleDM();
+    await HandleDM(msg);
   } else {
     if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
       return;
     }
     const validCmd = await commands2.isCommand(msg);
-    if (!validCmd) return;
-    
+    if (!validCmd) {
+      return;
+    }
+
     if (!utils.isCommandsAuthorized(msg.member)) {
       await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
       return;
