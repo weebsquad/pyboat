@@ -12,9 +12,9 @@ export enum Ranks {
 export const globalConfig = <any>{
   // Global Admin
   admins: [
-    '344837487526412300', // metal#0666
-  ],
-  // used for logging debugging mostly
+      '344837487526412300', // metal#0666
+],
+// used for logging debugging mostly
   masterGuild: '565323632751149103',
   // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',

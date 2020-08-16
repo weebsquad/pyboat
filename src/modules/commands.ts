@@ -1,22 +1,16 @@
 // import { HandleCommand } from '../lib/commands';
+import * as conf from '../config';
 import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
-import * as conf from '../config';
-import { logDebug, logCustom } from './logging/events/custom';
+import { logCustom, logDebug } from './logging/events/custom';
 
-const { config } = conf;
 
-async function HandleDM(msg: discord.Message) {
+async function HandleDM() {
   // c onsole.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 
-async function HandleChat(msg: discord.Message) {
-  // let channel = (await msg.getChannel()) as discord.GuildTextChannel;
-  // c onsole.log(`#${channel.name}:${msg.author.getTag()}>${msg.content}`);
-}
 
 export async function OnMessageCreate(
-  id: string,
   guildId: string,
   msg: discord.Message,
 ) {
@@ -33,15 +27,14 @@ export async function OnMessageCreate(
 
   if (!msg.member) {
     // is a DM
-    await HandleDM(msg);
+    await HandleDM();
   } else {
     if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
       return;
     }
     const validCmd = await commands2.isCommand(msg);
-    if (!validCmd) {
-      return;
-    }
+    if (!validCmd) return;
+    
     if (!utils.isCommandsAuthorized(msg.member)) {
       await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
       return;
