@@ -4,11 +4,12 @@ import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
 
-async function HandleDM() {
+async function HandleDM(msg: discord.Message) {
   // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 
 export async function OnMessageCreate(
+  id: string,
   guildId: string,
   msg: discord.Message,
 ) {
@@ -25,7 +26,7 @@ export async function OnMessageCreate(
 
   if (!msg.member) {
     // is a DM
-    await HandleDM();
+    await HandleDM(msg);
   } else {
     if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
       return;
