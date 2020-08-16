@@ -122,7 +122,7 @@ export const falseupdate = discord.command.handler(
   },
 );
 
-const test = cmdGroup.subcommand('test', (sub) => {
+export const test = cmdGroup.subcommand('test', (sub) => {
   sub.raw('type', async (m) => {
     await m.reply({ content: `${typeof m}` });
   });

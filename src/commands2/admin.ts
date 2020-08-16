@@ -21,7 +21,7 @@ const optsOp = {
 export const cmdGroupAdmin = new discord.command.CommandGroup(c2.getOpts(optsAdmin));
 export const cmdGroupOp = new discord.command.CommandGroup(c2.getOpts(optsOp));
 
-const admin = cmdGroupAdmin.raw('admin', async (message) => {
+export const admin = cmdGroupAdmin.raw('admin', async (message) => {
   const { member } = message;
   if (member.roles.indexOf(ADMIN_ROLE) > -1) {
     await message.addReaction(discord.decor.Emojis.X);
@@ -31,7 +31,7 @@ const admin = cmdGroupAdmin.raw('admin', async (message) => {
   await message.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
 });
 
-const deadmin = cmdGroupAdmin.raw('deadmin', async (message) => {
+export const deadmin = cmdGroupAdmin.raw('deadmin', async (message) => {
   const { member } = message;
   if (member.roles.indexOf(ADMIN_ROLE) === -1) {
     await message.addReaction(discord.decor.Emojis.X);
@@ -41,7 +41,7 @@ const deadmin = cmdGroupAdmin.raw('deadmin', async (message) => {
   await message.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
 });
 
-const op = cmdGroupOp.raw('op', async (message) => {
+export const op = cmdGroupOp.raw('op', async (message) => {
   const { member } = message;
   if (member.roles.indexOf(OP_ROLE) > -1) {
     await message.addReaction(discord.decor.Emojis.X);
@@ -51,7 +51,7 @@ const op = cmdGroupOp.raw('op', async (message) => {
   await message.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
 });
 
-const deop = cmdGroupOp.raw('deop', async (message) => {
+export const deop = cmdGroupOp.raw('deop', async (message) => {
   const { member } = message;
   if (member.roles.indexOf(OP_ROLE) === -1) {
     await message.addReaction(discord.decor.Emojis.X);
@@ -61,7 +61,7 @@ const deop = cmdGroupOp.raw('deop', async (message) => {
   await message.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
 });
 
-const invite = cmdGroupAdmin.raw('invite', async (message) => {
+export const invite = cmdGroupAdmin.raw('invite', async (message) => {
   await message.reply(async () => {
     const chan = await discord.getGuildTextChannel(GENERAL_CHANNEL);
     if (chan === null) {
