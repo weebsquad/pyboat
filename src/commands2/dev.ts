@@ -1,10 +1,9 @@
-import { config, globalConfig, guildId, Ranks } from '../config';
+import { globalConfig } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
-import * as constants from '../constants/constants';
 
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
