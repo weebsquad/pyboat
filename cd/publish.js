@@ -104,6 +104,7 @@ _dep.forEach((deployment_id) => {
     }),
   };
 
+  // eslint-disable-next-line consistent-return
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
     try {
       const txtJson = r.json();
