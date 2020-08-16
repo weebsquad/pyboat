@@ -27,12 +27,7 @@ const optsOverrides = c2.getOpts(_groupOptions);
 optsOverrides.filters = c2.getFilters(0, false, true);
 export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
 
-cmdGroup.default(
-  (ctx) => ({ txt: ctx.textOptional() }),
-  async (msg, { txt }) => {
-    await msg.reply('command not found!');
-  },
-);
+
 cmdGroupOverrides.on('override',
                      (ctx) => ({ txt: ctx.textOptional() }),
                      async (msg, { txt }) => {
