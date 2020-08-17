@@ -9,7 +9,6 @@ export enum Ranks {
     'Administrator' = 100,
     'Owner' = 200,
 }
-
 export const globalConfig = <any>{
   // Global Admin
   admins: [
