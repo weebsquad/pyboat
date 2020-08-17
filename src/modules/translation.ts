@@ -70,9 +70,11 @@ function getLanguageFromFlag(flag: string) {
   if (typeof country === 'undefined') {
     return null;
   }
+  //console.log('Country: ', country)
   const lang = constants.languages.find(
     (e) => e.shortcode === country.mainLanguage
   );
+  //console.log('Langs: ', constants.languages);
   if (typeof lang === 'undefined') {
     return null;
   }
@@ -183,6 +185,7 @@ export async function OnMessageReactionAdd(
 
   const emoji = reaction.emoji;
   const lang = getLanguageFromFlag(emoji.name);
+  //console.log('Language: ', lang);
   if (lang === null) {
     return;
   }
