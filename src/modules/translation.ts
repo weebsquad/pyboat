@@ -71,7 +71,7 @@ function getLanguageFromFlag(flag: string) {
     return null;
   }
   const lang = constants.languages.find(
-    (e) => e.shortcode === country.mainLanguage
+    (e) => e.shortcode.split('-')[0].split(',')[0] === country.mainLanguage
   );
   if (typeof lang === 'undefined') {
     return null;
@@ -160,6 +160,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   //if (reaction.userId !== '344837487526412300') return;
+  if(!reaction.emoji) return;
   if (
     reaction.emoji.type !== 'UNICODE' ||
     reaction.emoji.animated === true ||
@@ -199,7 +200,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   if (
-    message.content.length < 3 ||
+    message.content.length < 2 ||
     message.webhookId !== null ||
     message.author === null ||
     message.author.bot === true
@@ -231,9 +232,9 @@ export async function OnMessageReactionAdd(
     }
   }
   if (lang === 'pride') {
-    await channel.sendMessage(
+    /*await channel.sendMessage(
       reaction.member.toMention() + " , sorry but I don't speak the gay"
-    );
+    );*/
     return false;
   } else if (lang === 'piratespeak') {
     await saveToPool(pool, message.id, lang);
@@ -282,7 +283,7 @@ export async function OnMessageReactionAdd(
   const sourceLang = constants.languages.find(
     (e) => e.shortcode === translation.detectedSourceLanguage
   );
-  const ll = sourceLang.name ?? translation.detectedSourceLanguage;
+  const ll = sourceLang ? sourceLang.name : translation.detectedSourceLanguage;
   await saveToPool(pool, message.id, lang.shortcode);
 
   if (

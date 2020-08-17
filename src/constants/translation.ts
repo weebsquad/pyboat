@@ -371,8 +371,8 @@ langs.forEach(function(ll: any) {
   if (engname.indexOf(';') > -1) {
     engname = engname.split(';')[0];
   }
-  const alpha2 = ll.alpha2.split(',')[0].split('-')[0];
-  const newobj = new Language(alpha2, engname);
+  //const alpha2 = ll.alpha2.split(',')[0].split('-')[0];
+  const newobj = new Language(ll.alpha2, engname);
   languages.push(newobj);
 });
   
