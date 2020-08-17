@@ -1,6 +1,7 @@
 import * as messages from './modules/logging/messages';
 import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
 
+// levels
 export enum Ranks {
     'Guest' = 0,
     'Authorized' = 10,
