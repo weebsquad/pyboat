@@ -409,7 +409,7 @@ export const guildConfigs = <any>{
         allowMentionPrefix: true,
         hideNoAccess: false,
         overrides: {
-          ping: {
+          utilities: {
             level: 200,
           },
         },
