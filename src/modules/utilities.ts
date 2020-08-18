@@ -184,7 +184,6 @@ export async function AL_OnGuildMemberRemove(
   member: discord.Event.IGuildMemberRemove,
   oldMember: discord.GuildMember,
 ) {
-  console.log('onremove', log, oldMember);
   if (persistConf.saveOnBan !== true) {
     if (log instanceof discord.AuditLogEntry) {
       if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD) {

@@ -36,10 +36,12 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
   '|ANTIPING': {
-    ANTIPING_FAIL_MARK_MEMBER_NOT_FOUND: ' antiping fail mark member not found _ACTION_ _MESSAGE_ID_ _USERTAG_ _CHANNEL_ID_ _ACTORTAG_',
-    ANTIPING_FAIL_MARK_UNMUTE: 'antiping mark fail unmute',
-    ANTIPING_MARK_SUCCESS: 'antiping mark success',
-    ANTIPING_LEFT_BANNED: 'antiping left banned',
+    FAIL_MARK_MEMBER_NOT_FOUND: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but _USERTAG_ left the server',
+    FAIL_MARK_UNMUTE: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but failed to unmute',
+    MARK_SUCCESS: '_ACTORTAG_ successfully marked _USERTAG_\'s punishment in <#_CHANNEL_ID_> as _ACTION_',
+    LEFT_BANNED: '_USERTAG_ left the server with pending anti-ping punishments and was auto-banned',
+    TRIGGERED: '_USERTAG_ triggered anti-ping in <#_CHANNEL_ID_>',
+    TRIGGERED_MUTE: '_USERTAG_ triggered anti-ping in <#_CHANNEL_ID_> and was auto-muted',
   },
 
   'CHANNEL_CREATE': {
