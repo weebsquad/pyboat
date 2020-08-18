@@ -121,6 +121,19 @@ export const test = cmdGroup.subcommand('test', (sub) => {
     await m.reply({ content: `${typeof m}` });
   });
 
+  sub.on('override',
+         (ctx) => ({ level: ctx.number(), string: ctx.string() }),
+         async (m, { string, level }) => {
+           const newlvl = c2.checkOverrides(level, string);
+           if (newlvl === level) {
+             await m.reply('Nothing changed.');
+           } else if (newlvl === -1) {
+             await m.reply(`\`${string}\` is disabled.`);
+           } else {
+             await m.reply({ content: `Overriden level of \`${string}\`**[**${level}**]** >> **${c2.checkOverrides(level, string)}**` });
+           }
+         });
+
   sub.raw('error', async (m) => {
     throw new Error('testing pls ignore');
   });

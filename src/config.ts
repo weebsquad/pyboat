@@ -76,14 +76,20 @@ const defaultConfig = { // for non-defined configs!
       timezone: 'Etc/GMT+0',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
-      enabled: false,
-      prefix: ['$'],
-      allowMentionPrefix: false,
+      'enabled': false,
+      'prefix': ['$'],
+      'allowMentionPrefix': false,
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
-      hideNoAccess: false,
-      overrides: {
-
+      'hideNoAccess': false,
+      'module.utilities': {
+        level: 0,
+      },
+      'group.backup': {
+        level: 100,
+      },
+      'command.ping': {
+        level: 10,
       },
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
@@ -102,15 +108,9 @@ const defaultConfig = { // for non-defined configs!
         enabled: true,
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
-        // level needed to execute the snipe command
-        commandLevel: Ranks.Authorized,
-        // level needed for messages to be collected
-        collectLevel: Ranks.Guest,
       },
       persist: {
         enabled: true,
-        // level needed to use !backup restore/save/show
-        commandLevel: Ranks.Moderator,
         // configs based on the level of the members (before leaving)
         levels: {
           // config applied to anyone from level 101 to 1000
@@ -280,12 +280,9 @@ export const guildConfigs = <any>{
         snipe: {
           enabled: true,
           delay: 2 * 60 * 1000,
-          commandLevel: Ranks.Guest,
-          collectLevel: Ranks.Guest,
         },
         persist: {
           enabled: true,
-          commandLevel: Ranks.Moderator,
           levels: {
             1000: {
               roles: true,
@@ -368,8 +365,8 @@ export const guildConfigs = <any>{
   '307927177154789386': { // metals test srv
     levels: {
       users: {
-        '344837487526412300': 1337, // Metal
-        '343241331746930699': 100, // metals alt
+        344837487526412300: 1337, // Metal
+        // '343241331746930699': 100, // metals alt
       },
       roles: {
         // '691950782949490698': 50, // admin role
@@ -409,9 +406,7 @@ export const guildConfigs = <any>{
         allowMentionPrefix: true,
         hideNoAccess: false,
         overrides: {
-          utilities: {
-            level: 200,
-          },
+
         },
       },
       translation: {
@@ -425,12 +420,9 @@ export const guildConfigs = <any>{
         snipe: {
           enabled: true,
           delay: 2 * 60 * 1000,
-          commandLevel: Ranks.Authorized,
-          collectLevel: Ranks.Guest,
         },
         persist: {
           enabled: true,
-          commandLevel: Ranks.Moderator,
           levels: {
             1000: {
               roles: true,

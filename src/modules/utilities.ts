@@ -45,7 +45,7 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
-  if (!utils.canMemberRun(snipeConf.collectLevel ?? Ranks.Guest, msg.member)) {
+  if (!utils.canMemberRun(Ranks.Guest, msg.member)) {
     return;
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
@@ -66,16 +66,16 @@ if (snipeConf.enabled === true) {
     if (
       _sn === undefined
     || typeof _sn.author !== 'object'
-    || typeof _sn.id !== 'string' || !(_sn instanceof discord.Message)
+    || typeof _sn.id !== 'string'
     ) {
-      await msg.reply('Nothing to snipe.');
+      await msg.reply('Nothing to snipe1.');
       return;
     }
     if (
       _sn.author.id === msg.author.id
     && !msg.member.can(discord.Permissions.ADMINISTRATOR)
     ) {
-      await msg.reply('Nothing to snipe.');
+      await msg.reply('Nothing to snipe2.');
       return;
     }
     const emb = new discord.Embed();
@@ -205,7 +205,7 @@ export async function OnGuildMemberAdd(
 
 if (persistConf.enabled === true) {
   cmdGroup.subcommand('backup', (subCommandGroup) => {
-    subCommandGroup.on({ name: 'restore', filters: c2.getFilters('utilities.backup restore', Ranks.Moderator) },
+    subCommandGroup.on({ name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
                        (ctx) => ({ member: ctx.guildMember() }),
                        async (msg, { member }) => {
                          const ret = await restorePersistData(member);
@@ -221,7 +221,7 @@ if (persistConf.enabled === true) {
                            });
                          }
                        });
-    subCommandGroup.on({ name: 'save', filters: c2.getFilters('utilities.backup save', Ranks.Moderator) },
+    subCommandGroup.on({ name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
                        (ctx) => ({ member: ctx.guildMember() }),
                        async (msg, { member }) => {
                          const ret = await savePersistData(member);
@@ -230,7 +230,7 @@ if (persistConf.enabled === true) {
                            content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
                          });
                        });
-    subCommandGroup.raw({ name: 'show', filters: c2.getFilters('utilities.backup show', Ranks.Moderator) },
+    subCommandGroup.raw({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
                         async (msg) => {
                           const items = await persistkv.items();
                           const txt = `**Users with backups: ${items.length}**\n${items.map((e: any) => `\n<@!${e.key}> : ${e.value.roles.length} roles${e.value.nick !== null ? ` , nick: \`${utils.escapeString(e.value.nick)}\`` : ''}`)}`;

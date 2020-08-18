@@ -129,7 +129,7 @@ _dep.forEach((deployment_id) => {
           sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**`);
         }
         if (isDebug && !isGh) {
-          console.log(obj);
+          // console.log(obj);
           workbenchWs(obj.workbench_url);
         }
       }

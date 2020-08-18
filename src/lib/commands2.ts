@@ -2,7 +2,7 @@ import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
 import * as utils from './utils';
-
+/* eslint-disable prefer-destructuring */
 export const cmdgroups = [];
 
 function getCmdChannels() {
@@ -32,30 +32,66 @@ export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMe
   return _ret;
 }
 
+export function checkOverrides(level: number, ovtext: string) {
+  let disabled = false;
+  ovtext = ovtext.toLowerCase();
+  let cmdName; let modName; let
+    groupName;
+  if (ovtext.includes('.')) {
+    const sp = ovtext.split('.');
+    if (sp.length === 2) {
+      // module + command
+      cmdName = sp[1];
+    } else if (sp.length === 3) {
+      // module + group + command
+      cmdName = `${sp[1]} ${sp[2]}`;
+      groupName = sp[1];
+    }
+    modName = sp[0];
+  } else {
+    modName = ovtext;
+  }
+  const ovMod = config.modules.commands.overrides[`module.${modName}`];
+  const ovCmd = cmdName !== undefined ? config.modules.commands.overrides[`command.${cmdName}`] : undefined;
+  const ovGroup = groupName !== undefined ? config.modules.commands.overrides[`group.${groupName}`] : undefined;
+  if (ovMod) {
+    if (typeof (ovMod.disabled) === 'boolean') {
+      disabled = ovMod.disabled;
+    }
+    if (typeof (ovMod.level) === 'number') {
+      level = ovMod.level;
+    }
+  }
+  if (ovGroup) {
+    if (typeof (ovGroup.disabled) === 'boolean') {
+      disabled = ovGroup.disabled;
+    }
+    if (typeof (ovGroup.level) === 'number') {
+      level = ovGroup.level;
+    }
+  }
+  if (ovCmd) {
+    if (typeof (ovCmd.disabled) === 'boolean') {
+      disabled = ovCmd.disabled;
+    }
+    if (typeof (ovCmd.level) === 'number') {
+      level = ovCmd.level;
+    }
+  }
+  if (level < 0) {
+    level = 0;
+  }
+  if (disabled) {
+    level = -1;
+  }
+  return level;
+}
+
 export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
   if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
-    const modName = overrideableInfo.includes('.') ? overrideableInfo.split('.')[0].toLowerCase() : overrideableInfo.toLowerCase();
-    const cmdName = overrideableInfo.includes('.') ? overrideableInfo.split('.')[1].toLowerCase() : '';
-    const ovMod = config.modules.commands.overrides[modName];
-    const ovCmd = config.modules.commands.overrides[cmdName];
-    if (ovMod) {
-      if (ovMod.level && typeof (ovMod.level) === 'number') {
-        level = ovMod.level;
-      }
-      if (ovMod.disabled && ovMod.disabled === true) {
-        level = -1;
-      }
-    }
-    if (ovCmd) {
-      if (ovCmd.level && typeof (ovCmd.level) === 'number') {
-        level = ovCmd.level;
-      }
-      if (ovCmd.disabled && ovCmd.disabled === true) {
-        level = -1;
-      }
-    }
+    level = checkOverrides(level, overrideableInfo);
   }
   /*
   let anyNonSilent = false;
