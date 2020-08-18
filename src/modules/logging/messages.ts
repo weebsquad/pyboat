@@ -38,6 +38,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   '|ANTIPING': {
     FAIL_MARK_MEMBER_NOT_FOUND: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but _USERTAG_ left the server',
     FAIL_MARK_UNMUTE: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but failed to unmute',
+    FAIL_MARK_ACTION: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but I failed to _ACTION_ them',
     MARK_SUCCESS: '_ACTORTAG_ successfully marked _USERTAG_\'s punishment in <#_CHANNEL_ID_> as _ACTION_',
     LEFT_BANNED: '_USERTAG_ left the server with pending anti-ping punishments and was auto-banned',
     TRIGGERED: '_USERTAG_ triggered anti-ping in <#_CHANNEL_ID_>',

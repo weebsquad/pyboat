@@ -455,6 +455,100 @@ export async function OnMessageDeleteBulk(id: string,
   }
 }
 
+export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  try {
+    await member.addRole(cfgMod.muteRole);
+    return true;
+  } catch (e) {
+  }
+  return false;
+}
+
+export async function EmojiActionIgnore(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  let ignores: Array<string> = (await kv.get(kvIgnoresKey));
+  if (!Array.isArray(ignores)) {
+    ignores = [];
+  }
+  if (!ignores.includes(userMsg.authorId)) {
+    ignores.push(userMsg.authorId);
+    await kv.put(kvIgnoresKey, ignores);
+  }
+
+  let mutes: Array<string> = (await kv.get(kvMutesKey));
+  if (!Array.isArray(mutes)) {
+    mutes = [];
+  }
+  if (mutes.includes(userMsg.authorId)) {
+    try {
+      await member.removeRole(cfgMod.muteRole);
+      mutes.splice(mutes.indexOf(userMsg.authorId), 1);
+      await kv.put(kvMutesKey, mutes);
+      return true;
+    } catch (e) {
+      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'Ignore'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+    }
+  }
+  return false;
+}
+export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  let mutes: Array<string> = (await kv.get(kvMutesKey));
+  if (!Array.isArray(mutes)) {
+    mutes = [];
+  }
+  if (mutes.includes(userMsg.authorId)) {
+    try {
+      await member.removeRole(cfgMod.muteRole);
+      mutes.splice(mutes.indexOf(userMsg.authorId), 1);
+      await kv.put(kvMutesKey, mutes);
+      return true;
+    } catch (e) {
+      // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
+      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'IgnoreOnce'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+    }
+  }
+  return false;
+}
+export async function EmojiActionKick(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  // No way to softban in pylon yet.. so let's actually kick lol
+  try {
+    let kickDebugs = await kv.get(kvKickDebounce);
+    if (!Array.isArray(kickDebugs)) {
+      kickDebugs = [];
+    }
+    if (!kickDebugs.includes(userMsg.authorId)) {
+      kickDebugs.push(userMsg.authorId);
+      await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
+    }
+
+    await member.kick();
+    return true;
+  } catch (e) {
+  }
+  return false;
+}
+
+export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  try {
+    let kickDebugs = await kv.get(kvKickDebounce);
+    if (!Array.isArray(kickDebugs)) {
+      kickDebugs = [];
+    }
+    if (!kickDebugs.includes(userMsg.authorId)) {
+      kickDebugs.push(userMsg.authorId);
+      await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
+    }
+    await guild.createBan(userMsg.authorId, {
+      deleteMessageDays: 7,
+      reason: `${reactor.user.getTag()} (${
+        reactor.user.id
+      }) >> Banned due to antiping`,
+    });
+    return true;
+  } catch (e) {
+    //
+  }
+  return false;
+}
 export async function OnMessageReactionAdd(id: string,
                                            guildId: string,
                                            ev: discord.Event.IMessageReactionAdd) {
@@ -488,7 +582,22 @@ export async function OnMessageReactionAdd(id: string,
   if (typeof emojiAction !== 'string') {
     return;
   }
-  let validAction = true;
+  let emojiFunc;
+  if (emojiAction.toLowerCase() === 'ban') {
+    emojiFunc = EmojiActionBan;
+  } else if (emojiAction.toLowerCase() === 'kick') {
+    emojiFunc = EmojiActionKick;
+  } else if (emojiAction.toLowerCase() === 'mute') {
+    emojiFunc = EmojiActionMute;
+  } else if (emojiAction.toLowerCase() === 'ignoreonce') {
+    emojiFunc = EmojiActionIgnoreOnce;
+  } else if (emojiAction.toLowerCase() === 'ignore') {
+    emojiFunc = EmojiActionIgnore;
+  }
+  if (typeof emojiFunc !== 'function') {
+    return;
+  }
+  const validAction = true;
   const guild = await discord.getGuild(guildId);
   let wipeAll = true;
   async function tryGetGuildMember(guild: discord.Guild, id: string) {
@@ -518,103 +627,15 @@ export async function OnMessageReactionAdd(id: string,
   }
   let failAction = false;
   let notFound = false;
-  if (emojiAction === 'IgnoreOnce') {
+  const membr = await tryGetGuildMember(guild, userMsg.authorId);
+  if (membr === false && emojiAction !== 'Ban') {
+    notFound = true;
+  }
+  if (emojiAction === 'IgnoreOnce' || emojiAction === 'Ignore') {
     wipeAll = false;
-    if (isMutedd) {
-      const membr = await tryGetGuildMember(guild, userMsg.authorId);
-      if (membr === false) {
-        // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user (user not in guild)`;
-        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
-      } else {
-        try {
-          await membr.removeRole(cfgMod.muteRole);
-          mutes.splice(mutes.indexOf(userMsg.authorId), 1);
-          await kv.put(kvMutesKey, mutes);
-        } catch (e) {
-          // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
-          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
-        }
-      }
-    }
-  } else if (emojiAction === 'Ignore') {
-    wipeAll = false;
-    let ignores: Array<string> = (await kv.get(kvIgnoresKey));
-    if (!Array.isArray(ignores)) {
-      ignores = [];
-    }
-    if (!ignores.includes(userMsg.authorId)) {
-      ignores.push(userMsg.authorId);
-      await kv.put(kvIgnoresKey, ignores);
-    }
-
-    if (isMutedd) {
-      const membr = await tryGetGuildMember(guild, userMsg.authorId);
-      if (membr === false) {
-        // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user (user not in guild)`;
-        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
-      } else {
-        try {
-          await membr.removeRole(cfgMod.muteRole);
-          mutes.splice(mutes.indexOf(userMsg.authorId), 1);
-          await kv.put(kvMutesKey, mutes);
-        } catch (e) {
-          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
-        }
-      }
-    }
-  } else if (emojiAction === 'Kick') {
-    // No way to softban in pylon yet.. so let's actually kick lol
-    const membr = await tryGetGuildMember(guild, userMsg.authorId);
-    if (membr === false) {
-      notFound = true;
-    } else {
-      try {
-        let kickDebugs = await kv.get(kvKickDebounce);
-        if (!Array.isArray(kickDebugs)) {
-          kickDebugs = [];
-        }
-        if (!kickDebugs.includes(userMsg.authorId)) {
-          kickDebugs.push(userMsg.authorId);
-          await kv.put(kvKickDebounce, kickDebugs);
-        }
-
-        await membr.kick();
-      } catch (e) {
-        failAction = true;
-      }
-    }
-  } else if (emojiAction === 'Ban') {
-    try {
-      let kickDebugs = await kv.get(kvKickDebounce);
-      if (!Array.isArray(kickDebugs)) {
-        kickDebugs = [];
-      }
-      if (!kickDebugs.includes(userMsg.authorId)) {
-        kickDebugs.push(userMsg.authorId);
-        await kv.put(kvKickDebounce, kickDebugs);
-      }
-      await guild.createBan(userMsg.authorId, {
-        deleteMessageDays: 7,
-        reason: `${member.user.getTag()} (${
-          member.user.id
-        }) >> Banned due to antiping`,
-      });
-    } catch (e) {
-      failAction = true;
-    }
-  } else if (emojiAction === 'Mute') {
-    const membr = await tryGetGuildMember(guild, userMsg.authorId);
-    if (membr === false) {
-      notFound = true;
-    } else {
-      try {
-        await membr.addRole(cfgMod.muteRole);
-      } catch (e) {
-        failAction = true;
-      }
-    }
-  } else {
-    validAction = false;
+  }
+  if (notFound === false) {
+    failAction = !(await emojiFunc(guild, membr, member, userMsg));
   }
   if (validAction) {
     if (notFound) {
@@ -637,9 +658,10 @@ export async function OnMessageReactionAdd(id: string,
   }
 }
 
-export async function OnGuildMemberRemove(id: string,
-                                          guildId: string,
-                                          member: discord.Event.IGuildMemberRemove) {
+export async function AL_OnGuildMemberRemove(id: string,
+                                             guildId: string,
+                                             log: any,
+                                             member: discord.Event.IGuildMemberRemove) {
   // If they leave after memeing us
   const data = await kv.get(kvDataKey);
   const { user } = member;
@@ -649,11 +671,23 @@ export async function OnGuildMemberRemove(id: string,
   }
   if (kickDebugs.includes(user.id)) {
     kickDebugs.splice(kickDebugs.indexOf(user.id), 1);
-    await kv.put(kvKickDebounce, kickDebugs);
+    await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
     return;
   }
   const guild = await discord.getGuild(member.guildId);
   if (typeof data[user.id] !== 'object' || guild === null) {
+    return;
+  }
+  if (log instanceof discord.AuditLogEntry) {
+    if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD) {
+      wipeAllUserMessages(user.id, true);
+      await clearUserData(user.id);
+    }
+    return;
+  }
+  await sleep(300);
+  const isBanned = await guild.getBan(user);
+  if (isBanned !== null) {
     return;
   }
   const isBan = Object.keys(data[user.id]).length >= cfgMod.pingsForAutoMute
