@@ -177,6 +177,17 @@ async function restorePersistData(member: discord.GuildMember) {
   return true;
 }
 
+export async function OnGuildBanAdd(
+  id: string,
+  guildId: string,
+  ban: discord.GuildBan,
+) {
+  try {
+    if (persistConf.saveOnBan !== true) {
+      await persistkv.delete(ban.user.id);
+    }
+  } catch (e) {}
+}
 export async function AL_OnGuildMemberRemove(
   id: string,
   guildId: string,
