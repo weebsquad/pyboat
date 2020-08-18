@@ -45,7 +45,7 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
-  if (!utils.canMemberRun(snipeConf.collectLevel ?? Ranks.Guest, msg.member)) {
+  if (!utils.canMemberRun(Ranks.Guest, msg.member)) {
     return;
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
@@ -58,7 +58,7 @@ export async function AL_OnMessageDelete(
   });
 }
 if (snipeConf.enabled === true) {
-  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters(snipeConf.commandLevel ?? Ranks.Authorized) }, async (msg) => {
+  cmdGroup.raw({ name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
     let _sn: any = await snipekvs.get(msg.channelId);
     if (typeof _sn === 'string') {
       _sn = JSON.parse(_sn);
@@ -66,16 +66,16 @@ if (snipeConf.enabled === true) {
     if (
       _sn === undefined
     || typeof _sn.author !== 'object'
-    || typeof _sn.id !== 'string' || !(_sn instanceof discord.Message)
+    || typeof _sn.id !== 'string'
     ) {
-      await msg.reply('Nothing to snipe.');
+      await msg.reply('Nothing to snipe1.');
       return;
     }
     if (
       _sn.author.id === msg.author.id
     && !msg.member.can(discord.Permissions.ADMINISTRATOR)
     ) {
-      await msg.reply('Nothing to snipe.');
+      await msg.reply('Nothing to snipe2.');
       return;
     }
     const emb = new discord.Embed();
@@ -205,7 +205,7 @@ export async function OnGuildMemberAdd(
 
 if (persistConf.enabled === true) {
   cmdGroup.subcommand('backup', (subCommandGroup) => {
-    subCommandGroup.on({ name: 'restore', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+    subCommandGroup.on({ name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
                        (ctx) => ({ member: ctx.guildMember() }),
                        async (msg, { member }) => {
                          const ret = await restorePersistData(member);
@@ -221,7 +221,7 @@ if (persistConf.enabled === true) {
                            });
                          }
                        });
-    subCommandGroup.on({ name: 'save', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+    subCommandGroup.on({ name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
                        (ctx) => ({ member: ctx.guildMember() }),
                        async (msg, { member }) => {
                          const ret = await savePersistData(member);
@@ -230,7 +230,7 @@ if (persistConf.enabled === true) {
                            content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
                          });
                        });
-    subCommandGroup.raw({ name: 'show', filters: c2.getFilters(persistConf.commandLevel ?? Ranks.Moderator) },
+    subCommandGroup.raw({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
                         async (msg) => {
                           const items = await persistkv.items();
                           const txt = `**Users with backups: ${items.length}**\n${items.map((e: any) => `\n<@!${e.key}> : ${e.value.roles.length} roles${e.value.nick !== null ? ` , nick: \`${utils.escapeString(e.value.nick)}\`` : ''}`)}`;
@@ -241,3 +241,11 @@ if (persistConf.enabled === true) {
                         });
   });
 }
+
+cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
+  const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
+  const msgd = new Date();
+  const edmsg = await msg.reply('<a:loading:735794724480483409>');
+  const td = new Date().getTime() - msgd.getTime();
+  await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+});

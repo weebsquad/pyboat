@@ -10,20 +10,6 @@ on:
       - 'publish.js'
       - 'rollup.config.js'
     branches-ignore: [master]
-  create:
-    paths:
-      - '**.ts'
-      - 'package.json'
-      - 'publish.js'
-      - 'rollup.config.js'
-    branches-ignore: [master]
-  pull_request:
-    paths:
-      - '**.ts'
-      - 'package.json'
-      - 'publish.js'
-      - 'rollup.config.js'
-    branches-ignore: [master]
 
 jobs:
   testdeploy:

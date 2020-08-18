@@ -2,7 +2,7 @@ import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
 import * as utils from './utils';
-
+/* eslint-disable prefer-destructuring */
 export const cmdgroups = [];
 
 function getCmdChannels() {
@@ -32,9 +32,67 @@ export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMe
   return _ret;
 }
 
-export function getFilters(level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
+export function checkOverrides(level: number, ovtext: string) {
+  let disabled = false;
+  ovtext = ovtext.toLowerCase();
+  let cmdName; let modName; let
+    groupName;
+  if (ovtext.includes('.')) {
+    const sp = ovtext.split('.');
+    if (sp.length === 2) {
+      // module + command
+      cmdName = sp[1];
+    } else if (sp.length === 3) {
+      // module + group + command
+      cmdName = `${sp[1]} ${sp[2]}`;
+      groupName = sp[1];
+    }
+    modName = sp[0];
+  } else {
+    modName = ovtext;
+  }
+  const ovMod = config.modules.commands.overrides[`module.${modName}`];
+  const ovCmd = cmdName !== undefined ? config.modules.commands.overrides[`command.${cmdName}`] : undefined;
+  const ovGroup = groupName !== undefined ? config.modules.commands.overrides[`group.${groupName}`] : undefined;
+  if (ovMod) {
+    if (typeof (ovMod.disabled) === 'boolean') {
+      disabled = ovMod.disabled;
+    }
+    if (typeof (ovMod.level) === 'number') {
+      level = ovMod.level;
+    }
+  }
+  if (ovGroup) {
+    if (typeof (ovGroup.disabled) === 'boolean') {
+      disabled = ovGroup.disabled;
+    }
+    if (typeof (ovGroup.level) === 'number') {
+      level = ovGroup.level;
+    }
+  }
+  if (ovCmd) {
+    if (typeof (ovCmd.disabled) === 'boolean') {
+      disabled = ovCmd.disabled;
+    }
+    if (typeof (ovCmd.level) === 'number') {
+      level = ovCmd.level;
+    }
+  }
+  if (level < 0) {
+    level = 0;
+  }
+  if (disabled) {
+    level = -1;
+  }
+  return level;
+}
+
+export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
+  if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
+    level = checkOverrides(level, overrideableInfo);
+  }
   /*
   let anyNonSilent = false;
   args.forEach((level: any) => {
@@ -51,6 +109,7 @@ export function getFilters(level: number, owner = false, ga = false): discord.co
     }
     _checks.push(filter);
   }); */
+
   if (ga === true) {
     return F.silent(F.custom(async (msg) => {
       const val = await filterGlobalAdmin(msg); return val;
@@ -68,6 +127,9 @@ export function getFilters(level: number, owner = false, ga = false): discord.co
       const val = await filterLevel(msg, level);
       return ownr || val;
     }, `Must be bot level ${level}`);
+    if (level < 0) {
+      _f = F.custom(async (msg) => false, 'this command is disabled');
+    }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
       _f = F.silent(_f);
     }
