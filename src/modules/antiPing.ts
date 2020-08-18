@@ -1,17 +1,19 @@
 /* eslint-disable block-scoped-var */
 /* eslint-disable no-redeclare */
 /* eslint-disable no-shadow */
-import * as config from '../config';
+import { config } from '../config';
 import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
+
+const cfgMod = config.modules.antiPing;
 
 const kv = new pylon.KVNamespace('antiPing');
 
 const kvDataKey = 'antiPingData';
 const kvIgnoresKey = 'antiPingIgnores';
 const kvMutesKey = 'antiPingMutes';
-const kvKickDebug = 'antiPingKickDebug';
+const kvKickDebounce = 'antiPingKickDebounce';
 
 async function isIllegalMention(
   author: discord.GuildMember,
@@ -61,7 +63,7 @@ async function isMuted(member: discord.GuildMember) {
   }
   const roles = await utils.getUserRoles(member);
   let isMutedd = false;
-  const cfgMod = config.getGuildConfig(member.guildId);
+
   if (roles.some((e) => e.id === cfgMod.muteRole)) {
     isMutedd = true;
   }
@@ -73,15 +75,18 @@ async function isStaff(member: discord.GuildMember) {
     return false;
   }
   // if (await utils.hasStaffPerms(member, null)) return true;
+  /*
   const roles = await utils.getUserRoles(member);
   let hasStaff = false;
-  const cfgMod = config.getGuildConfig(member.guildId);
+
   roles.forEach((role) => {
     if (cfgMod.staffRoles.indexOf(role.id) > -1) {
       hasStaff = true;
     }
   });
-  return hasStaff;
+  return hasStaff; */
+  const userAuth = utils.getUserAuth(member);
+  return userAuth >= cfgMod.staff;
 }
 
 function isTargetChannel(channel: discord.GuildTextChannel) {
@@ -90,18 +95,17 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
     channel: false,
     category: false,
   };
-  const cfgMod = config.getGuildConfig(channel.guildId);
   if (
-    cfgMod.targets.channels.whitelist.indexOf(chanId) > -1
-    && cfgMod.targets.channels.blacklist.indexOf(chanId) === -1
+    cfgMod.targets.channels.include.indexOf(chanId) > -1
+    && cfgMod.targets.channels.exclude.indexOf(chanId) === -1
   ) {
     lists.channel = true;
   }
   const par = channel.parentId;
   if (typeof par === 'string') {
     if (
-      cfgMod.targets.categories.whitelist.indexOf(par) > -1
-        && cfgMod.targets.channels.blacklist.indexOf(chanId) === -1
+      cfgMod.targets.categories.include.indexOf(par) > -1
+        && cfgMod.targets.channels.exclude.indexOf(chanId) === -1
     ) {
       lists.category = true;
     }
@@ -111,21 +115,20 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
 
 async function isTarget(member: discord.GuildMember) {
   const userId = member.user.id;
-  const cfgMod = config.getGuildConfig(member.guildId);
-  if (cfgMod.targets.users.blacklist.indexOf(userId) > -1) {
+  if (cfgMod.targets.users.exclude.indexOf(userId) > -1) {
     return false;
   }
-  if (cfgMod.targets.users.whitelist.indexOf(userId) > -1) {
+  if (cfgMod.targets.users.include.indexOf(userId) > -1) {
     return true;
   }
   const roles: Array<discord.Role> = (await utils.getUserRoles(member));
   let hasWhitelist = false;
   let hasBlacklist = false;
   roles.forEach((role) => {
-    if (cfgMod.targets.roles.whitelist.indexOf(role.id) > -1) {
+    if (cfgMod.targets.roles.include.indexOf(role.id) > -1) {
       hasWhitelist = true;
     }
-    if (cfgMod.targets.roles.blacklist.indexOf(role.id) > -1) {
+    if (cfgMod.targets.roles.exclude.indexOf(role.id) > -1) {
       hasBlacklist = true;
     }
   });
@@ -143,8 +146,11 @@ async function isBypass(member: discord.GuildMember) {
     return true;
   }
   const userId = member.user.id;
-  const cfgMod = config.getGuildConfig(member.guildId);
   if (cfgMod.bypass.users.indexOf(userId) > -1) {
+    return true;
+  }
+  const lvl = utils.getUserAuth(member);
+  if (lvl >= cfgMod.bypass.level) {
     return true;
   }
   if (await isIgnore(userId)) {
@@ -157,6 +163,7 @@ async function isBypass(member: discord.GuildMember) {
       is = true;
     }
   });
+
   return is;
 }
 
@@ -165,7 +172,7 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
     extras.set('_USERTAG_', logUtils.getUserTag(usr));
   }
   if (actor instanceof discord.User) {
-    extras.set('_ACTORTAG_', logUtils.getUserTag(usr));
+    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
   }
   await logCustom('ANTIPING', `${type}`, extras);
   /*
@@ -234,17 +241,18 @@ async function wipeAllUserMessages(userId: string, allMessages = false) {
       if (msgkey === 'OriginalMsg' && !allMessages) {
         continue;
       }
-      const chan: discord.Channel = (await discord.getChannel(
-        obj.channelId,
-      ));
-      if (typeof chan !== 'object' || chan === null || chan.type !== discord.Channel.Type.GUILD_TEXT || !(chan instanceof discord.GuildTextChannel)) {
-        continue;
-      }
-      const msg = await chan.getMessage(obj.id);
-      if (msg === null) {
-        continue;
-      }
       try {
+        const chan: discord.Channel = (await discord.getChannel(
+          obj.channelId,
+        ));
+        if (typeof chan !== 'object' || chan === null || chan.type !== discord.Channel.Type.GUILD_TEXT || !(chan instanceof discord.GuildTextChannel)) {
+          continue;
+        }
+
+        const msg = await chan.getMessage(obj.id);
+        if (msg === null) {
+          continue;
+        }
         await msg.delete();
       } catch (e) {}
     }
@@ -286,14 +294,22 @@ export async function OnMessageCreate(
   if (await isBypass(authorMember)) {
     return;
   }
+  if (message.mentions.length > 6) {
+    return;
+  }
   const illegalMentions = [];
   await Promise.all(
     message.mentions.map(async (mention) => {
-      const ghettoMember: any = mention.member;
-      const usr = mention;
-      delete usr.member;
-      ghettoMember.user = usr;
-      ghettoMember.guildId = guild.id;
+      let ghettoMember: any;
+      if (typeof (mention.member) === 'object') {
+        ghettoMember = mention.member;
+        const usr = mention;
+        delete usr.member;
+        ghettoMember.user = usr;
+        ghettoMember.guildId = guild.id;
+      } else {
+        ghettoMember = await guild.getMember(mention.id);
+      }
 
       if (await isIllegalMention(authorMember, ghettoMember, channel)) {
         illegalMentions.push(ghettoMember);
@@ -303,7 +319,6 @@ export async function OnMessageCreate(
   if (illegalMentions.length <= 0) {
     return;
   }
-  const cfgMod = config.getGuildConfig(message.guildId);
   const msg = cfgMod.caughtMessages[
     Math.floor(Math.random() * cfgMod.caughtMessages.length)
   ];
@@ -401,9 +416,9 @@ export async function OnMessageCreate(
     }
   }
   if (isMute) {
-    await log('TRIGGERED_MUTE', author);
+    await log('TRIGGERED_MUTE', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   } else {
-    await log('TRIGGERED', author);
+    await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   }
 
   /* let logTxt = `:ping_pong: Triggered anti-ping, by mentioning ${pingText}\nMessage ID : ${message.id}`;
@@ -424,27 +439,32 @@ export async function OnMessageCreate(
   return false; // So nothing else runs :))
 }
 
-export async function OnMessageDelete(message) {
+export async function OnMessageDelete(id: string,
+                                      guildId: string,
+                                      ev: discord.Event.IMessageDelete,
+                                      oldMessage: discord.Message.AnyMessage | null) {
   // check if deleted message is bot's reply
-  await messageDeleted(message.id);
+  await messageDeleted(ev.id);
 }
-export async function OnMessageDeleteBulk(messages) {
+export async function OnMessageDeleteBulk(id: string,
+                                          guildId: string,
+                                          ev: discord.Event.IMessageDeleteBulk) {
   // check if deleted message is bot's reply
-  for (const key in messages.ids) {
+  for (const key in ev.ids) {
     await messageDeleted(key);
   }
 }
 
-export async function OnMessageReactionAdd(args) {
+export async function OnMessageReactionAdd(id: string,
+                                           guildId: string,
+                                           ev: discord.Event.IMessageReactionAdd) {
+  const { member } = ev;
+  const { messageId } = ev;
+  const { emoji } = ev;
   // Check staff adds
-  if (!(await isStaff(args.member))) {
+  if (!(await isStaff(member))) {
     return;
   }
-  const { member } = args;
-  const { emoji } = args;
-  const { messageId } = args;
-  const { channelId } = args;
-  const { guildId } = args;
   const data: any = await kv.get(kvDataKey);
   let thisData;
   for (const userId in data) {
@@ -464,7 +484,6 @@ export async function OnMessageReactionAdd(args) {
   const botMsg = thisData.BotReplyMsg;
   const userMsg = thisData.OriginalMsg;
 
-  const cfgMod = config.getGuildConfig(member.guildId);
   const emojiAction = cfgMod.emojiActions[emoji.name];
   if (typeof emojiAction !== 'string') {
     return;
@@ -505,7 +524,7 @@ export async function OnMessageReactionAdd(args) {
       const membr = await tryGetGuildMember(guild, userMsg.authorId);
       if (membr === false) {
         // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user (user not in guild)`;
-        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
       } else {
         try {
           await membr.removeRole(cfgMod.muteRole);
@@ -513,7 +532,7 @@ export async function OnMessageReactionAdd(args) {
           await kv.put(kvMutesKey, mutes);
         } catch (e) {
           // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
-          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
         }
       }
     }
@@ -532,14 +551,14 @@ export async function OnMessageReactionAdd(args) {
       const membr = await tryGetGuildMember(guild, userMsg.authorId);
       if (membr === false) {
         // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user (user not in guild)`;
-        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+        await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
       } else {
         try {
           await membr.removeRole(cfgMod.muteRole);
           mutes.splice(mutes.indexOf(userMsg.authorId), 1);
           await kv.put(kvMutesKey, mutes);
         } catch (e) {
-          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+          await log('FAIL_MARK_UNMUTE', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
         }
       }
     }
@@ -550,13 +569,13 @@ export async function OnMessageReactionAdd(args) {
       notFound = true;
     } else {
       try {
-        let kickDebugs = await kv.get(kvKickDebug);
+        let kickDebugs = await kv.get(kvKickDebounce);
         if (!Array.isArray(kickDebugs)) {
           kickDebugs = [];
         }
         if (!kickDebugs.includes(userMsg.authorId)) {
           kickDebugs.push(userMsg.authorId);
-          await kv.put(kvKickDebug, kickDebugs);
+          await kv.put(kvKickDebounce, kickDebugs);
         }
 
         await membr.kick();
@@ -566,13 +585,13 @@ export async function OnMessageReactionAdd(args) {
     }
   } else if (emojiAction === 'Ban') {
     try {
-      let kickDebugs = await kv.get(kvKickDebug);
+      let kickDebugs = await kv.get(kvKickDebounce);
       if (!Array.isArray(kickDebugs)) {
         kickDebugs = [];
       }
       if (!kickDebugs.includes(userMsg.authorId)) {
         kickDebugs.push(userMsg.authorId);
-        await kv.put(kvKickDebug, kickDebugs);
+        await kv.put(kvKickDebounce, kickDebugs);
       }
       await guild.createBan(userMsg.authorId, {
         deleteMessageDays: 7,
@@ -600,12 +619,12 @@ export async function OnMessageReactionAdd(args) {
   if (validAction) {
     if (notFound) {
       // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but the member was not found in the guild`;
-      await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+      await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     } else if (failAction) {
-      await log('FAIL_MARK_ACTION', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+      await log('FAIL_MARK_ACTION', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
       // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but I couldn't ${emojiAction} the user`;
     } else {
-      await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', 'userMsg.channelId']]));
+      await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
     /*
     await log(
@@ -618,24 +637,25 @@ export async function OnMessageReactionAdd(args) {
   }
 }
 
-export async function OnGuildMemberRemove(dataMember: discord.Event.IGuildMemberRemove) {
+export async function OnGuildMemberRemove(id: string,
+                                          guildId: string,
+                                          member: discord.Event.IGuildMemberRemove) {
   // If they leave after memeing us
   const data = await kv.get(kvDataKey);
-  const { user } = dataMember;
-  let kickDebugs = await kv.get(kvKickDebug);
+  const { user } = member;
+  let kickDebugs = await kv.get(kvKickDebounce);
   if (!Array.isArray(kickDebugs)) {
     kickDebugs = [];
   }
   if (kickDebugs.includes(user.id)) {
     kickDebugs.splice(kickDebugs.indexOf(user.id), 1);
-    await kv.put(kvKickDebug, kickDebugs);
+    await kv.put(kvKickDebounce, kickDebugs);
     return;
   }
-  const guild = await discord.getGuild(dataMember.guildId);
+  const guild = await discord.getGuild(member.guildId);
   if (typeof data[user.id] !== 'object' || guild === null) {
     return;
   }
-  const cfgMod = config.getGuildConfig(dataMember.guildId);
   const isBan = Object.keys(data[user.id]).length >= cfgMod.pingsForAutoMute
     || cfgMod.banOnLeave;
   if (!isBan) {
@@ -657,15 +677,17 @@ export async function OnGuildMemberRemove(dataMember: discord.Event.IGuildMember
     ); */
   }
 }
-export async function OnGuildBanAdd(dataMember) {
+export async function OnGuildBanAdd(id: string,
+                                    guildId: string,
+                                    ban: discord.GuildBan) {
   // If they get banned after memeing us (let's clear their shit)
   const data = await kv.get(kvDataKey);
-  const { user } = dataMember;
+  const { user } = ban;
   wipeAllUserMessages(user.id, true);
   await clearUserData(user.id);
 }
 
-export async function OnGuildMemberUpdate(member: discord.GuildMember) {
+export async function OnGuildMemberUpdate(id: string, guildId: string, member: discord.GuildMember) {
   // Check mute remove
   const roleMuted = await isMuted(member);
   let mutesVal = await kv.get(kvMutesKey);

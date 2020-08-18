@@ -148,12 +148,17 @@ const defaultConfig = { // for non-defined configs!
     },
     antiPing: { // owo
       enabled: false,
-      logChannel: '',
+      // actual defined message
       actualCaughtMessage: '',
+      // random-selected additional message
       caughtMessages: [],
+      // instantly delete their mentions
       instaDeletePings: false,
+      // auto-ban if the user leaves with pending punishments
       banOnLeave: false,
+      // auto-mute the user after X illegal mentions
       pingsForAutoMute: 3,
+      // :eyes:
       emojiActions: {
         '👌': 'IgnoreOnce',
         '☑️': 'Ignore',
@@ -161,28 +166,31 @@ const defaultConfig = { // for non-defined configs!
         '👢': 'Kick',
         '🔨': 'Ban',
       },
+      // targets for illegal mentions - NOTE: BOTH users/roles AND channels/categories need to be defined for this to work!
       targets: {
         users: {
-          whitelist: [],
-          blacklist: [],
+          include: [],
+          exclude: [],
         },
         roles: {
-          whitelist: [],
-          blacklist: [],
+          include: [],
+          exclude: [],
         },
         channels: {
-          whitelist: [],
-          blacklist: [],
+          include: [],
+          exclude: [],
         },
         categories: {
-          whitelist: [],
-          blacklist: [],
+          include: [],
+          exclude: [],
         },
       },
-      staff: [],
+      // Level necessary to use punishment emojis (also bypasses automatically)
+      staff: Ranks.Moderator,
       bypass: {
         users: [],
         roles: [],
+        level: Ranks.Moderator,
       },
       muteRole: '',
     },
@@ -309,7 +317,6 @@ export const guildConfigs = <any>{
       },
       antiPing: { // owo
         enabled: false,
-        logChannel: '729980275550846978',
         actualCaughtMessage: 'no pings',
         caughtMessages: ['ok buddy', 'nonoononoon', 'bad'],
         instaDeletePings: false,
@@ -324,28 +331,29 @@ export const guildConfigs = <any>{
         },
         targets: {
           users: {
-            whitelist: [],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
           roles: {
-            whitelist: ['565482292303101953'],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
           channels: {
-            whitelist: ['565333823869550592'],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
           categories: {
-            whitelist: [],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
         },
-        staff: ['567988684193005568'],
+        staff: Ranks.Moderator,
         bypass: {
           users: [],
-          roles: ['596738480391061505'],
+          roles: [],
+          level: Ranks.Moderator,
         },
-        muteRole: '576330934010511361',
+        muteRole: '',
       },
       counting: { // counting module
         enabled: true,
@@ -372,6 +380,7 @@ export const guildConfigs = <any>{
       },
       roles: {
         // '691950782949490698': 50, // admin role
+        '348158205362438155': 50, // Bot Role
       },
     },
     modules: {
@@ -439,21 +448,20 @@ export const guildConfigs = <any>{
           saveOnBan: false,
         },
       },
-      roleManagement: { // for group srv only
+      roleManagement: {
         enabled: false,
-        lowestHoistRole: '666575421281927218',
-        botRoleRP: '700009450760568932',
-        botRole: '565335659066294272',
-        memberRole: '565338597755060225',
-        memberRoleRP: '575239761149558785',
+        lowestHoistRole: '',
+        botRoleRP: '',
+        botRole: '',
+        memberRole: '',
+        memberRoleRP: '',
       },
       antiPing: { // owo
-        enabled: false,
-        logChannel: '729980275550846978',
+        enabled: true,
         actualCaughtMessage: 'no pings',
-        caughtMessages: ['ok buddy', 'nonoononoon', 'bad'],
-        instaDeletePings: false,
-        banOnLeave: false,
+        caughtMessages: ['ok buddy', 'nonoononoon', 'bad', 'XDDDDD'],
+        instaDeletePings: true,
+        banOnLeave: true,
         pingsForAutoMute: 3,
         emojiActions: {
           '👌': 'IgnoreOnce',
@@ -464,28 +472,29 @@ export const guildConfigs = <any>{
         },
         targets: {
           users: {
-            whitelist: [],
-            blacklist: [],
+            include: ['344837487526412300'],
+            exclude: [],
           },
           roles: {
-            whitelist: ['565482292303101953'],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
           channels: {
-            whitelist: ['565333823869550592'],
-            blacklist: [],
+            include: [],
+            exclude: [],
           },
           categories: {
-            whitelist: [],
-            blacklist: [],
+            include: ['357475342920974336'],
+            exclude: [],
           },
         },
-        staff: ['567988684193005568'],
+        staff: Ranks.Moderator,
         bypass: {
           users: [],
-          roles: ['596738480391061505'],
+          roles: [],
+          level: Ranks.Moderator,
         },
-        muteRole: '576330934010511361',
+        muteRole: '575616840588460032',
       },
       counting: { // counting module
         enabled: false,
