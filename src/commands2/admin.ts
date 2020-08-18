@@ -10,12 +10,12 @@ const GENERAL_CHANNEL = '565325743278653461';
 const optsAdmin = {
   additionalPrefixes: [globalConfig.devPrefix],
   description: 'Admin commands',
-  filters: c2.getFilters(Ranks.Administrator),
+  filters: c2.getFilters(null, Ranks.Administrator),
 };
 const optsOp = {
   additionalPrefixes: [globalConfig.devPrefix],
   description: 'Op commands',
-  filters: c2.getFilters(Ranks.Owner),
+  filters: c2.getFilters(null, Ranks.Owner),
 };
 
 export const cmdGroupAdmin = new discord.command.CommandGroup(c2.getOpts(optsAdmin));

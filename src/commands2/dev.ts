@@ -11,7 +11,7 @@ const kv = new pylon.KVNamespace('commands_dev');
 export const _groupOptions = {
   description: 'Dev commands',
   defaultPrefix: globalConfig.devPrefix,
-  filters: c2.getFilters(0, false, true),
+  filters: c2.getFilters(null, 0, false, true),
 };
 
 const optsGroup = c2.getOpts(_groupOptions);
@@ -21,10 +21,10 @@ const optsEval = c2.getOpts(_groupOptions);
 optsEval.defaultPrefix = '';
 optsEval.additionalPrefixes = [];
 optsEval.mentionPrefix = false;
-optsEval.filters = c2.getFilters(0, false, true);
+optsEval.filters = c2.getFilters(null, 0, false, true);
 
 const optsOverrides = c2.getOpts(_groupOptions);
-optsOverrides.filters = c2.getFilters(0, false, true);
+optsOverrides.filters = c2.getFilters(null, 0, false, true);
 export const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
 
 cmdGroupOverrides.on('override',

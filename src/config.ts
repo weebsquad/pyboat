@@ -82,6 +82,9 @@ const defaultConfig = { // for non-defined configs!
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       hideNoAccess: false,
+      overrides: {
+
+      }
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
       enabled: false,
@@ -262,6 +265,9 @@ export const guildConfigs = <any>{
         prefix: ['$'],
         allowMentionPrefix: true,
         hideNoAccess: true,
+        overrides: {
+        
+        }
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
         enabled: true,
@@ -402,6 +408,11 @@ export const guildConfigs = <any>{
         prefix: ['$'],
         allowMentionPrefix: true,
         hideNoAccess: false,
+        overrides: {
+          'ping': {
+            level: 200
+          }
+        }
       },
       translation: {
         enabled: true,

@@ -24,13 +24,6 @@ export const mylevel = discord.command.rawHandler(
   },
 );
 
-export const ping = discord.command.rawHandler(async (msg) => {
-  const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
-  const msgd = new Date();
-  const edmsg = await msg.reply('<a:loading:735794724480483409>');
-  const td = new Date().getTime() - msgd.getTime();
-  await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
-});
 
 export const snowflake = discord.command.handler(
   (ctx) => ({ snowflakee: ctx.string() }),
