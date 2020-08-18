@@ -84,7 +84,7 @@ const defaultConfig = { // for non-defined configs!
       hideNoAccess: false,
       overrides: {
 
-      }
+      },
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
       enabled: false,
@@ -266,8 +266,8 @@ export const guildConfigs = <any>{
         allowMentionPrefix: true,
         hideNoAccess: true,
         overrides: {
-        
-        }
+
+        },
       },
       translation: { // translation module, react with flags on messages to trigger translation for them
         enabled: true,
@@ -409,10 +409,10 @@ export const guildConfigs = <any>{
         allowMentionPrefix: true,
         hideNoAccess: false,
         overrides: {
-          'ping': {
-            level: 200
-          }
-        }
+          ping: {
+            level: 200,
+          },
+        },
       },
       translation: {
         enabled: true,

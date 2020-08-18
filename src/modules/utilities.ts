@@ -242,7 +242,7 @@ if (persistConf.enabled === true) {
   });
 }
 
-cmdGroup.raw({name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest)}, async (msg) => {
+cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
   const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
   const msgd = new Date();
   const edmsg = await msg.reply('<a:loading:735794724480483409>');

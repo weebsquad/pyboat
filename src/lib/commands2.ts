@@ -35,18 +35,26 @@ export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMe
 export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
-  if(typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
+  if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
     const modName = overrideableInfo.includes('.') ? overrideableInfo.split('.')[0].toLowerCase() : overrideableInfo.toLowerCase();
     const cmdName = overrideableInfo.includes('.') ? overrideableInfo.split('.')[1].toLowerCase() : '';
     const ovMod = config.modules.commands.overrides[modName];
-    const ovCmd = config.modules.commands.overrides[cmdName]
-    if(ovMod) {
-      if(ovMod.level && typeof(ovMod.level) === 'number') level = ovMod.level;
-      if(ovMod.disabled && ovMod.disabled === true) level = -1;
+    const ovCmd = config.modules.commands.overrides[cmdName];
+    if (ovMod) {
+      if (ovMod.level && typeof (ovMod.level) === 'number') {
+        level = ovMod.level;
+      }
+      if (ovMod.disabled && ovMod.disabled === true) {
+        level = -1;
+      }
     }
-    if(ovCmd) {
-      if(ovCmd.level && typeof(ovCmd.level) === 'number') level = ovCmd.level;
-      if(ovCmd.disabled && ovCmd.disabled === true) level = -1;
+    if (ovCmd) {
+      if (ovCmd.level && typeof (ovCmd.level) === 'number') {
+        level = ovCmd.level;
+      }
+      if (ovCmd.disabled && ovCmd.disabled === true) {
+        level = -1;
+      }
     }
   }
   /*
@@ -65,7 +73,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
     }
     _checks.push(filter);
   }); */
-  
+
   if (ga === true) {
     return F.silent(F.custom(async (msg) => {
       const val = await filterGlobalAdmin(msg); return val;
@@ -83,9 +91,9 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       const val = await filterLevel(msg, level);
       return ownr || val;
     }, `Must be bot level ${level}`);
-    if(level < 0) _f = F.custom(async (msg) => {
-      return false;
-    }, 'this command is disabled');
+    if (level < 0) {
+      _f = F.custom(async (msg) => false, 'this command is disabled');
+    }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
       _f = F.silent(_f);
     }

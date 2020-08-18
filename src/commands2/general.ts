@@ -24,7 +24,6 @@ export const mylevel = discord.command.rawHandler(
   },
 );
 
-
 export const snowflake = discord.command.handler(
   (ctx) => ({ snowflakee: ctx.string() }),
   async (msg, { snowflakee }) => {
