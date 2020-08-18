@@ -76,23 +76,23 @@ const defaultConfig = { // for non-defined configs!
       timezone: 'Etc/GMT+0',
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
-      'enabled': false,
-      'prefix': ['$'],
-      'allowMentionPrefix': false,
+      enabled: false,
+      prefix: ['$'],
+      allowMentionPrefix: false,
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
-      'hideNoAccess': false,
+      hideNoAccess: false,
       overrides: {
-      'module.utilities': {
-        level: 0,
+        'module.utilities': {
+          level: 0,
+        },
+        'group.backup': {
+          level: 100,
+        },
+        'command.ping': {
+          level: 10,
+        },
       },
-      'group.backup': {
-        level: 100,
-      },
-      'command.ping': {
-        level: 10,
-      },
-    }
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
       enabled: false,
