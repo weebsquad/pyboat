@@ -82,6 +82,7 @@ const defaultConfig = { // for non-defined configs!
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       'hideNoAccess': false,
+      overrides: {
       'module.utilities': {
         level: 0,
       },
@@ -91,6 +92,7 @@ const defaultConfig = { // for non-defined configs!
       'command.ping': {
         level: 10,
       },
+    }
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
       enabled: false,
