@@ -356,14 +356,12 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         .split('\r')
         .join('');
       // dat = encodeURI(dat);
-      // apply config defaults here
-
-      // delete lengthy data lol
+      const len = dat.length;
       await message.delete();
       await pylon.kv.put('__guildConfig', dat);
       await InitializeConfig(true);
       // InitializeCommands2();
-      await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
+      await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len} bytes)`);
     } catch (e) {
       console.error(e);
       try {
