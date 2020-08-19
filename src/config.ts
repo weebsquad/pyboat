@@ -1,6 +1,7 @@
 /* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
 import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
+import * as utils from './lib/utils';
 
 // levels
 export enum Ranks {
@@ -486,7 +487,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   if (!(msg.member instanceof discord.GuildMember)) {
     return false;
   }
-  if (!msg.member.can(discord.Permissions.ADMINISTRATOR)) {
+  if (!msg.member.can(discord.Permissions.ADMINISTRATOR) && !globalConfig.admins.includes(msg.author.id)) {
     return false;
   }
   if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
