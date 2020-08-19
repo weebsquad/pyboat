@@ -78,8 +78,6 @@ export async function resolveQueue() {
           !(err instanceof pylon.CpuBurstRequestError)
           && typeof err.bucketRemainingMs !== 'number'
         ) {
-          // console.error(err);
-
           const canFit = Math.min(
             procQueue.length - 1,
             Math.floor((100 - usedCpu) / cpuTimePerEvent) - 1,
@@ -123,7 +121,6 @@ export async function resolveQueue() {
         ],
       ]),
     );
-    // console.error(e);
   }
   procQueue.map((e) => {
     const _f = queue.findIndex((e2) => e.id === e2.id);

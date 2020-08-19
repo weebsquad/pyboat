@@ -2,8 +2,6 @@ import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 import { guildId, config } from '../../../config';
 import * as utils from '../../../lib/utils';
 
-const cfgMod = config.modules.logging;
-
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
   return ['customLog'];
 }
@@ -61,7 +59,7 @@ export async function logCustom(
   if (cat.substr(0, 1) !== '|') {
     cat = `|${cat}`;
   }
-  const evCat = cfgMod.messages[cat];
+  const evCat = config.modules.logging.messages[cat];
   if (!evCat) {
     throw new Error(`Tried to log ${cat}.${subtype} but category not defined in messages!`);
   }
@@ -85,7 +83,7 @@ export async function logDebug(
   id: string = utils.composeSnowflake(),
 ) {
   // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'))
-  const evData = cfgMod.messages.DEBUG[type];
+  const evData = config.modules.logging.messages.DEBUG[type];
   if (evData === undefined) {
     throw new Error(`Tried to log ${type} but not defined in config!`);
   }

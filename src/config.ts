@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
 import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
 
@@ -45,7 +46,7 @@ const defaultConfig = { // for non-defined configs!
       enabled: false,
       // should we try to pull audit log data for every event, or just display raw data??
       auditLogs: true,
-      logChannels: new Map<discord.Snowflake, ChannelConfig>(),
+      logChannels: {},
       messages: messages.messages, // defaults
       messagesAuditLogs: messages.messagesAuditLogs, // defaults
       ignores: {
@@ -235,19 +236,19 @@ export const guildConfigs = <any>{
         enabled: true,
         debug: true,
         auditLogs: true,
-        logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['729980275550846978', chPlain(['*'], ['DEBUG'], true, true)],
-          [
-            '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
-                                          'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
-                                          0x228b22,
-                                          'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
-                                          true,
-                                          false),
-          ],
+        logChannels: {
+          '729980275550846978': chPlain(['*'], ['DEBUG'], true, true),
+
+          '735875360943767562': chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
+                                        'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
+                                        0x228b22,
+                                        'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
+                                        true,
+                                        false),
+
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
-        ]),
+          '741062982196527142': chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false),
+        },
         ignores: {
           channels: [
             '741450591678496829', // github webhooks channel
@@ -371,147 +372,6 @@ export const guildConfigs = <any>{
       },
     },
   },
-
-  '307927177154789386': { // metals test srv
-    levels: {
-      users: {
-        344837487526412300: 1337, // Metal
-        // '343241331746930699': 100, // metals alt
-      },
-      roles: {
-        // '691950782949490698': 50, // admin role
-        '348158205362438155': 50, // Bot Role
-      },
-    },
-    modules: {
-      queue: true, // eventhandler auto queueing on ratelimits
-      logging: { // event logging module
-        enabled: true,
-        debug: true,
-        auditLogs: true,
-        logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['740997800749170698', chPlain(['*'], [], true, true)],
-          ['742317770875863051', chEmbed('embeds test', ['*'], [], '', 0x11c6e2, 'https://discord.com/api/webhooks/742321345567784980/d6rk3anTgA6njmcl-hw2mR-d9h2NnOf_k4YyaeoIU0L1kaWYXIFmyPJmQtNkMxVhKTL7', true, true)],
-          // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
-        ]),
-        ignores: {
-          channels: [],
-          users: [],
-          self: false,
-          selfAuditLogs: false,
-          extendUsersToAuditLogs: false,
-          blacklistedUsers: false,
-          logChannels: true,
-        },
-        messages: messages.messages, // defaults
-        messagesAuditLogs: messages.messagesAuditLogs, // defaults
-        userTag: '_MENTION_',
-        actorTag: '_MENTION_',
-        reasonSuffix: ' with reason `_REASON_RAW_`',
-        suffixReasonToAuditlog: true,
-        timezone: 'Etc/GMT+1',
-      },
-      commands: {
-        enabled: true,
-        prefix: ['$'],
-        allowMentionPrefix: true,
-        hideNoAccess: false,
-        overrides: {
-
-        },
-      },
-      translation: {
-        enabled: true,
-        googleApi: {
-          key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
-        },
-      },
-      utilities: {
-        enabled: true,
-        snipe: {
-          enabled: true,
-          delay: 2 * 60 * 1000,
-        },
-        persist: {
-          enabled: true,
-          levels: {
-            1000: {
-              roles: true,
-              nick: true,
-              mute: true,
-              deaf: true,
-              roleIncludes: [],
-              roleExcludes: [],
-            },
-          },
-          duration: 31 * 24 * 60 * 60 * 1000,
-          saveOnBan: false,
-        },
-      },
-      roleManagement: {
-        enabled: false,
-        lowestHoistRole: '',
-        botRoleRP: '',
-        botRole: '',
-        memberRole: '',
-        memberRoleRP: '',
-      },
-      antiPing: { // owo
-        enabled: true,
-        actualCaughtMessage: 'no pings',
-        caughtMessages: ['ok buddy', 'nonoononoon', 'bad', 'XDDDDD'],
-        instaDeletePings: true,
-        banOnLeave: true,
-        pingsForAutoMute: 3,
-        emojiActions: {
-          '👌': 'IgnoreOnce',
-          '☑️': 'Ignore',
-          '🔇': 'Mute',
-          '👢': 'Kick',
-          '🔨': 'Ban',
-        },
-        targets: {
-          users: {
-            include: ['344837487526412300'],
-            exclude: [],
-          },
-          roles: {
-            include: [],
-            exclude: [],
-          },
-          channels: {
-            include: [],
-            exclude: [],
-          },
-          categories: {
-            include: ['357475342920974336'],
-            exclude: [],
-          },
-        },
-        staff: Ranks.Moderator,
-        bypass: {
-          users: [],
-          roles: [],
-          level: Ranks.Moderator,
-        },
-        muteRole: '575616840588460032',
-      },
-      counting: { // counting module
-        enabled: false,
-        channels: ['740880532325531659'],
-        keyCount: 'counting_current',
-        keyLastUser: 'counting_lastuser',
-        keyLastMid: 'counting_lastmid',
-        autoPins: {
-          single: [1, 69, 100, 200, 420, 666, 1000, 1337, 6969, 9001, 10000, 99999], // Individual === check
-          repeating: [1000], // Modulus check
-          repeatingLast: [69], // Everytime these digits are found on last X of current number, it will trigger
-        },
-        useWebhook: false,
-        webhook: '',
-      },
-    },
-  },
 };
 
 export function getGuildConfig(gid: string) {
@@ -521,6 +381,193 @@ export function getGuildConfig(gid: string) {
   return guildConfigs[gid];
 }
 
+function recursiveDefault(source: any, dest: any) {
+  for (const key in source) {
+    const obj = source[key];
+    if (obj !== null && typeof obj === 'object') {
+      if (typeof (dest[key]) !== 'object') {
+        dest[key] = {};
+      }
+      dest[key] = recursiveDefault(obj, dest[key]);
+    }
+    if (dest[key] === undefined) {
+      dest[key] = obj;
+    }
+  }
+  return dest;
+}
+
+function loadConfigDefaults(cfg: any) {
+  cfg = recursiveDefault(defaultConfig, cfg);
+  return cfg;
+}
 export const guildId = discord.getGuildId();
 
-export const config = getGuildConfig(guildId);
+export let config: any;
+let loadingConf = false;
+export async function InitializeConfig(bypass = false) {
+  if (loadingConf === true && !bypass) {
+    while (typeof config === 'undefined') {
+      if (typeof config !== 'undefined') {
+        break;
+      }
+      await sleep(400);
+    }
+    return config;
+  }
+  config = undefined;
+  loadingConf = true;
+  // await sleep(2000);
+  let cfg: any = await pylon.kv.get('__guildConfig');
+  if (typeof (cfg) === 'string') {
+    if (cfg.includes('{') || cfg.includes('%')) {
+      if (cfg.includes('%')) {
+        try {
+          cfg = decodeURI(cfg);
+        } catch (e) {}
+      }
+    } else {
+      cfg = atob(cfg);
+      if (cfg.includes('%')) {
+        try {
+          cfg = decodeURI(cfg);
+        } catch (e) {}
+      }
+    }
+    cfg = JSON.parse(cfg);
+  }
+  if (typeof guildConfigs[guildId] !== 'undefined') {
+    cfg = guildConfigs[guildId];
+  }
+  config = loadConfigDefaults(cfg);
+  return config;
+}
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+function str2ab(str) {
+  const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+  const bufView = new Uint16Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
+  if (!(msg instanceof discord.GuildMemberMessage)) {
+    return false;
+  } // todo : allow dms
+  if (!(msg.author instanceof discord.User)) {
+    return false;
+  }
+  if (msg.author.bot) {
+    return false;
+  }
+  if (msg.webhookId !== null) {
+    return false;
+  }
+  if (msg.type !== discord.Message.Type.DEFAULT) {
+    return false;
+  }
+  if (msg.mentions.length > 0) {
+    return false;
+  }
+  if (msg.flags !== 0) {
+    return false;
+  }
+  if (msg.content !== '.config.') {
+    return false;
+  }
+  if (msg.attachments.length > 1) {
+    return false;
+  }
+  if (!(msg.member instanceof discord.GuildMember)) {
+    return false;
+  }
+  if (!msg.member.can(discord.Permissions.ADMINISTRATOR)) {
+    return false;
+  }
+  if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
+    return 'update';
+  }
+  return 'check';
+  /*
+  const att = msg.attachments[0];
+  if (att.filename !== 'config.json') {
+    return false;
+  }
+  const dat = await (await fetch(att.url)).text(); */
+}
+discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
+  const isCfg = isMessageConfigUpdate(message);
+  if (isCfg === 'update') {
+    try {
+      const dat = ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer());
+      JSON.parse(dat);
+      dat.split('\n').join('').split(' ').join('')
+        .split('\t')
+        .join('')
+        .split('\r')
+        .join('');
+      // dat = encodeURI(dat);
+      console.log('New Config Length', dat.length);
+      // apply config defaults here
+
+      // delete lengthy data lol
+      await message.delete();
+      await pylon.kv.put('__guildConfig', dat);
+      await InitializeConfig(true);
+      // InitializeCommands2();
+      await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
+    } catch (e) {
+      console.error(e);
+      try {
+        await message.delete();
+      } catch (e2) {}
+      await message.reply(`Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
+    }
+  } else if (isCfg === 'check') {
+    // return config to user
+    let cfg: any = await pylon.kv.get('__guildConfig');
+    if (typeof (cfg) === 'string') {
+      if (cfg.includes('{') || cfg.includes('%')) {
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      } else {
+        cfg = atob(cfg);
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      }
+      cfg = JSON.parse(cfg);
+    }
+    // console.log('done fetch');
+    if (typeof guildConfigs[guildId] !== 'undefined') {
+      cfg = guildConfigs[guildId];
+    }
+    cfg = JSON.parse(JSON.stringify(cfg));
+    if (!cfg) {
+      return;
+    }
+    if (cfg.modules && cfg.modules.logging) {
+      cfg.modules.logging.messages = undefined;
+      cfg.modules.logging.messagesAuditLogs = undefined;
+    }
+    const cfgToRet = JSON.stringify(cfg, null, 2);
+    const returnedMsg = await message.reply({
+      attachments: [{
+        name: 'config.json',
+        data: str2ab(cfgToRet),
+      }],
+    });
+    await sleep(14000);
+    await returnedMsg.delete();
+  }
+});

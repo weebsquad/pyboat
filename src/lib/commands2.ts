@@ -3,9 +3,13 @@ import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
-export const cmdgroups = [];
+/* eslint-disable import/no-mutable-exports */
+export let cmdgroups = [];
 
 function getCmdChannels() {
+  if (typeof (config) === 'undefined') {
+    return ['1'];
+  }
   if (typeof (config.modules.counting) === 'undefined') {
     return ['1'];
   }
@@ -215,37 +219,57 @@ export async function handleCommand(message: discord.Message) {
 }
 
 export function InitializeCommands2() {
+  if (typeof config === 'undefined') {
+    return;
+  }
   if (config.modules.commands.enabled !== true) {
     return;
+  }
+  if (cmdgroups.length !== 0) {
+    cmdgroups = [];
   }
   // raw commands!
   for (const key in commandsTable) {
     const obj = commandsTable[key];
     let count = 0;
+    if (typeof obj.InitializeCommands === 'function') {
+      // console.log('initializing cmds', key);
+      const newgroups = obj.InitializeCommands();
+      if (Array.isArray(newgroups)) {
+        newgroups.map((e) => {
+          if (e instanceof discord.command.CommandGroup) {
+            cmdgroups.push(e);
+          }
+        });
+      } else if (newgroups instanceof discord.command.CommandGroup) {
+        cmdgroups.push(newgroups);
+      }
+    } else {
+      const newKeys = {};
+      for (const keyCmd in obj) {
+        const objCmd = obj[keyCmd];
+        if (keyCmd.substr(0, 1) === '_') {
+          continue;
+        }
 
-    const newKeys = {};
-    for (const keyCmd in obj) {
-      const objCmd = obj[keyCmd];
-      if (keyCmd.substr(0, 1) === '_') {
+        if (objCmd instanceof discord.command.CommandGroup) {
+          cmdgroups.push(objCmd);
+          continue;
+        }
+        newKeys[keyCmd] = objCmd;
+        count += 1;
+      }
+
+      if (Object.keys(newKeys).length < 1) {
         continue;
       }
-      if (objCmd instanceof discord.command.CommandGroup) {
-        cmdgroups.push(objCmd);
-        continue;
-      }
-      newKeys[keyCmd] = objCmd;
-      count += 1;
-    }
-
-    if (Object.keys(newKeys).length < 1) {
-      continue;
-    }
-    const opts = getOpts(
-      obj._groupOptions,
-    ) as discord.command.ICommandGroupOptions;
-    const newC = new discord.command.CommandGroup(opts).attach(newKeys);
-    cmdgroups.push(newC);
+      const opts = getOpts(
+        obj._groupOptions,
+      ) as discord.command.ICommandGroupOptions;
+      const newC = new discord.command.CommandGroup(opts).attach(newKeys);
+      cmdgroups.push(newC);
     // console.info('Loaded ' + count + ' cmds from commands2.' + key);
+    }
   }
   // modules!
   for (const key in moduleDefinitions) {
@@ -256,12 +280,26 @@ export function InitializeCommands2() {
       continue;
     }
     const obj: any = moduleDefinitions[key];
-    for (const keyVar in obj) {
-      const objCmd = obj[keyVar];
-      if (objCmd instanceof discord.command.CommandGroup) {
+    if (typeof obj.InitializeCommands === 'function') {
+      // console.log('initializing cmds mod', key);
+      const newgroups = obj.InitializeCommands();
+      if (Array.isArray(newgroups)) {
+        newgroups.map((e) => {
+          if (e instanceof discord.command.CommandGroup) {
+            cmdgroups.push(e);
+          }
+        });
+      } else if (newgroups instanceof discord.command.CommandGroup) {
+        cmdgroups.push(newgroups);
+      }
+    } else {
+      for (const keyVar in obj) {
+        const objCmd = obj[keyVar];
+        if (objCmd instanceof discord.command.CommandGroup) {
         // console.log(key, keyVar, objCmd);
-        cmdgroups.push(objCmd);
-        continue;
+          cmdgroups.push(objCmd);
+          continue;
+        }
       }
     }
   }

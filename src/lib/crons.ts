@@ -1,6 +1,7 @@
 import * as ratelimit from './eventHandler/ratelimit';
 import * as queue from './eventHandler/queue';
 import { logDebug } from '../modules/logging/events/custom';
+import * as conf from '../config';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
@@ -17,6 +18,9 @@ async function onCron(name: string) {
   for (const key in _cr) {
     if (_cr[key].name !== name) {
       continue;
+    }
+    if (typeof conf.config === 'undefined') {
+      await conf.InitializeConfig();
     }
     await _cr[key].function();
     await logDebug(

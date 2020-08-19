@@ -1,6 +1,5 @@
 import { config } from '../config';
 // const key = config.global.googleApi.key;
-const apiKey = config.modules.translation.googleApi.key;
 const endpointTranslate = 'https://translation.googleapis.com/language/translate/v2';
 const endpointDetect = 'https://translation.googleapis.com/language/translate/v2/detect';
 
@@ -23,7 +22,7 @@ function formGAPIParams(key: string, query: string, target: string) {
 }
 
 export async function translate(query: string, target: string) {
-  const queryParams = `?${formGAPIParams(apiKey, query, target)}`;
+  const queryParams = `?${formGAPIParams(config.modules.translation.googleApi.key, query, target)}`;
   const fullUrl = `${endpointTranslate}${queryParams}`;
   const req = new Request(fullUrl, {
     method: 'POST',
@@ -46,7 +45,7 @@ export async function translate(query: string, target: string) {
 export async function detectLanguage(query: string) {
   const params = {
     q: query,
-    apiKey,
+    key: config.modules.translation.googleApi.key,
   };
   const queryParams = `?${formParams(params)}`;
   const fullUrl = `${endpointDetect}${queryParams}`;
@@ -55,12 +54,12 @@ export async function detectLanguage(query: string) {
   });
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
-    console.error(request.error);
-    throw new Error();
+    // console.error(request.error);
+    throw new Error(request.error);
   }
   if (!Array.isArray(request.data.detections) || request.data.detections < 1) {
-    console.error(request);
-    throw new Error();
+    // console.error(request);
+    throw new Error(request.error);
   }
   return request.data.detections[0];
 }

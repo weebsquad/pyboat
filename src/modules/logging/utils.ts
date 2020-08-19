@@ -1,30 +1,28 @@
 import * as conf from '../../config';
 import * as utils from '../../lib/utils';
 
-const config = conf.config.modules.logging;
-
 export function isDebug(bypassMaster = false) {
   return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
 export function changeLoggingTimezone(dt: Date) {
-  if (!config.timezone) {
+  if (!conf.config.modules.logging.timezone) {
     return dt;
   }
-  return utils.changeTimezone(dt, config.timezone);
+  return utils.changeTimezone(dt, conf.config.modules.logging.timezone);
 }
 
 export function isIgnoredChannel(channel: discord.GuildChannel | string) {
   if (channel instanceof discord.GuildChannel) {
     channel = channel.id;
   }
-  const { ignores } = config;
+  const { ignores } = conf.config.modules.logging;
   if (!ignores) {
     return false;
   }
   let chans = [].concat(ignores.channels);
   if (ignores.logChannels === true) {
-    const _lc: any = Array.from(config.logChannels.keys());
+    const _lc: any = Array.from(Object.keys(conf.config.modules.logging.logChannels));
     chans = chans.concat(_lc);
   }
   return chans.includes(channel);
@@ -37,7 +35,7 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   if (user instanceof discord.GuildMember) {
     user = user.user.id;
   }
-  const { ignores } = config;
+  const { ignores } = conf.config.modules.logging;
   if (!ignores) {
     return false;
   }
@@ -87,7 +85,7 @@ export function getMemberTag(member: discord.GuildMember) {
     ['_ID_', member.user.id],
     ['_MENTION_', member.toMention()],
   ]);
-  let tg = config.userTag;
+  let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
     tg = tg.split(key).join(value);
   }
@@ -102,7 +100,7 @@ export function getUserTag(user: discord.User) {
     ['_ID_', user.id],
     ['_MENTION_', user.toMention()],
   ]);
-  let tg = config.userTag;
+  let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
     tg = tg.split(key).join(value);
   }
@@ -258,7 +256,7 @@ export function getActorTag(log: discord.AuditLogEntry) {
     ['_ID_', log.user.id],
     ['_MENTION_', log.user.toMention()],
   ]);
-  let tg = config.actorTag;
+  let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
     tg = tg.split(key).join(value);
   }
@@ -272,9 +270,9 @@ export function getLogMessage(
   bypassSuffix = false,
 ) {
   if (auditLog === true) {
-    let obj: string = config.messagesAuditLogs[eventName][eventAction];
+    let obj: string = conf.config.modules.logging.messagesAuditLogs[eventName][eventAction];
     if (
-      config.suffixReasonToAuditlog
+      conf.config.modules.logging.suffixReasonToAuditlog
       && obj.indexOf('_REASON_') === -1
       && obj.indexOf('_REASON_RAW_') === -1
       && !bypassSuffix
@@ -283,7 +281,7 @@ export function getLogMessage(
     }
     return obj;
   }
-  return config.messages[eventName][eventAction];
+  return conf.config.modules.logging.messages[eventName][eventAction];
 }
 
 export function replacePlaceholders(txt: string, map: Map<string, string>) {

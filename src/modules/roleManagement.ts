@@ -1,7 +1,5 @@
-import * as config from '../config';
+import { config } from '../config';
 import * as utils from '../lib/utils';
-
-const cfgMod = config.config.modules.roleManagement;
 
 async function refreshGuildMember(gid: string, uid: string) {
   const guild = await discord.getGuild(gid);
@@ -64,17 +62,17 @@ async function checkHoist(member: discord.GuildMember) {
   const roles = await utils.getUserRoles(member);
   let hasHoist = false;
   roles.forEach((role: discord.Role) => {
-    if (role.hoist === true && role.id !== cfgMod.lowestHoistRole) {
+    if (role.hoist === true && role.id !== config.modules.roleManagement.lowestHoistRole) {
       hasHoist = true;
     }
   });
   if (!hasHoist && roles.length > 0) {
-    await member.addRole(cfgMod.lowestHoistRole);
+    await member.addRole(config.modules.roleManagement.lowestHoistRole);
   } else {
-    const hasLowestHoist = roles.find((o) => o.id === cfgMod.lowestHoistRole);
+    const hasLowestHoist = roles.find((o) => o.id === config.modules.roleManagement.lowestHoistRole);
 
     if (hasLowestHoist) {
-      await member.removeRole(cfgMod.lowestHoistRole);
+      await member.removeRole(config.modules.roleManagement.lowestHoistRole);
     }
   }
 }
@@ -102,10 +100,10 @@ export async function checkUserRoles(mem: discord.GuildMember) {
     }
   }
   if (mem.user.bot === true) {
-    await checkRoles(mem, cfgMod.botRole, cfgMod.botRoleRP, false);
-    await checkRoles(mem, cfgMod.botRoleRP, cfgMod.memberRoleRP, true);
+    await checkRoles(mem, config.modules.roleManagement.botRole, config.modules.roleManagement.botRoleRP, false);
+    await checkRoles(mem, config.modules.roleManagement.botRoleRP, config.modules.roleManagement.memberRoleRP, true);
   } else {
-    await checkRoles(mem, cfgMod.memberRole, cfgMod.memberRoleRP, true);
+    await checkRoles(mem, config.modules.roleManagement.memberRole, config.modules.roleManagement.memberRoleRP, true);
   }
 }
 

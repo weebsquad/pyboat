@@ -2,7 +2,7 @@
 import { config } from '../config';
 import * as utils from '../lib/utils';
 
-const cfgMod = config.modules.onJoin;
+const cfgMod = config!.modules.onJoin;
 
 export async function OnGuildMemberAdd(member: discord.GuildMember) {
   await check(member);

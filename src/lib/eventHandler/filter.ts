@@ -1,6 +1,7 @@
 // edgy cases lmao
 
 import { deepCompare } from '../utils';
+import { isMessageConfigUpdate } from '../../config';
 
 const eventFilters = <any>{
   global: {
@@ -106,6 +107,9 @@ const eventFilters = <any>{
     },
     MESSAGE_CREATE: (message: discord.Message) => {
       if (message.author !== null && message.author.id === discord.getBotId()) {
+        return true;
+      }
+      if (isMessageConfigUpdate(message) !== false) {
         return true;
       }
     },

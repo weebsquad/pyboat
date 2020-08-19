@@ -213,8 +213,7 @@ export async function getUser(userId: string) {
     };
     return res;
   } catch (e) {
-    console.error(e);
-    console.error(data);
+
   }
 }
 
