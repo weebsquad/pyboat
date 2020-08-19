@@ -22,7 +22,7 @@ export function isIgnoredChannel(channel: discord.GuildChannel | string) {
   }
   let chans = [].concat(ignores.channels);
   if (ignores.logChannels === true) {
-    const _lc: any = Array.from(conf.config.modules.logging.logChannels.keys());
+    const _lc: any = Array.from(Object.keys(conf.config.modules.logging.logChannels));
     chans = chans.concat(_lc);
   }
   return chans.includes(channel);

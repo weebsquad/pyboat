@@ -48,7 +48,8 @@ export function getLogChannels(gid: string, event: string, type: string) {
   if (!mp) {
     return arr;
   }
-  for (const [k, v] of mp) {
+  for (const k in mp) {
+    const v = mp[k];
     if (
       v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
@@ -82,7 +83,7 @@ async function sendInLogChannel(
   for (const [chId, opts] of messages) {
     const gconf = conf.getGuildConfig(gid);
     const mp = gconf.modules.logging.logChannels;
-    const chanCfg = mp.get(chId);
+    const chanCfg = mp[chId];
     if (!chanCfg) {
       continue;
     }
@@ -278,7 +279,7 @@ async function getMessages(
     if (!cfgG) {
       continue;
     }
-    const cfg = cfgG.get(chId);
+    const cfg = cfgG[chId];
     if (!cfg) {
       throw new Error('h');
     } // just to void that error below, lol, this should never be undefined

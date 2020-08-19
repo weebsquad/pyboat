@@ -46,7 +46,7 @@ const defaultConfig = { // for non-defined configs!
       enabled: false,
       // should we try to pull audit log data for every event, or just display raw data??
       auditLogs: true,
-      logChannels: new Map<discord.Snowflake, ChannelConfig>(),
+      logChannels: {},
       messages: messages.messages, // defaults
       messagesAuditLogs: messages.messagesAuditLogs, // defaults
       ignores: {
@@ -236,19 +236,19 @@ export const guildConfigs = <any>{
         enabled: true,
         debug: true,
         auditLogs: true,
-        logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['729980275550846978', chPlain(['*'], ['DEBUG'], true, true)],
-          [
-            '735875360943767562', chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
-                                          'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
-                                          0x228b22,
-                                          'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
-                                          true,
-                                          false),
-          ],
+        logChannels: {
+          '729980275550846978': chPlain(['*'], ['DEBUG'], true, true),
+
+          '735875360943767562': chEmbed('gamer', ['*'], ['TYPING_START.*', 'MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL', 'DEBUG'],
+                                        'https://icon-library.com/images/icon-gamer/icon-gamer-20.jpg',
+                                        0x228b22,
+                                        'https://discord.com/api/webhooks/738853991537967124/dxlcHFwQwCLu80E4FUbQsT0tI3C-JlCg1sfPCDd7unFv7K9FZC_w0poSUOwmXEaxKJqc',
+                                        true,
+                                        false),
+
           // master channel!
-          ['741062982196527142', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false)],
-        ]),
+          '741062982196527142': chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false),
+        },
         ignores: {
           channels: [
             '741450591678496829', // github webhooks channel
@@ -390,11 +390,11 @@ export const guildConfigs = <any>{
         enabled: true,
         debug: true,
         auditLogs: true,
-        logChannels: new Map<discord.Snowflake, ChannelConfig>([
-          ['740997800749170698', chPlain(['*'], [], true, true)],
-          ['742317770875863051', chEmbed('embeds test', ['*'], [], '', 0x11c6e2, 'https://discord.com/api/webhooks/742321345567784980/d6rk3anTgA6njmcl-hw2mR-d9h2NnOf_k4YyaeoIU0L1kaWYXIFmyPJmQtNkMxVhKTL7', true, true)],
+        logChannels: {
+          '740997800749170698': chPlain(['*'], [], true, true),
+          '742317770875863051': chEmbed('embeds test', ['*'], [], '', 0x11c6e2, 'https://discord.com/api/webhooks/742321345567784980/d6rk3anTgA6njmcl-hw2mR-d9h2NnOf_k4YyaeoIU0L1kaWYXIFmyPJmQtNkMxVhKTL7', true, true),
           // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
-        ]),
+        },
         ignores: {
           channels: [],
           users: [],
@@ -522,6 +522,9 @@ export function getGuildConfig(gid: string) {
   return guildConfigs[gid];
 }
 
+async function loadConfigDefaults(cfg: any) {
+  return cfg;
+}
 export const guildId = discord.getGuildId();
 
 export let config: any;
@@ -532,7 +535,7 @@ export async function InitializeConfig(bypass = false) {
       if (typeof config !== 'undefined') {
         break;
       }
-      await sleep(50);
+      await sleep(200);
     }
     return config;
   }
@@ -540,5 +543,135 @@ export async function InitializeConfig(bypass = false) {
   loadingConf = true;
   await sleep(2000);
   config = getGuildConfig(guildId);
+  // apply config defaults here
   return config;
 }
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+function str2ab(str) {
+  const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+  const bufView = new Uint16Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
+  if (!(msg instanceof discord.GuildMemberMessage)) {
+    return false;
+  } // todo : allow dms
+  if (!(msg.author instanceof discord.User)) {
+    return false;
+  }
+  if (msg.author.bot) {
+    return false;
+  }
+  if (msg.webhookId !== null) {
+    return false;
+  }
+  if (msg.type !== discord.Message.Type.DEFAULT) {
+    return false;
+  }
+  if (msg.mentions.length > 0) {
+    return false;
+  }
+  if (msg.flags !== 0) {
+    return false;
+  }
+  if (msg.content !== '.config.') {
+    return false;
+  }
+  if (msg.attachments.length > 1) {
+    return false;
+  }
+  if (!(msg.member instanceof discord.GuildMember)) {
+    return false;
+  }
+  if (!msg.member.can(discord.Permissions.ADMINISTRATOR)) {
+    return false;
+  }
+  if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
+    return 'update';
+  }
+  return 'check';
+  /*
+  const att = msg.attachments[0];
+  if (att.filename !== 'config.json') {
+    return false;
+  }
+  const dat = await (await fetch(att.url)).text(); */
+}
+discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
+  const isCfg = isMessageConfigUpdate(message);
+  if (isCfg === 'update') {
+    try {
+      console.log('received config update msg!');
+      const dat = ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer());
+      dat.split('\n').join('').split(' ').join('')
+        .split('\t')
+        .join('')
+        .split('\r')
+        .join('');
+      // dat = encodeURI(dat);
+      console.log('Length', dat.length);
+      // apply config defaults here
+
+      // delete lengthy data lol
+      await message.delete();
+      await pylon.kv.put('__guildConfig', dat);
+      await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
+    } catch (e) {
+      console.error(e);
+      try {
+        await message.delete();
+      } catch (e2) {}
+      await message.reply(`Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
+    }
+  } else if (isCfg === 'check') {
+    // return config to user
+    // console.log('received config grab msg!');
+    let cfg: any = await pylon.kv.get('__guildConfig');
+    // console.log(cfg);
+    if (typeof (cfg) === 'string') {
+      if (cfg.includes('{') || cfg.includes('%')) {
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      } else {
+        cfg = atob(cfg);
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      }
+      cfg = JSON.parse(cfg);
+    }
+    // console.log('done fetch');
+    if (typeof guildConfigs[guildId] !== 'undefined') {
+      cfg = guildConfigs[guildId];
+    }
+    cfg = JSON.parse(JSON.stringify(cfg));
+    if (!cfg) {
+      return;
+    }
+    if (cfg.modules && cfg.modules.logging) {
+      cfg.modules.logging.messages = undefined;
+      cfg.modules.logging.messagesAuditLogs = undefined;
+    }
+    const cfgToRet = JSON.stringify(cfg, null, 2);
+    const returnedMsg = await message.reply({
+      attachments: [{
+        name: 'config.json',
+        data: str2ab(cfgToRet),
+      }],
+    });
+    await sleep(14000);
+    await returnedMsg.delete();
+  }
+});
