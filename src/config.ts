@@ -532,12 +532,13 @@ export async function InitializeConfig(bypass = false) {
       if (typeof config !== 'undefined') {
         break;
       }
-      await sleep(100);
+      await sleep(50);
     }
     return config;
   }
+  config = undefined;
   loadingConf = true;
-  await sleep(100);
+  await sleep(2000);
   config = getGuildConfig(guildId);
   return config;
 }

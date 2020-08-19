@@ -8,7 +8,6 @@ import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/utils';
 
-
 /* ROLE PERSIST */
 const persistkv = new pylon.KVNamespace('persists');
 
@@ -155,8 +154,6 @@ export async function AL_OnMessageDelete(
     ttl: config.modules.utilities.snipe.delay,
   });
 }
-
-
 
 export function InitializeCommands() {
   const F = discord.command.filters;
