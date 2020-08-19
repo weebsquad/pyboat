@@ -35,7 +35,7 @@ async function _Initialize() {
     return;
   }
   rl = true;
-  // InitializeCommands2();
+  InitializeCommands2();
   await logDebug('BOT_STARTED');
 }
 

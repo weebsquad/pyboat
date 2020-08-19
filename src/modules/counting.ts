@@ -2,7 +2,6 @@ import { config } from '../config';
 import * as utils from '../lib/utils';
 
 const kv = new pylon.KVNamespace('counting');
-const cfgMod = config.modules.counting;
 
 function isNormalInteger(str) {
   const n = Math.floor(Number(str));
@@ -11,21 +10,21 @@ function isNormalInteger(str) {
 
 function isPinnable(num: number) {
   if (
-    !cfgMod.autoPins
-    || !cfgMod.autoPins.repeating
-    || !cfgMod.autoPins.repeatingLast
-    || !cfgMod.autoPins.single
+    !config.modules.counting.autoPins
+    || !config.modules.counting.autoPins.repeating
+    || !config.modules.counting.autoPins.repeatingLast
+    || !config.modules.counting.autoPins.single
   ) {
     return;
   }
-  if (cfgMod.autoPins.single.indexOf(num) > -1) {
+  if (config.modules.counting.autoPins.single.indexOf(num) > -1) {
     return true;
   }
-  const checkRep = cfgMod.autoPins.repeating.find((numbr) => num % numbr === 0);
+  const checkRep = config.modules.counting.autoPins.repeating.find((numbr) => num % numbr === 0);
   if (typeof checkRep === 'number') {
     return true;
   }
-  const checkRepLast = cfgMod.autoPins.repeatingLast.find((numbr) => {
+  const checkRepLast = config.modules.counting.autoPins.repeatingLast.find((numbr) => {
     const lastChars = num.toString().slice(-numbr.toString().length); // gets last character
     return lastChars === numbr.toString();
   });
@@ -42,13 +41,13 @@ async function updateTopic(channelid: string) {
   if (chan === null) return;
   let num: any = 0;
   try {
-    let testn = await kv.get(`${cfgMod.keyCount}${channelid}`);
+    let testn = await kv.get(`${config.modules.counting.keyCount}${channelid}`);
     if (typeof testn === 'number') num = testn;
   } catch (e) {}
 
   let lastUsr;
   try {
-    let testid = await kv.get(`${cfgMod.keyLastUser}${channelid}`);
+    let testid = await kv.get(`${config.modules.counting.keyLastUser}${channelid}`);
     if (typeof testid === 'string') lastUsr = testid;
   } catch (e) {}
   let txt = `Current: ${num}`;
@@ -61,13 +60,13 @@ export async function OnMessageCreate(
   guildId: string,
   message: discord.Message,
 ) {
-  if (cfgMod.channels.indexOf(message.channelId) === -1) {
+  if (config.modules.counting.channels.indexOf(message.channelId) === -1) {
     return;
   }
   if (
     (message.type !== discord.Message.Type.DEFAULT
       || typeof message.webhookId === 'string')
-    && cfgMod.useWebhook
+    && config.modules.counting.useWebhook
   ) {
     if (isPinnable(+message.content)) {
       await message.setPinned(true);
@@ -100,9 +99,9 @@ export async function OnMessageCreate(
     && message.member.can(discord.Permissions.MANAGE_MESSAGES)
   ) {
     try {
-      await kv.delete(`${cfgMod.keyLastUser}${message.channelId}`);
-      await kv.delete(`${cfgMod.keyLastMid}${message.channelId}`);
-      await kv.delete(`${cfgMod.keyCount}${message.channelId}`);
+      await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
+      await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
+      await kv.delete(`${config.modules.counting.keyCount}${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
       `**Count has been reset by ${message.author.getTag()}**`,
@@ -117,9 +116,9 @@ export async function OnMessageCreate(
   ) {
     const num = +cont.split(' ')[1];
     try {
-      await kv.put(`${cfgMod.keyCount}${message.channelId}`, num);
-      await kv.delete(`${cfgMod.keyLastMid}${message.channelId}`);
-      await kv.delete(`${cfgMod.keyLastUser}${message.channelId}`);
+      await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num);
+      await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
+      await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
       `**Count has been set to ${num} by ${message.author.getTag()}**`,
@@ -135,7 +134,7 @@ export async function OnMessageCreate(
   let num = 0;
 
   try {
-    const testn = await kv.get(`${cfgMod.keyCount}${message.channelId}`);
+    const testn = await kv.get(`${config.modules.counting.keyCount}${message.channelId}`);
     if (typeof testn === 'number') {
       num = testn;
     }
@@ -146,7 +145,7 @@ export async function OnMessageCreate(
   }
   let lastUsr;
   try {
-    const testid = await kv.get(`${cfgMod.keyLastUser}${message.channelId}`);
+    const testid = await kv.get(`${config.modules.counting.keyLastUser}${message.channelId}`);
     if (typeof testid === 'string') {
       lastUsr = testid;
     }
@@ -156,17 +155,17 @@ export async function OnMessageCreate(
     return;
   }
 
-  kv.put(`${cfgMod.keyLastMid}${message.channelId}`, message.id);
-  await kv.put(`${cfgMod.keyCount}${message.channelId}`, num + 1);
-  await kv.put(`${cfgMod.keyLastUser}${message.channelId}`, message.author.id);
+  kv.put(`${config.modules.counting.keyLastMid}${message.channelId}`, message.id);
+  await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num + 1);
+  await kv.put(`${config.modules.counting.keyLastUser}${message.channelId}`, message.author.id);
   updateTopic(message.channelId);
-  if (isPinnable(+message.content) && !cfgMod.useWebhook) {
+  if (isPinnable(+message.content) && !config.modules.counting.useWebhook) {
     await message.setPinned(true);
   }
-  if (cfgMod.useWebhook) {
+  if (config.modules.counting.useWebhook) {
     delet(message);
     await utils.sendWebhookPost(
-      cfgMod.webhook,
+      config.modules.counting.webhook,
       cont,
       message.author.getAvatarUrl(),
       message.author.getTag(),
@@ -179,14 +178,14 @@ async function MessageDeletedChecks(message: discord.GuildMemberMessage) {
   const cont = message.content;
   let num = 0;
   try {
-    const testn = await kv.get(`${cfgMod.keyCount}${message.channelId}`);
+    const testn = await kv.get(`${config.modules.counting.keyCount}${message.channelId}`);
     if (typeof testn === 'number') {
       num = testn;
     }
   } catch (e) {}
   let lastId;
   try {
-    const testn = await kv.get(`${cfgMod.keyLastMid}${message.channelId}`);
+    const testn = await kv.get(`${config.modules.counting.keyLastMid}${message.channelId}`);
     if (typeof testn === 'string') {
       lastId = testn;
     }
@@ -197,9 +196,9 @@ async function MessageDeletedChecks(message: discord.GuildMemberMessage) {
   if (typeof lastId !== 'string' || lastId !== message.id) {
     return;
   }
-  await kv.put(`${cfgMod.keyCount}${message.channelId}`, num - 1);
-  await kv.delete(`${cfgMod.keyLastUser}${message.channelId}`);
-  await kv.delete(`${cfgMod.keyLastMid}${message.channelId}`);
+  await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num - 1);
+  await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
+  await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
   updateTopic(message.channelId);
 }
 
@@ -209,18 +208,18 @@ export async function OnMessageDelete(
   messageDelete: discord.Event.IMessageDelete,
   oldMessage: discord.GuildMemberMessage | null,
 ) {
-  if (cfgMod.channels.indexOf(messageDelete.channelId) === -1) {
+  if (config.modules.counting.channels.indexOf(messageDelete.channelId) === -1) {
     return;
   }
   if (
     (oldMessage.author === null
       || oldMessage.member === null
       || typeof oldMessage.webhookId === 'string')
-    && !cfgMod.useWebhook
+    && !config.modules.counting.useWebhook
   ) {
     return;
   }
-  if (typeof oldMessage.webhookId !== 'string' && cfgMod.useWebhook) {
+  if (typeof oldMessage.webhookId !== 'string' && config.modules.counting.useWebhook) {
     return false;
   }
   await MessageDeletedChecks(oldMessage);
@@ -242,7 +241,7 @@ export async function OnMessageUpdate(
   ) {
     return;
   }
-  if (cfgMod.channels.indexOf(oldMessage.channelId) === -1 || cfgMod.useWebhook) {
+  if (config.modules.counting.channels.indexOf(oldMessage.channelId) === -1 || config.modules.counting.useWebhook) {
     return;
   }
   if (message.author === null || message.member === null) {

@@ -525,7 +525,19 @@ export function getGuildConfig(gid: string) {
 export const guildId = discord.getGuildId();
 
 export let config: any;
-export async function InitializeConfig() {
+let loadingConf = false;
+export async function InitializeConfig(bypass = false) {
+  if (loadingConf === true && !bypass) {
+    while (typeof config === 'undefined') {
+      if (typeof config !== 'undefined') {
+        break;
+      }
+      await sleep(100);
+    }
+    return config;
+  }
+  loadingConf = true;
   await sleep(100);
   config = getGuildConfig(guildId);
+  return config;
 }

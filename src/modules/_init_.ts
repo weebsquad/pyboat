@@ -9,8 +9,8 @@ import * as utilities from './utilities';
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
   antiPing,
-  // counting,
-  // roleManagement,
+  counting,
+  roleManagement,
   // commands,
   // translation,
   // utilities,
