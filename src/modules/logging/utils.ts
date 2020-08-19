@@ -50,7 +50,7 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
 }
 
 export function isMasterInDebug() {
-  return conf.getGuildConfig(conf.globalConfig.masterGuild).modules.logging.debug === true;
+  return true;
 }
 export function isExternalDebug(gid: string = conf.guildId) {
   return isMasterInDebug() && gid !== conf.globalConfig.masterGuild;

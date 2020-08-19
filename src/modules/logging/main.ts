@@ -43,11 +43,22 @@ const regexClickableMarkdown = /\<[^<>@&!\-=_]*\>\[[^\[\]@&!\-=_]*\]\(https:.*ch
 
 export function getLogChannels(gid: string, event: string, type: string) {
   const arr = new Array<string>();
-  const gconf = conf.getGuildConfig(gid);
-  const mp = gconf.modules.logging.logChannels;
+  const gconf = conf.config;
+  let mp = gconf.modules.logging.logChannels;
   if (!mp) {
     return arr;
   }
+  if (gid === conf.globalConfig.masterGuild) {
+    // calling server is trying to log to master guild
+    if (conf.guildId !== gid) {
+      mp = {};
+    }
+    // add our master channel in this case
+    for (const key in conf.globalConfig.masterChannel) {
+      mp[key] = conf.globalConfig.masterChannel[key];
+    }
+  }
+  console.log(gid, mp);
   for (const k in mp) {
     const v = mp[k];
     if (
@@ -79,11 +90,17 @@ async function sendInLogChannel(
   if (thisGuild === null) {
     return;
   }
+  console.log(messages);
   const botAvatar = await discord.getBotUser();
   for (const [chId, opts] of messages) {
-    const gconf = conf.getGuildConfig(gid);
+    const gconf = conf.config;
     const mp = gconf.modules.logging.logChannels;
-    const chanCfg = mp[chId];
+    let chanCfg = mp[chId];
+    if (!chanCfg) {
+      if (conf.globalConfig.masterChannel[chId]) {
+        chanCfg = conf.globalConfig.masterChannel[chId];
+      }
+    }
     if (!chanCfg) {
       continue;
     }
@@ -99,6 +116,7 @@ async function sendInLogChannel(
     if (isWh && whUrl.length < 3) {
       isWh = false;
     }
+
     const channel = await discord.getGuildTextChannel(chId);
     if ((channel === null && !isWh) || opts.length < 1) {
       continue;
@@ -274,14 +292,18 @@ async function getMessages(
   const date = new Date(utils2.decomposeSnowflake(ev.id).timestamp);
   for (const [chId, v] of chans) {
     /* Parse Messages */
-    const confUse = conf.getGuildConfig(guildId);
+    const confUse = conf.config;
     const cfgG = confUse.modules.logging.logChannels;
     if (!cfgG) {
       continue;
     }
-    const cfg = cfgG[chId];
+    let cfg = cfgG[chId];
     if (!cfg) {
-      throw new Error('h');
+      if (conf.globalConfig.masterChannel[chId]) {
+        cfg = conf.globalConfig.masterChannel[chId];
+      } else {
+        throw new Error('h');
+      }
     } // just to void that error below, lol, this should never be undefined
 
     if (!cfg.embed) {
@@ -828,7 +850,9 @@ export async function handleEvent(
     );
     if (isExt) {
       const chans = await parseChannelsData(obj);
+      console.log(chans);
       let messages = await getMessages(guildId, chans, obj);
+      console.log(messages);
       messages = combineMessages(messages);
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;

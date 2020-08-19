@@ -18,6 +18,9 @@ export const globalConfig = <any>{
   ],
   // used for logging debugging mostly
   masterGuild: '565323632751149103',
+  masterChannel: {
+    '741062982196527142': chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false),
+  },
   // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
   metalApi: {
@@ -34,6 +37,7 @@ export const globalConfig = <any>{
   botsCommands: [],
   // prefix for dev commands (included as additional prefix in every command in case users change the default one)
   devPrefix: 'p/',
+
 };
 
 const defaultConfig = { // for non-defined configs!
