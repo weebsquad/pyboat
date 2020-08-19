@@ -11,8 +11,8 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   antiPing,
   counting,
   roleManagement,
-  // commands,
-  // translation,
-  // utilities,
+  commands,
+  translation,
+  utilities,
 };
 export const asyncModules = ['logging'];
