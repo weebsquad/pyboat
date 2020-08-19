@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
 import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
 
@@ -523,4 +524,8 @@ export function getGuildConfig(gid: string) {
 
 export const guildId = discord.getGuildId();
 
-export const config = getGuildConfig(guildId);
+export let config: any;
+export async function InitializeConfig() {
+  await sleep(100);
+  config = getGuildConfig(guildId);
+}

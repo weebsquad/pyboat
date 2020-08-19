@@ -255,7 +255,6 @@ export async function OnMessageReactionAdd(
         reaction.member.toMention() +
           ' , pirate api decided to fail for whatever reason <:pirate:713103123912065024>'
       );
-      console.error(pirateey);
       return false;
     }
     if (pirateey.toLowerCase() === message.content.toLowerCase()) {

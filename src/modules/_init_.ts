@@ -9,10 +9,10 @@ import * as utilities from './utilities';
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
   antiPing,
-  counting,
-  roleManagement,
-  commands,
-  translation,
-  utilities,
+  // counting,
+  // roleManagement,
+  // commands,
+  // translation,
+  // utilities,
 };
 export const asyncModules = ['logging'];

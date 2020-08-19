@@ -6,8 +6,6 @@ import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 
-const cfgMod = config.modules.antiPing;
-
 const kv = new pylon.KVNamespace('antiPing');
 
 const kvDataKey = 'antiPingData';
@@ -64,7 +62,7 @@ async function isMuted(member: discord.GuildMember) {
   const roles = await utils.getUserRoles(member);
   let isMutedd = false;
 
-  if (roles.some((e) => e.id === cfgMod.muteRole)) {
+  if (roles.some((e) => e.id === config.modules.antiPing.muteRole)) {
     isMutedd = true;
   }
   return isMutedd;
@@ -80,13 +78,13 @@ async function isStaff(member: discord.GuildMember) {
   let hasStaff = false;
 
   roles.forEach((role) => {
-    if (cfgMod.staffRoles.indexOf(role.id) > -1) {
+    if (config.modules.antiPing.staffRoles.indexOf(role.id) > -1) {
       hasStaff = true;
     }
   });
   return hasStaff; */
   const userAuth = utils.getUserAuth(member);
-  return userAuth >= cfgMod.staff;
+  return userAuth >= config.modules.antiPing.staff;
 }
 
 function isTargetChannel(channel: discord.GuildTextChannel) {
@@ -96,16 +94,16 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
     category: false,
   };
   if (
-    cfgMod.targets.channels.include.indexOf(chanId) > -1
-    && cfgMod.targets.channels.exclude.indexOf(chanId) === -1
+    config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1
+    && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
   ) {
     lists.channel = true;
   }
   const par = channel.parentId;
   if (typeof par === 'string') {
     if (
-      cfgMod.targets.categories.include.indexOf(par) > -1
-        && cfgMod.targets.channels.exclude.indexOf(chanId) === -1
+      config.modules.antiPing.targets.categories.include.indexOf(par) > -1
+        && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
     ) {
       lists.category = true;
     }
@@ -115,20 +113,20 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
 
 async function isTarget(member: discord.GuildMember) {
   const userId = member.user.id;
-  if (cfgMod.targets.users.exclude.indexOf(userId) > -1) {
+  if (config.modules.antiPing.targets.users.exclude.indexOf(userId) > -1) {
     return false;
   }
-  if (cfgMod.targets.users.include.indexOf(userId) > -1) {
+  if (config.modules.antiPing.targets.users.include.indexOf(userId) > -1) {
     return true;
   }
   const roles: Array<discord.Role> = (await utils.getUserRoles(member));
   let hasWhitelist = false;
   let hasBlacklist = false;
   roles.forEach((role) => {
-    if (cfgMod.targets.roles.include.indexOf(role.id) > -1) {
+    if (config.modules.antiPing.targets.roles.include.indexOf(role.id) > -1) {
       hasWhitelist = true;
     }
-    if (cfgMod.targets.roles.exclude.indexOf(role.id) > -1) {
+    if (config.modules.antiPing.targets.roles.exclude.indexOf(role.id) > -1) {
       hasBlacklist = true;
     }
   });
@@ -146,11 +144,11 @@ async function isBypass(member: discord.GuildMember) {
     return true;
   }
   const userId = member.user.id;
-  if (cfgMod.bypass.users.indexOf(userId) > -1) {
+  if (config.modules.antiPing.bypass.users.indexOf(userId) > -1) {
     return true;
   }
   const lvl = utils.getUserAuth(member);
-  if (lvl >= cfgMod.bypass.level) {
+  if (lvl >= config.modules.antiPing.bypass.level) {
     return true;
   }
   if (await isIgnore(userId)) {
@@ -159,7 +157,7 @@ async function isBypass(member: discord.GuildMember) {
   const roles = await utils.getUserRoles(member);
   let is = false;
   roles.forEach((role) => {
-    if (cfgMod.bypass.roles.indexOf(role.id) > -1) {
+    if (config.modules.antiPing.bypass.roles.indexOf(role.id) > -1) {
       is = true;
     }
   });
@@ -177,7 +175,7 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
   await logCustom('ANTIPING', `${type}`, extras);
   /*
   let chan = (await discord.getChannel(
-    cfgMod.logChannel
+    config.modules.antiPing.logChannel
   )) as discord.GuildTextChannel;
   let timestamp = new Date().toLocaleString();
   const embed = new discord.Embed();
@@ -319,8 +317,8 @@ export async function OnMessageCreate(
   if (illegalMentions.length <= 0) {
     return;
   }
-  const msg = cfgMod.caughtMessages[
-    Math.floor(Math.random() * cfgMod.caughtMessages.length)
+  const msg = config.modules.antiPing.caughtMessages[
+    Math.floor(Math.random() * config.modules.antiPing.caughtMessages.length)
   ];
   let data = await kv.get(kvDataKey);
   if (typeof data !== 'object') {
@@ -330,10 +328,10 @@ export async function OnMessageCreate(
     data[author.id] = {};
   }
   let isMute = false;
-  if (Object.keys(data[author.id]).length >= cfgMod.pingsForAutoMute - 1) {
+  if (Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1) {
     isMute = true;
     try {
-      await authorMember.addRole(cfgMod.muteRole);
+      await authorMember.addRole(config.modules.antiPing.muteRole);
       let mutes: Array<string> = (await kv.get(kvMutesKey));
       if (!Array.isArray(mutes)) {
         mutes = [];
@@ -343,7 +341,6 @@ export async function OnMessageCreate(
       }
       await kv.put(kvMutesKey, mutes);
     } catch (e) {
-      console.error(e);
       isMute = false; // fallback meme
     }
   }
@@ -352,10 +349,10 @@ export async function OnMessageCreate(
     muteText = '\n>> **You were muted for pinging users after a warning** <<\n';
   }
   const msgtorep = `${message.author.toMention()} ${msg}\n${muteText}\n${
-    cfgMod.actualCaughtMessage
+    config.modules.antiPing.actualCaughtMessage
   }`;
   const msgReply = await message.reply(msgtorep);
-  if (cfgMod.instaDeletePings) {
+  if (config.modules.antiPing.instaDeletePings) {
     try {
       await message.delete();
     } catch (e) {}
@@ -432,7 +429,7 @@ export async function OnMessageCreate(
   ); */
 
   await kv.put(kvDataKey, data);
-  for (const key in cfgMod.emojiActions) {
+  for (const key in config.modules.antiPing.emojiActions) {
     await msgReply.addReaction(key);
   }
 
@@ -457,7 +454,7 @@ export async function OnMessageDeleteBulk(id: string,
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    await member.addRole(cfgMod.muteRole);
+    await member.addRole(config.modules.antiPing.muteRole);
     return true;
   } catch (e) {
   }
@@ -480,7 +477,7 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
   }
   if (mutes.includes(userMsg.authorId)) {
     try {
-      await member.removeRole(cfgMod.muteRole);
+      await member.removeRole(config.modules.antiPing.muteRole);
       mutes.splice(mutes.indexOf(userMsg.authorId), 1);
       await kv.put(kvMutesKey, mutes);
       return true;
@@ -497,7 +494,7 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
   }
   if (mutes.includes(userMsg.authorId)) {
     try {
-      await member.removeRole(cfgMod.muteRole);
+      await member.removeRole(config.modules.antiPing.muteRole);
       mutes.splice(mutes.indexOf(userMsg.authorId), 1);
       await kv.put(kvMutesKey, mutes);
       return true;
@@ -578,7 +575,7 @@ export async function OnMessageReactionAdd(id: string,
   const botMsg = thisData.BotReplyMsg;
   const userMsg = thisData.OriginalMsg;
 
-  const emojiAction = cfgMod.emojiActions[emoji.name];
+  const emojiAction = config.modules.antiPing.emojiActions[emoji.name];
   if (typeof emojiAction !== 'string') {
     return;
   }
@@ -605,7 +602,7 @@ export async function OnMessageReactionAdd(id: string,
     try {
       membr = guild.getMember(id);
     } catch (e) {
-      // console.error(e);
+
     }
     if (typeof membr !== 'object') {
       return false;
@@ -690,8 +687,8 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (isBanned !== null) {
     return;
   }
-  const isBan = Object.keys(data[user.id]).length >= cfgMod.pingsForAutoMute
-    || cfgMod.banOnLeave;
+  const isBan = Object.keys(data[user.id]).length >= config.modules.antiPing.pingsForAutoMute
+    || config.modules.antiPing.banOnLeave;
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
   } else {

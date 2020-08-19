@@ -1,7 +1,7 @@
-import * as config from '../config';
+import { config } from '../config';
 import * as utils from '../lib/utils';
 
-const cfgMod = config.config.modules.roleManagement;
+const cfgMod = config.modules.roleManagement;
 
 async function refreshGuildMember(gid: string, uid: string) {
   const guild = await discord.getGuild(gid);

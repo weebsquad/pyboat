@@ -8,7 +8,6 @@ import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { eventData } from './tracking';
 import { logDebug } from './events/custom';
 
-const config = conf.config.modules.logging;
 const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
 
@@ -194,7 +193,7 @@ async function parseChannelsData(
     }
     const type = el.get('_TYPE_') ?? '';
     const key = el.get('_KEY_');
-    const isAuditLog = ev.auditLogEntry instanceof discord.AuditLogEntry && config.auditLogs === true
+    const isAuditLog = ev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === true
       ? ev.data.isAuditLog(ev.auditLogEntry, key, ...ev.payload)
       : false;
     if (!el.has('_GUILD_ID_')) {
@@ -208,7 +207,7 @@ async function parseChannelsData(
       const oldD = utils2.decomposeSnowflake(ev.id).timestamp;
 
       ev.id = ev.auditLogEntry.id; // get real date while we're at it
-      /* if (config.debug) {
+      /* if (conf.config.modules.logging.debug) {
         let _d = oldD - utils2.decomposeSnowflake(ev.id).timestamp;
         if (_d > 10 || _d < -10) c onsole.log(ev.eventName, `event => auditlog reception ${_d}ms diff`);
       } */
@@ -218,7 +217,7 @@ async function parseChannelsData(
       el.set('_ACTORTAG_', utils.getActorTag(ev.auditLogEntry));
       if (reason !== '') {
         el.set('_REASON_RAW_', reason);
-        el.set('_REASON_', config.reasonSuffix.replace('_REASON_RAW_', reason));
+        el.set('_REASON_', conf.config.modules.logging.reasonSuffix.replace('_REASON_RAW_', reason));
       } else {
         el.set('_REASON_', '');
         el.set('_REASON_RAW_', '');
@@ -226,7 +225,7 @@ async function parseChannelsData(
     }
     if (el.has('_USERTAG_') && !el.has('_USER_ID_')) {
       let usrid = `${el.get('_USERTAG_')}`;
-      if (config.userTag === '_MENTION_') {
+      if (conf.config.modules.logging.userTag === '_MENTION_') {
         usrid = usrid.substr(2).slice(0, -1);
         if (usrid.includes('!')) {
           usrid = usrid.substr(1);
@@ -425,7 +424,7 @@ async function getMessages(
             }
             if (rep) {
               let usrid = `${map.get('_USERTAG_')}`;
-              if (config.userTag === '_MENTION_') {
+              if (conf.config.modules.logging.userTag === '_MENTION_') {
                 usrid = usrid.substr(2).slice(0, -1);
                 if (usrid.includes('!')) {
                   usrid = usrid.substr(1);
@@ -655,7 +654,7 @@ function combineMessages(
 
 export async function handleMultiEvents(q: Array<QueuedEvent>) {
   try {
-    if (config.enabled !== true) {
+    if (conf.config.modules.logging.enabled !== true) {
       return;
     }
     let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
@@ -684,16 +683,16 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       ) {
         continue;
       }
-      if (qev.auditLogEntry instanceof discord.AuditLogEntry && config.ignores) {
+      if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.ignores) {
         if (discord.getBotId() === qev.auditLogEntry.userId) {
-          if (config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
+          if (conf.config.modules.logging.ignores.self === true && conf.config.modules.logging.ignores.selfAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
             return;
           }
-        } else if (config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
+        } else if (conf.config.modules.logging.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
           return;
         }
       }
-      if (qev.auditLogEntry instanceof discord.AuditLogEntry && config.auditLogs === false) {
+      if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === false) {
         qev.auditLogEntry = null;
       }
       const isExt = qev.eventName === 'DEBUG' && utils.isExternalDebug();
@@ -763,7 +762,7 @@ export async function handleEvent(
   ...args: any
 ) {
   try {
-    if (config.enabled !== true) {
+    if (conf.config.modules.logging.enabled !== true) {
       return;
     }
     if (typeof guildId !== 'string') {
@@ -794,16 +793,16 @@ export async function handleEvent(
     ) {
       throw new Error(`handleEvent missing getKeys/messages definitions for event ${eventName}`);
     }
-    if (log instanceof discord.AuditLogEntry && config.ignores) {
+    if (log instanceof discord.AuditLogEntry && conf.config.modules.logging.ignores) {
       if (discord.getBotId() === log.userId) {
-        if (config.ignores.self === true && config.ignores.selfAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+        if (conf.config.modules.logging.ignores.self === true && conf.config.modules.logging.ignores.selfAuditLogs === true && utils.isIgnoredUser(log.userId)) {
           return;
         }
-      } else if (config.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+      } else if (conf.config.modules.logging.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
         return;
       }
     }
-    if (log instanceof discord.AuditLogEntry && config.auditLogs === false) {
+    if (log instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === false) {
       log = null;
     }
     let keys: any;

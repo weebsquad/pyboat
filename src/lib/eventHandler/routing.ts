@@ -27,7 +27,7 @@ import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
 import { InitializeCommands2 } from '../commands2';
 
-const { config } = conf;
+let { config } = conf;
 
 let rl = false;
 async function _Initialize() {
@@ -41,6 +41,10 @@ async function _Initialize() {
 
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
+    if (typeof config === 'undefined') {
+      await conf.InitializeConfig();
+      config = conf.config;
+    }
     if (!rl) {
       await _Initialize();
     }
@@ -104,12 +108,6 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
       ]),
       ts,
     );
-    /*
-      let ch = await discord.getGuildTextChannel(config.modules.errorsChannel);
-      if (ch !== null) {
-        let cc = new utils.FakeConsole(ch);
-        cc.log('Error at event ' + event + '\n' + err.stack);
-      } */
   }
 }
 export async function getEventAuditLogData(
@@ -129,7 +127,7 @@ export async function getEventAuditLogData(
       try {
         auditLogData = await getAuditLogData(event, tm, args);
       } catch (e) {
-        console.error(e);
+        // console.error(e);
         auditLogData = getAuditLogErrorJson(
           'Routing errored whilst pulling audit logs',
         );
@@ -511,6 +509,10 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
 }
 
 export function isModuleEnabled(modName: string) {
+  if (typeof config === 'undefined') {
+    return true;
+  }
+
   if (typeof modName !== 'string' || modName === null) {
     return false;
   }
@@ -586,7 +588,7 @@ export function EventHasAuditLog(event: string) {
 }
 
 export function isQueueEnabled() {
-  if (!config.modules.queue) {
+  if (typeof config !== 'undefined' && !config.modules.queue) {
     return false;
   }
   for (const moduleName in moduleDefinitions) {
@@ -611,7 +613,7 @@ export function isQueueEnabled() {
 }
 
 export function isAlQueueEnabled() {
-  if (!config.modules.queue) {
+  if (typeof config !== 'undefined' && !config.modules.queue) {
     return false;
   }
   for (const moduleName in moduleDefinitions) {

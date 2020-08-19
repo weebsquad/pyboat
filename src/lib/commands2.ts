@@ -215,6 +215,9 @@ export async function handleCommand(message: discord.Message) {
 }
 
 export function InitializeCommands2() {
+  if (typeof config === 'undefined') {
+    return;
+  }
   if (config.modules.commands.enabled !== true) {
     return;
   }
