@@ -517,7 +517,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         .split('\r')
         .join('');
       // dat = encodeURI(dat);
-      console.log('New Config Length', dat.length);
       // apply config defaults here
 
       // delete lengthy data lol
@@ -553,7 +552,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       }
       cfg = JSON.parse(cfg);
     }
-    // console.log('done fetch');
     if (typeof guildConfigs[guildId] !== 'undefined') {
       cfg = guildConfigs[guildId];
     }

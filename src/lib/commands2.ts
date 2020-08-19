@@ -191,7 +191,6 @@ export async function isCommand(message: discord.Message) {
   for (const key in cmdgroups) {
     const obj: discord.command.CommandGroup = cmdgroups[key];
     const ret = await obj.checkMessage(message);
-    // console.log(`Checking ${message.content} against`, obj, ` returned ${ret}`);
     if (ret === true) {
       return true;
     }
@@ -233,7 +232,6 @@ export function InitializeCommands2() {
     const obj = commandsTable[key];
     let count = 0;
     if (typeof obj.InitializeCommands === 'function') {
-      // console.log('initializing cmds', key);
       const newgroups = obj.InitializeCommands();
       if (Array.isArray(newgroups)) {
         newgroups.map((e) => {
@@ -281,7 +279,6 @@ export function InitializeCommands2() {
     }
     const obj: any = moduleDefinitions[key];
     if (typeof obj.InitializeCommands === 'function') {
-      // console.log('initializing cmds mod', key);
       const newgroups = obj.InitializeCommands();
       if (Array.isArray(newgroups)) {
         newgroups.map((e) => {
@@ -296,7 +293,6 @@ export function InitializeCommands2() {
       for (const keyVar in obj) {
         const objCmd = obj[keyVar];
         if (objCmd instanceof discord.command.CommandGroup) {
-        // console.log(key, keyVar, objCmd);
           cmdgroups.push(objCmd);
           continue;
         }

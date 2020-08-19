@@ -58,7 +58,6 @@ export function getLogChannels(gid: string, event: string, type: string) {
       mp[key] = conf.globalConfig.masterChannel[key];
     }
   }
-  console.log(gid, mp);
   for (const k in mp) {
     const v = mp[k];
     if (
@@ -90,7 +89,6 @@ async function sendInLogChannel(
   if (thisGuild === null) {
     return;
   }
-  console.log(messages);
   const botAvatar = await discord.getBotUser();
   for (const [chId, opts] of messages) {
     const gconf = conf.config;
@@ -850,9 +848,7 @@ export async function handleEvent(
     );
     if (isExt) {
       const chans = await parseChannelsData(obj);
-      console.log(chans);
       let messages = await getMessages(guildId, chans, obj);
-      console.log(messages);
       messages = combineMessages(messages);
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;
