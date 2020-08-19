@@ -372,147 +372,6 @@ export const guildConfigs = <any>{
       },
     },
   },
-
-  '307927177154789386': { // metals test srv
-    levels: {
-      users: {
-        344837487526412300: 1337, // Metal
-        // '343241331746930699': 100, // metals alt
-      },
-      roles: {
-        // '691950782949490698': 50, // admin role
-        '348158205362438155': 50, // Bot Role
-      },
-    },
-    modules: {
-      queue: true, // eventhandler auto queueing on ratelimits
-      logging: { // event logging module
-        enabled: true,
-        debug: true,
-        auditLogs: true,
-        logChannels: {
-          '740997800749170698': chPlain(['*'], [], true, true),
-          '742317770875863051': chEmbed('embeds test', ['*'], [], '', 0x11c6e2, 'https://discord.com/api/webhooks/742321345567784980/d6rk3anTgA6njmcl-hw2mR-d9h2NnOf_k4YyaeoIU0L1kaWYXIFmyPJmQtNkMxVhKTL7', true, true),
-          // ['735780975145123901', chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, true)],
-        },
-        ignores: {
-          channels: [],
-          users: [],
-          self: false,
-          selfAuditLogs: false,
-          extendUsersToAuditLogs: false,
-          blacklistedUsers: false,
-          logChannels: true,
-        },
-        messages: messages.messages, // defaults
-        messagesAuditLogs: messages.messagesAuditLogs, // defaults
-        userTag: '_MENTION_',
-        actorTag: '_MENTION_',
-        reasonSuffix: ' with reason `_REASON_RAW_`',
-        suffixReasonToAuditlog: true,
-        timezone: 'Etc/GMT+1',
-      },
-      commands: {
-        enabled: true,
-        prefix: ['$'],
-        allowMentionPrefix: true,
-        hideNoAccess: false,
-        overrides: {
-
-        },
-      },
-      translation: {
-        enabled: true,
-        googleApi: {
-          key: 'AIzaSyAUxN0Q-BTzrw6Hs_BXaX3YbZJsWSekNMk',
-        },
-      },
-      utilities: {
-        enabled: true,
-        snipe: {
-          enabled: true,
-          delay: 2 * 60 * 1000,
-        },
-        persist: {
-          enabled: true,
-          levels: {
-            1000: {
-              roles: true,
-              nick: true,
-              mute: true,
-              deaf: true,
-              roleIncludes: [],
-              roleExcludes: [],
-            },
-          },
-          duration: 31 * 24 * 60 * 60 * 1000,
-          saveOnBan: false,
-        },
-      },
-      roleManagement: {
-        enabled: false,
-        lowestHoistRole: '',
-        botRoleRP: '',
-        botRole: '',
-        memberRole: '',
-        memberRoleRP: '',
-      },
-      antiPing: { // owo
-        enabled: true,
-        actualCaughtMessage: 'no pings',
-        caughtMessages: ['ok buddy', 'nonoononoon', 'bad', 'XDDDDD'],
-        instaDeletePings: true,
-        banOnLeave: true,
-        pingsForAutoMute: 3,
-        emojiActions: {
-          '👌': 'IgnoreOnce',
-          '☑️': 'Ignore',
-          '🔇': 'Mute',
-          '👢': 'Kick',
-          '🔨': 'Ban',
-        },
-        targets: {
-          users: {
-            include: ['344837487526412300'],
-            exclude: [],
-          },
-          roles: {
-            include: [],
-            exclude: [],
-          },
-          channels: {
-            include: [],
-            exclude: [],
-          },
-          categories: {
-            include: ['357475342920974336'],
-            exclude: [],
-          },
-        },
-        staff: Ranks.Moderator,
-        bypass: {
-          users: [],
-          roles: [],
-          level: Ranks.Moderator,
-        },
-        muteRole: '575616840588460032',
-      },
-      counting: { // counting module
-        enabled: false,
-        channels: ['740880532325531659'],
-        keyCount: 'counting_current',
-        keyLastUser: 'counting_lastuser',
-        keyLastMid: 'counting_lastmid',
-        autoPins: {
-          single: [1, 69, 100, 200, 420, 666, 1000, 1337, 6969, 9001, 10000, 99999], // Individual === check
-          repeating: [1000], // Modulus check
-          repeatingLast: [69], // Everytime these digits are found on last X of current number, it will trigger
-        },
-        useWebhook: false,
-        webhook: '',
-      },
-    },
-  },
 };
 
 export function getGuildConfig(gid: string) {
@@ -522,7 +381,24 @@ export function getGuildConfig(gid: string) {
   return guildConfigs[gid];
 }
 
-async function loadConfigDefaults(cfg: any) {
+function recursiveDefault(source: any, dest: any) {
+  for (const key in source) {
+    const obj = source[key];
+    if (obj !== null && typeof obj === 'object') {
+      if (typeof (dest[key]) !== 'object') {
+        dest[key] = {};
+      }
+      dest[key] = recursiveDefault(obj, dest[key]);
+    }
+    if (dest[key] === undefined) {
+      dest[key] = obj;
+    }
+  }
+  return dest;
+}
+
+function loadConfigDefaults(cfg: any) {
+  cfg = recursiveDefault(defaultConfig, cfg);
   return cfg;
 }
 export const guildId = discord.getGuildId();
@@ -535,15 +411,36 @@ export async function InitializeConfig(bypass = false) {
       if (typeof config !== 'undefined') {
         break;
       }
-      await sleep(200);
+      await sleep(400);
     }
     return config;
   }
   config = undefined;
   loadingConf = true;
-  await sleep(2000);
-  config = getGuildConfig(guildId);
-  // apply config defaults here
+  // await sleep(2000);
+  let cfg: any = await pylon.kv.get('__guildConfig');
+  if (typeof (cfg) === 'string') {
+    if (cfg.includes('{') || cfg.includes('%')) {
+      if (cfg.includes('%')) {
+        try {
+          cfg = decodeURI(cfg);
+        } catch (e) {}
+      }
+    } else {
+      cfg = atob(cfg);
+      if (cfg.includes('%')) {
+        try {
+          cfg = decodeURI(cfg);
+        } catch (e) {}
+      }
+    }
+    cfg = JSON.parse(cfg);
+  }
+  if (typeof guildConfigs[guildId] !== 'undefined') {
+    cfg = guildConfigs[guildId];
+  }
+  config = loadConfigDefaults(cfg);
+  console.log('loaded cfg', config);
   return config;
 }
 
@@ -634,7 +531,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     // return config to user
     // console.log('received config grab msg!');
     let cfg: any = await pylon.kv.get('__guildConfig');
-    // console.log(cfg);
     if (typeof (cfg) === 'string') {
       if (cfg.includes('{') || cfg.includes('%')) {
         if (cfg.includes('%')) {
