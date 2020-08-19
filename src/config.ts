@@ -440,7 +440,6 @@ export async function InitializeConfig(bypass = false) {
     cfg = guildConfigs[guildId];
   }
   config = loadConfigDefaults(cfg);
-  console.log('loaded cfg', config);
   return config;
 }
 
@@ -505,20 +504,22 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg === 'update') {
     try {
-      console.log('received config update msg!');
       const dat = ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer());
+      JSON.parse(dat);
       dat.split('\n').join('').split(' ').join('')
         .split('\t')
         .join('')
         .split('\r')
         .join('');
       // dat = encodeURI(dat);
-      console.log('Length', dat.length);
+      console.log('New Config Length', dat.length);
       // apply config defaults here
 
       // delete lengthy data lol
       await message.delete();
       await pylon.kv.put('__guildConfig', dat);
+      await InitializeConfig(true);
+      // InitializeCommands2();
       await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
       console.error(e);
@@ -529,7 +530,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     }
   } else if (isCfg === 'check') {
     // return config to user
-    // console.log('received config grab msg!');
     let cfg: any = await pylon.kv.get('__guildConfig');
     if (typeof (cfg) === 'string') {
       if (cfg.includes('{') || cfg.includes('%')) {
