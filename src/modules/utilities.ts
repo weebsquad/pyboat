@@ -134,7 +134,6 @@ export async function AL_OnMessageDelete(
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
-  console.log('snipe', log);
   if (
     msg === null
     || log instanceof discord.AuditLogEntry

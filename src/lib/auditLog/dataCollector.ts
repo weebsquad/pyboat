@@ -364,7 +364,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
         if (typeof (newCount) === 'number') {
           newCount = newCount.toString();
         }
-        console.log(log.id, 'diff check ', oldCount, newCount);
         if (store.id === log.id && oldCount !== newCount) {
           return true;
         }
