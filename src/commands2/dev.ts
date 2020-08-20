@@ -89,15 +89,16 @@ export function InitializeCommands() {
       if (code === null || code.length < 3) {
         throw new TypeError('No eval argument specified');
       }
+      const guild = await msg.getGuild();
       // eslint-disable-next-line
     const AsyncFunction = Object.getPrototypeOf(async () => {})
         .constructor;
       const fakeConsole = new utils.FakeConsole(await msg.getChannel());
-      const _args = ['console', 'msg', 'discord', 'pylon', 'fetch'];
+      const _args = ['console', 'msg', 'discord', 'pylon', 'fetch', 'guild'];
       try {
         const func = new AsyncFunction(..._args, code);
 
-        await func(fakeConsole, msg, discord, pylon, fetch);
+        await func(fakeConsole, msg, discord, pylon, fetch, guild);
       } catch (e) {
         fakeConsole.log(e);
       }
