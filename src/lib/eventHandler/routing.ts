@@ -43,7 +43,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
     if (typeof config === 'undefined') {
       const ret = await conf.InitializeConfig();
-      if(ret === false) {
+      if (ret === false) {
         return;
       }
       config = conf.config;

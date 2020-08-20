@@ -4,7 +4,7 @@ import { config, globalConfig, Ranks } from '../config';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
-export let cmdgroups = [];
+export const cmdgroups = [];
 
 function getCmdChannels() {
   if (typeof (config) === 'undefined') {
@@ -226,7 +226,7 @@ export function InitializeCommands2() {
   }
   if (cmdgroups.length !== 0) {
     return;
-    //cmdgroups = [];
+    // cmdgroups = [];
   }
   // raw commands!
   for (const key in commandsTable) {

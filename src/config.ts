@@ -265,7 +265,7 @@ export async function InitializeConfig(bypass = false) {
   }
   if (!cfg) {
     return false;
-    //cfg = JSON.parse(JSON.stringify(defaultConfig));
+    // cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
   config = loadConfigDefaults(cfg);
   return config;
@@ -341,7 +341,11 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         .join('');
       // dat = encodeURI(dat);
       const len = dat.length;
-      await message.delete();
+      try {
+        await message.delete();
+      } catch (e) {
+        await message.reply('Couldnt delete your message! You might want to delete it yourself.');
+      }
       await pylon.kv.put('__guildConfig', dat);
       await InitializeConfig(true);
       await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len} bytes)`);
