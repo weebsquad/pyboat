@@ -356,10 +356,18 @@ export const auditLogDefinitions: {[key: string]: any} = {
         return false;
       }
       if (typeof store === 'object') {
-        if (store.id === log.id && store.options.count !== log.options.count) {
+        let oldCount: any = store.options.count;
+        if (typeof (oldCount) === 'number') {
+          oldCount = oldCount.toString();
+        }
+        let newCount: any = log.options.count;
+        if (typeof (newCount) === 'number') {
+          newCount = newCount.toString();
+        }
+        console.log(log.id, 'diff check ', oldCount, newCount);
+        if (store.id === log.id && oldCount !== newCount) {
           return true;
         }
-        // if (store.options.count !== log.options.count) return true;
         return false;
       }
 

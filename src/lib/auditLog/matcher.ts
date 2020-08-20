@@ -133,6 +133,10 @@ async function savePoolEntry(entry: discord.AuditLogEntry) {
     ) {
       _en = JSON.parse(JSON.stringify(entry));
       _en.options.count += 1;
+      if (_en.options.count > entry.options.count) {
+        _en.options.count = entry.options.count;
+      }
+      console.log(`count diff ${_en.options.count}/${entry.options.count}`);
     }
     if (_en === undefined) {
       _en = entry;

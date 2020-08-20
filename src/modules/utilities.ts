@@ -57,7 +57,7 @@ async function restorePersistData(member: discord.GuildMember) {
   if (thisconf === null) {
     return false;
   }
-  console.log(thisconf);
+  // console.log(thisconf);
   const guild = await member.getGuild();
   const me = await guild.getMember(discord.getBotId());
   const myrl = await utils.getMemberHighestRole(me);
@@ -134,6 +134,7 @@ export async function AL_OnMessageDelete(
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
+  console.log('snipe', log);
   if (
     msg === null
     || log instanceof discord.AuditLogEntry
@@ -149,9 +150,9 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
-  if (!utils.canMemberRun(Ranks.Guest, msg.member)) {
+  /* if (!utils.canMemberRun(Ranks.Guest, msg.member)) {
     return;
-  }
+  } */
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
   if (diff >= config.modules.utilities.snipe.delay) {
