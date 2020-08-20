@@ -222,13 +222,13 @@ export let config: any;
 let loadingConf = false;
 export async function InitializeConfig(bypass = false) {
   if (loadingConf === true && !bypass) {
-    while (typeof config === 'undefined') {
-      if (typeof config !== 'undefined') {
+    while (typeof config === 'undefined' && loadingConf) {
+      if (typeof config !== 'undefined' || !loadingConf) {
         break;
       }
       await sleep(400);
     }
-    return config;
+    return typeof config !== 'undefined' ? config : false;
   }
   config = undefined;
   loadingConf = true;
@@ -264,7 +264,8 @@ export async function InitializeConfig(bypass = false) {
     cfg = guildConfigs[guildId];
   }
   if (!cfg) {
-    cfg = JSON.parse(JSON.stringify(defaultConfig));
+    return false;
+    //cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
   config = loadConfigDefaults(cfg);
   return config;
@@ -343,7 +344,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.delete();
       await pylon.kv.put('__guildConfig', dat);
       await InitializeConfig(true);
-      // InitializeCommands2();
       await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len} bytes)`);
     } catch (e) {
       console.error(e);

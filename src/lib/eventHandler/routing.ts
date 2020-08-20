@@ -42,7 +42,10 @@ async function _Initialize() {
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
     if (typeof config === 'undefined') {
-      await conf.InitializeConfig();
+      const ret = await conf.InitializeConfig();
+      if(ret === false) {
+        return;
+      }
       config = conf.config;
     }
     if (!rl) {

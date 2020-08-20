@@ -225,7 +225,8 @@ export function InitializeCommands2() {
     return;
   }
   if (cmdgroups.length !== 0) {
-    cmdgroups = [];
+    return;
+    //cmdgroups = [];
   }
   // raw commands!
   for (const key in commandsTable) {
