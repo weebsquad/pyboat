@@ -94,7 +94,7 @@ export function checkOverrides(level: number, ovtext: string) {
 export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
-  
+
   /*
   let anyNonSilent = false;
   args.forEach((level: any) => {
