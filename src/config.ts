@@ -263,6 +263,7 @@ export async function InitializeConfig(bypass = false) {
   if (typeof guildConfigs[guildId] !== 'undefined') {
     cfg = guildConfigs[guildId];
   }
+  if(!cfg) cfg = JSON.parse(JSON.stringify(defaultConfig));
   config = loadConfigDefaults(cfg);
   return config;
 }
@@ -372,10 +373,11 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     if (typeof guildConfigs[guildId] !== 'undefined') {
       cfg = guildConfigs[guildId];
     }
-    cfg = JSON.parse(JSON.stringify(cfg));
+    
     if (!cfg) {
-      return;
+      cfg = defaultConfig;
     }
+    cfg = JSON.parse(JSON.stringify(cfg));
     if (cfg.modules && cfg.modules.logging) {
       cfg.modules.logging.messages = undefined;
       cfg.modules.logging.messagesAuditLogs = undefined;
