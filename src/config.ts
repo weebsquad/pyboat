@@ -67,7 +67,7 @@ const defaultConfig = { // for non-defined configs!
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       hideNoAccess: false,
       overrides: {
-        'module.utilities': {
+        /* 'module.utilities': {
           level: 0,
         },
         'group.backup': {
@@ -75,7 +75,7 @@ const defaultConfig = { // for non-defined configs!
         },
         'command.ping': {
           level: 10,
-        },
+        }, */
       },
     },
     translation: { // translation module, react with flags on messages to trigger translation for them
@@ -100,23 +100,23 @@ const defaultConfig = { // for non-defined configs!
         // configs based on the level of the members (before leaving)
         levels: {
           // config applied to anyone from level 101 to 1000
-          1000: {
+          /* 1000: {
             roles: true,
             nick: true,
             mute: true,
             deaf: true,
             roleIncludes: [],
             roleExcludes: [],
-          },
+          }, */
           // config applied to anyone from level 0 to 100
-          100: {
+          /* 100: {
             roles: true,
             nick: true,
             mute: true,
             deaf: true,
             roleIncludes: [],
             roleExcludes: [],
-          },
+          }, */
         },
         duration: 31 * 24 * 60 * 60 * 1000,
         saveOnBan: false,
@@ -144,11 +144,11 @@ const defaultConfig = { // for non-defined configs!
       pingsForAutoMute: 3,
       // :eyes:
       emojiActions: {
-        '👌': 'IgnoreOnce',
+        /* '👌': 'IgnoreOnce',
         '☑️': 'Ignore',
         '🔇': 'Mute',
         '👢': 'Kick',
-        '🔨': 'Ban',
+        '🔨': 'Ban', */
       },
       // targets for illegal mentions - NOTE: BOTH users/roles AND channels/categories need to be defined for this to work!
       targets: {
