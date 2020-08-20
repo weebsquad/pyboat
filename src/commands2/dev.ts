@@ -1,9 +1,10 @@
-import { globalConfig } from '../config';
+import { globalConfig, InitializeConfig } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
+import { ChannelConfig } from '../modules/logging/classes';
 
 const F = discord.command.filters;
 const kv = new pylon.KVNamespace('commands_dev');
@@ -114,7 +115,11 @@ export function InitializeCommands() {
                 });
                 await msg.reply('done');
               });
-
+  cmdGroup.raw('reload',
+               async (msg) => {
+                 await InitializeConfig(true);
+                 await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`);
+               });
   cmdGroup.subcommand('test', (sub) => {
     sub.raw('type', async (m) => {
       await m.reply({ content: `${typeof m}` });

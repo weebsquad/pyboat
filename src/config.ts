@@ -235,7 +235,10 @@ export async function InitializeConfig(bypass = false) {
   // await sleep(2000);
   try {
     const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
-    console.log(globs);
+    for (const k in globs) {
+      const obj = globs[k];
+      globalConfig[k] = obj;
+    }
   } catch (e) {
     console.error(e);
   }
