@@ -319,7 +319,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_TYPE_', 'LEFT_CHANNEL'],
-      ['_CHANNEL_ID_', voiceState.channelId],
+      ['_CHANNEL_ID_', oldVoiceState.channelId],
       [
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
@@ -340,12 +340,12 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_TYPE_', 'MOVED_CHANNEL'],
-      ['_OLD_CHANNEL_ID_', voiceState.channelId],
+      ['_OLD_CHANNEL_ID_', oldVoiceState.channelId],
       [
         '_NEW_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
       ],
-      ['_NEW_CHANNEL_ID_', oldVoiceState.channelId],
+      ['_NEW_CHANNEL_ID_', voiceState.channelId],
       [
         '_OLD_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(oldChan.name)}`,
