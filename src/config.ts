@@ -1,8 +1,5 @@
 /* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
-import { ChannelConfig, chPlain, chEmbed } from './modules/logging/classes';
-import * as utils from './lib/utils';
-
 // levels
 export enum Ranks {
     'Guest' = 0,
@@ -12,16 +9,6 @@ export enum Ranks {
     'Owner' = 200,
 }
 export const globalConfig = <any>{
-  // Global Admin
-  admins: [
-    '344837487526412300', // metal#0666
-  ],
-  // used for logging debugging mostly
-  masterGuild: '565323632751149103',
-  masterChannel: {
-    '741062982196527142': chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false),
-  },
-  // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
@@ -29,15 +16,6 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  // userid blacklist (no commands usage, mostly)
-  blacklist: [
-    // '343241331746930699', // 8888#8888 (testing)
-  ],
-  // userids of bot accounts that can use pyboat commands!
-  botsCommands: [],
-  // prefix for dev commands (included as additional prefix in every command in case users change the default one)
-  devPrefix: 'p/',
-
 };
 
 const defaultConfig = { // for non-defined configs!
@@ -218,13 +196,6 @@ const defaultConfig = { // for non-defined configs!
 };
 export const guildConfigs = <any>{};
 
-export function getGuildConfig(gid: string) {
-  if (typeof (guildConfigs[gid]) === 'undefined') {
-    return defaultConfig;
-  }
-  return guildConfigs[gid];
-}
-
 function recursiveDefault(source: any, dest: any) {
   for (const key in source) {
     const obj = source[key];
@@ -262,6 +233,12 @@ export async function InitializeConfig(bypass = false) {
   config = undefined;
   loadingConf = true;
   // await sleep(2000);
+  try {
+    const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
+    console.log(globs);
+  } catch (e) {
+    console.error(e);
+  }
   let cfg: any = await pylon.kv.get('__guildConfig');
   if (typeof (cfg) === 'string') {
     if (cfg.includes('{') || cfg.includes('%')) {

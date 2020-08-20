@@ -1,30 +1,30 @@
-  {
-  "admins": [
-    "344837487526412300"
-  ],
-  "masterGuild": "565323632751149103",
-  "masterChannel": {
-    "735875360943767562": {
-        "description": "",
-        "embed": false,
-        "embedColor": 2263842,
-        "footerAvatar": "",
-        "webhookUrl": "",
-        "showEventName": true,
-        "showTimestamps": true,
-        "scopes": {
-          "include": [
-            "DEBUG"
-          ],
-          "exclude": [
-            "DEBUG.CRON_RAN",
-            "DEBUG.RAW_EVENT",
-            "DEBUG.BOT_STARTED",
-          ]
-        }
-      }
-  },
-  "blacklist": [],
-  "botsCommands": [],
-  "devPrefix": "p/"
+{
+	"admins": [
+		"344837487526412300"
+	],
+	"masterGuild": "565323632751149103",
+	"masterChannel": {
+		"735875360943767562": {
+			"description": "",
+			"embed": false,
+			"embedColor": 2263842,
+			"footerAvatar": "",
+			"webhookUrl": "",
+			"showEventName": true,
+			"showTimestamps": true,
+			"scopes": {
+				"include": [
+					"DEBUG"
+				],
+				"exclude": [
+					"DEBUG.CRON_RAN",
+					"DEBUG.RAW_EVENT",
+					"DEBUG.BOT_STARTED"
+				]
+			}
+		}
+	},
+	"blacklist": [],
+	"botsCommands": [],
+	"devPrefix": "p/"
 }
