@@ -114,6 +114,7 @@ export function InitializeCommands() {
     if (guild === null) {
       throw new Error('guild not found');
     }
+
     let icon = guild.getIconUrl();
     if (icon === null) {
       icon = '';
@@ -257,6 +258,11 @@ export function InitializeCommands() {
         offline: 0,
       },
     };
+    
+
+    
+    
+    async function calcMembers() {
     for await (const member of guild.iterMembers()) {
       const usr = member.user;
       if (!usr.bot) {
@@ -291,6 +297,14 @@ export function InitializeCommands() {
 
       memberCounts.presences[pres.status] += 1;
     }
+  }
+  if(guild.memberCount > 60) {
+    await pylon.requestCpuBurst(async function() {
+      await calcMembers();
+    }, 3000);
+  } else {
+    await calcMembers();
+  }
     let prestext = '';
     let nolb = false;
     for (const key in memberCounts.presences) {

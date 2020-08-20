@@ -33,6 +33,7 @@ async function savePersistData(member: discord.GuildMember) {
   if (!config.modules.utilities.persist || config.modules.utilities.persist.enabled !== true) {
     return;
   }
+  if(member.roles.length === 0 && member.nick === null) return;
   await persistkv.put(member.user.id, {
     roles: member.roles,
     nick: member.nick,
