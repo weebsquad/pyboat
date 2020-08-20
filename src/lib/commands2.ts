@@ -94,9 +94,7 @@ export function checkOverrides(level: number, ovtext: string) {
 export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
-  if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
-    level = checkOverrides(level, overrideableInfo);
-  }
+  
   /*
   let anyNonSilent = false;
   args.forEach((level: any) => {
@@ -126,6 +124,9 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       return ownr || ov;
     }, 'Must be the server owner');
   } else {
+    if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
+      level = checkOverrides(level, overrideableInfo);
+    }
     let _f = F.custom(async (msg) => {
       const ownr = await filterActualOwner(msg);
       const val = await filterLevel(msg, level);
