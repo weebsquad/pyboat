@@ -66,7 +66,7 @@ export async function resolveQueue() {
   const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   const cpuT = usedCpu + neededCpuTime;
   try {
-    if (cpuT >= 100) {
+    if (cpuT > 100) {
       try {
         await pylon.requestCpuBurst(async () => {
           await routing.ExecuteQueuedEvents(procQueue);
