@@ -295,70 +295,72 @@ export function InitializeCommands() {
         memberCounts.presences[pres.status] += 1;
       }
     }
-    if (guild.memberCount > 60) {
-      await pylon.requestCpuBurst(async () => {
-        await calcMembers();
-      }, 3000);
-    } else {
+    if (guild.memberCount < 60) {
       await calcMembers();
-    }
-    let prestext = '';
-    let nolb = false;
-    for (const key in memberCounts.presences) {
-      const obj = memberCounts.presences[key];
-      let emj = '';
-      if (key === 'streaming') {
-        emj = '<:streaming:735793095597228034>';
-      }
-      if (key === 'game') {
-        emj = discord.decor.Emojis.VIDEO_GAME;
-      }
-      if (key === 'watching') {
-        emj = '<:watching:735793898051469354>';
-      }
-      if (key === 'listening') {
-        emj = '<:spotify:735788337897406535>';
-      }
-      if (key === 'online') {
-        emj = '<:status_online:735780704167919636>';
-      }
-      if (key === 'dnd') {
-        emj = '<:status_busy:735780703983239168>';
-      }
-      if (key === 'idle') {
-        emj = '<:status_away:735780703710478407>';
-      }
-      if (key === 'offline') {
-        emj = '<:status_offline:735780703802753076>';
-      }
+      let prestext = '';
+      let nolb = false;
+      for (const key in memberCounts.presences) {
+        const obj = memberCounts.presences[key];
+        let emj = '';
+        if (key === 'streaming') {
+          emj = '<:streaming:735793095597228034>';
+        }
+        if (key === 'game') {
+          emj = discord.decor.Emojis.VIDEO_GAME;
+        }
+        if (key === 'watching') {
+          emj = '<:watching:735793898051469354>';
+        }
+        if (key === 'listening') {
+          emj = '<:spotify:735788337897406535>';
+        }
+        if (key === 'online') {
+          emj = '<:status_online:735780704167919636>';
+        }
+        if (key === 'dnd') {
+          emj = '<:status_busy:735780703983239168>';
+        }
+        if (key === 'idle') {
+          emj = '<:status_away:735780703710478407>';
+        }
+        if (key === 'offline') {
+          emj = '<:status_offline:735780703802753076>';
+        }
 
-      if (obj > 0) {
-        if (
-          key !== 'streaming'
+        if (obj > 0) {
+          if (
+            key !== 'streaming'
         && key !== 'listening'
         && key !== 'watching'
         && key !== 'game'
         && !prestext.includes('  󠇰')
         && !nolb
-        ) {
-          if (prestext.length === 0) {
-            nolb = true;
-          } else {
-            prestext += '\n  󠇰'; // add linebreak
+          ) {
+            if (prestext.length === 0) {
+              nolb = true;
+            } else {
+              prestext += '\n  󠇰'; // add linebreak
+            }
           }
+          prestext += `\n ${emj} **-** ${obj}`;
         }
-        prestext += `\n ${emj} **-** ${obj}`;
       }
-    }
-    let bottxt = `\n <:bot:735780703945490542> **-** ${memberCounts.bot}
+
+      let bottxt = `\n <:bot:735780703945490542> **-** ${memberCounts.bot}
     󠇰`;
-    if (memberCounts.bot <= 0) {
-      bottxt = '';
-    }
-    desc += `
+      if (memberCounts.bot <= 0) {
+        bottxt = '';
+      }
+      desc += `
 
 
 **❯ **Members ⎯ ${guild.memberCount}${bottxt}${prestext}`;
+    } else {
+      desc += `
+
+
+**❯ **Members ⎯ ${guild.memberCount}`;
+    }
     embed.setDescription(desc);
     const editer = await edmsg;
     await editer.edit({ content: '', embed });

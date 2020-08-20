@@ -57,15 +57,19 @@ async function restorePersistData(member: discord.GuildMember) {
   if (thisconf === null) {
     return false;
   }
+  console.log(thisconf);
   const guild = await member.getGuild();
   const me = await guild.getMember(discord.getBotId());
   const myrl = await utils.getMemberHighestRole(me);
   const theirrl = await utils.getMemberHighestRole(member);
   const rl = (await guild.getRoles()).filter((e) => dt.roles.includes(e.id) && e.position < myrl.position && !e.managed && e.id !== e.guildId).map((e) => e.id).filter((e) => {
-    if (thisconf.roleIncludes.length > 0 && !thisconf.roleIncludes.includes(e)) {
+    if (Array.isArray(thisconf.roleIncludes) && thisconf.roleIncludes.length > 0 && !thisconf.roleIncludes.includes(e)) {
       return false;
     }
-    return !thisconf.roleExcludes.includes(e);
+    if (Array.isArray(thisconf.roleExcludes)) {
+      return !thisconf.roleExcludes.includes(e);
+    }
+    return true;
   });
   member.roles.forEach((e) => {
     if (!rl.includes(e) && e !== guild.id) {
