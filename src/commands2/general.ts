@@ -258,53 +258,50 @@ export function InitializeCommands() {
         offline: 0,
       },
     };
-    
 
-    
-    
     async function calcMembers() {
-    for await (const member of guild.iterMembers()) {
-      const usr = member.user;
-      if (!usr.bot) {
-        memberCounts.human += 1;
-      } else {
-        memberCounts.bot += 1;
-        continue;
-      }
-      const pres = await member.getPresence();
-      if (
-        pres.activities.find((e) => e.type === discord.Presence.ActivityType.STREAMING)
-      ) {
-        memberCounts.presences.streaming += 1;
-      }
+      for await (const member of guild.iterMembers()) {
+        const usr = member.user;
+        if (!usr.bot) {
+          memberCounts.human += 1;
+        } else {
+          memberCounts.bot += 1;
+          continue;
+        }
+        const pres = await member.getPresence();
+        if (
+          pres.activities.find((e) => e.type === discord.Presence.ActivityType.STREAMING)
+        ) {
+          memberCounts.presences.streaming += 1;
+        }
 
-      if (
-        pres.activities.find((e) => e.type === discord.Presence.ActivityType.LISTENING)
-      ) {
-        memberCounts.presences.listening += 1;
-      }
+        if (
+          pres.activities.find((e) => e.type === discord.Presence.ActivityType.LISTENING)
+        ) {
+          memberCounts.presences.listening += 1;
+        }
 
-      if (
-        pres.activities.find((e) => e.type === discord.Presence.ActivityType.GAME)
-      ) {
-        memberCounts.presences.game += 1;
-      }
-      if (
-        pres.activities.find((e) => e.type === discord.Presence.ActivityType.WATCHING)
-      ) {
-        memberCounts.presences.watching += 1;
-      }
+        if (
+          pres.activities.find((e) => e.type === discord.Presence.ActivityType.GAME)
+        ) {
+          memberCounts.presences.game += 1;
+        }
+        if (
+          pres.activities.find((e) => e.type === discord.Presence.ActivityType.WATCHING)
+        ) {
+          memberCounts.presences.watching += 1;
+        }
 
-      memberCounts.presences[pres.status] += 1;
+        memberCounts.presences[pres.status] += 1;
+      }
     }
-  }
-  if(guild.memberCount > 60) {
-    await pylon.requestCpuBurst(async function() {
+    if (guild.memberCount > 60) {
+      await pylon.requestCpuBurst(async () => {
+        await calcMembers();
+      }, 3000);
+    } else {
       await calcMembers();
-    }, 3000);
-  } else {
-    await calcMembers();
-  }
+    }
     let prestext = '';
     let nolb = false;
     for (const key in memberCounts.presences) {
