@@ -12,6 +12,15 @@ export enum Ranks {
     'Owner' = 200,
 }
 export const globalConfig = <any>{
+  // Global Admin
+  admins: [
+    '344837487526412300', // metal#0666
+  ],
+  // used for logging debugging mostly
+  masterGuild: '565323632751149103',
+  masterChannel: {
+    '741062982196527142': chPlain(['DEBUG'], ['DEBUG.RAW_EVENT', 'DEBUG.CRON_RAN', 'DEBUG.BOT_STARTED'], true, false),
+  },
   // where to send crossposted debug logs
   masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
   metalApi: {
@@ -19,6 +28,15 @@ export const globalConfig = <any>{
     url: 'https://metalruller.com/api/discordMiddleman.php',
   },
   ranks: Ranks,
+  Ranks, // lol
+  // userid blacklist (no commands usage, mostly)
+  blacklist: [
+    // '343241331746930699', // 8888#8888 (testing)
+  ],
+  // userids of bot accounts that can use pyboat commands!
+  botsCommands: [],
+  // prefix for dev commands (included as additional prefix in every command in case users change the default one)
+  devPrefix: 'p/',
 
 };
 
