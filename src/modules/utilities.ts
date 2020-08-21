@@ -167,7 +167,7 @@ export function InitializeCommands() {
 
   const _groupOptions = {
     description: 'Utility Commands',
-    filters: c2.getFilters('utilities', Ranks.Guest)
+    filters: c2.getFilters('utilities', Ranks.Guest),
   };
 
   const optsGroup = c2.getOpts(
@@ -260,7 +260,6 @@ export function InitializeCommands() {
                           });
     });
   }
-
 
   // snowflake
   cmdGroup.on('snowflake',

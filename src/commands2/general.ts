@@ -11,7 +11,7 @@ const kv = new pylon.KVNamespace('commands_general');
 export function InitializeCommands() {
   const _groupOptions = {
     description: 'General commands',
-    filters: c2.getFilters('commands', Ranks.Guest)
+    filters: c2.getFilters('commands', Ranks.Guest),
   };
 
   const optsGroup = c2.getOpts(
@@ -24,13 +24,13 @@ export function InitializeCommands() {
                  await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
                });
 
-               cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
-                const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
-                const msgd = new Date();
-                const edmsg = await msg.reply('<a:loading:735794724480483409>');
-                const td = new Date().getTime() - msgd.getTime();
-                await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
-              });
+  cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
+    const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
+    const msgd = new Date();
+    const edmsg = await msg.reply('<a:loading:735794724480483409>');
+    const td = new Date().getTime() - msgd.getTime();
+    await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+  });
 
   /* export const rolelb = discord.command.rawHandler(
   async (message) => {
