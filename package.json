@@ -1,6 +1,6 @@
 {
   "name": "pyboat",
-  "version": "1.3.7",
+  "version": "1.0.0",
   "description": "yes",
   "scripts": {
     "build": "typings install && rollup -c cd/rollup.config.js",

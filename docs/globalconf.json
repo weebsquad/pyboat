@@ -26,5 +26,6 @@
 	},
 	"blacklist": [],
 	"botsCommands": [],
-	"devPrefix": "p/"
+	"devPrefix": "p/",
+	"disabled": false
 }

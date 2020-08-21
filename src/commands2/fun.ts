@@ -14,7 +14,7 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-
+  /*
   cmdGroup.on('count',
               (ctx) => ({ countArg: ctx.stringOptional() }),
               async (msg, { countArg }) => {
@@ -84,6 +84,6 @@ export function InitializeCommands() {
                     `Error ${result.error.code}: ${result.error.message}`,
                   );
                 }
-              });
+              }); */
   return cmdGroup;
 }

@@ -106,13 +106,16 @@ _dep.forEach((deployment_id) => {
 
   // eslint-disable-next-line consistent-return
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
+    // if (!isGh) {
+    //   console.log(r);
+    // }
     try {
       const txtJson = r.json();
       return txtJson;
     } catch (e) {
       console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
       if (!isGh) {
-        console.error(r);
+        console.error(`Publish error: ${r}`);
         const txt = await r.text();
         console.error(txt);
       }
@@ -135,6 +138,7 @@ _dep.forEach((deployment_id) => {
       }
     })
     .catch((e) => {
+      console.error('Deploy Error!');
       console.error(e);
       process.exit(1);
     });

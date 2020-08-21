@@ -1,5 +1,6 @@
 /* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
+import * as updates from './updates';
 // levels
 export enum Ranks {
     'Guest' = 0,
@@ -16,6 +17,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
+  version: '1.3.8',
 };
 
 const defaultConfig = { // for non-defined configs!
@@ -242,6 +244,11 @@ export async function InitializeConfig(bypass = false) {
   } catch (e) {
     console.error(e);
   }
+  if (globalConfig.disabled && globalConfig.disabled === true) {
+    loadingConf = false;
+    config = undefined;
+    return false;
+  }
   let cfg: any = await pylon.kv.get('__guildConfig');
   if (typeof (cfg) === 'string') {
     if (cfg.includes('{') || cfg.includes('%')) {
@@ -266,6 +273,12 @@ export async function InitializeConfig(bypass = false) {
   if (!cfg) {
     return false;
     // cfg = JSON.parse(JSON.stringify(defaultConfig));
+  }
+  const vers = await pylon.kv.get('__botVersion');
+  if (!vers || vers !== globalConfig.version) {
+    // update!
+    await updates.runUpdates();
+    await pylon.kv.put('__botVersion', globalConfig.version);
   }
   config = loadConfigDefaults(cfg);
   return config;
