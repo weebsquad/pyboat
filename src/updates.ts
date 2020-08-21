@@ -1,3 +1,3 @@
 export async function runUpdates() {
-    return;
+  const todo = true;
 }
