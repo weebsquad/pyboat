@@ -167,6 +167,7 @@ export function InitializeCommands() {
 
   const _groupOptions = {
     description: 'Utility Commands',
+    filters: c2.getFilters('utilities', Ranks.Guest)
   };
 
   const optsGroup = c2.getOpts(
@@ -260,14 +261,17 @@ export function InitializeCommands() {
     });
   }
 
-  // PING
-  cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
-    const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
-    const msgd = new Date();
-    const edmsg = await msg.reply('<a:loading:735794724480483409>');
-    const td = new Date().getTime() - msgd.getTime();
-    await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
-  });
 
+  // snowflake
+  cmdGroup.on('snowflake',
+              (ctx) => ({ snowflakee: ctx.string() }),
+              async (msg, { snowflakee }) => {
+                const now = new Date();
+                const baseId = snowflakee;
+                const normalTs = utils.getSnowflakeDate(baseId);
+                await msg.reply(
+                  `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
+                );
+              });
   return cmdGroup;
 }
