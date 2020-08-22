@@ -249,6 +249,7 @@ export const messages = {
   async permissionsChanged(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
     const changes = getPermDiffs(chan, oldChan);
     const mention = await getChannelMention(chan);
+    const guild = await chan.getGuild();
     let txt = '';
     const { added } = changes;
     const { removed } = changes;
@@ -274,7 +275,11 @@ export const messages = {
       const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
       const _type = newV !== undefined ? newV.type : oldV.type;
       const _id = newV !== undefined ? newV.id : oldV.id;
-      const objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
+      let objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
+      if (_type === 'role' && _id === guild.id) {
+        // everyone role
+        objectPing = '@everyone';
+      }
       const permsAllowOld = oldV !== undefined ? new utils.Permissions(oldV.allow).serialize() : new utils.Permissions(0).serialize();
       const permsDenyOld = oldV !== undefined ? new utils.Permissions(oldV.deny).serialize() : new utils.Permissions(0).serialize();
       const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize() : new utils.Permissions(0).serialize();
@@ -314,7 +319,7 @@ export const messages = {
       }
       if (Object.keys(diffs).length > 0) {
         txt += '\n```diff\n';
-        for (const key in diffs) {
+        for (let key in diffs) {
           const val = diffs[key];
           let symbol = '';
           if (val === 0) {
@@ -327,6 +332,8 @@ export const messages = {
           if (symbol === '') {
             continue;
           }
+          key = key.split('_').join(' ');
+          key = key.split(' ').map((ee) => `${ee.substr(0, 1).toUpperCase()}${ee.substr(1).toLowerCase()}`).join(' ');
           txt += `\n${symbol} ${key}`;
         }
         txt += '\n```\n';
