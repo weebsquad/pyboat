@@ -40,19 +40,30 @@ export async function OnMessageCreate(
       await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
       return;
     }
+    let isDevCmd = false;
+    if (typeof conf.globalConfig.devPrefix === 'string' && msg.content.length > conf.globalConfig.devPrefix.length) {
+      if (msg.content.substr(0, conf.globalConfig.devPrefix.length) === conf.globalConfig.devPrefix) {
+        isDevCmd = true;
+        if (!utils.isGlobalAdmin(msg.author.id)) {
+          return;
+        }
+      }
+    }
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
-      await logCustom(
-        'COMMANDS',
-        'COMMAND_USED',
-        new Map<string, any>([
-          ['_COMMAND_NAME_', msg.content],
-          ['_AUTHOR_', msg.author],
-          ['_USER_ID_', msg.author.id],
-          ['_MEMBER_', msg.member],
-          ['_CHANNEL_ID_', msg.channelId],
-        ]),
-      );
+      if (!isDevCmd) {
+        await logCustom(
+          'COMMANDS',
+          'COMMAND_USED',
+          new Map<string, any>([
+            ['_COMMAND_NAME_', msg.content],
+            ['_AUTHOR_', msg.author],
+            ['_USER_ID_', msg.author.id],
+            ['_MEMBER_', msg.member],
+            ['_CHANNEL_ID_', msg.channelId],
+          ]),
+        );
+      }
 
       return false;
     }
