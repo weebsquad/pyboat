@@ -41,13 +41,13 @@ async function updateTopic(channelid: string) {
   if (chan === null) return;
   let num: any = 0;
   try {
-    let testn = await kv.get(`${config.modules.counting.keyCount}${channelid}`);
+    let testn = await kv.get(`counting_current${channelid}`);
     if (typeof testn === 'number') num = testn;
   } catch (e) {}
 
   let lastUsr;
   try {
-    let testid = await kv.get(`${config.modules.counting.keyLastUser}${channelid}`);
+    let testid = await kv.get(`counting_lastuser${channelid}`);
     if (typeof testid === 'string') lastUsr = testid;
   } catch (e) {}
   let txt = `Current: ${num}`;
@@ -99,9 +99,9 @@ export async function OnMessageCreate(
     && message.member.can(discord.Permissions.MANAGE_MESSAGES)
   ) {
     try {
-      await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
-      await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
-      await kv.delete(`${config.modules.counting.keyCount}${message.channelId}`);
+      await kv.delete(`counting_lastuser${message.channelId}`);
+      await kv.delete(`counting_lastmid${message.channelId}`);
+      await kv.delete(`counting_current${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
       `**Count has been reset by ${message.author.getTag()}**`,
@@ -116,9 +116,9 @@ export async function OnMessageCreate(
   ) {
     const num = +cont.split(' ')[1];
     try {
-      await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num);
-      await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
-      await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
+      await kv.put(`counting_current${message.channelId}`, num);
+      await kv.delete(`counting_lastmid${message.channelId}`);
+      await kv.delete(`counting_lastuser${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
       `**Count has been set to ${num} by ${message.author.getTag()}**`,
@@ -134,7 +134,7 @@ export async function OnMessageCreate(
   let num = 0;
 
   try {
-    const testn = await kv.get(`${config.modules.counting.keyCount}${message.channelId}`);
+    const testn = await kv.get(`counting_current${message.channelId}`);
     if (typeof testn === 'number') {
       num = testn;
     }
@@ -145,7 +145,7 @@ export async function OnMessageCreate(
   }
   let lastUsr;
   try {
-    const testid = await kv.get(`${config.modules.counting.keyLastUser}${message.channelId}`);
+    const testid = await kv.get(`counting_lastuser${message.channelId}`);
     if (typeof testid === 'string') {
       lastUsr = testid;
     }
@@ -155,9 +155,9 @@ export async function OnMessageCreate(
     return;
   }
 
-  kv.put(`${config.modules.counting.keyLastMid}${message.channelId}`, message.id);
-  await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num + 1);
-  await kv.put(`${config.modules.counting.keyLastUser}${message.channelId}`, message.author.id);
+  kv.put(`counting_lastmid${message.channelId}`, message.id);
+  await kv.put(`counting_current${message.channelId}`, num + 1);
+  await kv.put(`counting_lastuser${message.channelId}`, message.author.id);
   updateTopic(message.channelId);
   if (isPinnable(+message.content) && !config.modules.counting.useWebhook) {
     await message.setPinned(true);
@@ -178,14 +178,14 @@ async function MessageDeletedChecks(message: discord.GuildMemberMessage) {
   const cont = message.content;
   let num = 0;
   try {
-    const testn = await kv.get(`${config.modules.counting.keyCount}${message.channelId}`);
+    const testn = await kv.get(`counting_current${message.channelId}`);
     if (typeof testn === 'number') {
       num = testn;
     }
   } catch (e) {}
   let lastId;
   try {
-    const testn = await kv.get(`${config.modules.counting.keyLastMid}${message.channelId}`);
+    const testn = await kv.get(`counting_lastmid${message.channelId}`);
     if (typeof testn === 'string') {
       lastId = testn;
     }
@@ -196,9 +196,9 @@ async function MessageDeletedChecks(message: discord.GuildMemberMessage) {
   if (typeof lastId !== 'string' || lastId !== message.id) {
     return;
   }
-  await kv.put(`${config.modules.counting.keyCount}${message.channelId}`, num - 1);
-  await kv.delete(`${config.modules.counting.keyLastUser}${message.channelId}`);
-  await kv.delete(`${config.modules.counting.keyLastMid}${message.channelId}`);
+  await kv.put(`counting_current${message.channelId}`, num - 1);
+  await kv.delete(`counting_lastuser${message.channelId}`);
+  await kv.delete(`counting_lastmid${message.channelId}`);
   updateTopic(message.channelId);
 }
 

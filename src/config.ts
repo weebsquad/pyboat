@@ -183,9 +183,6 @@ const defaultConfig = { // for non-defined configs!
     counting: { // counting module
       enabled: false,
       channels: [],
-      keyCount: 'counting_current',
-      keyLastUser: 'counting_lastuser',
-      keyLastMid: 'counting_lastmid',
       autoPins: {
         single: [1, 69, 100, 200, 420, 666, 1000, 1337, 6969, 9001, 10000, 99999], // Individual === check
         repeating: [1000], // Modulus check
