@@ -466,13 +466,15 @@ async function getMessages(
 
           let msg = utils.replacePlaceholders(temp, map);
           const _urls = msg.match(regexUrls);
-          if (
-            _urls !== null
-            && _urls.length === 1
-            && _urls[0].includes('cdn.discordapp.com')
-          ) {
-            msg = msg.split(_urls[0]).join('');
-            em.setThumbnail({ url: _urls[0] });
+          if (Array.isArray(_urls)) {
+            const cdnLink = _urls.filter((url) => url.includes('cdn.discordapp.com'));
+            if (
+              Array.isArray(cdnLink)
+              && cdnLink.length === 1
+            ) {
+              msg = msg.split(cdnLink[0]).join('');
+              em.setThumbnail({ url: cdnLink[0] });
+            }
           }
 
           const jumps = msg.match(regexClickableMarkdown);
