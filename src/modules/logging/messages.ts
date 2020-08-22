@@ -173,7 +173,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   'MESSAGE_DELETE': {
     MESSAGE_DELETED_DM: `${discord.decor.Emojis.WASTEBASKET} message by _AUTHOR_ **[**||\`_MESSAGE_ID_\`||**]** was deleted in the bot's dms: \n_CONTENT_`,
     MESSAGE_DELETED_GUILD: `${discord.decor.Emojis.WASTEBASKET} _USERTAG_ message deleted **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n_CONTENT_`,
-    MESSAGE_DELETED_GUILD_WEBHOOK: `${discord.decor.Emojis.WASTEBASKET} _USERTAG_ message deleted **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n_CONTENT_`,
+    MESSAGE_DELETED_GUILD_WEBHOOK: `${discord.decor.Emojis.WASTEBASKET} _AUTHOR_ message deleted **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n_CONTENT_`,
     MESSAGE_DELETED_DM_NO_CACHE: `${discord.decor.Emojis.WASTEBASKET} message **[**||\`_MESSAGE_ID_\`||**]** was deleted in the bot's dms (no data)`,
     MESSAGE_DELETED_GUILD_NO_CACHE: `${discord.decor.Emojis.WASTEBASKET} message **[**||\`_MESSAGE_ID_\`||**]** was deleted in <#_CHANNEL_ID_> (no data)`,
   },

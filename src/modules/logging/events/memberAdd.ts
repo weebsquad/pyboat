@@ -42,6 +42,7 @@ export const messages = {
     mp.set('_TYPE_', 'BOT_ADDED');
     mp.set('_USER_ID_', member.user.id);
     mp.set('_USERTAG_', getMemberTag(member));
+
     return mp;
   },
 };

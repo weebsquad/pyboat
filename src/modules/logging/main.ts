@@ -445,7 +445,9 @@ async function getMessages(
             }
             if (rep) {
               let usrid = `${map.get('_USERTAG_')}`;
-              if (conf.config.modules.logging.userTag === '_MENTION_') {
+              if (map.has('_USER_ID_')) {
+                usrid = map.get('_USER_ID_');
+              } else if (conf.config.modules.logging.userTag === '_MENTION_') {
                 usrid = usrid.substr(2).slice(0, -1);
                 if (usrid.includes('!')) {
                   usrid = usrid.substr(1);

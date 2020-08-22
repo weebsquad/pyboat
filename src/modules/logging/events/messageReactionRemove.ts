@@ -37,6 +37,7 @@ export const messages = {
     mp.set('_MESSAGE_ID_', ev.messageId);
     mp.set('_EMOJI_MENTION_', mention);
     mp.set('_USERTAG_', getMemberTag(ev.member));
+    mp.set('_USER_ID_', ev.userId);
     return mp;
   },
   async dmReaction(
