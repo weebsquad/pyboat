@@ -105,7 +105,7 @@ async function PromiseAny<T, V>(
 //    - Support adding another header 'header1' when we have more than 8kb worth of keys (probs not happening)
 //    - Request check-and-set with custom equality condition for faster setting
 // Works by storing multiple `key` within each `tag` plus a few `header tag` to manage information & reduce search time.
-class KVManager {
+export class KVManager {
   protected static async getHeader(headerTag: string): Promise<KVMHeader> {
     const hdr = await kv.get<KVMHeader>(headerTag);
     if (hdr === undefined) {
@@ -389,7 +389,6 @@ class KVManager {
   static async testfn() {}
 }
 
-export default KVManager;
 export class FakeConsole {
   private channel: discord.ITextChannel;
   private timeout: number | null = null;
