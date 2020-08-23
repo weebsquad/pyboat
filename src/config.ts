@@ -86,6 +86,9 @@ const defaultConfig = { // for non-defined configs!
         key: '',
       },
     },
+    infractions: {
+      enabled: true,
+    },
     utilities: {
       enabled: false,
       // snipe sub-module: whenever a user deletes their own message, the contents are saved in that channel (1 msg per channel)
@@ -229,7 +232,7 @@ export async function InitializeConfig(bypass = false) {
     }
     return typeof config !== 'undefined' ? config : false;
   }
-  config = undefined;
+  if(!bypass) config = undefined;
   loadingConf = true;
   // await sleep(2000);
   try {

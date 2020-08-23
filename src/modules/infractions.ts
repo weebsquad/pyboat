@@ -14,6 +14,12 @@ export function InitializeCommands() {
   const optsGroup = c2.getOpts(
     _groupOptions,
   );
+
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  cmdGroup.on({ name: 'kick', filters: c2.getFilters('infractions.kick', Ranks.Moderator) },
+              (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
+              async (msg, { member, reason }) => {
+                console.log('kick', member.user.getTag());
+              });
   return cmdGroup;
 }
