@@ -576,6 +576,14 @@ async function getMessages(
                   value: ev.auditLogEntry.reason,
                 },
               ]);
+            } else if (map.has('_REASON_')) {
+              em.setFields([
+                {
+                  inline: false,
+                  name: 'Reason',
+                  value: map.get('_REASON_'),
+                },
+              ]);
             }
           }
           let icoFooter;

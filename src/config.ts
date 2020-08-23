@@ -88,10 +88,16 @@ const defaultConfig = { // for non-defined configs!
     },
     infractions: {
       enabled: false,
+      muteRole: '',
       targetting: {
         reqDiscordPermissions: true,
         checkLevels: true,
         checkRoles: true,
+      },
+      confirmation: {
+        reaction: true,
+        message: true,
+        expiry: 30,
       },
     },
     utilities: {

@@ -29,6 +29,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     SAVED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data saved.`,
     RESTORED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data restored.`,
   },
+  '|INFRACTIONS': {
+    KICK: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG__REASON_`,
+  },
   '|CORE': {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },
