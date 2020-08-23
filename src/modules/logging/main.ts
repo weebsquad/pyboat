@@ -58,7 +58,6 @@ export function getLogChannels(gid: string, event: string, type: string) {
       mp[key] = conf.globalConfig.masterChannel[key];
     }
   }
-  console.log(mp);
   for (const k in mp) {
     const v = mp[k];
     if (typeof v.scopes !== 'object') {
@@ -771,9 +770,9 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     });
     messages.set(chId, sorted);
   } */
-    if (utils.isDebug()) {
-      console.log('logging trigger multi', messages);
-    }
+    // if (utils.isDebug()) {
+    //   console.log('logging trigger multi', messages);
+    // }
     messages = combineMessages(messages);
     await sendInLogChannel(thisGuildId, messages);
   } catch (e) {
@@ -864,23 +863,23 @@ export async function handleEvent(
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;
     }
-    if (utils.isDebug()) {
-      console.log('logging trigger', eventName, obj);
-    }
+    // if (utils.isDebug()) {
+    //   console.log('logging trigger', eventName, obj);
+    // }
 
     const chans = await parseChannelsData(obj);
-    if (utils.isDebug(true)) {
-      console.log('handleevent.parseChannelData', chans);
-    }
+    // if (utils.isDebug(true)) {
+    //   console.log('handleevent.parseChannelData', chans);
+    // }
     let messages = await getMessages(guildId, chans, obj);
-    if (utils.isDebug(true)) {
-      console.log('handleevent.getMessages', messages);
-    }
+    // if (utils.isDebug(true)) {
+    //   console.log('handleevent.getMessages', messages);
+    // }
 
     messages = combineMessages(messages);
-    if (utils.isDebug(true)) {
-      console.log('handleevent.combineMessages', messages);
-    }
+    // if (utils.isDebug(true)) {
+    //   console.log('handleevent.combineMessages', messages);
+    // }
 
     await sendInLogChannel(guildId, messages);
   } catch (e) {

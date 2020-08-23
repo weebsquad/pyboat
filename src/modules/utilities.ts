@@ -277,7 +277,8 @@ export function InitializeCommands() {
 
   cmdGroup.raw({ name: 'cat', filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
     const file = await (await fetch('http://aws.random.cat/meow')).json();
-    const catpic = await (await fetch(file.url)).arrayBuffer();
+    const catpic = await (await fetch(file.file)).arrayBuffer();
+
     await msg.reply({
       content: '',
       allowedMentions: {},
