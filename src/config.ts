@@ -87,7 +87,8 @@ const defaultConfig = { // for non-defined configs!
       },
     },
     infractions: {
-      enabled: true,
+      enabled: false,
+      reqDiscordPermissions: true,
     },
     utilities: {
       enabled: false,
@@ -232,7 +233,9 @@ export async function InitializeConfig(bypass = false) {
     }
     return typeof config !== 'undefined' ? config : false;
   }
-  if(!bypass) config = undefined;
+  if (!bypass) {
+    config = undefined;
+  }
   loadingConf = true;
   // await sleep(2000);
   try {
