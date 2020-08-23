@@ -4,10 +4,9 @@ import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
-import { ChannelConfig } from '../modules/logging/classes';
 
-const F = discord.command.filters;
-const kv = new pylon.KVNamespace('commands_dev');
+// const F = discord.command.filters;
+// const kv = new pylon.KVNamespace('commands_dev');
 export function InitializeCommands() {
   const _groupOptions = {
     description: 'Dev commands',
@@ -139,7 +138,7 @@ export function InitializeCommands() {
              }
            });
 
-    sub.raw('error', async (m) => {
+    sub.raw('error', async () => {
       throw new Error('testing pls ignore');
     });
     sub.raw('started', async (m) => {
