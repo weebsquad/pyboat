@@ -88,7 +88,11 @@ const defaultConfig = { // for non-defined configs!
     },
     infractions: {
       enabled: false,
-      reqDiscordPermissions: true,
+      targetting: {
+        reqDiscordPermissions: true,
+        checkLevels: true,
+        checkRoles: true,
+      },
     },
     utilities: {
       enabled: false,
