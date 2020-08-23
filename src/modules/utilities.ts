@@ -1,5 +1,4 @@
 // TODO: reminders
-// TODO: persistency module (nick, roles, server mute/deaf)
 // TODO: translation reply command
 // TODO: jumbo, urban, kittyapi
 import * as utils from '../lib/utils';
@@ -265,7 +264,7 @@ export function InitializeCommands() {
   }
 
   // snowflake
-  cmdGroup.on('snowflake',
+  cmdGroup.on({ name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },
               (ctx) => ({ snowflakee: ctx.string() }),
               async (msg, { snowflakee }) => {
                 const now = new Date();
@@ -275,5 +274,18 @@ export function InitializeCommands() {
                   `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
                 );
               });
+
+  cmdGroup.raw({ name: 'cat', filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
+    const file = await (await fetch('http://aws.random.cat/meow')).json();
+    const catpic = await (await fetch(file.url)).arrayBuffer();
+    await msg.reply({
+      content: '',
+      allowedMentions: {},
+      attachments: [{
+        name: 'cat.jpg',
+        data: catpic,
+      }],
+    });
+  });
   return cmdGroup;
 }
