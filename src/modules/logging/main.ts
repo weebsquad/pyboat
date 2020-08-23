@@ -58,8 +58,15 @@ export function getLogChannels(gid: string, event: string, type: string) {
       mp[key] = conf.globalConfig.masterChannel[key];
     }
   }
+  console.log(mp);
   for (const k in mp) {
     const v = mp[k];
+    if (typeof v.scopes !== 'object') {
+      break;
+    }
+    if (!Array.isArray(v.scopes.include) || !Array.isArray(v.scopes.exclude)) {
+      break;
+    }
     if (
       v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
@@ -862,12 +869,18 @@ export async function handleEvent(
     }
 
     const chans = await parseChannelsData(obj);
-    // if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.parseChannelData', chans);
+    }
     let messages = await getMessages(guildId, chans, obj);
-    // if (utils.isDebug(true)) console.log('handleevent.getMessages', messages);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.getMessages', messages);
+    }
 
     messages = combineMessages(messages);
-    // if (utils.isDebug(true)) console.log('handleevent.combineMessages', messages);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.combineMessages', messages);
+    }
 
     await sendInLogChannel(guildId, messages);
   } catch (e) {

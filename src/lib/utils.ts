@@ -229,7 +229,7 @@ export function swapKV(json): any {
 }
 
 export function getCommandDetails(content) {}
-
+/*
 export function mathEval(exp) {
   const reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/gi;
   let valid = true;
@@ -254,7 +254,7 @@ export function mathEval(exp) {
   } catch (e) {
     return false;
   }
-}
+}*/
 
 export function VBColorToHEX(i: number) {
   const bbggrr = (`000000${i.toString(16)}`).slice(-6);
