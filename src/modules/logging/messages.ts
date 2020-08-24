@@ -31,6 +31,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   },
   '|INFRACTIONS': {
     KICK: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG__REASON_`,
+    TEMPMUTE: `${discord.decor.Emojis.MUTE} _ACTORTAG_ temp-muted _USERTAG_ for _DURATION__REASON_`,
   },
   '|CORE': {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
