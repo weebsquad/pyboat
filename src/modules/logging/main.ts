@@ -58,8 +58,15 @@ export function getLogChannels(gid: string, event: string, type: string) {
       mp[key] = conf.globalConfig.masterChannel[key];
     }
   }
+  console.log(mp);
   for (const k in mp) {
     const v = mp[k];
+    if (typeof v.scopes !== 'object') {
+      break;
+    }
+    if (!Array.isArray(v.scopes.include) || !Array.isArray(v.scopes.exclude)) {
+      break;
+    }
     if (
       v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
@@ -445,7 +452,9 @@ async function getMessages(
             }
             if (rep) {
               let usrid = `${map.get('_USERTAG_')}`;
-              if (conf.config.modules.logging.userTag === '_MENTION_') {
+              if (map.has('_USER_ID_')) {
+                usrid = map.get('_USER_ID_');
+              } else if (conf.config.modules.logging.userTag === '_MENTION_') {
                 usrid = usrid.substr(2).slice(0, -1);
                 if (usrid.includes('!')) {
                   usrid = usrid.substr(1);
@@ -466,13 +475,15 @@ async function getMessages(
 
           let msg = utils.replacePlaceholders(temp, map);
           const _urls = msg.match(regexUrls);
-          if (
-            _urls !== null
-            && _urls.length === 1
-            && _urls[0].includes('cdn.discordapp.com')
-          ) {
-            msg = msg.split(_urls[0]).join('');
-            em.setThumbnail({ url: _urls[0] });
+          if (Array.isArray(_urls)) {
+            const cdnLink = _urls.filter((url) => url.includes('cdn.discordapp.com'));
+            if (
+              Array.isArray(cdnLink)
+              && cdnLink.length === 1
+            ) {
+              msg = msg.split(cdnLink[0]).join('');
+              em.setThumbnail({ url: cdnLink[0] });
+            }
           }
 
           const jumps = msg.match(regexClickableMarkdown);
@@ -858,12 +869,18 @@ export async function handleEvent(
     }
 
     const chans = await parseChannelsData(obj);
-    // if (utils.isDebug(true)) console.log('handleevent.parseChannelData', chans);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.parseChannelData', chans);
+    }
     let messages = await getMessages(guildId, chans, obj);
-    // if (utils.isDebug(true)) console.log('handleevent.getMessages', messages);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.getMessages', messages);
+    }
 
     messages = combineMessages(messages);
-    // if (utils.isDebug(true)) console.log('handleevent.combineMessages', messages);
+    if (utils.isDebug(true)) {
+      console.log('handleevent.combineMessages', messages);
+    }
 
     await sendInLogChannel(guildId, messages);
   } catch (e) {

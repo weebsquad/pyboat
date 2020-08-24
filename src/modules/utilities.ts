@@ -25,6 +25,9 @@ function getPersistConf(member: discord.GuildMember, levelForce: number | undefi
   }
   const toret = config.modules.utilities.persist.levels[lowestConf.toString()];
   if (typeof toret === 'undefined') {
+    if (typeof config.modules.utilities.persist.levels[lowestConf] !== 'undefined') {
+      return config.modules.utilities.persist.levels[lowestConf];
+    }
     return null;
   }
   return toret;

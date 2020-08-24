@@ -13,16 +13,17 @@ export function InitializeCommands() {
     description: 'Dev commands',
     defaultPrefix: globalConfig.devPrefix,
     filters: c2.getFilters(null, 0, false, true),
+    mentionPrefix: false,
   };
 
   const optsGroup = c2.getOpts(_groupOptions);
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-  const optsEval = c2.getOpts(_groupOptions);
+  /* const optsEval = c2.getOpts(_groupOptions);
   optsEval.defaultPrefix = '';
   optsEval.additionalPrefixes = [];
   optsEval.mentionPrefix = false;
-  optsEval.filters = c2.getFilters(null, 0, false, true);
+  optsEval.filters = c2.getFilters(null, 0, false, true); */
 
   const optsOverrides = c2.getOpts(_groupOptions);
   optsOverrides.filters = c2.getFilters(null, 0, false, true);
@@ -71,10 +72,9 @@ export function InitializeCommands() {
                          await msg.reply(txtR);
                        });
 
-  const cmdGroupEval = new discord.command.CommandGroup(optsEval);
-  cmdGroupEval.raw(
-    { name: '$',
-      aliases: [`${globalConfig.devPrefix}eval`],
+  // const cmdGroupEval = new discord.command.CommandGroup(optsEval);
+  cmdGroup.raw(
+    { name: 'eval',
       onError(e: any) {
         return e;
       } },
@@ -259,5 +259,5 @@ export function InitializeCommands() {
                 const emoji = await guild.getEmoji(emj);
                 await msg.reply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
               });
-  return [cmdGroup, cmdGroupOverrides, cmdGroupEval];
+  return [cmdGroup, cmdGroupOverrides];
 }
