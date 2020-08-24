@@ -4,7 +4,7 @@ import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
-import { every5Min } from '../modules/infractions';
+import * as infractions from '../modules/infractions';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -188,7 +188,28 @@ export function InitializeCommands() {
       await m.reply('done');
     });
     sub.raw('infs', async (m) => {
-      await every5Min();
+      const now = Date.now();
+      await infractions.every5Min();
+      await m.reply(`Done (Took ${Date.now() - now}ms)`);
+    });
+    sub.on('addinfs', (ctx) => ({ count: ctx.number() }),
+           async (m, { count }) => {
+             if (count >= 15) {
+               await pylon.requestCpuBurst(async () => {
+                 for (let i = 0; i < count; i += 1) {
+                   await infractions.addInfraction(m.member, m.member, infractions.InfractionType.KICK, undefined);
+                 }
+               });
+             } else {
+               for (let i = 0; i < count; i += 1) {
+                 await infractions.addInfraction(m.member, m.member, infractions.InfractionType.KICK, undefined);
+               }
+             }
+             await m.reply(`Done adding ${count} infractions`);
+           });
+    sub.raw('clearinfs', async (m) => {
+      await infractions.clearInfractions();
+      await m.reply('Done');
     });
     sub.raw('join', async (m) => {
       const ch = await discord.getChannel('691752063134203974');

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks, guildId } from '../config';
@@ -5,6 +6,7 @@ import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 
 const keyPrefix = 'Infraction_';
+const indexSep = '|';
 export enum InfractionType {
   KICK = 'KICK',
   BAN = 'BAN',
@@ -35,21 +37,75 @@ export class Infraction {
       return false;
     }
     console.log('checking expired ', this.id);
+    return true;
   }
+  getKey() {
+    const _data = [this.id, this.actorId, this.memberId, typeof this.expiresAt === 'number' ? this.expiresAt.toString() : '0', this.reason.split('|').join('/'), this.active];
+    return `${keyPrefix}${_data.join(indexSep)}`;
+  }
+}
+const makeFake = <T>(data: object, type: { prototype: object }) => Object.assign(Object.create(type.prototype), data) as T;
+export async function getInfractions() {
+  const keys = (await utils.KVManager.listKeys());
+  /* const transf = await Promise.all(keys.map(async (e) => {
+    const _transform = (await utils.KVManager.get(e));
+    if (typeof _transform !== 'object') {
+      return undefined;
+    }
+    return makeFake<Infraction>(_transform, Infraction);
+  })); */
+  const transf = keys.map((e) => {
+    const splitted = e.split(keyPrefix).join('').split(indexSep);
+    if (splitted.length !== 6) {
+      return undefined;
+    }
+    const newobj = {
+      id: splitted[0],
+      actorId: splitted[1],
+      memberId: splitted[2],
+      expiresAt: parseInt(splitted[3], 10),
+      reason: splitted[4],
+      active: splitted[5],
+    };
+    return makeFake<Infraction>(newobj, Infraction);
+  });
+  const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction);
+  return exist;
 }
 export async function every5Min() {
   console.log('every 5 min infractions');
   const now = Date.now();
-  const keys = await utils.KVManager.listKeys();
-  utils.KVManager.clear
+  const infs = await getInfractions();
   const diff = Date.now() - now;
-  console.log(`Took ${diff}ms to get ${keys.length} inf keys (${Math.ceil(diff/keys.length)}ms per key)`);
-  console.log(keys);
+  // console.log(infs);
+  // console.log(`Took ${diff}ms to get ${infs.length} inf keys (~${Math.floor(diff / infs.length)}ms per key)`);
+  const actives = infs.filter((inf) => inf.active);
+  if (actives.length > 0) {
+    const promises = [];
+    actives.forEach((inf) => {
+      promises.push(inf.checkExpired());
+    });
+    await Promise.all(promises);
+  }
+}
+export async function clearInfractions() {
+  await pylon.requestCpuBurst(async () => {
+    const now = Date.now();
+    const keys = await utils.KVManager.listKeys();
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      await utils.KVManager.delete(key);
+    }
+    // console.log(keys);
+    console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
+  });
 }
 export async function addInfraction(target: discord.GuildMember, actor: discord.GuildMember, type: InfractionType, expires: number | undefined, reason = '') {
+  reason = reason.split(indexSep).join('/');
   const newInf = new Infraction(type, actor.user.id, target.user.id, expires, reason);
   // console.log(newInf);
-  await utils.KVManager.set(`${keyPrefix}${newInf.id}`, JSON.parse(JSON.stringify(newInf)));
+  const _data = [newInf.id, newInf.actorId, newInf.memberId, typeof newInf.expiresAt === 'number' ? newInf.expiresAt.toString() : '0', newInf.reason, newInf.active];
+  await utils.KVManager.set(`${keyPrefix}${_data.join(indexSep)}`, true);
   return newInf;
 }
 export async function canTarget(actor: discord.GuildMember, target: discord.GuildMember, actionType: InfractionType) {
@@ -129,15 +185,22 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
     const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) ? config.modules.infractions.confirmation.message : false;
     const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(10, config.modules.infractions.confirmation.expiry) : 0;
     if (react === true) {
-      if (result === true) {
-        await ogMsg.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
-      } else {
-        await ogMsg.addReaction(discord.decor.Emojis.X);
-      }
+      try {
+        if (result === true) {
+          await ogMsg.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
+        } else {
+          await ogMsg.addReaction(discord.decor.Emojis.X);
+        }
+      } catch (e) {}
     }
     let replyMsg;
     if (msg === true) {
-      replyMsg = await ogMsg.reply({ content: `${result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X} ${txt}`, allowedMentions: {} });
+      try {
+        replyMsg = await ogMsg.reply({ content: `${result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X} ${txt}`,
+          allowedMentions: {} });
+      } catch (e) {
+        replyMsg = undefined;
+      }
     }
     if ((react === true || msg === true) && expiry > 0) {
       const _theMsg = replyMsg;
