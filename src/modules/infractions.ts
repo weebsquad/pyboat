@@ -1,12 +1,58 @@
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
-import { config, globalConfig, Ranks } from '../config';
+import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
-import { CheckRole } from './disabled/cur';
 import * as logUtils from './logging/utils';
 
-export async function canTarget(actor: discord.GuildMember, target: discord.GuildMember, actionType: string) {
-  actionType = actionType.toLowerCase();
+const keyPrefix = 'Infraction_';
+export enum InfractionType {
+  KICK = 'KICK',
+  BAN = 'BAN',
+  MUTE = 'MUTE'
+}
+
+export class Infraction {
+  active = true;
+  expiresAt: number | undefined;
+  id: string;
+  memberId: string;
+  actorId: string;
+  type: InfractionType;
+  reason = '';
+  constructor(type: InfractionType, actor: string, target: string, expires: number | undefined, reason = '') {
+    const id = utils.composeSnowflake();
+    this.id = id;
+    this.type = type;
+    this.actorId = actor;
+    this.memberId = target;
+    this.reason = reason;
+    this.expiresAt = expires;
+    this.active = !!(typeof (expires) === 'number' && expires > 0);
+    return this;
+  }
+  async checkExpired() {
+    if (!this.active || typeof (this.expiresAt) !== 'number' || this.expiresAt < 1) {
+      return false;
+    }
+    console.log('checking expired ', this.id);
+  }
+}
+export async function every5Min() {
+  console.log('every 5 min infractions');
+  const now = Date.now();
+  const keys = await utils.KVManager.listKeys();
+  utils.KVManager.clear
+  const diff = Date.now() - now;
+  console.log(`Took ${diff}ms to get ${keys.length} inf keys (${Math.ceil(diff/keys.length)}ms per key)`);
+  console.log(keys);
+}
+export async function addInfraction(target: discord.GuildMember, actor: discord.GuildMember, type: InfractionType, expires: number | undefined, reason = '') {
+  const newInf = new Infraction(type, actor.user.id, target.user.id, expires, reason);
+  // console.log(newInf);
+  await utils.KVManager.set(`${keyPrefix}${newInf.id}`, JSON.parse(JSON.stringify(newInf)));
+  return newInf;
+}
+export async function canTarget(actor: discord.GuildMember, target: discord.GuildMember, actionType: InfractionType) {
   const isGA = utils.isGlobalAdmin(actor.user.id);
   let isOverride = false;
   if (isGA) {
@@ -23,11 +69,11 @@ export async function canTarget(actor: discord.GuildMember, target: discord.Guil
   const me = await guild.getMember(discord.getBotId());
 
   // check bot can actually do it
-  if (actionType === 'kick' && !me.can(discord.Permissions.KICK_MEMBERS)) {
+  if (actionType === InfractionType.KICK && !me.can(discord.Permissions.KICK_MEMBERS)) {
     return 'I can\'t kick members';
   }
   const highestRoleTarget = await utils.getMemberHighestRole(target);
-  if (['kick', 'ban'].includes(actionType) || actionType.includes('ban')) {
+  if (actionType === InfractionType.KICK || actionType === InfractionType.BAN) {
     const highestRoleMe = await utils.getMemberHighestRole(me);
 
     if (highestRoleMe.position <= highestRoleTarget.position) {
@@ -40,9 +86,9 @@ export async function canTarget(actor: discord.GuildMember, target: discord.Guil
     const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
     const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
     if (requireExtraPerms === true) {
-      if (actionType === 'kick' && !actor.can(discord.Permissions.KICK_MEMBERS)) {
+      if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
-      } if (actionType.includes('ban') && !actor.can(discord.Permissions.BAN_MEMBERS)) {
+      } if (actionType === InfractionType.BAN && !actor.can(discord.Permissions.BAN_MEMBERS)) {
         return 'You can\'t ban members';
       }
     }
@@ -128,18 +174,19 @@ export function InitializeCommands() {
                 if (typeof reason !== 'string') {
                   reason = '';
                 }
-                const canT = await canTarget(msg.member, member, 'kick');
+                const canT = await canTarget(msg.member, member, InfractionType.KICK);
                 if (canT !== true) {
                   // await msg.reply(`${discord.decor.Emojis.NO_ENTRY_SIGN} ${canT}`);
                   await confirmResult(undefined, msg, false, canT);
                   return;
                 }
-                await member.kick();
+                /* await member.kick();
                 const gm = await (await msg.getGuild()).getMember(member.user.id);
                 if (gm !== null) {
                   await confirmResult(undefined, msg, false, 'Failed to kick the member (still in the guild?)');
                   return;
-                }
+                } */
+                const inf = await addInfraction(member, msg.member, InfractionType.KICK, undefined, reason);
                 await logAction('kick', msg.author, member.user, new Map([['_REASON_', reason !== '' ? `with reason \`${utils.escapeString(reason)}\`` : '']]));
                 await confirmResult(undefined, msg, true, `Kicked \`${utils.escapeString(member.user.getTag())}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });

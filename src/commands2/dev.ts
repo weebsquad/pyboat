@@ -4,6 +4,7 @@ import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
+import { every5Min } from '../modules/infractions';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -185,6 +186,9 @@ export function InitializeCommands() {
         { guildId: m.guildId },
       );
       await m.reply('done');
+    });
+    sub.raw('infs', async (m) => {
+      await every5Min();
     });
     sub.raw('join', async (m) => {
       const ch = await discord.getChannel('691752063134203974');

@@ -386,7 +386,7 @@ export class KVManager {
     return kv.items();
   }
 
-  static async testfn() {}
+  //static async testfn() {}
 }
 
 export class FakeConsole {

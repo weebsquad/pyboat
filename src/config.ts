@@ -315,6 +315,9 @@ function str2ab(str) {
 }
 
 export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
+  if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+    return false;
+  }
   if (!(msg instanceof discord.GuildMemberMessage)) {
     return false;
   } // todo : allow dms
@@ -371,7 +374,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         .split('\r')
         .join('');
       // dat = encodeURI(dat);
-      const len = dat.length;
+      const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       try {
         await message.delete();
       } catch (e) {
