@@ -97,7 +97,7 @@ const defaultConfig = { // for non-defined configs!
       confirmation: {
         reaction: true,
         message: true,
-        expiry: 30,
+        expiry: 10,
       },
     },
     utilities: {
