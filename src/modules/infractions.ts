@@ -36,6 +36,10 @@ export class Infraction {
     this.active = this.expiresAt !== this.id;
     return this;
   }
+  async checkActive() {
+    const a = 'todo';
+    return;
+  }
   async checkExpired() {
     if (!this.active || !this.isExpired()) {
       return;
@@ -99,7 +103,9 @@ export async function every5Min() {
   if (actives.length > 0) {
     const promises = [];
     actives.forEach((inf) => {
-      promises.push(inf.checkExpired());
+      if(inf.active)
+      promises.push(inf.checkActive());
+      if(inf.isExpired()) promises.push(inf.checkExpired())
     });
     await Promise.all(promises);
   }
