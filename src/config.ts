@@ -262,6 +262,11 @@ export async function InitializeConfig(bypass = false) {
     config = undefined;
     return false;
   }
+  if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+    config = undefined;
+    loadingConf = false;
+    return;
+  }
   let cfg: any = await pylon.kv.get('__guildConfig');
   if (typeof (cfg) === 'string') {
     if (cfg.includes('{') || cfg.includes('%')) {
