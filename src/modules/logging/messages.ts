@@ -32,11 +32,13 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   '|INFRACTIONS': {
     KICK: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
     MUTE: `${discord.decor.Emojis.MUTE} _ACTORTAG_ muted _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    UNMUTE: `${discord.decor.Emojis.SPEAKER} _ACTORTAG_ unmuted _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
     TEMPMUTE: `${discord.decor.Emojis.MUTE} _ACTORTAG_ temp-muted _USERTAG_**[**||\`_USER_ID_\`||**]** for _DURATION__REASON_`,
     TEMPMUTE_EXPIRED: `${discord.decor.Emojis.ALARM_CLOCK} _USERTAG_ 's tempmute expired.`,
     TEMPBAN: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ temp-banned _USERTAG_**[**||\`_USER_ID_\`||**]** for _DURATION__REASON_`,
     TEMPBAN_EXPIRED: `${discord.decor.Emojis.ALARM_CLOCK} _USERTAG_ 's tempban expired.`,
-    UNMUTE: `${discord.decor.Emojis.SPEAKER} _ACTORTAG_ unmuted _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    UNBAN: `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ unbanned _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+
   },
   '|CORE': {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_**[**||\`_USER_ID_\`||**]** tried to perform _ACTION_`,
