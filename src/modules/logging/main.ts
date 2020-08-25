@@ -58,6 +58,12 @@ export function getLogChannels(gid: string, event: string, type: string) {
       mp[key] = conf.globalConfig.masterChannel[key];
     }
   }
+  if (event.length < 2) {
+    return arr;
+  }
+  if (event.substr(0, 1) === '|') {
+    event = event.substr(1);
+  }
   for (const k in mp) {
     const v = mp[k];
     if (typeof v.scopes !== 'object') {
@@ -125,6 +131,7 @@ async function sendInLogChannel(
     if ((channel === null && !isWh) || opts.length < 1) {
       continue;
     }
+    // WEBHOOK
     if (isWh && (alwaysWh || opts.length > 1)) {
       const embeds = [];
       for (let i = 0; i < opts.length; i += 1) {
@@ -180,6 +187,7 @@ async function sendInLogChannel(
           allowedMentions: {},
         });
       }
+    // NORMAL
     } else {
       for (let i = 0; i < opts.length; i += 1) {
         const opt = opts[i];
@@ -415,29 +423,52 @@ async function getMessages(
           if (typeof temp !== 'string') {
             return;
           }
-          if (isAuditLog && ev.auditLogEntry instanceof discord.AuditLogEntry) {
-            if (map.has('_ACTORTAG_')) {
-              let rep = false;
-              if (temp.indexOf('_ACTORTAG_') === 0) {
-                rep = true;
-              } else {
-                // clear emoji
-                const cleared = temp
-                  .substring(0, temp.indexOf('_ACTORTAG_'))
-                  .split(' ')
-                  .join('');
-                rep = utils2.containsOnlyEmojis(cleared);
-              }
-              if (rep) {
-                temp = temp.replace('_ACTORTAG_', '');
+          let pickedOne = false;
+          if (map.has('_ACTORTAG_')) {
+            let rep = false;
+            if (temp.indexOf('_ACTORTAG_') === 0) {
+              rep = true;
+            } else {
+              // clear emoji
+              const cleared = temp
+                .substring(0, temp.indexOf('_ACTORTAG_'))
+                .split(' ')
+                .join('');
+              rep = utils2.containsOnlyEmojis(cleared);
+            }
+            if (rep) {
+              if (ev.auditLogEntry instanceof discord.AuditLogEntry) {
                 em.setAuthor({
                   name: ev.auditLogEntry.user.getTag(),
                   iconUrl: ev.auditLogEntry.user.getAvatarUrl(),
                 });
                 addFooter = `Actor: ${ev.auditLogEntry.user.id}`;
+                pickedOne = true;
+                temp = temp.replace('_ACTORTAG_', '');
+              } else {
+                let usrid = map.get('_ACTORTAG_');
+                if (conf.config.modules.logging.actorTag === '_MENTION_') {
+                  usrid = usrid.substr(2).slice(0, -1);
+                  if (usrid.includes('!')) {
+                    usrid = usrid.substr(1);
+                  }
+                }
+                if (usrid !== '') {
+                  const usr = await discord.getUser(usrid);
+                  if (usr !== null) {
+                    pickedOne = true;
+                    em.setAuthor({
+                      name: usr.getTag(),
+                      iconUrl: usr.getAvatarUrl(),
+                    });
+                    addFooter = `Actor: ${usr.id}`;
+                    temp = temp.replace('_ACTORTAG_', '');
+                  }
+                }
               }
             }
-          } else if (map.has('_USERTAG_')) {
+          }
+          if (!pickedOne && map.has('_USERTAG_')) {
             let rep = false;
             if (temp.indexOf('_USERTAG_') === 0) {
               rep = true;
@@ -459,15 +490,16 @@ async function getMessages(
                   usrid = usrid.substr(1);
                 }
               }
-
-              const usr = await discord.getUser(usrid);
-              if (usr !== null) {
-                temp = temp.replace('_USERTAG_', '');
-                em.setAuthor({
-                  name: usr.getTag(),
-                  iconUrl: usr.getAvatarUrl(),
-                });
-                addFooter = `User: ${usr.id}`;
+              if (usrid !== '') {
+                const usr = await discord.getUser(usrid);
+                if (usr !== null) {
+                  temp = temp.replace('_USERTAG_', '');
+                  em.setAuthor({
+                    name: usr.getTag(),
+                    iconUrl: usr.getAvatarUrl(),
+                  });
+                  addFooter = `User: ${usr.id}`;
+                }
               }
             }
           }
@@ -576,7 +608,7 @@ async function getMessages(
                   value: ev.auditLogEntry.reason,
                 },
               ]);
-            } else if (map.has('_REASON_')) {
+            } else if (map.has('_REASON_') && map.get('_REASON_').length > 0) {
               em.setFields([
                 {
                   inline: false,
@@ -725,10 +757,10 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.ignores) {
         if (discord.getBotId() === qev.auditLogEntry.userId) {
           if (conf.config.modules.logging.ignores.self === true && conf.config.modules.logging.ignores.selfAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
-            return;
+            continue;
           }
         } else if (conf.config.modules.logging.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(qev.auditLogEntry.userId)) {
-          return;
+          continue;
         }
       }
       if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === false) {
@@ -740,6 +772,9 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
       }
 
       const keys = await data.getKeys(qev.auditLogEntry, ...qev.payload);
+      if (keys.length === 0) {
+        continue;
+      }
       // let isAuditLog = false;
       const al = <any>qev.auditLogEntry;
       const obj = new Event(
@@ -851,6 +886,9 @@ export async function handleEvent(
     if (!Array.isArray(keys)) {
       throw new Error('handleEvent keys not an array!');
     }
+    if (keys.length === 0) {
+      return;
+    }
     // let isAuditLog = false;
 
     // check ignores
@@ -871,27 +909,19 @@ export async function handleEvent(
       await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
       return;
     }
-    // if (utils.isDebug()) {
-    //   console.log('logging trigger', eventName, obj);
-    // }
+    // console.log('logging trigger', eventName, obj);
 
     const chans = await parseChannelsData(obj);
-    // if (utils.isDebug(true)) {
-    //   console.log('handleevent.parseChannelData', chans);
-    // }
+    // console.log('handleevent.parseChannelData', chans);
     let messages = await getMessages(guildId, chans, obj);
-    // if (utils.isDebug(true)) {
-    //   console.log('handleevent.getMessages', messages);
-    // }
+    // console.log('handleevent.getMessages', messages);
 
     messages = combineMessages(messages);
-    // if (utils.isDebug(true)) {
-    //   console.log('handleevent.combineMessages', messages);
-    // }
+    // console.log('handleevent.combineMessages', messages);
 
     await sendInLogChannel(guildId, messages);
   } catch (e) {
-    if (utils.isDebug()) {
+    if (utils.isDebug(true)) {
       console.error(e);
     }
     await logDebug('BOT_ERROR', new Map<string, any>([
