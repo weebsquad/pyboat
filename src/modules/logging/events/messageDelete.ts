@@ -28,7 +28,9 @@ export function getKeys(
     }
     return ['messageDeletedGuild'];
   }
-  if(!isMaster()) return [];
+  if (!isMaster()) {
+    return [];
+  }
   if (msg === null) {
     return ['messageDeletedNoCache'];
   }
