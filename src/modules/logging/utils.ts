@@ -49,6 +49,9 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   return usrs.includes(user);
 }
 
+export function isMaster() {
+  return conf.guildId === conf.globalConfig.masterGuild;
+}
 export function isMasterInDebug() {
   return true;
 }
