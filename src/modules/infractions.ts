@@ -528,7 +528,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   if (deleteDays < 0) {
     deleteDays = 0;
   }
-  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]`: 'SYSTEM'}): ${reason}` });
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
   const inf = await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
   await logAction('ban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
@@ -821,6 +821,34 @@ export async function AL_OnGuildMemberUpdate(
       await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
     }
   }
+}
+
+export async function AL_OnGuildMemberRemove(
+  id: string,
+  gid: string,
+  log: any,
+  memberRemove: discord.Event.IGuildMemberRemove,
+  oldMember: discord.GuildMember,
+) {
+  if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+    return;
+  }
+  const inf = await addInfraction(memberRemove.user, log.user, InfractionType.KICK, undefined, log.reason);
+  await logAction('kick', log.user, memberRemove.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+}
+
+export async function AL_OnGuildBanAdd(
+  id: string,
+  gid: string,
+  log: any,
+  ban: discord.GuildBan,
+  oldMember: discord.GuildMember,
+) {
+  if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+    return;
+  }
+  const inf = await addInfraction(ban.user, log.user, InfractionType.BAN, undefined, log.reason);
+  await logAction('ban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
 }
 
 export async function AL_OnGuildBanRemove(
