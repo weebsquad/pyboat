@@ -5,6 +5,8 @@ import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 import { check } from './disabled/onJoin';
+import { chEmbed } from './logging/classes';
+import { getUserAuth } from '../lib/utils';
 
 const keyPrefix = 'Infraction_';
 const indexSep = '|';
@@ -22,6 +24,7 @@ export class Infraction {
   active: boolean;
   expiresAt: string;
   id: string;
+  ts: number;
   memberId: string;
   actorId: string | null;
   type: InfractionType;
@@ -29,6 +32,7 @@ export class Infraction {
   constructor(type: InfractionType, actor: string | null, target: string, expires: string | undefined = '', reason = '') {
     const id = utils.composeSnowflake();
     this.id = id;
+    this.ts = utils.decomposeSnowflake(id).timestamp;
     this.type = type;
     this.actorId = actor;
     this.memberId = target;
@@ -43,7 +47,7 @@ export class Infraction {
     this.active = this.expiresAt !== this.id;
     return this;
   }
-  private async updateStorage(keyOld: string, keyNew: string) {
+  async updateStorage(keyOld: string, keyNew: string) {
     await utils.KVManager.delete(keyOld);
     await utils.KVManager.set(keyNew, true);
   }
@@ -117,7 +121,7 @@ export class Infraction {
     }
   }
   getKey() {
-    const _data = [this.id, this.actorId, this.memberId, this.expiresAt, this.reason.split('|').join('/'), this.type, this.active];
+    const _data = [this.id, this.ts, this.actorId, this.memberId, this.expiresAt, this.reason.split(indexSep).join('/'), this.type, this.active];
     return `${keyPrefix}${_data.join(indexSep)}`;
   }
   isExpired() {
@@ -137,21 +141,22 @@ export async function getInfractions() {
   // transform them into fake infraction objects
   const transf = keysInf.map((e) => {
     const splitted = e.split(keyPrefix).join('').split(indexSep);
-    if (splitted.length !== 7) {
+    if (splitted.length !== 8) {
       return undefined;
     }
     const newobj = {
       id: splitted[0],
-      actorId: splitted[1],
-      memberId: splitted[2],
-      expiresAt: splitted[3],
-      reason: splitted[4],
-      type: splitted[5],
-      active: typeof splitted[6] === 'string' ? splitted[6] === 'true' : false,
+      ts: parseInt(splitted[1], 10),
+      actorId: splitted[2],
+      memberId: splitted[3],
+      expiresAt: splitted[4],
+      reason: splitted[5],
+      type: splitted[6],
+      active: typeof splitted[7] === 'string' ? splitted[7] === 'true' : false,
     };
     return makeFake<Infraction>(newobj, Infraction);
   });
-  const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction);
+  const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction).sort((a, b) => a.ts-b.ts);
   return exist;
 }
 export async function every5Min() {
@@ -269,8 +274,11 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   }
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
   if (actionType === InfractionType.KICK || actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) {
+    if(target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
+      return `I can't ${actionType.toLowerCase()} this member`;
+    }
     if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
-      return `I can't ${actionType} this member`;
+      return `I can't ${actionType.toLowerCase()} this member`;
     }
   }
   // check levels and discord perms
@@ -494,10 +502,11 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
     return false;
   }
   await member.kick();
+  /*
   const gm = await (await member.getGuild()).getMember(member.user.id);
   if (gm !== null) {
     return 'Failed to kick the member (still in the guild?)';
-  }
+  }*/
   await addInfraction(member, actor, InfractionType.KICK, undefined, reason);
   await logAction('kick', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
@@ -807,6 +816,256 @@ export function InitializeCommands() {
                 }
                 await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
+              cmdGroup.subcommand('inf', (subCommandGroup) => {
+                subCommandGroup.raw({ name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
+                async (msg, { }) => {
+                  const infs = (await getInfractionBy(null))
+                    const last10 = infs.slice(Math.max(infs.length - 10, 0));
+                    let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+                    last10.map(function(inf) {
+                      txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.actorId}> **>** <@!${inf.memberId}> - **${inf.type.substr(0,1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    });
+                    const remaining = infs.length - last10.length;
+                    if(remaining > 0) {
+                      txt += '\n\n**...** and ' + remaining + ' more infractions';
+                    }
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                });
+                subCommandGroup.raw({ name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
+                async (msg, { }) => {
+                  const infs = (await getInfractionBy({active: true}))
+                    const last10 = infs.slice(Math.max(infs.length - 10, 0));
+                    let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+                    last10.map(function(inf) {
+                      txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.actorId}> **>** <@!${inf.memberId}> - **${inf.type.substr(0,1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    });
+                    const remaining = infs.length - last10.length;
+                    if(remaining > 0) {
+                      txt += '\n\n**...** and ' + remaining + ' more infractions';
+                    }
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                });
+                subCommandGroup.on({ name: 'info', filters: c2.getFilters('infractions.inf.info', Ranks.Moderator) },
+                (ctx) => ({ id: ctx.string() }),
+                async (msg, { id }) => {
+                  let infs;
+                  if(id.toLowerCase() === 'ml') {
+                    infs = (await getInfractionBy({actorId: msg.author.id}));
+                    if(infs.length > 0) {
+                      infs = [infs[infs.length-1]];
+                    }
+                  } else {
+                  infs = (await getInfractionBy({id: id}));
+                  }
+                  if(infs.length !== 1) {
+                    await msg.reply(discord.decor.Emojis.X + 'No infraction found');
+                    return;
+                  }
+                  const inf = infs[0];
+                    let txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: <@!${inf.actorId}> (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                });
+                subCommandGroup.on({ name: 'duration', filters: c2.getFilters('infractions.inf.duration', Ranks.Moderator) },
+                (ctx) => ({ id: ctx.string(), duration: ctx.string() }),
+                async (msg, { id, duration }) => {
+                  const dur = utils.timeArgumentToMs(duration);
+                  if (dur === 0) {
+                    await msg.reply(discord.decor.Emojis.X + 'Tempban duration malformed (try 1h30m format)');
+                    return;
+                  }
+                  if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
+                    await msg.reply(discord.decor.Emojis.X + 'Tempban duration must be between a minute and a year');
+                    return;
+                  }
+                  let infs;
+                  if(id.toLowerCase() === 'ml') {
+                    infs = (await getInfractionBy({actorId: msg.author.id}));
+                    if(infs.length > 0) {
+                      infs = [infs[infs.length-1]];
+                    }
+                  } else {
+                  infs = (await getInfractionBy({id: id}));
+                  }
+                  if(infs.length !== 1) {
+                    await msg.reply(discord.decor.Emojis.X + 'No infraction found');
+                    return;
+                  }
+                  let inf: Infraction = infs[0];
+                  if(!inf.active) {
+                    await msg.reply(discord.decor.Emojis.X + 'This infraction is not active.');
+                    return;
+                  }
+                  if(inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+                    await msg.reply(discord.decor.Emojis.X + 'You cannot edit other people\'s infractions.');
+                    return;
+                  }
+                  const expiresAt = utils.composeSnowflake(inf.ts + dur);
+                  const oldK = inf.getKey();
+                  inf.expiresAt = expiresAt;
+                  await inf.updateStorage(oldK, inf.getKey());
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' infraction\'s duration updated !');
+                });
+                subCommandGroup.on({ name: 'reason', filters: c2.getFilters('infractions.inf.reason', Ranks.Moderator) },
+                (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
+                async (msg, { id, reason }) => {
+                  let infs;
+                  if(id.toLowerCase() === 'ml') {
+                    infs = (await getInfractionBy({actorId: msg.author.id}));
+                    if(infs.length > 0) {
+                      infs = [infs[infs.length-1]];
+                    }
+                  } else {
+                  infs = (await getInfractionBy({id: id}));
+                  }
+                  if(infs.length !== 1) {
+                    await msg.reply(discord.decor.Emojis.X + 'No infraction found');
+                    return;
+                  }
+                  let inf: Infraction = infs[0];
+
+                  if(inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+                    await msg.reply(discord.decor.Emojis.X + 'You cannot edit other people\'s infractions.');
+                    return;
+                  }
+                  const oldK = inf.getKey();
+                  inf.reason = reason;
+                  await inf.updateStorage(oldK, inf.getKey());
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' infraction\'s reason updated !');
+                });
+                subCommandGroup.on({ name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
+                (ctx) => ({ id: ctx.string() }),
+                async (msg, { id }) => {
+                  let infs;
+                  if(id.toLowerCase() === 'ml') {
+                    infs = (await getInfractionBy({actorId: msg.author.id}));
+                    if(infs.length > 0) {
+                      infs = [infs[infs.length-1]];
+                    }
+                  } else {
+                  infs = (await getInfractionBy({id: id}));
+                  }
+                  if(infs.length !== 1) {
+                    await msg.reply(discord.decor.Emojis.X + 'No infraction found');
+                    return;
+                  }
+                  await utils.KVManager.delete(infs[0].getKey());
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' infraction deleted !');
+                });
+                subCommandGroup.on({ name: 'clearuser', filters: c2.getFilters('infractions.inf.clearuser', Ranks.Administrator) },
+                (ctx) => ({ user: ctx.user()}),
+                async (msg, { user }) => {
+                  const infs = (await getInfractionBy({memberId: user.id}));
+                  if(infs.length === 0) {
+                    await msg.reply(discord.decor.Emojis.X + 'Could not find any infractions for the given user');
+                    return;
+                  }
+                  let count = 0;
+                  for(const key in infs) {
+                    const inf = infs[key];
+                    await utils.KVManager.delete(inf.getKey());
+                    count++;
+                  }
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' ' + count + ' infractions deleted !');
+                });
+                subCommandGroup.on({ name: 'clearactor', filters: c2.getFilters('infractions.inf.clearactor', Ranks.Administrator) },
+                (ctx) => ({ actor: ctx.user()}),
+                async (msg, { actor }) => {
+                  const infs = (await getInfractionBy({actorId: actor.id}));
+                  if(infs.length === 0) {
+                    await msg.reply(discord.decor.Emojis.X + 'Could not find any infractions for the given actor');
+                    return;
+                  }
+                  let count = 0;
+                  for(const key in infs) {
+                    const inf = infs[key];
+                    await utils.KVManager.delete(inf.getKey());
+                    count++;
+                  }
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' ' + count + ' infractions deleted !');
+                });
+                subCommandGroup.raw({ name: 'clearall', filters: c2.getFilters('infractions.inf.clearall', Ranks.Owner) },
+                async (msg, { }) => {
+                  const infs = (await getInfractionBy(null));
+                  if(infs.length === 0) {
+                    await msg.reply(discord.decor.Emojis.X + 'Could not find any infractions');
+                    return;
+                  }
+                  let count = 0;
+                  for(const key in infs) {
+                    const inf = infs[key];
+                    await utils.KVManager.delete(inf.getKey());
+                    count++;
+                  }
+                  await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' ' + count + ' infractions deleted !');
+                });
+                subCommandGroup.subcommand('search', (subCommandGroup2) => {
+                  subCommandGroup2.on({ name: 'actor', filters: c2.getFilters('infractions.inf search.actor', Ranks.Moderator) },
+                  (ctx) => ({ actor: ctx.user() }),
+                  async (msg, { actor }) => {
+                    const infs = (await getInfractionBy({actorId: actor.id}))
+                    const last10 = infs.slice(Math.max(infs.length - 10, 0));
+                    let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+                    last10.map(function(inf) {
+                      txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0,1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    });
+                    const remaining = infs.length - last10.length;
+                    if(remaining > 0) {
+                      txt += '\n\n**...** and ' + remaining + ' more infractions';
+                    }
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setAuthor({name: actor.getTag(), iconUrl: actor.getAvatarUrl()});
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                  });
+                  subCommandGroup2.on({ name: 'user', filters: c2.getFilters('infractions.inf search.user', Ranks.Moderator) },
+                  (ctx) => ({ user: ctx.user() }),
+                  async (msg, { user }) => {
+                    const infs = await getInfractionBy({memberId: user.id});
+                    const last10 = infs.slice(Math.max(infs.length - 10, 0));
+                    let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
+                    last10.map(function(inf) {
+                      txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.actorId}> - **${inf.type.substr(0,1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    });
+                    const remaining = infs.length - last10.length;
+                    if(remaining > 0) {
+                      txt += '\n\n**...** and ' + remaining + ' more infractions';
+                    }
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setAuthor({name: user.getTag(), iconUrl: user.getAvatarUrl()});
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                  });
+                  subCommandGroup2.on({ name: 'type', filters: c2.getFilters('infractions.inf search.type', Ranks.Moderator) },
+                  (ctx) => ({ type: ctx.string() }),
+                  async (msg, { type }) => {
+                    const infs = await getInfractionBy({type: type.toUpperCase()});
+                    const last10 = infs.slice(Math.max(infs.length - 10, 0));
+                    let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0,1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
+                    last10.map(function(inf) {
+                      txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.actorId}> **>** <@!${inf.memberId}>${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+                    });
+                    const remaining = infs.length - last10.length;
+                    if(remaining > 0) {
+                      txt += '\n\n**...** and ' + remaining + ' more infractions';
+                    }
+                    const emb = new discord.Embed();
+                    emb.setDescription(txt);
+                    emb.setTimestamp(new Date().toISOString());
+                    await msg.reply({embed: emb, allowedMentions: {}, content: ''});
+                  });
+              });
+            });
   return cmdGroup;
 }
 export async function AL_OnGuildMemberUpdate(
