@@ -88,6 +88,7 @@ const defaultConfig = { // for non-defined configs!
     },
     infractions: {
       enabled: false,
+      checkLogs: true,
       muteRole: '',
       targetting: {
         reqDiscordPermissions: true,

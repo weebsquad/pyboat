@@ -9,13 +9,16 @@ import { check } from './disabled/onJoin';
 const keyPrefix = 'Infraction_';
 const indexSep = '|';
 export enum InfractionType {
-  KICK = 'KICK',
-  BAN = 'BAN',
   MUTE = 'MUTE',
-  TEMPMUTE = 'TEMPMUTE'
+  TEMPMUTE = 'TEMPMUTE',
+  KICK = 'KICK',
+  TEMPBAN = 'TEMPBAN',
+  SOFTBAN = 'SOFTBAN',
+  BAN = 'BAN',
 }
 
 export class Infraction {
+  guild: discord.Guild | undefined;
   active: boolean;
   expiresAt: string;
   id: string;
@@ -45,15 +48,19 @@ export class Infraction {
     if (!this.active) {
       return false;
     }
-    const guild = await discord.getGuild(guildId);
-    const member = await guild.getMember(this.memberId);
-    if (member === null) {
-      const keyOld = this.getKey();
-      this.active = false;
-      await this.updateStorage(keyOld, this.getKey());
-      return false;
+    const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
+    if (!(this.guild instanceof discord.Guild)) {
+      this.guild = guild;
     }
+
     if (this.type === InfractionType.TEMPMUTE) {
+      const member = await guild.getMember(this.memberId);
+      if (member === null) {
+        const keyOld = this.getKey();
+        this.active = false;
+        await this.updateStorage(keyOld, this.getKey());
+        return false;
+      }
       if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
         if (!member.roles.includes(config.modules.infractions.muteRole)) {
           const keyOld = this.getKey();
@@ -67,7 +74,17 @@ export class Infraction {
       this.active = false;
       await this.updateStorage(keyOld, this.getKey());
       return false;
+    } if (this.type === InfractionType.TEMPBAN) {
+      const ban = await guild.getBan(this.memberId);
+      if (ban === null) {
+        const keyOld = this.getKey();
+        this.active = false;
+        await this.updateStorage(keyOld, this.getKey());
+        return false;
+      }
+      return true;
     }
+    return this.active;
   }
   async checkExpired() {
     if (!this.active || !this.isExpired()) {
@@ -77,19 +94,23 @@ export class Infraction {
     if (!checkActive) {
       return;
     }
-    const guild = await discord.getGuild(guildId);
-    const member = await guild.getMember(this.memberId);
-    if (member === null) {
-      return;
+    const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
+    if (!(this.guild instanceof discord.Guild)) {
+      this.guild = guild;
     }
-    console.log('checking expired ', this.id);
     if (this.type === InfractionType.TEMPMUTE) {
-      if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
-        if (member.roles.includes(config.modules.infractions.muteRole)) {
-          await member.removeRole(config.modules.infractions.muteRole);
-          await this.checkActive();
-        }
+      const member = await guild.getMember(this.memberId);
+      if (member === null) {
+        return;
       }
+      await member.removeRole(config.modules.infractions.muteRole);
+      await logAction('tempmute_expired', null, member);
+      await this.checkActive();
+    } else if (this.type === InfractionType.TEMPBAN) {
+      const usr = await discord.getUser(this.memberId);
+      await guild.deleteBan(this.memberId);
+      await logAction('tempban_expired', null, usr);
+      await this.checkActive();
     }
   }
   getKey() {
@@ -111,7 +132,7 @@ export async function getInfractions() {
   // enforce keys having our identifier
   const keysInf = keys.filter((inf) => inf.substr(0, keyPrefix.length) === keyPrefix);
   // transform them into fake infraction objects
-  const transf = keys.map((e) => {
+  const transf = keysInf.map((e) => {
     const splitted = e.split(keyPrefix).join('').split(indexSep);
     if (splitted.length !== 7) {
       return undefined;
@@ -123,7 +144,7 @@ export async function getInfractions() {
       expiresAt: splitted[3],
       reason: splitted[4],
       type: splitted[5],
-      active: splitted[6],
+      active: typeof splitted[6] === 'string' ? splitted[6] === 'true' : false,
     };
     return makeFake<Infraction>(newobj, Infraction);
   });
@@ -131,29 +152,39 @@ export async function getInfractions() {
   return exist;
 }
 export async function every5Min() {
-  console.log('every 5 min infractions');
-  const now = Date.now();
-  const infs = await getInfractions();
-  const actives = infs.filter((inf) => inf.active && inf.isExpired());
-  console.log(actives);
-  if (actives.length > 0) {
-    const promises1 = [];
-    actives.forEach((inf) => {
-      if (inf.active) {
-        promises1.push(inf.checkActive());
-      }
-    });
-    await Promise.all(promises1);
-    const promises2 = [];
-    actives.forEach((inf) => {
-      if (inf.isExpired()) {
-        promises2.push(inf.checkExpired());
-      }
-    });
-    await Promise.all(promises2);
+  try {
+    // console.log('every 5 min infractions');
+    const now = Date.now();
+    const infs = (await getInfractionBy({
+      active: true,
+    }));
+    const actives = infs.filter((inf) => inf.active && inf.isExpired());
+    /*if (actives.length > 0) {
+      console.log(actives);
+    }*/
+    if (actives.length > 0) {
+      /* const promises1 = [];
+      actives.forEach((inf) => {
+        if (inf.active) {
+          promises1.push(inf.checkActive());
+        }
+      });
+      await Promise.all(promises1); */
+      const promises2 = [];
+      actives.forEach((inf) => {
+        if (inf.isExpired()) {
+          promises2.push(inf.checkExpired());
+        }
+      });
+      await Promise.all(promises2);
+    }
+    const diff = Date.now() - now;
+    /*if (actives.length > 0) {
+      console.log(`Every5min Took ${diff}ms to pass thru ${actives.length} inf keys (~${Math.floor(diff / actives.length)}ms per key)`);
+    }*/
+  } catch (e) {
+    console.error(e);
   }
-  const diff = Date.now() - now;
-  console.log(`Every5min Took ${diff}ms to pass thru ${infs.length} inf keys (~${Math.floor(diff / infs.length)}ms per key)`);
 }
 export async function clearInfractions() {
   await pylon.requestCpuBurst(async () => {
@@ -167,15 +198,34 @@ export async function clearInfractions() {
     console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
   });
 }
-export async function addInfraction(target: discord.GuildMember, actor: discord.GuildMember | null, type: InfractionType, expires: string | undefined = '', reason = '') {
+export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {
+  let targetId;
+  if (target instanceof discord.GuildMember) {
+    targetId = target.user.id;
+  }
+  if (target instanceof discord.User) {
+    targetId = target.id;
+  }
+  if (typeof target === 'string') {
+    targetId = target;
+  }
+  if (typeof targetId === 'undefined') {
+    return false;
+  }
   reason = reason.split(indexSep).join('/');
-  const act = actor !== null ? actor.user.id : null;
-  const newInf = new Infraction(type, act, target.user.id, expires, reason);
+  let actorId;
+  if(typeof actor === 'string' || actor === null) actorId = actor;
+  if(actor instanceof discord.User) actorId = actor.id;
+  if(actor instanceof discord.GuildMember) actorId = actor.user.id;
+  const newInf = new Infraction(type, actorId, targetId, expires, reason);
   await utils.KVManager.set(`${newInf.getKey()}`, true);
   return newInf;
 }
-export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember, actionType: InfractionType): Promise<boolean | string> {
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
   if (actor === null) {
+    if (target instanceof discord.User) {
+      return true;
+    }
     let isTargetOverride = false;
     if (utils.isGlobalAdmin(target.user.id)) {
       isTargetOverride = await utils.isGAOverride(target.user.id);
@@ -183,42 +233,43 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     }
     return true;
   }
+  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isGA = utils.isGlobalAdmin(actor.user.id);
   let isOverride = false;
   if (isGA) {
     isOverride = await utils.isGAOverride(actor.user.id);
   }
   let isTargetOverride = false;
-  if (utils.isGlobalAdmin(target.user.id)) {
-    isTargetOverride = await utils.isGAOverride(target.user.id);
+  if (utils.isGlobalAdmin(targetId)) {
+    isTargetOverride = await utils.isGAOverride(targetId);
   }
-  if (actor.user.id === target.user.id && !isOverride) {
+  if (actor.user.id === targetId && !isOverride) {
     return 'You can\'t target yourself';
   }
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
-  const highestRoleTarget = await utils.getMemberHighestRole(target);
-  const highestRoleMe = await utils.getMemberHighestRole(me);
-  const isGuildOwner = guild.ownerId === actor.user.id;
   // check bot can actually do it
   if (actionType === InfractionType.KICK && !me.can(discord.Permissions.KICK_MEMBERS)) {
     return 'I can\'t kick members';
   }
-  if (actionType === InfractionType.BAN && !me.can(discord.Permissions.BAN_MEMBERS)) {
+  if ((actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN || actionType === InfractionType.BAN) && !me.can(discord.Permissions.BAN_MEMBERS)) {
     return 'I can\'t ban members';
   }
+
+  const highestRoleMe = await utils.getMemberHighestRole(me);
+  const isGuildOwner = guild.ownerId === actor.user.id;
   if (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) {
     if (!me.can(discord.Permissions.MANAGE_ROLES)) {
       return 'I can\'t manage roles';
     }
     const mtRole = await guild.getRole(config.modules.infractions.muteRole);
     if (mtRole !== null && highestRoleMe.position <= mtRole.position) {
-      return 'I can\'t apply this role to members';
+      return 'I can\'t manage the mute role';
     }
   }
-
-  if (actionType === InfractionType.KICK || actionType === InfractionType.BAN) {
-    if (highestRoleMe.position <= highestRoleTarget.position) {
+  const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
+  if (actionType === InfractionType.KICK || actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) {
+    if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
       return `I can't ${actionType} this member`;
     }
   }
@@ -230,11 +281,13 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
-      } if (actionType === InfractionType.BAN && !actor.can(discord.Permissions.BAN_MEMBERS)) {
+      } else if ((actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
         return 'You can\'t ban members';
+      } else if((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+        return 'You can\'t manage roles';
       }
     }
-    if (checkLevels === true) {
+    if (checkLevels === true && target instanceof discord.GuildMember) {
       const actorLevel = utils.getUserAuth(actor);
       const targetLevel = utils.getUserAuth(target);
       if (actorLevel <= targetLevel) {
@@ -243,12 +296,12 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     }
     if (checkRoles === true) {
       const highestActor = await utils.getMemberHighestRole(actor);
-      if (highestActor.position <= highestRoleTarget.position) {
-        return 'You can\'t target this user (due to their roles)';
+      if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
+        return 'You can\'t target this user (due to their role hierarchy)';
       }
     }
   }
-  if (isTargetOverride === true && !isOverride && actor.user.id !== target.user.id) {
+  if (isTargetOverride === true && !isOverride && actor.user.id !== targetId) {
     if (!isGuildOwner) {
       return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable, please have the server owner perform it.';
     }
@@ -256,7 +309,10 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User, extras: Map<string, string> | undefined = new Map()) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember, extras: Map<string, string> | undefined = new Map()) {
+  if (member instanceof discord.GuildMember) {
+    member = member.user;
+  }
   extras.set('_USERTAG_', logUtils.getUserTag(member));
   extras.set('_USER_ID_', member.id);
   if (actor === null) {
@@ -313,10 +369,6 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
 }
 
 export async function getInfractionBy(query: any) {
-  if (query !== null && typeof query !== 'object') {
-    return false;
-  }
-
   const infs = await getInfractions();
   if (query === null) {
     return infs;
@@ -324,6 +376,7 @@ export async function getInfractionBy(query: any) {
   const newInfs = infs.filter((inf) => {
     for (const key in query) {
       if (inf[key] !== query[key]) {
+        // console.log(`mismatch in ${key}, ${query[key]} (${typeof query[key]}) !== ${inf[key]} (${typeof inf[key]})`);
         return false;
       }
     }
@@ -334,10 +387,10 @@ export async function getInfractionBy(query: any) {
 export async function TempMute(member: discord.GuildMember, actor: discord.GuildMember | null, time: string, reason: string) {
   const dur = utils.timeArgumentToMs(time);
   if (dur === 0) {
-    return 'Mute duration malformed (try 1h30m format)';
+    return 'Tempmute duration malformed (try 1h30m format)';
   }
   if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-    return 'Mute duration must be between a minute and a year';
+    return 'Tempmute duration must be between a minute and a year';
   }
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
@@ -366,10 +419,55 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
   await logAction('tempmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
-export async function Mute() {
+export async function Mute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
+  const { muteRole } = config.modules.infractions;
+  if (typeof muteRole !== 'string' || muteRole === '') {
+    return 'Mute role not defined';
+  }
+  const guild = await member.getGuild();
+  const mtRole = await guild.getRole(muteRole);
+  if (mtRole === null) {
+    return 'Couldn\'t find the mute role';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (member.roles.includes(mtRole.id)) {
+    return `${member.user.toMention()} is already muted`;
+  }
+  const canT = await canTarget(actor, member, InfractionType.MUTE);
+  if (canT !== true) {
+    return canT;
+  }
+  await member.addRole(muteRole);
+
+  const inf = await addInfraction(member, actor, InfractionType.MUTE, undefined, reason);
+  await logAction('mute', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
-export async function UnMute() {
+export async function UnMute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
+  const { muteRole } = config.modules.infractions;
+  if (typeof muteRole !== 'string' || muteRole === '') {
+    return 'Mute role not defined';
+  }
+  const guild = await member.getGuild();
+  const mtRole = await guild.getRole(muteRole);
+  if (mtRole === null) {
+    return 'Couldn\'t find the mute role';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (!member.roles.includes(mtRole.id)) {
+    return `${member.user.toMention()} is not muted`;
+  }
+  // we can check against mute, it's the same thing.
+  const canT = await canTarget(actor, member, InfractionType.MUTE);
+  if (canT !== true) {
+    return canT;
+  }
+  await member.removeRole(muteRole);
+  await logAction('unmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
 export async function Kick(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
@@ -395,7 +493,35 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
 export async function Ban() {
   return true;
 }
-export async function TempBan() {
+export async function TempBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, time: string, reason: string) {
+  const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
+  const usr = member instanceof discord.GuildMember ? member.user : member;
+  const dur = utils.timeArgumentToMs(time);
+  if (dur === 0) {
+    return 'Tempban duration malformed (try 1h30m format)';
+  }
+  if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
+    return 'Tempban duration must be between a minute and a year';
+  }
+
+  const guild = await discord.getGuild(guildId);
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  const ban = await guild.getBan(memberId);
+  if (ban !== null) {
+    return `${usr.toMention()} is already banned`;
+  }
+  const canT = await canTarget(actor, member, InfractionType.TEMPBAN);
+  if (canT !== true) {
+    return canT;
+  }
+  const expiresAt = utils.composeSnowflake(Date.now() + dur);
+  const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+  await guild.createBan(memberId, { deleteMessageDays: 0, reason });
+
+  const inf = await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
+  await logAction('tempban', actor, usr, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
 export async function SoftBan() {
@@ -448,7 +574,64 @@ export function InitializeCommands() {
                 }
                 const dur = utils.timeArgumentToMs(time);
                 const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-                await confirmResult(undefined, msg, true, `Tempmuted \`${utils.escapeString(member.user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+                await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+  cmdGroup.on({ name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
+              (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
+              async (msg, { user, time, reason }) => {
+                const result = await TempBan(user, msg.member, time, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to tempban user.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                const dur = utils.timeArgumentToMs(time);
+                const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+                await confirmResult(undefined, msg, true, `Temp-banned \`${utils.escapeString(user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   return cmdGroup;
+}
+export async function AL_OnGuildMemberUpdate(
+  id: string,
+  guildId: string,
+  log: any,
+  member: discord.GuildMember,
+  oldMember: discord.GuildMember,
+) {
+  if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
+    if(!member.roles.includes(config.modules.infractions.muteRole) && oldMember.roles.includes(config.modules.infractions.muteRole)) {
+      // mute role removed
+      let query = (await getInfractionBy({
+        memberId: member.user.id,
+        active: true
+      })).filter(function(inf) {
+        return inf.type === InfractionType.TEMPMUTE || inf.type === InfractionType.MUTE;
+      });
+      if(query.length > 0) {
+        const promises = [];
+      query.forEach((inf) => {
+          promises.push(inf.checkActive());
+      });
+      await Promise.all(promises);
+      }
+      // todo: audit log pulls
+      if(!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+        return;
+      }
+      //console.log(`${member.user.getTag()} unmuted by ${log.user.getTag()}`);
+      await logAction('unmute', log.user, member.user, new Map([['_EXPIRES_', ''], ['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+
+    } else if(member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
+      // mute role added
+      if(!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+        return;
+      }
+      const inf = await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
+      await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+    }
+  }
+  
 }
