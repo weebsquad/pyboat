@@ -5,13 +5,12 @@ import { config } from '../config';
 import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
+import * as inf from './infractions';
 
 const kv = new pylon.KVNamespace('antiPing');
 
 const kvDataKey = 'antiPingData';
 const kvIgnoresKey = 'antiPingIgnores';
-const kvMutesKey = 'antiPingMutes';
-const kvKickDebounce = 'antiPingKickDebounce';
 
 async function isIllegalMention(
   author: discord.GuildMember,
@@ -212,20 +211,12 @@ async function messageDeleted(messageId: string) {
 
 async function clearUserData(userId: string) {
   let ignores = await kv.get(kvIgnoresKey);
-  let mutes = await kv.get(kvMutesKey);
   if (!Array.isArray(ignores)) {
     ignores = [];
-  }
-  if (!Array.isArray(mutes)) {
-    mutes = [];
   }
   if (ignores.includes(userId)) {
     ignores.splice(ignores.indexOf(userId), 1);
     await kv.put(kvIgnoresKey, ignores);
-  }
-  if (mutes.includes(userId)) {
-    mutes.splice(mutes.indexOf(userId), 1);
-    await kv.put(kvMutesKey, mutes);
   }
 }
 
@@ -333,14 +324,7 @@ export async function OnMessageCreate(
     isMute = true;
     try {
       await authorMember.addRole(config.modules.antiPing.muteRole);
-      let mutes: Array<string> = (await kv.get(kvMutesKey));
-      if (!Array.isArray(mutes)) {
-        mutes = [];
-      }
-      if (!mutes.includes(author.id)) {
-        mutes.push(author.id);
-      }
-      await kv.put(kvMutesKey, mutes);
+      const res = await inf.Mute(authorMember, null, `AntiPing Auto-Mute due to spamming mentions`);
     } catch (e) {
       isMute = false; // fallback meme
     }
@@ -455,8 +439,12 @@ export async function OnMessageDeleteBulk(id: string,
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    await member.addRole(config.modules.antiPing.muteRole);
-    return true;
+    //await member.addRole(config.modules.antiPing.muteRole);
+    const res = await inf.Mute(member, reactor, `AntiPing Mute by ${reactor.user.getTag()} (${reactor.user.id})`);
+    if(typeof res !== 'boolean') {
+      return false;
+    }
+    return res;
   } catch (e) {
   }
   return false;
@@ -472,16 +460,14 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
     await kv.put(kvIgnoresKey, ignores);
   }
 
-  let mutes: Array<string> = (await kv.get(kvMutesKey));
-  if (!Array.isArray(mutes)) {
-    mutes = [];
-  }
-  if (mutes.includes(userMsg.authorId)) {
+  if (member.roles.includes(config.modules.infractions.muteRole)) {
     try {
-      await member.removeRole(config.modules.antiPing.muteRole);
-      mutes.splice(mutes.indexOf(userMsg.authorId), 1);
-      await kv.put(kvMutesKey, mutes);
-      return true;
+      //await member.removeRole(config.modules.antiPing.muteRole);
+      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing Ignore by ${reactor.user.getTag()} (${reactor.user.id})`)
+      if(typeof res !== 'boolean') {
+        return false;
+      }
+      return res;
     } catch (e) {
       await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'Ignore'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
@@ -489,16 +475,14 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
   return false;
 }
 export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  let mutes: Array<string> = (await kv.get(kvMutesKey));
-  if (!Array.isArray(mutes)) {
-    mutes = [];
-  }
-  if (mutes.includes(userMsg.authorId)) {
+  if(member.roles.includes(config.modules.infractions.muteRole)) {
     try {
-      await member.removeRole(config.modules.antiPing.muteRole);
-      mutes.splice(mutes.indexOf(userMsg.authorId), 1);
-      await kv.put(kvMutesKey, mutes);
-      return true;
+      //await member.removeRole(config.modules.antiPing.muteRole);
+      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing IgnoreOnce by ${reactor.user.getTag()} (${reactor.user.id})`)
+      if(typeof res !== 'boolean') {
+        return false;
+      }
+     return res;
     } catch (e) {
       // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
       await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'IgnoreOnce'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
@@ -507,19 +491,23 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
   return false;
 }
 export async function EmojiActionKick(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  // No way to softban in pylon yet.. so let's actually kick lol
   try {
-    let kickDebugs = await kv.get(kvKickDebounce);
-    if (!Array.isArray(kickDebugs)) {
-      kickDebugs = [];
+    const res = await inf.Kick(member, reactor, `AntiPing Kick by ${reactor.user.getTag()} (${reactor.user.id})`);
+    if(typeof res !== 'boolean') {
+      return false;
     }
-    if (!kickDebugs.includes(userMsg.authorId)) {
-      kickDebugs.push(userMsg.authorId);
-      await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
+    return res;
+  } catch (e) {
+  }
+  return false;
+}
+export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
+  try {
+    const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban by ${reactor.user.getTag()} (${reactor.user.id})`);
+    if(typeof res !== 'boolean') {
+      return false;
     }
-
-    await member.kick();
-    return true;
+    return res;
   } catch (e) {
   }
   return false;
@@ -527,21 +515,17 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
 
 export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    let kickDebugs = await kv.get(kvKickDebounce);
-    if (!Array.isArray(kickDebugs)) {
-      kickDebugs = [];
-    }
-    if (!kickDebugs.includes(userMsg.authorId)) {
-      kickDebugs.push(userMsg.authorId);
-      await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
-    }
-    await guild.createBan(userMsg.authorId, {
+    /*await guild.createBan(userMsg.authorId, {
       deleteMessageDays: 7,
       reason: `${reactor.user.getTag()} (${
         reactor.user.id
       }) >> Banned due to antiping`,
-    });
-    return true;
+    });*/
+    const res = await inf.Ban(member, reactor, 7, `AntiPing Ban by ${reactor.user.getTag()} (${reactor.user.id})`);
+    if(typeof res !== 'boolean') {
+      return false;
+    }
+    return res;
   } catch (e) {
     //
   }
@@ -614,11 +598,7 @@ export async function OnMessageReactionAdd(id: string,
   if (user === null) {
     return;
   }
-  let mutes: Array<string> = (await kv.get(kvMutesKey));
-  if (!Array.isArray(mutes)) {
-    mutes = [];
-  }
-  const isMutedd = mutes.includes(userMsg.authorId);
+
   let logMsg = `:ping_pong: Successfully marked MessageID \`${userMsg.id}\` as \`${emojiAction}\``;
   if (emojiAction !== 'Ignore' && emojiAction !== 'IgnoreOnce') {
     logMsg += '\n:white_check_mark: __Action was taken__';
@@ -663,15 +643,6 @@ export async function AL_OnGuildMemberRemove(id: string,
   // If they leave after memeing us
   const data = await kv.get(kvDataKey);
   const { user } = member;
-  let kickDebugs = await kv.get(kvKickDebounce);
-  if (!Array.isArray(kickDebugs)) {
-    kickDebugs = [];
-  }
-  if (kickDebugs.includes(user.id)) {
-    kickDebugs.splice(kickDebugs.indexOf(user.id), 1);
-    await kv.put(kvKickDebounce, kickDebugs, { ttl: 20 * 1000 });
-    return;
-  }
   const guild = await discord.getGuild(member.guildId);
   if (typeof data[user.id] !== 'object' || guild === null) {
     return;
@@ -693,11 +664,12 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
   } else {
-    await guild.createBan(user.id, {
+    /*await guild.createBan(user.id, {
       deleteMessageDays: 7,
       reason:
         'Auto-Banned for leaving the server with pending autoping moderations',
-    });
+    });*/
+    await inf.Ban(user, null, 7, `AntiPing AutoBan for leaving the server with pending autoping moderations`);
     wipeAllUserMessages(user.id, true);
     await log('LEFT_BANNED', user);
     await clearUserData(user.id);
@@ -719,18 +691,5 @@ export async function OnGuildBanAdd(id: string,
   await clearUserData(user.id);
 }
 
-export async function OnGuildMemberUpdate(id: string, guildId: string, member: discord.GuildMember) {
-  // Check mute remove
-  const roleMuted = await isMuted(member);
-  let mutesVal = await kv.get(kvMutesKey);
-  if (!Array.isArray(mutesVal)) {
-    mutesVal = [];
-  }
-  const valMuted = mutesVal.includes(member.user.id);
-  if (!roleMuted && valMuted) {
-    mutesVal.splice(mutesVal.indexOf(member.user.id), 1);
-    await kv.put(kvMutesKey, mutesVal);
-  }
-}
 
 // export async function OnMessageUpdate() {}

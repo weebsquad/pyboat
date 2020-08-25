@@ -194,8 +194,7 @@ const defaultConfig = { // for non-defined configs!
         users: [],
         roles: [],
         level: Ranks.Moderator,
-      },
-      muteRole: '',
+      }
     },
     counting: { // counting module
       enabled: false,
