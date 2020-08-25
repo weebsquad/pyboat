@@ -528,7 +528,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   if (deleteDays < 0) {
     deleteDays = 0;
   }
-  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]`: 'SYSTEM'}): ${reason}` });
   const inf = await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
   await logAction('ban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
