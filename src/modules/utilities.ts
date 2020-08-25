@@ -43,7 +43,7 @@ async function savePersistData(member: discord.GuildMember) {
     nick: member.nick,
     level: utils.getUserAuth(member),
   }, { ttl: config.modules.utilities.persist.duration });
-  await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)]]));
+  await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
 }
 
 async function restorePersistData(member: discord.GuildMember) {
@@ -87,7 +87,7 @@ async function restorePersistData(member: discord.GuildMember) {
   }
   await member.edit(objEdit);
   await persistkv.delete(member.user.id);
-  await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)]]));
+  await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
   return true;
 }
 

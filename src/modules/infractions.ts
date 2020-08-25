@@ -4,6 +4,7 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
+import { check } from './disabled/onJoin';
 
 const keyPrefix = 'Infraction_';
 const indexSep = '|';
@@ -19,10 +20,10 @@ export class Infraction {
   expiresAt: string;
   id: string;
   memberId: string;
-  actorId: string;
+  actorId: string | null;
   type: InfractionType;
   reason = '';
-  constructor(type: InfractionType, actor: string, target: string, expires: string | undefined = '', reason = '') {
+  constructor(type: InfractionType, actor: string | null, target: string, expires: string | undefined = '', reason = '') {
     const id = utils.composeSnowflake();
     this.id = id;
     this.type = type;
@@ -36,18 +37,59 @@ export class Infraction {
     this.active = this.expiresAt !== this.id;
     return this;
   }
+  private async updateStorage(keyOld: string, keyNew: string) {
+    await utils.KVManager.delete(keyOld);
+    await utils.KVManager.set(keyNew, true);
+  }
   async checkActive() {
-    const a = 'todo';
-    return;
+    if (!this.active) {
+      return false;
+    }
+    const guild = await discord.getGuild(guildId);
+    const member = await guild.getMember(this.memberId);
+    if (member === null) {
+      const keyOld = this.getKey();
+      this.active = false;
+      await this.updateStorage(keyOld, this.getKey());
+      return false;
+    }
+    if (this.type === InfractionType.TEMPMUTE) {
+      if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
+        if (!member.roles.includes(config.modules.infractions.muteRole)) {
+          const keyOld = this.getKey();
+          this.active = false;
+          await this.updateStorage(keyOld, this.getKey());
+          return false;
+        }
+        return true;
+      }
+      const keyOld = this.getKey();
+      this.active = false;
+      await this.updateStorage(keyOld, this.getKey());
+      return false;
+    }
   }
   async checkExpired() {
     if (!this.active || !this.isExpired()) {
       return;
     }
+    const checkActive = await this.checkActive();
+    if (!checkActive) {
+      return;
+    }
+    const guild = await discord.getGuild(guildId);
+    const member = await guild.getMember(this.memberId);
+    if (member === null) {
+      return;
+    }
     console.log('checking expired ', this.id);
-    const exp = utils.decomposeSnowflake(this.expiresAt).timestamp;
     if (this.type === InfractionType.TEMPMUTE) {
-
+      if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
+        if (member.roles.includes(config.modules.infractions.muteRole)) {
+          await member.removeRole(config.modules.infractions.muteRole);
+          await this.checkActive();
+        }
+      }
     }
   }
   getKey() {
@@ -66,13 +108,9 @@ export class Infraction {
 const makeFake = <T>(data: object, type: { prototype: object }) => Object.assign(Object.create(type.prototype), data) as T;
 export async function getInfractions() {
   const keys = (await utils.KVManager.listKeys());
-  /* const transf = await Promise.all(keys.map(async (e) => {
-    const _transform = (await utils.KVManager.get(e));
-    if (typeof _transform !== 'object') {
-      return undefined;
-    }
-    return makeFake<Infraction>(_transform, Infraction);
-  })); */
+  // enforce keys having our identifier
+  const keysInf = keys.filter((inf) => inf.substr(0, keyPrefix.length) === keyPrefix);
+  // transform them into fake infraction objects
   const transf = keys.map((e) => {
     const splitted = e.split(keyPrefix).join('').split(indexSep);
     if (splitted.length !== 7) {
@@ -96,19 +134,26 @@ export async function every5Min() {
   console.log('every 5 min infractions');
   const now = Date.now();
   const infs = await getInfractions();
-  const diff = Date.now() - now;
-  console.log(infs);
-  // console.log(`Took ${diff}ms to get ${infs.length} inf keys (~${Math.floor(diff / infs.length)}ms per key)`);
   const actives = infs.filter((inf) => inf.active && inf.isExpired());
+  console.log(actives);
   if (actives.length > 0) {
-    const promises = [];
+    const promises1 = [];
     actives.forEach((inf) => {
-      if(inf.active)
-      promises.push(inf.checkActive());
-      if(inf.isExpired()) promises.push(inf.checkExpired())
+      if (inf.active) {
+        promises1.push(inf.checkActive());
+      }
     });
-    await Promise.all(promises);
+    await Promise.all(promises1);
+    const promises2 = [];
+    actives.forEach((inf) => {
+      if (inf.isExpired()) {
+        promises2.push(inf.checkExpired());
+      }
+    });
+    await Promise.all(promises2);
   }
+  const diff = Date.now() - now;
+  console.log(`Every5min Took ${diff}ms to pass thru ${infs.length} inf keys (~${Math.floor(diff / infs.length)}ms per key)`);
 }
 export async function clearInfractions() {
   await pylon.requestCpuBurst(async () => {
@@ -122,13 +167,22 @@ export async function clearInfractions() {
     console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
   });
 }
-export async function addInfraction(target: discord.GuildMember, actor: discord.GuildMember, type: InfractionType, expires: string | undefined = '', reason = '') {
+export async function addInfraction(target: discord.GuildMember, actor: discord.GuildMember | null, type: InfractionType, expires: string | undefined = '', reason = '') {
   reason = reason.split(indexSep).join('/');
-  const newInf = new Infraction(type, actor.user.id, target.user.id, expires, reason);
+  const act = actor !== null ? actor.user.id : null;
+  const newInf = new Infraction(type, act, target.user.id, expires, reason);
   await utils.KVManager.set(`${newInf.getKey()}`, true);
   return newInf;
 }
-export async function canTarget(actor: discord.GuildMember, target: discord.GuildMember, actionType: InfractionType) {
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember, actionType: InfractionType): Promise<boolean | string> {
+  if (actor === null) {
+    let isTargetOverride = false;
+    if (utils.isGlobalAdmin(target.user.id)) {
+      isTargetOverride = await utils.isGAOverride(target.user.id);
+      return isTargetOverride;
+    }
+    return true;
+  }
   const isGA = utils.isGlobalAdmin(actor.user.id);
   let isOverride = false;
   if (isGA) {
@@ -202,19 +256,27 @@ export async function canTarget(actor: discord.GuildMember, target: discord.Guil
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User, member: discord.User, extras: Map<string, string> | undefined = new Map()) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User, extras: Map<string, string> | undefined = new Map()) {
   extras.set('_USERTAG_', logUtils.getUserTag(member));
-  extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+  extras.set('_USER_ID_', member.id);
+  if (actor === null) {
+    extras.set('_ACTORTAG_', 'SYSTEM');
+  } else {
+    if (actor instanceof discord.GuildMember) {
+      actor = actor.user;
+    }
+    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+  }
   await logCustom('INFRACTIONS', `${actionType}`, extras);
 }
-async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string) {
+async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
   if (!(me instanceof discord.GuildMember)) {
     me = await (await ogMsg.getGuild()).getMember(discord.getBotId());
   }
   const chan = await ogMsg.getChannel();
   if (config.modules.infractions && config.modules.infractions.confirmation) {
     const react = typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
-    const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) ? config.modules.infractions.confirmation.message : false;
+    const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) && typeof txt === 'string' && txt.length > 0 ? config.modules.infractions.confirmation.message : false;
     const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(10, config.modules.infractions.confirmation.expiry) : 0;
     if (react === true) {
       try {
@@ -249,6 +311,100 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
     }
   }
 }
+
+export async function getInfractionBy(query: any) {
+  if (query !== null && typeof query !== 'object') {
+    return false;
+  }
+
+  const infs = await getInfractions();
+  if (query === null) {
+    return infs;
+  }
+  const newInfs = infs.filter((inf) => {
+    for (const key in query) {
+      if (inf[key] !== query[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return newInfs;
+}
+export async function TempMute(member: discord.GuildMember, actor: discord.GuildMember | null, time: string, reason: string) {
+  const dur = utils.timeArgumentToMs(time);
+  if (dur === 0) {
+    return 'Mute duration malformed (try 1h30m format)';
+  }
+  if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
+    return 'Mute duration must be between a minute and a year';
+  }
+  const { muteRole } = config.modules.infractions;
+  if (typeof muteRole !== 'string' || muteRole === '') {
+    return 'Mute role not defined';
+  }
+  const guild = await member.getGuild();
+  const mtRole = await guild.getRole(muteRole);
+  if (mtRole === null) {
+    return 'Couldn\'t find the mute role';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (member.roles.includes(mtRole.id)) {
+    return `${member.user.toMention()} is already muted`;
+  }
+  const canT = await canTarget(actor, member, InfractionType.TEMPMUTE);
+  if (canT !== true) {
+    return canT;
+  }
+  const expiresAt = utils.composeSnowflake(Date.now() + dur);
+  const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+  await member.addRole(muteRole);
+
+  const inf = await addInfraction(member, actor, InfractionType.TEMPMUTE, expiresAt, reason);
+  await logAction('tempmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+  return true;
+}
+export async function Mute() {
+  return true;
+}
+export async function UnMute() {
+  return true;
+}
+export async function Kick(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  const canT = await canTarget(actor, member, InfractionType.KICK);
+  if (typeof canT === 'string') {
+    return canT;
+  }
+  if (canT === false) {
+    return false;
+  }
+  await member.kick();
+  const gm = await (await member.getGuild()).getMember(member.user.id);
+  if (gm !== null) {
+    return 'Failed to kick the member (still in the guild?)';
+  }
+  const inf = await addInfraction(member, actor, InfractionType.KICK, undefined, reason);
+  await logAction('kick', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+  return true;
+}
+export async function Ban() {
+  return true;
+}
+export async function TempBan() {
+  return true;
+}
+export async function SoftBan() {
+  return true;
+}
+export async function UnBan() {
+  return true;
+}
+
 export function InitializeCommands() {
   const F = discord.command.filters;
 
@@ -265,68 +421,33 @@ export function InitializeCommands() {
   cmdGroup.on({ name: 'kick', filters: c2.getFilters('infractions.kick', Ranks.Moderator) },
               (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
               async (msg, { member, reason }) => {
-                if (typeof reason !== 'string') {
-                  reason = '';
-                }
-                const canT = await canTarget(msg.member, member, InfractionType.KICK);
-                if (canT !== true) {
-                  // await msg.reply(`${discord.decor.Emojis.NO_ENTRY_SIGN} ${canT}`);
-                  await confirmResult(undefined, msg, false, canT);
+                const result = await Kick(member, msg.member, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to kick member.');
                   return;
                 }
-                await member.kick();
-                const gm = await (await msg.getGuild()).getMember(member.user.id);
-                if (gm !== null) {
-                  await confirmResult(undefined, msg, false, 'Failed to kick the member (still in the guild?)');
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
                   return;
                 }
-                const inf = await addInfraction(member, msg.member, InfractionType.KICK, undefined, reason);
-                await logAction('kick', msg.author, member.user, new Map([['_REASON_', reason !== '' ? `with reason \`${utils.escapeString(reason)}\`` : '']]));
+
                 await confirmResult(undefined, msg, true, `Kicked \`${utils.escapeString(member.user.getTag())}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
 
   cmdGroup.on({ name: 'tempmute', filters: c2.getFilters('infractions.tempmute', Ranks.Moderator) },
               (ctx) => ({ member: ctx.guildMember(), time: ctx.string(), reason: ctx.textOptional() }),
               async (msg, { member, time, reason }) => {
+                const result = await TempMute(member, msg.member, time, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to tempmute member.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
                 const dur = utils.timeArgumentToMs(time);
-                if (dur === 0) {
-                  await confirmResult(undefined, msg, false, 'Mute duration malformed (try 1h30m format)');
-                  return;
-                }
-                if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-                  await confirmResult(undefined, msg, false, 'Mute duration must be between a minute and a year');
-                  return;
-                }
-                const { muteRole } = config.modules.infractions;
-                if (typeof muteRole !== 'string' || muteRole === '') {
-                  await confirmResult(undefined, msg, false, 'Mute role not defined');
-                  return;
-                }
-                const guild = await msg.getGuild();
-                const mtRole = await guild.getRole(muteRole);
-                if (mtRole === null) {
-                  await confirmResult(undefined, msg, false, 'Couldn\'t find the mute role');
-                  return;
-                }
-                if (typeof reason !== 'string') {
-                  reason = '';
-                }
-                if (member.roles.includes(mtRole.id)) {
-                  await confirmResult(undefined, msg, false, `${member.user.toMention()} is already muted`);
-                  return;
-                }
-                const canT = await canTarget(msg.member, member, InfractionType.TEMPMUTE);
-                if (canT !== true) {
-                  // await msg.reply(`${discord.decor.Emojis.NO_ENTRY_SIGN} ${canT}`);
-                  await confirmResult(undefined, msg, false, canT);
-                  return;
-                }
-                const expiresAt = utils.composeSnowflake(Date.now() + dur);
                 const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-                await member.addRole(muteRole);
-
-                const inf = await addInfraction(member, msg.member, InfractionType.TEMPMUTE, expiresAt, reason);
-                await logAction('tempmute', msg.author, member.user, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? `with reason \`${utils.escapeString(reason)}\`` : '']]));
                 await confirmResult(undefined, msg, true, `Tempmuted \`${utils.escapeString(member.user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   return cmdGroup;

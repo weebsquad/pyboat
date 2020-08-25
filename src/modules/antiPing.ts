@@ -168,6 +168,7 @@ async function isBypass(member: discord.GuildMember) {
 async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, string> | undefined = new Map()) {
   if (usr instanceof discord.User) {
     extras.set('_USERTAG_', logUtils.getUserTag(usr));
+    extras.set('_USER_ID_', usr.id);
   }
   if (actor instanceof discord.User) {
     extras.set('_ACTORTAG_', logUtils.getUserTag(actor));

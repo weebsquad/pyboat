@@ -187,10 +187,16 @@ export function InitializeCommands() {
       );
       await m.reply('done');
     });
-    sub.raw('infs', async (m) => {
+    sub.raw('infs5', async (m) => {
       const now = Date.now();
       await infractions.every5Min();
       await m.reply(`Done (Took ${Date.now() - now}ms)`);
+    });
+    sub.raw('getinfs', async (m) => {
+      const now = Date.now();
+      const infs = await infractions.getInfractions();
+      await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      console.log(infs);
     });
     sub.on('addinfs', (ctx) => ({ count: ctx.number() }),
            async (m, { count }) => {
