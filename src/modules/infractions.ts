@@ -507,13 +507,36 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
 /*
   BAN
 */
-export async function Ban() {
+export async function Ban(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, reason: string) {
+  const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
+  const usr = member instanceof discord.GuildMember ? member.user : member;
+  const guild = await discord.getGuild(guildId);
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  const ban = await guild.getBan(memberId);
+  if (ban !== null) {
+    return `${usr.toMention()} is already banned`;
+  }
+  const canT = await canTarget(actor, member, InfractionType.BAN);
+  if (canT !== true) {
+    return canT;
+  }
+  if (deleteDays > 7) {
+    deleteDays = 7;
+  }
+  if (deleteDays < 0) {
+    deleteDays = 0;
+  }
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
+  const inf = await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
+  await logAction('ban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
 /*
   TEMPBAN
 */
-export async function TempBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 |7, time: string, reason: string) {
+export async function TempBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, time: string, reason: string) {
   const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
   const usr = member instanceof discord.GuildMember ? member.user : member;
   const dur = utils.timeArgumentToMs(time);
@@ -536,22 +559,48 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   if (canT !== true) {
     return canT;
   }
-  if(deleteDays > 7) deleteDays = 7;
-  if(deleteDays < 0) deleteDays = 0;
+  if (deleteDays > 7) {
+    deleteDays = 7;
+  }
+  if (deleteDays < 0) {
+    deleteDays = 0;
+  }
   const expiresAt = utils.composeSnowflake(Date.now() + dur);
   const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
 
   const inf = await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
-  await logAction('tempban', actor, usr, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+  await logAction('tempban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
 /*
   SOFTBAN
 */
-export async function SoftBan() {
-  if(deleteDays > 7) deleteDays = 7;
-  if(deleteDays < 0) deleteDays = 0;
+export async function SoftBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, reason: string) {
+  const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
+  const usr = member instanceof discord.GuildMember ? member.user : member;
+  const guild = await discord.getGuild(guildId);
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  const ban = await guild.getBan(memberId);
+  if (ban !== null) {
+    return `${usr.toMention()} is already banned`;
+  }
+  const canT = await canTarget(actor, member, InfractionType.BAN);
+  if (canT !== true) {
+    return canT;
+  }
+  if (deleteDays > 7) {
+    deleteDays = 7;
+  }
+  if (deleteDays < 0) {
+    deleteDays = 0;
+  }
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
+  await guild.deleteBan(memberId);
+  const inf = await addInfraction(member, actor, InfractionType.SOFTBAN, undefined, reason);
+  await logAction('softban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
 /*
@@ -663,13 +712,50 @@ export function InitializeCommands() {
                 }
                 await confirmResult(undefined, msg, true, `Unmuted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
-  cmdGroup.on({ name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
-              (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
-              async (msg, { user, time, reason }) => {
+  cmdGroup.on({ name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
+              (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+              async (msg, { user, deleteDays, reason }) => {
                 if (typeof reason !== 'string') {
                   reason = '';
                 }
-                const result = await TempBan(user, msg.member, time, reason);
+                const _del: any = deleteDays; // fuck off TS
+                const result = await Ban(user, msg.member, _del, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to ban user.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+  cmdGroup.on({ name: 'softban', filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
+              (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+              async (msg, { user, deleteDays, reason }) => {
+                if (typeof reason !== 'string') {
+                  reason = '';
+                }
+                const _del: any = deleteDays; // fuck off TS
+                const result = await SoftBan(user, msg.member, _del, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to softban user.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+  cmdGroup.on({ name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
+              (ctx) => ({ user: ctx.user(), time: ctx.string(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+              async (msg, { user, time, deleteDays, reason }) => {
+                if (typeof reason !== 'string') {
+                  reason = '';
+                }
+                const _del: any = deleteDays; // fuck off TS
+                const result = await TempBan(user, msg.member, _del, time, reason);
                 if (result === false) {
                   await confirmResult(undefined, msg, false, 'Failed to tempban user.');
                   return;
