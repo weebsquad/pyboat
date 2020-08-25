@@ -159,9 +159,9 @@ export async function every5Min() {
       active: true,
     }));
     const actives = infs.filter((inf) => inf.active && inf.isExpired());
-    /*if (actives.length > 0) {
+    /* if (actives.length > 0) {
       console.log(actives);
-    }*/
+    } */
     if (actives.length > 0) {
       /* const promises1 = [];
       actives.forEach((inf) => {
@@ -179,9 +179,9 @@ export async function every5Min() {
       await Promise.all(promises2);
     }
     const diff = Date.now() - now;
-    /*if (actives.length > 0) {
+    /* if (actives.length > 0) {
       console.log(`Every5min Took ${diff}ms to pass thru ${actives.length} inf keys (~${Math.floor(diff / actives.length)}ms per key)`);
-    }*/
+    } */
   } catch (e) {
     console.error(e);
   }
@@ -214,9 +214,15 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
   }
   reason = reason.split(indexSep).join('/');
   let actorId;
-  if(typeof actor === 'string' || actor === null) actorId = actor;
-  if(actor instanceof discord.User) actorId = actor.id;
-  if(actor instanceof discord.GuildMember) actorId = actor.user.id;
+  if (typeof actor === 'string' || actor === null) {
+    actorId = actor;
+  }
+  if (actor instanceof discord.User) {
+    actorId = actor.id;
+  }
+  if (actor instanceof discord.GuildMember) {
+    actorId = actor.user.id;
+  }
   const newInf = new Infraction(type, actorId, targetId, expires, reason);
   await utils.KVManager.set(`${newInf.getKey()}`, true);
   return newInf;
@@ -281,9 +287,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
-      } else if ((actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
+      } if ((actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
         return 'You can\'t ban members';
-      } else if((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+      } if ((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
       }
     }
@@ -384,6 +390,9 @@ export async function getInfractionBy(query: any) {
   });
   return newInfs;
 }
+/*
+  TEMPMUTE
+*/
 export async function TempMute(member: discord.GuildMember, actor: discord.GuildMember | null, time: string, reason: string) {
   const dur = utils.timeArgumentToMs(time);
   if (dur === 0) {
@@ -419,6 +428,9 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
   await logAction('tempmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
+/*
+  MUTE
+*/
 export async function Mute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
@@ -445,6 +457,9 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
   await logAction('mute', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
+/*
+  UNMUTE
+*/
 export async function UnMute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
@@ -470,6 +485,9 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
   await logAction('unmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
+/*
+  KICK
+*/
 export async function Kick(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   if (typeof reason !== 'string') {
     reason = '';
@@ -490,9 +508,15 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
   await logAction('kick', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
+/*
+  BAN
+*/
 export async function Ban() {
   return true;
 }
+/*
+  TEMPBAN
+*/
 export async function TempBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, time: string, reason: string) {
   const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
   const usr = member instanceof discord.GuildMember ? member.user : member;
@@ -524,9 +548,15 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   await logAction('tempban', actor, usr, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return true;
 }
+/*
+  SOFTBAN
+*/
 export async function SoftBan() {
   return true;
 }
+/*
+  UNBAN
+*/
 export async function UnBan() {
   return true;
 }
@@ -559,7 +589,20 @@ export function InitializeCommands() {
 
                 await confirmResult(undefined, msg, true, `Kicked \`${utils.escapeString(member.user.getTag())}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
-
+  cmdGroup.on({ name: 'mute', filters: c2.getFilters('infractions.mute', Ranks.Moderator) },
+              (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
+              async (msg, { member, reason }) => {
+                const result = await Mute(member, msg.member, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to mute member.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Muted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
   cmdGroup.on({ name: 'tempmute', filters: c2.getFilters('infractions.tempmute', Ranks.Moderator) },
               (ctx) => ({ member: ctx.guildMember(), time: ctx.string(), reason: ctx.textOptional() }),
               async (msg, { member, time, reason }) => {
@@ -575,6 +618,20 @@ export function InitializeCommands() {
                 const dur = utils.timeArgumentToMs(time);
                 const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
                 await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+  cmdGroup.on({ name: 'unmute', filters: c2.getFilters('infractions.unmute', Ranks.Moderator) },
+              (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
+              async (msg, { member, reason }) => {
+                const result = await UnMute(member, msg.member, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to unmute member.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Unmuted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   cmdGroup.on({ name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
@@ -596,42 +653,38 @@ export function InitializeCommands() {
 }
 export async function AL_OnGuildMemberUpdate(
   id: string,
-  guildId: string,
+  gid: string,
   log: any,
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
   if (config.modules.infractions && config.modules.infractions.muteRole && typeof config.modules.infractions.muteRole === 'string') {
-    if(!member.roles.includes(config.modules.infractions.muteRole) && oldMember.roles.includes(config.modules.infractions.muteRole)) {
+    if (!member.roles.includes(config.modules.infractions.muteRole) && oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role removed
-      let query = (await getInfractionBy({
+      const query = (await getInfractionBy({
         memberId: member.user.id,
-        active: true
-      })).filter(function(inf) {
-        return inf.type === InfractionType.TEMPMUTE || inf.type === InfractionType.MUTE;
-      });
-      if(query.length > 0) {
+        active: true,
+      })).filter((inf) => inf.type === InfractionType.TEMPMUTE || inf.type === InfractionType.MUTE);
+      if (query.length > 0) {
         const promises = [];
-      query.forEach((inf) => {
+        query.forEach((inf) => {
           promises.push(inf.checkActive());
-      });
-      await Promise.all(promises);
+        });
+        await Promise.all(promises);
       }
       // todo: audit log pulls
-      if(!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
         return;
       }
-      //console.log(`${member.user.getTag()} unmuted by ${log.user.getTag()}`);
+      // console.log(`${member.user.getTag()} unmuted by ${log.user.getTag()}`);
       await logAction('unmute', log.user, member.user, new Map([['_EXPIRES_', ''], ['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
-
-    } else if(member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
+    } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
-      if(!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
         return;
       }
       const inf = await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
       await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
     }
   }
-  
 }
