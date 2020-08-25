@@ -95,7 +95,7 @@ const defaultConfig = { // for non-defined configs!
         reqDiscordPermissions: true,
         checkLevels: true,
         checkRoles: true,
-        othersEditLevel: 100
+        othersEditLevel: 100,
       },
       confirmation: {
         reaction: true,
