@@ -666,9 +666,9 @@ export function InitializeCommands() {
                 let result;
                 let temp = false;
                 let durationText;
-                if(reason.length > 1 && reason.includes(' ')) {
-                  let firstspace = reason.split(' ')[0];
-                  if(firstspace.length > 1) {
+                if (reason.length > 1 && reason.includes(' ')) {
+                  const firstspace = reason.split(' ')[0];
+                  if (firstspace.length > 1) {
                     const dur = utils.timeArgumentToMs(firstspace);
                     if (dur > 1000 && dur < 365 * 24 * 60 * 60 * 1000 && dur !== 0) {
                       temp = true;
@@ -678,7 +678,9 @@ export function InitializeCommands() {
                     }
                   }
                 }
-                if(typeof(result) === 'undefined') result = await Mute(member, msg.member, reason);
+                if (typeof (result) === 'undefined') {
+                  result = await Mute(member, msg.member, reason);
+                }
                 if (result === false) {
                   await confirmResult(undefined, msg, false, `Failed to ${temp === false ? 'mute' : 'tempmute'} member.`);
                   return;
@@ -687,8 +689,8 @@ export function InitializeCommands() {
                   await confirmResult(undefined, msg, false, result);
                   return;
                 }
-                if(temp === false) {
-                await confirmResult(undefined, msg, true, `Muted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+                if (temp === false) {
+                  await confirmResult(undefined, msg, true, `Muted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
                 } else {
                   await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
                 }
@@ -732,7 +734,7 @@ export function InitializeCommands() {
   cmdGroup.on({ name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integerOptional(), reason: ctx.textOptional() }),
               async (msg, { user, deleteDays, reason }) => {
-                if(typeof deleteDays !== 'number') {
+                if (typeof deleteDays !== 'number') {
                   deleteDays = 0;
                 }
                 if (typeof reason !== 'string') {
@@ -904,9 +906,9 @@ export async function AL_OnGuildBanAdd(
       newr[newr.length - 1] = '';
       if (['sb', 'softban'].includes(lastc)) {
         reason = newr.join('-').slice(0, -1);
-      if (reason.substr(reason.length - 1, 1) === ' ') {
-        reason = reason.slice(0, -1);
-      }
+        if (reason.substr(reason.length - 1, 1) === ' ') {
+          reason = reason.slice(0, -1);
+        }
         await ban.delete();
         await addInfraction(ban.user, log.user, InfractionType.SOFTBAN, undefined, reason);
         await logAction('softban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
@@ -915,9 +917,9 @@ export async function AL_OnGuildBanAdd(
       const dur = utils.timeArgumentToMs(lastc);
       if (dur > 1000 && dur < 365 * 24 * 60 * 60 * 1000 && dur !== 0) {
         reason = newr.join('-').slice(0, -1);
-      if (reason.substr(reason.length - 1, 1) === ' ') {
-        reason = reason.slice(0, -1);
-      }
+        if (reason.substr(reason.length - 1, 1) === ' ') {
+          reason = reason.slice(0, -1);
+        }
         const expiresAt = utils.composeSnowflake(Date.now() + dur);
         const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
         await addInfraction(ban.user, log.user, InfractionType.TEMPBAN, expiresAt, reason);
