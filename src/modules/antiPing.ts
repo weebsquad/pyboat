@@ -502,19 +502,16 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
   return false;
 }
 export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  try {
+    console.log('emoji action softban', member);
     const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban`);
     if(typeof res !== 'boolean') {
       return false;
     }
     return res;
-  } catch (e) {
-  }
-  return false;
 }
 
 export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  try {
+    console.log('emoji action ban', member);
     /*await guild.createBan(userMsg.authorId, {
       deleteMessageDays: 7,
       reason: `${reactor.user.getTag()} (${
@@ -526,10 +523,6 @@ export async function EmojiActionBan(guild: discord.Guild, member: discord.Guild
       return false;
     }
     return res;
-  } catch (e) {
-    //
-  }
-  return false;
 }
 export async function OnMessageReactionAdd(id: string,
                                            guildId: string,
@@ -575,6 +568,8 @@ export async function OnMessageReactionAdd(id: string,
     emojiFunc = EmojiActionIgnoreOnce;
   } else if (emojiAction.toLowerCase() === 'ignore') {
     emojiFunc = EmojiActionIgnore;
+  } else if(emojiAction.toLowerCase() === 'softban') {
+    emojiFunc = EmojiActionSoftban;
   }
   if (typeof emojiFunc !== 'function') {
     return;
@@ -609,7 +604,11 @@ export async function OnMessageReactionAdd(id: string,
     wipeAll = false;
   }
   if (notFound === false) {
-    failAction = !(await emojiFunc(guild, membr, member, userMsg));
+    let _memthis = membr;
+    if(!(_memthis instanceof discord.GuildMember)) {
+      _memthis = user;
+    }
+    failAction = !(await emojiFunc(guild, _memthis, member, userMsg));
   }
   if (validAction) {
     if (notFound) {
