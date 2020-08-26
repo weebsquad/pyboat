@@ -318,7 +318,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember, extras: Map<string, string> | undefined = new Map()) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember, extras: Map<string, string> | undefined = new Map(), id: string | undefined = undefined) {
   if (member instanceof discord.GuildMember) {
     member = member.user;
   }
@@ -335,7 +335,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
     }
     extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
   }
-  await logCustom('INFRACTIONS', `${actionType}`, extras);
+  await logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
 async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
   if (!(me instanceof discord.GuildMember)) {
@@ -948,6 +948,13 @@ export function InitializeCommands() {
                          inf.expiresAt = expiresAt;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
+                         let extras = new Map<string, string>();
+                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
+                         extras.set('_USER_ID_', msg.author.id);
+                         extras.set('_INFRACTION_ID_', inf.id);
+                         extras.set('_TYPE_', 'duration');
+                         extras.set('_NEW_VALUE_', utils.escapeString(duration));
+                         await logCustom('INFRACTIONS', `EDITED`, extras);
                        });
     subCommandGroup.on({ name: 'reason', filters: c2.getFilters('infractions.inf.reason', Ranks.Moderator) },
                        (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
@@ -975,6 +982,13 @@ export function InitializeCommands() {
                          inf.reason = reason;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
+                         let extras = new Map<string, string>();
+                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
+                         extras.set('_USER_ID_', msg.author.id);
+                         extras.set('_INFRACTION_ID_', inf.id);
+                         extras.set('_TYPE_', 'reason');
+                         extras.set('_NEW_VALUE_', utils.escapeString(reason));
+                         await logCustom('INFRACTIONS', `EDITED`, extras);
                        });
     subCommandGroup.on({ name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
                        (ctx) => ({ id: ctx.string() }),
@@ -992,8 +1006,18 @@ export function InitializeCommands() {
                            await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
                            return;
                          }
-                         await utils.KVManager.delete(infs[0].getKey());
+                         const inf = infs[0];
+                         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+                          await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+                          return;
+                        }
+                         await utils.KVManager.delete(inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
+                         let extras = new Map<string, string>();
+                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
+                         extras.set('_USER_ID_', msg.author.id);
+                         extras.set('_INFRACTION_ID_', inf.id);
+                         await logCustom('INFRACTIONS', `DELETED`, extras);
                        });
     subCommandGroup.on({ name: 'clearuser', filters: c2.getFilters('infractions.inf.clearuser', Ranks.Administrator) },
                        (ctx) => ({ user: ctx.user() }),
@@ -1140,7 +1164,7 @@ export async function AL_OnGuildMemberUpdate(
         return;
       }
       if(!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-      await logAction('unmute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+      await logAction('unmute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]), id);
       }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
@@ -1150,7 +1174,7 @@ export async function AL_OnGuildMemberUpdate(
 
       await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
       if(!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-      await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+      await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]), id);
       }
       return;
     }
@@ -1197,7 +1221,7 @@ export async function AL_OnGuildMemberRemove(
   if(isIgnoredActor(log.userId) || isIgnoredUser(memberRemove.user)) {
     return;
   }
-  await logAction('kick', log.user, memberRemove.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+  await logAction('kick', log.user, memberRemove.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]), id);
 }
 
 export async function AL_OnGuildBanAdd(
@@ -1224,7 +1248,7 @@ export async function AL_OnGuildBanAdd(
         }
         await ban.delete();
         await addInfraction(ban.user, log.user, InfractionType.SOFTBAN, undefined, reason);
-        await logAction('softban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+        await logAction('softban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]), id);
         return;
       }
       const dur = utils.timeArgumentToMs(lastc);
@@ -1236,7 +1260,7 @@ export async function AL_OnGuildBanAdd(
         const expiresAt = utils.composeSnowflake(Date.now() + dur);
         const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
         await addInfraction(ban.user, log.user, InfractionType.TEMPBAN, expiresAt, reason);
-        await logAction('tempban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+        await logAction('tempban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]), id);
         return;
       }
     }
@@ -1245,7 +1269,7 @@ export async function AL_OnGuildBanAdd(
   if(isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('ban', log.user, ban.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+  await logAction('ban', log.user, ban.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]), id);
 }
 
 export async function AL_OnGuildBanRemove(
@@ -1269,5 +1293,5 @@ export async function AL_OnGuildBanRemove(
   if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+  await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]), id);
 }
