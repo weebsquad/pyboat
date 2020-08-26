@@ -20,9 +20,8 @@ export async function runUpdates() {
     }
     cfg = JSON.parse(cfg);
   }
-  
-  await pylon.requestCpuBurst(async () => {
 
+  await pylon.requestCpuBurst(async () => {
     const persistkv = new pylon.KVNamespace('persists');
     const items = await persistkv.items();
     if (items.length > 0) {
@@ -35,29 +34,30 @@ export async function runUpdates() {
     }
   });
   let changedCfg = false;
-  if(!cfg) {
+  if (!cfg) {
     return;
   }
-  if(typeof cfg === 'object') {
-    if(typeof cfg.modules.antiPing === 'object' && typeof cfg.modules.infractions === 'object') {
-      if(typeof cfg.modules.antiPing.muteRole === 'string' && typeof cfg.modules.infractions.muteRole !== cfg.modules.antiPing.muteRole) {
+  if (typeof cfg === 'object') {
+    if (typeof cfg.modules.antiPing === 'object' && typeof cfg.modules.infractions === 'object') {
+      if (typeof cfg.modules.antiPing.muteRole === 'string' && typeof cfg.modules.infractions.muteRole !== cfg.modules.antiPing.muteRole) {
         cfg.modules.infractions.muteRole = cfg.modules.antiPing.muteRole;
         changedCfg = true;
       }
-      if(cfg.modules.antiPing.muteRole) {delete cfg.modules.antiPing.muteRole;
+      if (cfg.modules.antiPing.muteRole) {
+        delete cfg.modules.antiPing.muteRole;
         changedCfg = true;
       }
     }
-    if(typeof cfg.modules.utilities === 'object') {
-      if(typeof cfg.modules.utilities.persist === 'object') {
-        if(cfg.utilities.persist.duration) {
+    if (typeof cfg.modules.utilities === 'object') {
+      if (typeof cfg.modules.utilities.persist === 'object') {
+        if (cfg.utilities.persist.duration) {
           delete cfg.utilities.persist.duration;
           changedCfg = true;
         }
       }
     }
   }
-  if(changedCfg === true) {
+  if (changedCfg === true) {
     console.log('Updated guild config!');
     await pylon.kv.put('__guildConfig', cfg);
   }
