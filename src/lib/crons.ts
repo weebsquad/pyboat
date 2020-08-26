@@ -3,7 +3,7 @@ import * as queue from './eventHandler/queue';
 import { logDebug } from '../modules/logging/events/custom';
 import * as conf from '../config';
 import { every5Min } from '../modules/infractions';
-import {cleanPool} from '../modules/translation'
+import { cleanPool } from '../modules/translation';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {

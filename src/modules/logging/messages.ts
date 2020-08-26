@@ -40,9 +40,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     SOFTBAN: `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ softbanned _USERTAG_**[**||\`_USER_ID_\`||**]** (deleting _DELETE_DAYS_ days of their messages)_REASON_`,
     TEMPBAN: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ temp-banned _USERTAG_**[**||\`_USER_ID_\`||**]** for _DURATION__REASON_`,
     TEMPBAN_EXPIRED: `${discord.decor.Emojis.ALARM_CLOCK} _USERTAG_ 's tempban expired.`,
-    MASSBAN: "massban",
-    EDITED: `${discord.decor.Emojis.PENCIL2} _USERTAG_ edited infraction id \`_INFRACTION_ID_\` : **_TYPE_** : \`_NEW_VALUE_\``,
-    DELETED: `${discord.decor.Emojis.EXCLAMATION} _USERTAG_ deleted infraction id \`_INFRACTION_ID_\``,
+    MASSBAN: `${discord.decor.Emojis.HAMMER}${discord.decor.Emojis.HAMMER}${discord.decor.Emojis.HAMMER} _ACTORTAG_ mass-banned _BANNED_USER_COUNT_ users **[**\`_BANNED_USERS_\`**]**_REASON_`,
+    EDITED: `${discord.decor.Emojis.PENCIL2} _ACTORTAG_ edited infraction id \`_INFRACTION_ID_\` : **_TYPE_** : \`_NEW_VALUE_\``,
+    DELETED: `${discord.decor.Emojis.EXCLAMATION} _ACTORTAG_ deleted infraction id \`_INFRACTION_ID_\``,
   },
   '|CORE': {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_**[**||\`_USER_ID_\`||**]** tried to perform _ACTION_`,

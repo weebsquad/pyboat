@@ -318,15 +318,17 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember, extras: Map<string, string> | undefined = new Map(), id: string | undefined = undefined) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember | null, extras: Map<string, string> | undefined = new Map(), id: string | undefined = undefined) {
   if (member instanceof discord.GuildMember) {
     member = member.user;
   }
   if ((actor !== null && isIgnoredActor(actor)) || isIgnoredUser(member)) {
     return;
   }
-  extras.set('_USERTAG_', logUtils.getUserTag(member));
-  extras.set('_USER_ID_', member.id);
+  if (member !== null) {
+    extras.set('_USERTAG_', logUtils.getUserTag(member));
+    extras.set('_USER_ID_', member.id);
+  }
   if (actor === null) {
     extras.set('_ACTORTAG_', 'SYSTEM');
   } else {
@@ -343,14 +345,14 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
   }
   const chan = await ogMsg.getChannel();
   if (config.modules.infractions && config.modules.infractions.confirmation) {
-    const react = typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
+    const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
     const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) && typeof txt === 'string' && txt.length > 0 ? config.modules.infractions.confirmation.message : false;
     const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(10, config.modules.infractions.confirmation.expiry) : 0;
     if (react === true) {
       try {
         if (result === true) {
           await ogMsg.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
-        } else {
+        } else if (result === false) {
           await ogMsg.addReaction(discord.decor.Emojis.X);
         }
       } catch (e) {}
@@ -358,7 +360,14 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
     let replyMsg;
     if (msg === true) {
       try {
-        replyMsg = await ogMsg.reply({ content: `${result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X} ${txt}`,
+        let emj = '';
+        if (result === true) {
+          emj = discord.decor.Emojis.WHITE_CHECK_MARK;
+        }
+        if (result === false) {
+          emj = discord.decor.Emojis.X;
+        }
+        replyMsg = await ogMsg.reply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
           allowedMentions: {} });
       } catch (e) {
         replyMsg = undefined;
@@ -369,7 +378,9 @@ async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord
       setTimeout(async () => {
         try {
           if (react === true && chan.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-            await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
+            if (result === true || result === false) {
+              await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
+            }
           }
           if (msg === true && _theMsg instanceof discord.Message) {
             await _theMsg.delete();
@@ -558,10 +569,10 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   MASSBAN
 */
 export async function MassBan(members: Array<discord.GuildMember | discord.User>, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, reason: string) {
-  let results = {
+  const results = {
     success: [],
-    fail: []
-  }
+    fail: [],
+  };
   if (typeof deleteDays !== 'number') {
     deleteDays = 0;
   }
@@ -575,25 +586,30 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
     reason = '';
   }
   const guild = await discord.getGuild(guildId);
-  await Promise.all(members.map( async function(member) {
-  const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
+  await pylon.requestCpuBurst(async () => {
+    for (const key in members) {
+      const member = members[key];
+      const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
 
-  const ban = await guild.getBan(memberId);
-  if (ban !== null) {
-    results.fail.push(memberId);
-    return;
+      const ban = await guild.getBan(memberId);
+      if (ban !== null) {
+        results.fail.push(memberId);
+        continue;
+      }
+      const canT = await canTarget(actor, member, InfractionType.BAN);
+      if (canT !== true) {
+        results.fail.push(memberId);
+        continue;
+      }
+
+      await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
+      await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
+      results.success.push(memberId);
+    }
+  });
+  if (results.success.length > 0) {
+    await logAction('massban', actor, null, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''], ['_BANNED_USER_COUNT_', results.success.length.toString()], ['_BANNED_USERS_', results.success.join(', ')]]));
   }
-  const canT = await canTarget(actor, member, InfractionType.BAN);
-  if (canT !== true) {
-    results.fail.push(memberId);
-    return;
-  }
-  
-  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
-  await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
-  results.success.push(memberId);
-}));
-  await logAction('massban', actor, null, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
   return results;
 }
 /*
@@ -820,43 +836,43 @@ export function InitializeCommands() {
                 }
                 await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
-              cmdGroup.on({ name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
+  cmdGroup.on({ name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
               (ctx) => ({ deleteDays: ctx.integer(), args: ctx.text() }),
-              async (msg, { deleteDays, args}) => {
+              async (msg, { deleteDays, args }) => {
                 let ids = [];
-                let reas = [];
-                args.split(' ').forEach(function(test) {
-                  if(utils.isNumber(test)) {
+                const reas = [];
+                args.split(' ').forEach((test) => {
+                  if (utils.isNumber(test)) {
                     ids.push(test);
                   } else {
                     reas.push(test);
                   }
                 });
+                ids = [...new Set(ids)]; // remove duplicates
                 const reason = reas.join(' ');
-                if(ids.length < 2) {
+                if (ids.length < 2) {
                   await msg.reply('Not enough ids specified!');
                   return;
                 }
-                let objs = [];
-                let failNotFound = [];
-                let failPerms = [];
+                const objs = [];
+                const failNotFound = [];
+                const failPerms = [];
                 const guild = await msg.getGuild();
-                await Promise.all(ids.map(async function(id) {
+                await Promise.all(ids.map(async (id) => {
                   const gm = await guild.getMember(id);
-                  if(gm !== null) {
+                  if (gm !== null) {
                     const ct = await canTarget(msg.member, gm, InfractionType.BAN);
-                    if(ct === true) {
+                    if (ct === true) {
                       objs.push(gm);
                       return;
                     }
                     failPerms.push(id);
                     return;
-                    
                   }
                   const usr = await discord.getUser(id);
-                  if(usr !== null) {
+                  if (usr !== null) {
                     const ct = await canTarget(msg.member, usr, InfractionType.BAN);
-                    if(ct === true) {
+                    if (ct === true) {
                       objs.push(usr);
                       return;
                     }
@@ -865,21 +881,11 @@ export function InitializeCommands() {
                   }
                   failNotFound.push(id);
                 }));
-                console.log(objs, failNotFound, failPerms);
-                /*
-                const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
-                const result = await Ban(user, msg.member, _del, reason);
-                if (result === false) {
-                  await confirmResult(undefined, msg, false, 'Failed to ban user.');
-                  return;
-                }
-                if (typeof result === 'string') {
-                  await confirmResult(undefined, msg, false, result);
-                  return;
-                }
-                await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);*/
+                const _del: any = deleteDays; // fuck off TS
+                const result = await MassBan(objs, msg.member, _del, reason);
+                await confirmResult(undefined, msg, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}\n` : ''}${result.fail.length > 0 ? `${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}`);
               });
-  cmdGroup.on({ name: 'cleanban',aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
+  cmdGroup.on({ name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
               async (msg, { user, deleteDays, reason }) => {
                 if (typeof reason !== 'string') {
@@ -1050,8 +1056,7 @@ export function InitializeCommands() {
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
                          const extras = new Map<string, string>();
-                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
-                         extras.set('_USER_ID_', msg.author.id);
+                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'duration');
                          extras.set('_NEW_VALUE_', utils.escapeString(duration));
@@ -1084,7 +1089,7 @@ export function InitializeCommands() {
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
                          const extras = new Map<string, string>();
-                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
+                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'reason');
