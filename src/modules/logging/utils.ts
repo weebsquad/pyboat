@@ -48,6 +48,27 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   }
   return usrs.includes(user);
 }
+export function isIgnoredActor(user: string | discord.User | discord.GuildMember) {
+  
+  if (user instanceof discord.User) {
+    user = user.id;
+  }
+  if (user instanceof discord.GuildMember) {
+    user = user.user.id;
+  }
+  const { ignores } = conf.config.modules.logging;
+  if (!ignores) {
+    return false;
+  }
+  const usrs = conf.config.modules.logging.extendUsersToAuditLogs === true ? [].concat(ignores.users) : [];
+  if (ignores.selfAuditLogs === true) {
+    usrs.push(discord.getBotId());
+  }
+  if (ignores.blacklistedUsers && utils.isBlacklisted(user)) {
+    return true;
+  }
+  return usrs.includes(user);
+}
 
 export function isMaster() {
   return conf.guildId === conf.globalConfig.masterGuild;
