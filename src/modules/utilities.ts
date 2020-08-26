@@ -8,7 +8,7 @@ import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/utils';
 
 /* ROLE PERSIST */
-const persistkv = new pylon.KVNamespace('persists');
+const persistPrefix = 'Persist_';
 
 function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
   let lvl = utils.getUserAuth(member);
@@ -38,11 +38,17 @@ async function savePersistData(member: discord.GuildMember) {
   if (member.roles.length === 0 && member.nick === null) {
     return;
   }
+  /*
   await persistkv.put(member.user.id, {
     roles: member.roles,
     nick: member.nick,
     level: utils.getUserAuth(member),
-  }, { ttl: config.modules.utilities.persist.duration });
+  }, { ttl: config.modules.utilities.persist.duration }); */
+  await utils.KVManager.set(persistPrefix + member.user.id, {
+    roles: member.roles,
+    nick: member.nick,
+    level: utils.getUserAuth(member),
+  });
   await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
 }
 
@@ -51,7 +57,7 @@ async function restorePersistData(member: discord.GuildMember) {
     return false;
   }
 
-  const dt: any = await persistkv.get(member.user.id);
+  const dt: any = await utils.KVManager.get(persistPrefix + member.user.id);
   if (!dt || dt === null) {
     return false;
   }
@@ -86,7 +92,8 @@ async function restorePersistData(member: discord.GuildMember) {
     objEdit.nick = dt.nick;
   }
   await member.edit(objEdit);
-  await persistkv.delete(member.user.id);
+  // await persistkv.delete(member.user.id);
+  await utils.KVManager.delete(persistPrefix + member.user.id);
   await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
   return true;
 }
@@ -98,7 +105,8 @@ export async function OnGuildBanAdd(
 ) {
   try {
     if (config.modules.utilities.persist.saveOnBan !== true) {
-      await persistkv.delete(ban.user.id);
+      // await persistkv.delete(ban.user.id);
+      await utils.KVManager.delete(persistPrefix + ban.user.id);
     }
   } catch (e) {}
 }
@@ -251,15 +259,12 @@ export function InitializeCommands() {
                              content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
                            });
                          });
-      subCommandGroup.raw({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
-                          async (msg) => {
-                            const items = await persistkv.items();
-                            const txt = `**Users with backups: ${items.length}**\n${items.map((e: any) => `\n<@!${e.key}> : ${e.value.roles.length} roles${e.value.nick !== null ? ` , nick: \`${utils.escapeString(e.value.nick)}\`` : ''}`)}`;
-                            await msg.reply({
-                              allowedMentions: {},
-                              content: txt,
-                            });
-                          });
+      subCommandGroup.on({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
+                         (ctx) => ({ usr: ctx.user() }),
+                         async (msg, { usr }) => {
+                           const thiskv = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+                           console.log(thiskv);
+                         });
     });
   }
 

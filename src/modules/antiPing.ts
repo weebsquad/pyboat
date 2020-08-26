@@ -54,7 +54,6 @@ async function isIgnore(memberId: string) {
   return ignores.includes(memberId);
 }
 
-
 async function isStaff(member: discord.GuildMember) {
   if (member.user.bot) {
     return false;
@@ -311,7 +310,7 @@ export async function OnMessageCreate(
   if (Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
-      const res = await inf.Mute(authorMember, null, `AntiPing Auto-Mute due to spamming mentions`);
+      const res = await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
     } catch (e) {
       isMute = false; // fallback meme
     }
@@ -390,7 +389,6 @@ export async function OnMessageCreate(
     await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   }
 
-
   await kv.put(kvDataKey, data);
   for (const key in config.modules.antiPing.emojiActions) {
     await msgReply.addReaction(key);
@@ -417,8 +415,8 @@ export async function OnMessageDeleteBulk(id: string,
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.Mute(member, reactor, `AntiPing Mute`);
-    if(typeof res !== 'boolean') {
+    const res = await inf.Mute(member, reactor, 'AntiPing Mute');
+    if (typeof res !== 'boolean') {
       return false;
     }
     return res;
@@ -437,10 +435,10 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
     await kv.put(kvIgnoresKey, ignores);
   }
 
-  if(inf.isMuted(member)) {
+  if (inf.isMuted(member)) {
     try {
-      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing Ignore`)
-      if(typeof res !== 'boolean') {
+      const res = await inf.UnMute(member, reactor, 'Auto unmute due to AntiPing Ignore');
+      if (typeof res !== 'boolean') {
         return false;
       }
       return res;
@@ -451,13 +449,13 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
   return false;
 }
 export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  if(inf.isMuted(member)) {
+  if (inf.isMuted(member)) {
     try {
-      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing IgnoreOnce`)
-      if(typeof res !== 'boolean') {
+      const res = await inf.UnMute(member, reactor, 'Auto unmute due to AntiPing IgnoreOnce');
+      if (typeof res !== 'boolean') {
         return false;
       }
-     return res;
+      return res;
     } catch (e) {
       // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
       await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'IgnoreOnce'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
@@ -467,8 +465,8 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
 }
 export async function EmojiActionKick(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.Kick(member, reactor, `AntiPing Kick`);
-    if(typeof res !== 'boolean') {
+    const res = await inf.Kick(member, reactor, 'AntiPing Kick');
+    if (typeof res !== 'boolean') {
       return false;
     }
     return res;
@@ -477,19 +475,19 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
   return false;
 }
 export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-    const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban`);
-    if(typeof res !== 'boolean') {
-      return false;
-    }
-    return res;
+  const res = await inf.SoftBan(member, reactor, 7, 'AntiPing Softban');
+  if (typeof res !== 'boolean') {
+    return false;
+  }
+  return res;
 }
 
 export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-    const res = await inf.Ban(member, reactor, 7, `AntiPing Ban`);
-    if(typeof res !== 'boolean') {
-      return false;
-    }
-    return res;
+  const res = await inf.Ban(member, reactor, 7, 'AntiPing Ban');
+  if (typeof res !== 'boolean') {
+    return false;
+  }
+  return res;
 }
 export async function OnMessageReactionAdd(id: string,
                                            guildId: string,
@@ -535,7 +533,7 @@ export async function OnMessageReactionAdd(id: string,
     emojiFunc = EmojiActionIgnoreOnce;
   } else if (emojiAction.toLowerCase() === 'ignore') {
     emojiFunc = EmojiActionIgnore;
-  } else if(emojiAction.toLowerCase() === 'softban') {
+  } else if (emojiAction.toLowerCase() === 'softban') {
     emojiFunc = EmojiActionSoftban;
   }
   if (typeof emojiFunc !== 'function') {
@@ -572,7 +570,7 @@ export async function OnMessageReactionAdd(id: string,
   }
   if (notFound === false) {
     let _memthis = membr;
-    if(!(_memthis instanceof discord.GuildMember)) {
+    if (!(_memthis instanceof discord.GuildMember)) {
       _memthis = user;
     }
     failAction = !(await emojiFunc(guild, _memthis, member, userMsg));
@@ -617,12 +615,12 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
   } else {
-    /*await guild.createBan(user.id, {
+    /* await guild.createBan(user.id, {
       deleteMessageDays: 7,
       reason:
         'Auto-Banned for leaving the server with pending autoping moderations',
-    });*/
-    await inf.Ban(user, null, 7, `AntiPing AutoBan for leaving the server with pending autoping moderations`);
+    }); */
+    await inf.Ban(user, null, 7, 'AntiPing AutoBan for leaving the server with pending autoping moderations');
     wipeAllUserMessages(user.id, true);
     await log('LEFT_BANNED', user);
     await clearUserData(user.id);
@@ -643,6 +641,5 @@ export async function OnGuildBanAdd(id: string,
   wipeAllUserMessages(user.id, true);
   await clearUserData(user.id);
 }
-
 
 // export async function OnMessageUpdate() {}

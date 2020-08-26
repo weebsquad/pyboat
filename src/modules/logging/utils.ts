@@ -49,7 +49,6 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   return usrs.includes(user);
 }
 export function isIgnoredActor(user: string | discord.User | discord.GuildMember) {
-  
   if (user instanceof discord.User) {
     user = user.id;
   }

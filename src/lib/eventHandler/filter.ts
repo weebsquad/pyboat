@@ -114,7 +114,7 @@ const eventFilters = <any>{
       }
     },
     MESSAGE_DELETE: (ev: discord.Event.IMessageDelete, msg: discord.Message.AnyMessage) => {
-      if(msg !== null && isMessageConfigUpdate(msg) !== false) {
+      if (msg !== null && isMessageConfigUpdate(msg) !== false) {
         return true;
       }
     },

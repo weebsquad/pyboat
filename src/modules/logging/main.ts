@@ -755,9 +755,9 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
         continue;
       }
       if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.ignores) {
-          if (utils.isIgnoredActor(qev.auditLogEntry.userId)) {
-            continue;
-          }
+        if (utils.isIgnoredActor(qev.auditLogEntry.userId)) {
+          continue;
+        }
       }
       if (qev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === false) {
         qev.auditLogEntry = null;
@@ -866,7 +866,7 @@ export async function handleEvent(
     if (log instanceof discord.AuditLogEntry && conf.config.modules.logging.ignores) {
       if (utils.isIgnoredActor(log.userId)) {
         return;
-      } else if (conf.config.modules.logging.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
+      } if (conf.config.modules.logging.ignores.extendUsersToAuditLogs === true && utils.isIgnoredUser(log.userId)) {
         return;
       }
     }

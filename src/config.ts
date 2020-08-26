@@ -17,7 +17,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.3.8',
+  version: '1.4.3',
 };
 
 const defaultConfig = { // for non-defined configs!
@@ -138,7 +138,6 @@ const defaultConfig = { // for non-defined configs!
             roleExcludes: [],
           }, */
         },
-        duration: 31 * 24 * 60 * 60 * 1000,
         saveOnBan: false,
       },
     },
@@ -195,7 +194,7 @@ const defaultConfig = { // for non-defined configs!
         users: [],
         roles: [],
         level: Ranks.Moderator,
-      }
+      },
     },
     counting: { // counting module
       enabled: false,
