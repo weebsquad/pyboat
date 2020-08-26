@@ -29,7 +29,7 @@ async function isIllegalMention(
   if (await isBypass(author)) {
     return false;
   }
-  if (await isMuted(author)) {
+  if (inf.isMuted(author)) {
     return false;
   } // in case mute fails, lol
   const itarget = await isTarget(target);
@@ -54,18 +54,6 @@ async function isIgnore(memberId: string) {
   return ignores.includes(memberId);
 }
 
-async function isMuted(member: discord.GuildMember) {
-  if (member.user.bot) {
-    return false;
-  }
-  const roles = await utils.getUserRoles(member);
-  let isMutedd = false;
-
-  if (roles.some((e) => e.id === config.modules.antiPing.muteRole)) {
-    isMutedd = true;
-  }
-  return isMutedd;
-}
 
 async function isStaff(member: discord.GuildMember) {
   if (member.user.bot) {
@@ -320,10 +308,9 @@ export async function OnMessageCreate(
     data[author.id] = {};
   }
   let isMute = false;
-  if (Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1) {
+  if (Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
-      await authorMember.addRole(config.modules.antiPing.muteRole);
       const res = await inf.Mute(authorMember, null, `AntiPing Auto-Mute due to spamming mentions`);
     } catch (e) {
       isMute = false; // fallback meme
@@ -403,15 +390,6 @@ export async function OnMessageCreate(
     await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   }
 
-  /* let logTxt = `:ping_pong: Triggered anti-ping, by mentioning ${pingText}\nMessage ID : ${message.id}`;
-  if (isMute) logTxt += '\n:mute: User was auto-muted for spamming pings.';
-
-  await log(
-    logTxt,
-    author.getTag(),
-    'Member ID: ' + author.id,
-    author.getAvatarUrl()
-  ); */
 
   await kv.put(kvDataKey, data);
   for (const key in config.modules.antiPing.emojiActions) {
@@ -439,7 +417,6 @@ export async function OnMessageDeleteBulk(id: string,
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    //await member.addRole(config.modules.antiPing.muteRole);
     const res = await inf.Mute(member, reactor, `AntiPing Mute`);
     if(typeof res !== 'boolean') {
       return false;
@@ -460,9 +437,8 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
     await kv.put(kvIgnoresKey, ignores);
   }
 
-  if (member.roles.includes(config.modules.infractions.muteRole)) {
+  if(inf.isMuted(member)) {
     try {
-      //await member.removeRole(config.modules.antiPing.muteRole);
       const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing Ignore`)
       if(typeof res !== 'boolean') {
         return false;
@@ -475,9 +451,8 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
   return false;
 }
 export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  if(member.roles.includes(config.modules.infractions.muteRole)) {
+  if(inf.isMuted(member)) {
     try {
-      //await member.removeRole(config.modules.antiPing.muteRole);
       const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing IgnoreOnce`)
       if(typeof res !== 'boolean') {
         return false;

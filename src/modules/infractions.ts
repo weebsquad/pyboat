@@ -396,6 +396,13 @@ export async function getInfractionBy(query: any) {
   });
   return newInfs;
 }
+export function isMuted(member: discord.GuildMember) {
+  const { muteRole } = config.modules.infractions;
+  if (typeof muteRole !== 'string' || muteRole === '') {
+    return false;
+  }
+  return member.roles.includes(muteRole);
+}
 /*
   TEMPMUTE
 */
