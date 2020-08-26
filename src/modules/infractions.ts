@@ -437,6 +437,9 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
   if (typeof reason !== 'string') {
     reason = '';
   }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
   if (member.roles.includes(mtRole.id)) {
     return `${member.user.toMention()} is already muted`;
   }
@@ -468,6 +471,9 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
   if (typeof reason !== 'string') {
     reason = '';
   }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
   if (member.roles.includes(mtRole.id)) {
     return `${member.user.toMention()} is already muted`;
   }
@@ -497,6 +503,9 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
   if (typeof reason !== 'string') {
     reason = '';
   }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
   if (!member.roles.includes(mtRole.id)) {
     return `${member.user.toMention()} is not muted`;
   }
@@ -515,6 +524,9 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
 export async function Kick(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   if (typeof reason !== 'string') {
     reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
   }
   const canT = await canTarget(actor, member, InfractionType.KICK);
   if (typeof canT === 'string') {
@@ -542,6 +554,9 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   const guild = await discord.getGuild(guildId);
   if (typeof reason !== 'string') {
     reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
   }
   const ban = await guild.getBan(memberId);
   if (ban !== null) {
@@ -584,6 +599,9 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
   }
   if (typeof reason !== 'string') {
     reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
   }
   const guild = await discord.getGuild(guildId);
   await pylon.requestCpuBurst(async () => {
@@ -630,6 +648,9 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   if (typeof reason !== 'string') {
     reason = '';
   }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
   const ban = await guild.getBan(memberId);
   if (ban !== null) {
     return `${usr.toMention()} is already banned`;
@@ -665,6 +686,9 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   if (typeof reason !== 'string') {
     reason = '';
   }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
   const ban = await guild.getBan(memberId);
   if (ban !== null) {
     return `${usr.toMention()} is already banned`;
@@ -697,6 +721,9 @@ export async function UnBan(member: discord.GuildMember | discord.User, actor: d
   const guild = await discord.getGuild(guildId);
   if (typeof reason !== 'string') {
     reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
   }
   const ban = await guild.getBan(memberId);
   if (ban === null) {
