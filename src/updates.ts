@@ -2,27 +2,30 @@ import { KVManager } from './lib/kvManager';
 
 export async function runUpdates() {
   console.log('Running update!');
-  let cfg: any = await pylon.kv.get('__guildConfig');
-  if (typeof (cfg) === 'string') {
-    if (cfg.includes('{') || cfg.includes('%')) {
-      if (cfg.includes('%')) {
-        try {
-          cfg = decodeURI(cfg);
-        } catch (e) {}
-      }
-    } else {
-      cfg = atob(cfg);
-      if (cfg.includes('%')) {
-        try {
-          cfg = decodeURI(cfg);
-        } catch (e) {}
-      }
-    }
-    cfg = JSON.parse(cfg);
-  }
+
 
   await pylon.requestCpuBurst(async () => {
+    let cfg: any = await pylon.kv.get('__guildConfig');
+    if (typeof (cfg) === 'string') {
+      if (cfg.includes('{') || cfg.includes('%')) {
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      } else {
+        cfg = atob(cfg);
+        if (cfg.includes('%')) {
+          try {
+            cfg = decodeURI(cfg);
+          } catch (e) {}
+        }
+      }
+      cfg = JSON.parse(cfg);
+    }
     const persistkv = new pylon.KVNamespace('persists');
+    const translationkv = new pylon.KVNamespace('translation');
+    //await translationkv.clear();
     const items = await persistkv.items();
     if (items.length > 0) {
       console.log('updating persists');

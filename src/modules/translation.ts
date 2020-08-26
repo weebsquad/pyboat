@@ -15,7 +15,7 @@ class PooledMessage {
   }
 }
 
-async function cleanPool() {
+export async function cleanPool() {
   const pool = await kv.get('translatedMessages');
   if (!Array.isArray(pool)) {
     return;
@@ -208,7 +208,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   //if (!(message instanceof discord.GuildMemberMessage)) return;
-  await cleanPool();
+
   const pool = await kv.get('translatedMessages');
   const guild = await channel.getGuild();
   const memBot = await guild.getMember(discord.getBotId());
@@ -284,6 +284,7 @@ export async function OnMessageReactionAdd(
   );
   const ll = sourceLang ? sourceLang.name : translation.detectedSourceLanguage;
   await saveToPool(pool, message.id, lang.shortcode);
+  
 
   if (
     ll === lang.name ||

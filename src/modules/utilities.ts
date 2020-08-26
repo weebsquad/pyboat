@@ -262,8 +262,29 @@ export function InitializeCommands() {
       subCommandGroup.on({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
                          (ctx) => ({ usr: ctx.user() }),
                          async (msg, { usr }) => {
-                           const thiskv = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
-                           console.log(thiskv);
+                           const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+                           if (!thiskv) {
+                             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
+                             return;
+                           }
+                           let rls = 'None';
+                           if (thiskv.roles.length > 0) {
+                             const rlsfo = thiskv.roles.map((rl) => `<@&${rl}>`).join(', ');
+                             rls = rlsfo;
+                           }
+                           const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}`;
+                           await msg.reply({content: txt, allowedMentions: {}});
+                         });
+                         subCommandGroup.on({ name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
+                         (ctx) => ({ usr: ctx.user() }),
+                         async (msg, { usr }) => {
+                           const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+                           if (!thiskv) {
+                             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
+                             return;
+                           }
+                           await utils.KVManager.delete(`${persistPrefix}${usr.id}`)
+                           await msg.reply(discord.decor.Emojis.WHITE_CHECK_MARK + ' successfully deleted!');
                          });
     });
   }
