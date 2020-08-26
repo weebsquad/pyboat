@@ -529,6 +529,9 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   if (canT !== true) {
     return canT;
   }
+  if(typeof deleteDays !== 'number') {
+    deleteDays = 0;
+  }
   if (deleteDays > 7) {
     deleteDays = 7;
   }
@@ -566,6 +569,9 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   if (canT !== true) {
     return canT;
   }
+  if(typeof deleteDays !== 'number') {
+    deleteDays = 0;
+  }
   if (deleteDays > 7) {
     deleteDays = 7;
   }
@@ -597,6 +603,9 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   const canT = await canTarget(actor, member, InfractionType.BAN);
   if (canT !== true) {
     return canT;
+  }
+  if(typeof deleteDays !== 'number') {
+    deleteDays = 0;
   }
   if (deleteDays > 7) {
     deleteDays = 7;
@@ -741,15 +750,12 @@ export function InitializeCommands() {
                 await confirmResult(undefined, msg, true, `Unmuted \`${utils.escapeString(member.user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   cmdGroup.on({ name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
-              (ctx) => ({ user: ctx.user(), deleteDays: ctx.integerOptional(), reason: ctx.textOptional() }),
-              async (msg, { user, deleteDays, reason }) => {
-                if (typeof deleteDays !== 'number') {
-                  deleteDays = 0;
-                }
+              (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
+              async (msg, { user, reason }) => {
                 if (typeof reason !== 'string') {
                   reason = '';
                 }
-                const _del: any = deleteDays; // fuck off TS
+                const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
                 const result = await Ban(user, msg.member, _del, reason);
                 if (result === false) {
                   await confirmResult(undefined, msg, false, 'Failed to ban user.');
@@ -760,6 +766,24 @@ export function InitializeCommands() {
                   return;
                 }
                 await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+              cmdGroup.on({ name: 'cleanban', filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
+              (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+              async (msg, { user, deleteDays, reason }) => {
+                if (typeof reason !== 'string') {
+                  reason = '';
+                }
+                const _del: any = deleteDays; // fuck off TS
+                const result = await Ban(user, msg.member, _del, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to cleanban user.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   cmdGroup.on({ name: 'softban', filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
@@ -780,12 +804,12 @@ export function InitializeCommands() {
                 await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
   cmdGroup.on({ name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
-              (ctx) => ({ user: ctx.user(), time: ctx.string(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
-              async (msg, { user, time, deleteDays, reason }) => {
+              (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
+              async (msg, { user, time, reason }) => {
                 if (typeof reason !== 'string') {
                   reason = '';
                 }
-                const _del: any = deleteDays; // fuck off TS
+                const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
                 const result = await TempBan(user, msg.member, _del, time, reason);
                 if (result === false) {
                   await confirmResult(undefined, msg, false, 'Failed to tempban user.');

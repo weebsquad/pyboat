@@ -91,6 +91,7 @@ const defaultConfig = { // for non-defined configs!
       checkLogs: true,
       integrate: true,
       muteRole: '',
+      defaultDeleteDays: 0,
       targetting: {
         reqDiscordPermissions: true,
         checkLevels: true,
