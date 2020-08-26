@@ -7,6 +7,7 @@ import * as logUtils from './logging/utils';
 import { check } from './disabled/onJoin';
 import { chEmbed } from './logging/classes';
 import { getUserAuth } from '../lib/utils';
+import {isIgnoredActor, isIgnoredUser} from './logging/utils';
 
 const keyPrefix = 'Infraction_';
 const indexSep = '|';
@@ -320,6 +321,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember, extras: Map<string, string> | undefined = new Map()) {
   if (member instanceof discord.GuildMember) {
     member = member.user;
+  }
+  if((actor !== null && isIgnoredActor(actor)) || isIgnoredUser(member)) {
+    return;
   }
   extras.set('_USERTAG_', logUtils.getUserTag(member));
   extras.set('_USER_ID_', member.id);
@@ -1128,7 +1132,9 @@ export async function AL_OnGuildMemberUpdate(
       if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
         return;
       }
+      if(!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
       await logAction('unmute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+      }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
       if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
@@ -1136,7 +1142,9 @@ export async function AL_OnGuildMemberUpdate(
       }
 
       await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
+      if(!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
       await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
+      }
       return;
     }
     if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string') {
@@ -1179,6 +1187,9 @@ export async function AL_OnGuildMemberRemove(
     return;
   }
   await addInfraction(memberRemove.user, log.user, InfractionType.KICK, undefined, log.reason);
+  if(isIgnoredActor(log.userId) || isIgnoredUser(memberRemove.user)) {
+    return;
+  }
   await logAction('kick', log.user, memberRemove.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
 }
 
@@ -1224,6 +1235,9 @@ export async function AL_OnGuildBanAdd(
     }
   }
   await addInfraction(ban.user, log.user, InfractionType.BAN, undefined, reason);
+  if(isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
+    return;
+  }
   await logAction('ban', log.user, ban.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
 }
 
@@ -1245,7 +1259,7 @@ export async function AL_OnGuildBanRemove(
     });
     await Promise.all(promises);
   }
-  if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+  if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
   await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason)}\`` : '']]));
