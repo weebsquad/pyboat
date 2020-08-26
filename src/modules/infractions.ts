@@ -228,6 +228,10 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
   return newInf;
 }
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
+  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+  if (targetId === discord.getBotId()) {
+    return false;
+  }
   if (actor === null) {
     if (target instanceof discord.User) {
       return true;
@@ -239,7 +243,6 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     }
     return true;
   }
-  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isGA = utils.isGlobalAdmin(actor.user.id);
   let isOverride = false;
   if (isGA) {
@@ -608,7 +611,6 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
     for (const key in members) {
       const member = members[key];
       const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
-
       const ban = await guild.getBan(memberId);
       if (ban !== null) {
         results.fail.push(memberId);
@@ -888,34 +890,23 @@ export function InitializeCommands() {
                 }
                 const objs = [];
                 const failNotFound = [];
-                const failPerms = [];
                 const guild = await msg.getGuild();
                 await Promise.all(ids.map(async (id) => {
                   const gm = await guild.getMember(id);
                   if (gm !== null) {
-                    const ct = await canTarget(msg.member, gm, InfractionType.BAN);
-                    if (ct === true) {
-                      objs.push(gm);
-                      return;
-                    }
-                    failPerms.push(id);
+                    objs.push(gm);
                     return;
                   }
                   const usr = await discord.getUser(id);
                   if (usr !== null) {
-                    const ct = await canTarget(msg.member, usr, InfractionType.BAN);
-                    if (ct === true) {
-                      objs.push(usr);
-                      return;
-                    }
-                    failPerms.push(id);
+                    objs.push(usr);
                     return;
                   }
                   failNotFound.push(id);
                 }));
                 const _del: any = deleteDays; // fuck off TS
                 const result = await MassBan(objs, msg.member, _del, reason);
-                await confirmResult(undefined, msg, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}\n` : ''}${result.fail.length > 0 ? `${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}`);
+                await confirmResult(undefined, msg, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}` : ''}${result.fail.length > 0 ? `\n${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}${failNotFound.length > 0 ? `\n${discord.decor.Emojis.QUESTION} failed to find (**${failNotFound.length}**) users: ${failNotFound.join(', ')}` : ''}`);
               });
   cmdGroup.on({ name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
