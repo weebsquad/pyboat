@@ -842,7 +842,11 @@ export function InitializeCommands() {
                 let ids = [];
                 const reas = [];
                 args.split(' ').forEach((test) => {
-                  const rmpossible = test.split('@').join('').split('<').join('').split('>').join('').split('!').join('');
+                  const rmpossible = test.split('@').join('').split('<').join('')
+                    .split('>')
+                    .join('')
+                    .split('!')
+                    .join('');
                   if (utils.isNumber(rmpossible)) {
                     ids.push(rmpossible);
                   } else {

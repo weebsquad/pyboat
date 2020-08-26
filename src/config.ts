@@ -125,6 +125,7 @@ const defaultConfig = { // for non-defined configs!
             nick: true,
             mute: true,
             deaf: true,
+            channels: true,
             roleIncludes: [],
             roleExcludes: [],
           }, */
@@ -134,6 +135,7 @@ const defaultConfig = { // for non-defined configs!
             nick: true,
             mute: true,
             deaf: true,
+            channels: true,
             roleIncludes: [],
             roleExcludes: [],
           }, */

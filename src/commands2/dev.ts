@@ -5,6 +5,7 @@ import * as routing from '../lib/eventHandler/routing';
 import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
 import * as infractions from '../modules/infractions';
+import * as utilities from '../modules/utilities';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -186,6 +187,9 @@ export function InitializeCommands() {
         { guildId: m.guildId },
       );
       await m.reply('done');
+    });
+    sub.raw('channelow', async (m) => {
+      await utilities.storeChannelData();
     });
     sub.raw('infs5', async (m) => {
       const now = Date.now();

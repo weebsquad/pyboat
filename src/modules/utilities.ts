@@ -171,7 +171,37 @@ export async function AL_OnMessageDelete(
     ttl: config.modules.utilities.snipe.delay,
   });
 }
-
+export async function storeChannelData() {
+  const guild = await discord.getGuild();
+  const channels = await guild.getChannels();
+  let userOverrides: any = {};
+  await Promise.all(channels.map(async function(ch) {
+    let _dt = [];
+    let isSync = false;
+    if(ch.parentId && ch.parentId !==null) {
+      const parent = await discord.getGuildCategory(ch.parentId);
+      if(parent && parent !== null) {
+        let anyDiff = false;
+        const parentOws = parent.permissionOverwrites;
+        const childOws = ch.permissionOverwrites;
+        childOws.forEach(function(ow) {
+          let _f = parentOws.find((e) => e.id === ow.id && e.type === ow.type && e.allow === ow.allow && e.deny === ow.deny);
+          if(!_f) anyDiff = true;
+        })
+        if(!anyDiff) isSync = true;
+      }
+    }
+    if(isSync) return;
+    const usrs = ch.permissionOverwrites.filter((ov) => ov.type === discord.Channel.PermissionOverwriteType.MEMBER);
+    if(usrs.length > 0) {
+      usrs.forEach((ov) => {
+        _dt.push(ov);
+      })
+    }
+    if(_dt.length > 0) userOverrides[ch.id] = _dt;
+  }));
+  console.log(userOverrides)
+}
 export function InitializeCommands() {
   const F = discord.command.filters;
 
