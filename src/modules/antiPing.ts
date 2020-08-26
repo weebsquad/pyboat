@@ -599,14 +599,10 @@ export async function OnMessageReactionAdd(id: string,
     return;
   }
 
-  let logMsg = `:ping_pong: Successfully marked MessageID \`${userMsg.id}\` as \`${emojiAction}\``;
-  if (emojiAction !== 'Ignore' && emojiAction !== 'IgnoreOnce') {
-    logMsg += '\n:white_check_mark: __Action was taken__';
-  }
   let failAction = false;
   let notFound = false;
   const membr = await tryGetGuildMember(guild, userMsg.authorId);
-  if (membr === false && emojiAction !== 'Ban') {
+  if (membr === false && emojiAction !== 'Ban' && emojiAction !== 'Softban') {
     notFound = true;
   }
   if (emojiAction === 'IgnoreOnce' || emojiAction === 'Ignore') {
@@ -617,21 +613,12 @@ export async function OnMessageReactionAdd(id: string,
   }
   if (validAction) {
     if (notFound) {
-      // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but the member was not found in the guild`;
       await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     } else if (failAction) {
       await log('FAIL_MARK_ACTION', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
-      // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but I couldn't ${emojiAction} the user`;
     } else {
       await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
-    /*
-    await log(
-      logMsg,
-      member.user.getTag(),
-      'Member ID: ' + member.user.id,
-      member.user.getAvatarUrl()
-    ); */
     await wipeAllUserMessages(userMsg.authorId, wipeAll);
   }
 }
