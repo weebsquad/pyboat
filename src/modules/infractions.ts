@@ -842,8 +842,9 @@ export function InitializeCommands() {
                 let ids = [];
                 const reas = [];
                 args.split(' ').forEach((test) => {
-                  if (utils.isNumber(test)) {
-                    ids.push(test);
+                  const rmpossible = test.split('@').join('').split('<').join('').split('>').join('').split('!').join('');
+                  if (utils.isNumber(rmpossible)) {
+                    ids.push(rmpossible);
                   } else {
                     reas.push(test);
                   }
