@@ -6,10 +6,74 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/utils';
+import { KVManager } from '../lib/utils';
 
 /* ROLE PERSIST */
 const persistPrefix = 'Persist_';
-
+export async function getStoredUserOverwrites(userId: string) {
+  const ows = await KVManager.get(`${persistPrefix}channels`);
+  const res = [];
+  if (ows && ows !== null && typeof ows === 'object') {
+    for (const channelId in ows) {
+      const overwrites = ows[channelId].filter((ow) => ow.id === userId).map((ow) => {
+        ow.channelId = channelId;
+        return ow;
+      });
+      if (overwrites.length > 0) {
+        res.push(...overwrites);
+      }
+    }
+  }
+  return res;
+}
+export async function storeChannelData() {
+  const guild = await discord.getGuild();
+  const channels = await guild.getChannels();
+  const userOverrides: any = {};
+  await Promise.all(channels.map(async (ch) => {
+    const _dt = [];
+    let isSync = false;
+    if (ch.parentId && ch.parentId !== null) {
+      const parent = await discord.getGuildCategory(ch.parentId);
+      if (parent && parent !== null) {
+        let anyDiff = false;
+        const parentOws = parent.permissionOverwrites;
+        const childOws = ch.permissionOverwrites;
+        childOws.forEach((ow) => {
+          const _f = parentOws.find((e) => e.id === ow.id && e.type === ow.type && e.allow === ow.allow && e.deny === ow.deny);
+          if (!_f) {
+            anyDiff = true;
+          }
+        });
+        if (!anyDiff) {
+          isSync = true;
+        }
+      }
+    }
+    if (isSync) {
+      return;
+    }
+    const usrs = ch.permissionOverwrites.filter((ov) => ov.type === discord.Channel.PermissionOverwriteType.MEMBER);
+    if (usrs.length > 0) {
+      usrs.forEach((ov) => {
+        const newobj: any = { id: ov.id };
+        if (ov.allow !== 0) {
+          newobj.allow = ov.allow;
+        }
+        if (ov.deny !== 0) {
+          newobj.deny = ov.deny;
+        }
+        _dt.push(newobj);
+      });
+    }
+    if (_dt.length > 0) {
+      userOverrides[ch.id] = _dt;
+    }
+  }));
+  if (Object.keys(userOverrides).length > 0) {
+    await KVManager.set(`${persistPrefix}channels`, userOverrides);
+  }
+}
 function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
   let lvl = utils.getUserAuth(member);
   if (typeof levelForce !== 'undefined') {
@@ -38,16 +102,19 @@ async function savePersistData(member: discord.GuildMember) {
   if (member.roles.length === 0 && member.nick === null) {
     return;
   }
+  const channels = await getStoredUserOverwrites(member.user.id);
   /*
   await persistkv.put(member.user.id, {
     roles: member.roles,
     nick: member.nick,
     level: utils.getUserAuth(member),
   }, { ttl: config.modules.utilities.persist.duration }); */
+
   await utils.KVManager.set(persistPrefix + member.user.id, {
     roles: member.roles,
     nick: member.nick,
     level: utils.getUserAuth(member),
+    channels: channels.length > 0 ? channels : undefined,
   });
   await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
 }
@@ -92,12 +159,75 @@ async function restorePersistData(member: discord.GuildMember) {
     objEdit.nick = dt.nick;
   }
   await member.edit(objEdit);
+  const chans = dt.channels;
+  const allChannels = await guild.getChannels();
+  if (chans && Array.isArray(chans)) {
+    await Promise.all(chans.map(async (chan) => {
+      const channel = allChannels.find((e) => e.id === chan.channelId);
+      if (!channel || channel === null) {
+        return;
+      }
+      const _f = channel.permissionOverwrites.find((e) => e.id === chan.id);
+      if (_f) {
+        return;
+      }
+
+      const thisOw: discord.Channel.IPermissionOverwrite = {
+        id: chan.id,
+        allow: chan.allow ?? 0,
+        deny: chan.deny ?? 0,
+        type: discord.Channel.PermissionOverwriteType.MEMBER,
+      };
+      const ows = [].concat(channel.permissionOverwrites).concat(thisOw);
+      if (channel.type === discord.Channel.Type.GUILD_CATEGORY) {
+        const childrenSynced = allChannels.filter((cht) => {
+          if (cht.parentId !== channel.id) {
+            return false;
+          }
+          let anyDiff = false;
+          for (let i = 0; i < cht.permissionOverwrites.length; i++) {
+            const chow = cht.permissionOverwrites[i];
+            const _ex = channel.permissionOverwrites.find((e2) => e2.id === chow.id && e2.allow === chow.allow && e2.deny === chow.deny && e2.type === chow.type);
+            if (!_ex) {
+              anyDiff = true;
+              break;
+            }
+          }
+          return !anyDiff;
+        });
+        await Promise.all(childrenSynced.map(async (ch) => {
+          await ch.edit({ permissionOverwrites: ows });
+        }));
+      }
+      await channel.edit({ permissionOverwrites: ows });
+    }));
+  }
   // await persistkv.delete(member.user.id);
   await utils.KVManager.delete(persistPrefix + member.user.id);
   await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
   return true;
 }
-
+export async function OnChannelCreate(
+  id: string,
+  guildId: string,
+  channel: discord.GuildChannel,
+) {
+  await storeChannelData();
+}
+export async function OnChannelDelete(
+  id: string,
+  guildId: string,
+  channel: discord.GuildChannel,
+) {
+  await storeChannelData();
+}
+export async function OnChannelUpdate(
+  id: string,
+  guildId: string,
+  channel: discord.Channel,
+) {
+  await storeChannelData();
+}
 export async function OnGuildBanAdd(
   id: string,
   guildId: string,
@@ -171,37 +301,7 @@ export async function AL_OnMessageDelete(
     ttl: config.modules.utilities.snipe.delay,
   });
 }
-export async function storeChannelData() {
-  const guild = await discord.getGuild();
-  const channels = await guild.getChannels();
-  let userOverrides: any = {};
-  await Promise.all(channels.map(async function(ch) {
-    let _dt = [];
-    let isSync = false;
-    if(ch.parentId && ch.parentId !==null) {
-      const parent = await discord.getGuildCategory(ch.parentId);
-      if(parent && parent !== null) {
-        let anyDiff = false;
-        const parentOws = parent.permissionOverwrites;
-        const childOws = ch.permissionOverwrites;
-        childOws.forEach(function(ow) {
-          let _f = parentOws.find((e) => e.id === ow.id && e.type === ow.type && e.allow === ow.allow && e.deny === ow.deny);
-          if(!_f) anyDiff = true;
-        })
-        if(!anyDiff) isSync = true;
-      }
-    }
-    if(isSync) return;
-    const usrs = ch.permissionOverwrites.filter((ov) => ov.type === discord.Channel.PermissionOverwriteType.MEMBER);
-    if(usrs.length > 0) {
-      usrs.forEach((ov) => {
-        _dt.push(ov);
-      })
-    }
-    if(_dt.length > 0) userOverrides[ch.id] = _dt;
-  }));
-  console.log(userOverrides)
-}
+
 export function InitializeCommands() {
   const F = discord.command.filters;
 
@@ -302,7 +402,7 @@ export function InitializeCommands() {
                              const rlsfo = thiskv.roles.map((rl) => `<@&${rl}>`).join(', ');
                              rls = rlsfo;
                            }
-                           const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}`;
+                           const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}${Array.isArray(thiskv.channels) ? `\n**Channel Overwrites**: ${thiskv.channels.length}` : ''}`;
                            await msg.reply({ content: txt, allowedMentions: {} });
                          });
       subCommandGroup.on({ name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },

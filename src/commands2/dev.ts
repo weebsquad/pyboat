@@ -191,6 +191,11 @@ export function InitializeCommands() {
     sub.raw('channelow', async (m) => {
       await utilities.storeChannelData();
     });
+    sub.raw('mychannelow', async (m) => {
+      await utilities.storeChannelData();
+      const res = await utilities.getStoredUserOverwrites(m.author.id);
+      console.log(res);
+    });
     sub.raw('infs5', async (m) => {
       const now = Date.now();
       await infractions.every5Min();
