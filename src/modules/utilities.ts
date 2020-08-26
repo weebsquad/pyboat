@@ -132,7 +132,6 @@ async function restorePersistData(member: discord.GuildMember) {
   if (thisconf === null) {
     return false;
   }
-  // console.log(thisconf);
   const guild = await member.getGuild();
   const me = await guild.getMember(discord.getBotId());
   const myrl = await utils.getMemberHighestRole(me);

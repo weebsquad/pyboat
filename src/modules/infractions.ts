@@ -1152,7 +1152,7 @@ export function InitializeCommands() {
                          await utils.KVManager.delete(inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
                          const extras = new Map<string, string>();
-                         extras.set('_USERTAG_', logUtils.getUserTag(msg.author));
+                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          await logCustom('INFRACTIONS', 'DELETED', extras);
