@@ -27,7 +27,6 @@ export async function runUpdates() {
     // await translationkv.clear();
     const items = await persistkv.items();
     if (items.length > 0) {
-      console.log('updating persists');
       for (const k in items) {
         const val: any = items[k];
         await KVManager.set(`Persist_${k}`, val);
@@ -39,9 +38,9 @@ export async function runUpdates() {
     if (!cfg) {
       return;
     }
-    if (typeof cfg === 'object') {
+    if (typeof cfg === 'object' && typeof cfg.modules === 'object') {
       if (typeof cfg.modules.antiPing === 'object' && typeof cfg.modules.infractions === 'object') {
-        if (typeof cfg.modules.antiPing.muteRole === 'string' && typeof cfg.modules.infractions.muteRole !== cfg.modules.antiPing.muteRole) {
+        if (typeof cfg.modules.antiPing.muteRole === 'string' && cfg.modules.infractions.muteRole !== cfg.modules.antiPing.muteRole) {
           cfg.modules.infractions.muteRole = cfg.modules.antiPing.muteRole;
           changedCfg = true;
         }
@@ -52,8 +51,8 @@ export async function runUpdates() {
       }
       if (typeof cfg.modules.utilities === 'object') {
         if (typeof cfg.modules.utilities.persist === 'object') {
-          if (cfg.utilities.persist.duration) {
-            delete cfg.utilities.persist.duration;
+          if (cfg.modules.utilities.persist.duration) {
+            delete cfg.modules.utilities.persist.duration;
             changedCfg = true;
           }
         }
