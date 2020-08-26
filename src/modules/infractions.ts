@@ -778,7 +778,7 @@ export function InitializeCommands() {
                 }
                 await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
-  cmdGroup.on({ name: 'cleanban', filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
+  cmdGroup.on({ name: 'cleanban',aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
               async (msg, { user, deleteDays, reason }) => {
                 if (typeof reason !== 'string') {
@@ -796,7 +796,7 @@ export function InitializeCommands() {
                 }
                 await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
               });
-  cmdGroup.on({ name: 'softban', filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
+  cmdGroup.on({ name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
               async (msg, { user, deleteDays, reason }) => {
                 if (typeof reason !== 'string') {
