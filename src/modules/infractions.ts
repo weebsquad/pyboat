@@ -1289,7 +1289,7 @@ export async function AL_OnGuildMemberUpdate(
         });
         await Promise.all(promises);
       }
-      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.user.id === log.userId) {
         return;
       }
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
@@ -1297,7 +1297,7 @@ export async function AL_OnGuildMemberUpdate(
       }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
-      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId()) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.user.id === log.userId) {
         return;
       }
 
@@ -1307,7 +1307,7 @@ export async function AL_OnGuildMemberUpdate(
       }
       return;
     }
-    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string') {
+    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string' || member.user.id === log.userId) {
       return;
     }
     const changedNick = member.nick.toLowerCase();
