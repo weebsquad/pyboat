@@ -35,7 +35,7 @@ export async function runUpdates() {
       }
       await persistkv.clear();
     }
-  });
+  
   let changedCfg = false;
   if (!cfg) {
     return;
@@ -64,4 +64,5 @@ export async function runUpdates() {
     console.log('Updated guild config!');
     await pylon.kv.put('__guildConfig', cfg);
   }
+});
 }

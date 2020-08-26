@@ -555,6 +555,48 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   return true;
 }
 /*
+  MASSBAN
+*/
+export async function MassBan(members: Array<discord.GuildMember | discord.User>, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, reason: string) {
+  let results = {
+    success: [],
+    fail: []
+  }
+  if (typeof deleteDays !== 'number') {
+    deleteDays = 0;
+  }
+  if (deleteDays > 7) {
+    deleteDays = 7;
+  }
+  if (deleteDays < 0) {
+    deleteDays = 0;
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  const guild = await discord.getGuild(guildId);
+  await Promise.all(members.map( async function(member) {
+  const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
+
+  const ban = await guild.getBan(memberId);
+  if (ban !== null) {
+    results.fail.push(memberId);
+    return;
+  }
+  const canT = await canTarget(actor, member, InfractionType.BAN);
+  if (canT !== true) {
+    results.fail.push(memberId);
+    return;
+  }
+  
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
+  await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
+  results.success.push(memberId);
+}));
+  await logAction('massban', actor, null, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : '']]));
+  return results;
+}
+/*
   TEMPBAN
 */
 export async function TempBan(member: discord.GuildMember | discord.User, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, time: string, reason: string) {
@@ -777,6 +819,65 @@ export function InitializeCommands() {
                   return;
                 }
                 await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+              });
+              cmdGroup.on({ name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
+              (ctx) => ({ deleteDays: ctx.integer(), args: ctx.text() }),
+              async (msg, { deleteDays, args}) => {
+                let ids = [];
+                let reas = [];
+                args.split(' ').forEach(function(test) {
+                  if(utils.isNumber(test)) {
+                    ids.push(test);
+                  } else {
+                    reas.push(test);
+                  }
+                });
+                const reason = reas.join(' ');
+                if(ids.length < 2) {
+                  await msg.reply('Not enough ids specified!');
+                  return;
+                }
+                let objs = [];
+                let failNotFound = [];
+                let failPerms = [];
+                const guild = await msg.getGuild();
+                await Promise.all(ids.map(async function(id) {
+                  const gm = await guild.getMember(id);
+                  if(gm !== null) {
+                    const ct = await canTarget(msg.member, gm, InfractionType.BAN);
+                    if(ct === true) {
+                      objs.push(gm);
+                      return;
+                    }
+                    failPerms.push(id);
+                    return;
+                    
+                  }
+                  const usr = await discord.getUser(id);
+                  if(usr !== null) {
+                    const ct = await canTarget(msg.member, usr, InfractionType.BAN);
+                    if(ct === true) {
+                      objs.push(usr);
+                      return;
+                    }
+                    failPerms.push(id);
+                    return;
+                  }
+                  failNotFound.push(id);
+                }));
+                console.log(objs, failNotFound, failPerms);
+                /*
+                const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
+                const result = await Ban(user, msg.member, _del, reason);
+                if (result === false) {
+                  await confirmResult(undefined, msg, false, 'Failed to ban user.');
+                  return;
+                }
+                if (typeof result === 'string') {
+                  await confirmResult(undefined, msg, false, result);
+                  return;
+                }
+                await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);*/
               });
   cmdGroup.on({ name: 'cleanban',aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
               (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
