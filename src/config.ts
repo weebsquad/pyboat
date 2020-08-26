@@ -382,17 +382,17 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       try {
         await message.delete();
       } catch (e) {
-        await message.reply('Couldnt delete your message! You might want to delete it yourself.');
+        await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
       await pylon.kv.put('__guildConfig', dat);
       await InitializeConfig(true);
-      await message.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len} bytes)`);
+      await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len}/8196 bytes)`);
     } catch (e) {
       console.error(e);
       try {
         await message.delete();
       } catch (e2) {}
-      await message.reply(`Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
+      await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
     // return config to user
@@ -428,6 +428,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     }
     const cfgToRet = JSON.stringify(cfg, null, 2);
     const returnedMsg = await message.reply({
+      content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 14 seconds*`,
       attachments: [{
         name: 'config.json',
         data: str2ab(cfgToRet),
