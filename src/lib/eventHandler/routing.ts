@@ -38,7 +38,7 @@ async function _Initialize() {
   InitializeCommands2();
   await logDebug('BOT_STARTED');
 }
-
+let cachedConfig;
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
     if (typeof config === 'undefined') {
@@ -47,9 +47,14 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
         return;
       }
       config = conf.config;
+      cachedConfig = config;
     }
     if (!rl) {
       await _Initialize();
+    }
+    if (cachedConfig !== conf.config) {
+      InitializeCommands2();
+      cachedConfig = conf.config;
     }
 
     const tdiff = new Date(utils.decomposeSnowflake(ts).timestamp).getTime();
