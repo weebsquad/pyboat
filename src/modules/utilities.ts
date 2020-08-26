@@ -212,6 +212,9 @@ export async function OnChannelCreate(
   guildId: string,
   channel: discord.GuildChannel,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   await storeChannelData();
 }
 export async function OnChannelDelete(
@@ -219,6 +222,9 @@ export async function OnChannelDelete(
   guildId: string,
   channel: discord.GuildChannel,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   await storeChannelData();
 }
 export async function OnChannelUpdate(
@@ -226,6 +232,9 @@ export async function OnChannelUpdate(
   guildId: string,
   channel: discord.Channel,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   await storeChannelData();
 }
 export async function OnGuildBanAdd(
@@ -233,6 +242,9 @@ export async function OnGuildBanAdd(
   guildId: string,
   ban: discord.GuildBan,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   try {
     if (config.modules.utilities.persist.saveOnBan !== true) {
       // await persistkv.delete(ban.user.id);
@@ -247,6 +259,9 @@ export async function AL_OnGuildMemberRemove(
   member: discord.Event.IGuildMemberRemove,
   oldMember: discord.GuildMember,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   if (config.modules.utilities.persist.saveOnBan !== true) {
     if (log instanceof discord.AuditLogEntry) {
       if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD) {
@@ -262,6 +277,9 @@ export async function OnGuildMemberAdd(
   guildId: string,
   member: discord.GuildMember,
 ) {
+  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+    return;
+  }
   await restorePersistData(member);
 }
 
@@ -274,6 +292,9 @@ export async function AL_OnMessageDelete(
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
 ) {
+  if (!config.modules.utilities || typeof config.modules.utilities !== 'object' || config.modules.utilities.enabled !== true) {
+    return;
+  }
   if (
     msg === null
     || log instanceof discord.AuditLogEntry
