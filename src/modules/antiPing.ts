@@ -440,7 +440,7 @@ export async function OnMessageDeleteBulk(id: string,
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
     //await member.addRole(config.modules.antiPing.muteRole);
-    const res = await inf.Mute(member, reactor, `AntiPing Mute by ${reactor.user.getTag()} (${reactor.user.id})`);
+    const res = await inf.Mute(member, reactor, `AntiPing Mute`);
     if(typeof res !== 'boolean') {
       return false;
     }
@@ -463,7 +463,7 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
   if (member.roles.includes(config.modules.infractions.muteRole)) {
     try {
       //await member.removeRole(config.modules.antiPing.muteRole);
-      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing Ignore by ${reactor.user.getTag()} (${reactor.user.id})`)
+      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing Ignore`)
       if(typeof res !== 'boolean') {
         return false;
       }
@@ -478,7 +478,7 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
   if(member.roles.includes(config.modules.infractions.muteRole)) {
     try {
       //await member.removeRole(config.modules.antiPing.muteRole);
-      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing IgnoreOnce by ${reactor.user.getTag()} (${reactor.user.id})`)
+      const res = await inf.UnMute(member, reactor, `Auto unmute due to AntiPing IgnoreOnce`)
       if(typeof res !== 'boolean') {
         return false;
       }
@@ -492,7 +492,7 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
 }
 export async function EmojiActionKick(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.Kick(member, reactor, `AntiPing Kick by ${reactor.user.getTag()} (${reactor.user.id})`);
+    const res = await inf.Kick(member, reactor, `AntiPing Kick`);
     if(typeof res !== 'boolean') {
       return false;
     }
@@ -503,7 +503,7 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
 }
 export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban by ${reactor.user.getTag()} (${reactor.user.id})`);
+    const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban`);
     if(typeof res !== 'boolean') {
       return false;
     }
@@ -521,7 +521,7 @@ export async function EmojiActionBan(guild: discord.Guild, member: discord.Guild
         reactor.user.id
       }) >> Banned due to antiping`,
     });*/
-    const res = await inf.Ban(member, reactor, 7, `AntiPing Ban by ${reactor.user.getTag()} (${reactor.user.id})`);
+    const res = await inf.Ban(member, reactor, 7, `AntiPing Ban`);
     if(typeof res !== 'boolean') {
       return false;
     }
