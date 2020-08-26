@@ -113,6 +113,11 @@ const eventFilters = <any>{
         return true;
       }
     },
+    MESSAGE_DELETE: (ev: discord.Event.IMessageDelete, msg: discord.Message.AnyMessage) => {
+      if (msg !== null && isMessageConfigUpdate(msg) !== false) {
+        return true;
+      }
+    },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
       if (ev.userId === discord.getBotId()) {
         return true;

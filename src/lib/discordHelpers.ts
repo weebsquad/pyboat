@@ -9,6 +9,7 @@ import { Permissions } from './bitField';
 import { metalApiRequest } from './metalApi';
 
 const { config } = conf;
+
 export class FakeConsole {
   private channel: discord.ITextChannel;
   private timeout: number | null = null;

@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser, isMaster } from '../main';
 import * as utils from '../../../lib/utils';
 import * as utils2 from '../utils';
 
@@ -27,6 +27,9 @@ export function getKeys(
       return ['messageDeletedGuildWebhook'];
     }
     return ['messageDeletedGuild'];
+  }
+  if (!isMaster()) {
+    return [];
   }
   if (msg === null) {
     return ['messageDeletedNoCache'];

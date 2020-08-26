@@ -1,7 +1,7 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isMaster } from '../main';
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
-  return ['connection'];
+  return isMaster() === true ? ['connection'] : [];
 }
 
 export function isAuditLog() {

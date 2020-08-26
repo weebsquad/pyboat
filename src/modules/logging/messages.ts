@@ -23,23 +23,38 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     BOT_STARTED: `${discord.decor.Emojis.WHITE_CHECK_MARK} Bot code reloaded`,
     RAW_EVENT: `${discord.decor.Emojis.INBOX_TRAY} received \`_EVENT_\` / Queue: **_QUEUE_**`,
     CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
-    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_ tried to perform _ACTION_`,
+    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_**[**||\`_USER_ID_\`||**]** tried to perform _ACTION_`,
   },
   '|PERSIST': {
     SAVED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data saved.`,
     RESTORED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data restored.`,
   },
+  '|INFRACTIONS': {
+    KICK: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    MUTE: `${discord.decor.Emojis.MUTE} _ACTORTAG_ muted _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    UNMUTE: `${discord.decor.Emojis.SPEAKER} _ACTORTAG_ unmuted _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    TEMPMUTE: `${discord.decor.Emojis.MUTE} _ACTORTAG_ temp-muted _USERTAG_**[**||\`_USER_ID_\`||**]** for _DURATION__REASON_`,
+    TEMPMUTE_EXPIRED: `${discord.decor.Emojis.ALARM_CLOCK} _USERTAG_ 's tempmute expired.`,
+    BAN: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ banned _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    UNBAN: `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ unbanned _USERTAG_**[**||\`_USER_ID_\`||**]**_REASON_`,
+    SOFTBAN: `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ softbanned _USERTAG_**[**||\`_USER_ID_\`||**]** (deleting _DELETE_DAYS_ days of their messages)_REASON_`,
+    TEMPBAN: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ temp-banned _USERTAG_**[**||\`_USER_ID_\`||**]** for _DURATION__REASON_`,
+    TEMPBAN_EXPIRED: `${discord.decor.Emojis.ALARM_CLOCK} _USERTAG_ 's tempban expired.`,
+    MASSBAN: `${discord.decor.Emojis.HAMMER}${discord.decor.Emojis.HAMMER}${discord.decor.Emojis.HAMMER} _ACTORTAG_ mass-banned _BANNED_USER_COUNT_ users **[**\`_BANNED_USERS_\`**]**_REASON_`,
+    EDITED: `${discord.decor.Emojis.PENCIL2} _ACTORTAG_ edited infraction id \`_INFRACTION_ID_\` : **_TYPE_** : \`_NEW_VALUE_\``,
+    DELETED: `${discord.decor.Emojis.EXCLAMATION} _ACTORTAG_ deleted infraction id \`_INFRACTION_ID_\``,
+  },
   '|CORE': {
-    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
+    BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_**[**||\`_USER_ID_\`||**]** tried to perform _ACTION_`,
   },
   '|COMMANDS': {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
   '|ANTIPING': {
-    FAIL_MARK_MEMBER_NOT_FOUND: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but _USERTAG_ left the server',
-    FAIL_MARK_UNMUTE: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but failed to unmute',
-    FAIL_MARK_ACTION: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but I failed to _ACTION_ them',
-    MARK_SUCCESS: '_ACTORTAG_ successfully marked _USERTAG_\'s punishment in <#_CHANNEL_ID_> as _ACTION_',
+    FAIL_MARK_MEMBER_NOT_FOUND: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_**[**||\`_USER_ID_\`||**]** as _ACTION_ but _USERTAG_ left the server',
+    FAIL_MARK_UNMUTE: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_**[**||\`_USER_ID_\`||**]** as _ACTION_ but failed to unmute',
+    FAIL_MARK_ACTION: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_**[**||\`_USER_ID_\`||**]** as _ACTION_ but I failed to _ACTION_ them',
+    MARK_SUCCESS: '_ACTORTAG_ successfully marked _USERTAG_**[**||\`_USER_ID_\`||**]**\'s punishment in <#_CHANNEL_ID_> as _ACTION_',
     LEFT_BANNED: '_USERTAG_ left the server with pending anti-ping punishments and was auto-banned',
     TRIGGERED: '_USERTAG_ triggered anti-ping in <#_CHANNEL_ID_>',
     TRIGGERED_MUTE: '_USERTAG_ triggered anti-ping in <#_CHANNEL_ID_> and was auto-muted',
@@ -65,36 +80,36 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} channel deleted: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   'CHANNEL_PINS_UPDATE': {
-    MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
-    MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
+    MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_**[**||\`_USER_ID_\`||**]** in <#_CHANNEL_ID_>${messageJump}`,
+    MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_**[**||\`_USER_ID_\`||**]** in <#_CHANNEL_ID_>${messageJump}`,
   },
   'GUILD_MEMBER_ADD': {
-    BOT_ADDED: '<:bot:735780703945490542> _USERTAG_ **[**||\`_USER_ID_\`||**]** was added to the server',
-    MEMBER_JOIN: `${discord.decor.Emojis.INBOX_TRAY} _USERTAG_ **[**||\`_USER_ID_\`||**]** joined the server (account created _ACCOUNT_AGE_ ago)`,
+    BOT_ADDED: '<:bot:735780703945490542> _USERTAG_ was added to the server',
+    MEMBER_JOIN: `${discord.decor.Emojis.INBOX_TRAY} _USERTAG_ joined the server (account created _ACCOUNT_AGE_ ago)`,
   },
   'GUILD_MEMBER_REMOVE': {
-    MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ **[**||\`_USER_ID_\`||**]** left the server`,
+    MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ left the server`,
   },
   'GUILD_BAN_ADD': {
-    MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _USERTAG_ **[**||\`_USER_ID_\`||**]** was banned from the server`,
+    MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _USERTAG_ was banned from the server`,
   },
   'GUILD_BAN_REMOVE': {
-    MEMBER_UNBANNED: `${discord.decor.Emojis.CYCLONE} _USERTAG_ **[**||\`_USER_ID_\`||**]** was unbanned from the server`,
+    MEMBER_UNBANNED: `${discord.decor.Emojis.CYCLONE} _USERTAG_ was unbanned from the server`,
   },
   'GUILD_MEMBER_UPDATE': {
-    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\``,
-    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'changed their nickname' : 'nickname changed'} from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
-    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'removed their nickname' : 'nickname removed'} of \`_OLD_NICK_\``,
-    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'added role(s) to themselves' : 'role(s) added'}: _ADDED_ROLES_`,
-    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'removed role(s) from themselves' : 'role(s) removed'}: _REMOVED_ROLES_`,
-    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _USERTAG_ **[**||\`_USER_ID_\`||**]** ${_c ? 'changed own roles' : 'roles changed'}: _CHANGED_ROLES_`,
-    AVATAR_ADDED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** added avatar : _NEW_AVATAR_`,
-    AVATAR_REMOVED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** removed their avatar : _OLD_AVATAR_`,
-    AVATAR_CHANGED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their avatar to _NEW_AVATAR_`,
-    USERNAME_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their username from \`_OLD_USERNAME_\` to \`_NEW_USERNAME_\``,
-    DISCRIMINATOR_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ **[**||\`_USER_ID_\`||**]** changed their discriminator from \`_OLD_DISCRIMINATOR_\` to \`_NEW_DISCRIMINATOR_\``,
-    BOOSTING_STARTED: `${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} _USERTAG_ **[**||\`_USER_ID_\`||**]** boosted the server`,
-    BOOSTING_STOPPED: `${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} _USERTAG_ **[**||\`_USER_ID_\`||**]** unboosted the server`,
+    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ ${_c ? 'added nickname' : 'nickname added'} \`_NEW_NICK_\``,
+    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ ${_c ? 'changed their nickname' : 'nickname changed'} from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
+    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _USERTAG_ ${_c ? 'removed their nickname' : 'nickname removed'} of \`_OLD_NICK_\``,
+    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ ${_c ? 'added role(s) to themselves' : 'role(s) added'}: _ADDED_ROLES_`,
+    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _USERTAG_ ${_c ? 'removed role(s) from themselves' : 'role(s) removed'}: _REMOVED_ROLES_`,
+    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _USERTAG_ ${_c ? 'changed own roles' : 'roles changed'}: _CHANGED_ROLES_`,
+    AVATAR_ADDED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ added avatar : _NEW_AVATAR_`,
+    AVATAR_REMOVED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ removed their avatar : _OLD_AVATAR_`,
+    AVATAR_CHANGED: `${discord.decor.Emojis.FRAME_PHOTO} _USERTAG_ changed their avatar to _NEW_AVATAR_`,
+    USERNAME_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ changed their username from \`_OLD_USERNAME_\` to \`_NEW_USERNAME_\``,
+    DISCRIMINATOR_CHANGED: `${discord.decor.Emojis.PAGE_WITH_CURL} _USERTAG_ changed their discriminator from \`_OLD_DISCRIMINATOR_\` to \`_NEW_DISCRIMINATOR_\``,
+    BOOSTING_STARTED: `${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} _USERTAG_ boosted the server`,
+    BOOSTING_STOPPED: `${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} _USERTAG_ unboosted the server`,
   },
   'GUILD_CREATE': {
     RECONNECTED: `${discord.decor.Emojis.SATELLITE} _GUILD_NAME_ **[**||\`_GUILD_ID_\`||**]** reconnected to gateway`,
@@ -167,7 +182,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     REMOVED_ROLE: `${discord.decor.Emojis.GEAR} role \`_NAME_\` **[**||\`_ROLE_ID_\`||**]** was deleted`,
   },
   'MESSAGE_UPDATE': {
-    MESSAGE_CONTENT_UPDATED_GUILD: `${discord.decor.Emojis.PENCIL} _USERTAG_  edited their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n**•** __Before__: _CONTENT_BEFORE_\n**•** __After__:   _CONTENT_AFTER_ ${messageJump}`,
+    MESSAGE_CONTENT_UPDATED_GUILD: `${discord.decor.Emojis.PENCIL} _USERTAG_ edited their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n**•** __Before__: _CONTENT_BEFORE_\n**•** __After__:   _CONTENT_AFTER_ ${messageJump}`,
     MESSAGE_CONTENT_UPDATED_DM: `${discord.decor.Emojis.PENCIL} _USERTAG_ edited their message **[**||\`_MESSAGE_ID_\`||**]** in the bot's dms: \n**•** __Before__: _CONTENT_BEFORE_\n**•** __After__:   _CONTENT_AFTER_`,
   },
   'MESSAGE_DELETE': {
@@ -245,29 +260,29 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
     CHANNEL_DELETED: `${discord.decor.Emojis.WRENCH} _ACTORTAG_ deleted channel: _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
   },
   CHANNEL_PINS_UPDATE: {
-    MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
-    MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_ in <#_CHANNEL_ID_>${messageJump}`,
+    MESSAGE_PINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ pinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_**[**||\`_USER_ID_\`||**]** in <#_CHANNEL_ID_>${messageJump}`,
+    MESSAGE_UNPINNED: `${discord.decor.Emojis.PUSHPIN} _ACTORTAG_ unpinned a message **[**||\`_MESSAGE_ID_\`||**]** by _USERTAG_**[**||\`_USER_ID_\`||**]** in <#_CHANNEL_ID_>${messageJump}`,
   },
   GUILD_MEMBER_ADD: {
-    BOT_ADDED: '<:bot:735780703945490542> _ACTORTAG_ added _USERTAG_ **[**||\`_USER_ID_\`||**]** to the server',
+    BOT_ADDED: '<:bot:735780703945490542> _ACTORTAG_ added _USERTAG_**[**||\`_USER_ID_\`||**]** to the server',
   },
   GUILD_MEMBER_REMOVE: {
-    MEMBER_KICKED: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG_ **[**||\`_USER_ID_\`||**]** from the server`,
+    MEMBER_KICKED: `${discord.decor.Emojis.BOOT} _ACTORTAG_ kicked _USERTAG_**[**||\`_USER_ID_\`||**]** from the server`,
   },
   GUILD_BAN_ADD: {
-    MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ banned _USERTAG_ **[**||\`_USER_ID_\`||**]** from the server`,
+    MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _ACTORTAG_ banned _USERTAG_**[**||\`_USER_ID_\`||**]** from the server`,
   },
   GUILD_BAN_REMOVE: {
     MEMBER_UNBANNED:
-      `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ unbanned _USERTAG_ **[**||\`_USER_ID_\`||**]** from the server`,
+      `${discord.decor.Emojis.CYCLONE} _ACTORTAG_ unbanned _USERTAG_**[**||\`_USER_ID_\`||**]** from the server`,
   },
   GUILD_MEMBER_UPDATE: {
-    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ added _USERTAG_ 's nickname : \`_NEW_NICK_\``,
-    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ changed _USERTAG_ 's nickname from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
-    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ removed _USERTAG_ 's nickname of \`_OLD_NICK_\``,
-    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role(s) to _USERTAG_ : _ADDED_ROLES_`,
-    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ removed role(s) from _USERTAG_ : _REMOVED_ROLES_`,
-    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ changed roles of _USERTAG_ : _CHANGED_ROLES_`,
+    NICK_ADDED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ added _USERTAG_**[**||\`_USER_ID_\`||**]** 's nickname : \`_NEW_NICK_\``,
+    NICK_CHANGED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ changed _USERTAG_**[**||\`_USER_ID_\`||**]** 's nickname from \`_OLD_NICK_\` to \`_NEW_NICK_\``,
+    NICK_REMOVED: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ removed _USERTAG_**[**||\`_USER_ID_\`||**]** 's nickname of \`_OLD_NICK_\``,
+    ROLES_ADDED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role(s) to _USERTAG_**[**||\`_USER_ID_\`||**]** : _ADDED_ROLES_`,
+    ROLES_REMOVED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ removed role(s) from _USERTAG_**[**||\`_USER_ID_\`||**]** : _REMOVED_ROLES_`,
+    ROLES_CHANGED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ changed roles of _USERTAG_**[**||\`_USER_ID_\`||**]** : _CHANGED_ROLES_`,
   },
   // sadly hardcoded :v
   GUILD_EMOJIS_UPDATE: {
@@ -354,21 +369,21 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   VOICE_STATE_UPDATE: {
     SERVER_DEAFENED:
       `${discord.decor.Emojis.MUTE
-      } _ACTORTAG_ server deafened _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server deafened _USERTAG_**[**||\`_USER_ID_\`||**]** in \`_CHANNEL_NAME_\``,
     SERVER_UNDEAFENED:
       `${discord.decor.Emojis.SPEAKER
-      } _ACTORTAG_ server undeafened _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server undeafened _USERTAG_**[**||\`_USER_ID_\`||**]** in \`_CHANNEL_NAME_\``,
     SERVER_MUTED:
       `${discord.decor.Emojis.MICROPHONE2
-      } _ACTORTAG_ server muted _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server muted _USERTAG_**[**||\`_USER_ID_\`||**]** in \`_CHANNEL_NAME_\``,
     SERVER_UNMUTED:
       `${discord.decor.Emojis.MICROPHONE2
-      } _ACTORTAG_ server unmuted _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server unmuted _USERTAG_**[**||\`_USER_ID_\`||**]** in \`_CHANNEL_NAME_\``,
     LEFT_CHANNEL:
       `${discord.decor.Emojis.TELEPHONE
-      } _ACTORTAG_ disconnected _USERTAG_ from \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ disconnected _USERTAG_**[**||\`_USER_ID_\`||**]** from \`_CHANNEL_NAME_\``,
     MOVED_CHANNEL:
       `${discord.decor.Emojis.ARROW_RIGHT
-      } _ACTORTAG_ moved _USERTAG_ from \`_OLD_CHANNEL_NAME_\` to \`_NEW_CHANNEL_NAME_\``,
+      } _ACTORTAG_ moved _USERTAG_**[**||\`_USER_ID_\`||**]** from \`_OLD_CHANNEL_NAME_\` to \`_NEW_CHANNEL_NAME_\``,
   },
 };

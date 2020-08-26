@@ -19,12 +19,25 @@ export function InitializeCommands() {
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
 
-  cmdGroup.raw('mylevel',
+  cmdGroup.raw({ name: 'help', filters: c2.getFilters('commands.help', Ranks.Guest) }, async (msg) => {
+    const newemb = new discord.Embed();
+    newemb.setAuthor({ name: 'PyBoat' });
+    newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)');
+    newemb.setColor(0xFF0000);
+    const myavatar = await discord.getBotUser();
+    newemb.setThumbnail({ url: myavatar.getAvatarUrl() });
+    await msg.reply({ allowedMentions: {}, content: '', embed: newemb });
+  });
+  cmdGroup.raw({ name: 'docs', filters: c2.getFilters('commands.docs', Ranks.Guest) }, async (msg) => {
+    await msg.reply({ allowedMentions: {}, content: '<https://docs.pyboat.i0.tf/>' });
+  });
+
+  cmdGroup.raw({ name: 'mylevel', filters: c2.getFilters('commands.mylevel', Ranks.Guest) },
                async (msg) => {
                  await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
                });
 
-  cmdGroup.raw({ name: 'ping', filters: c2.getFilters('utilities.ping', Ranks.Guest) }, async (msg) => {
+  cmdGroup.raw({ name: 'ping', filters: c2.getFilters('commands.ping', Ranks.Guest) }, async (msg) => {
     const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
     const msgd = new Date();
     const edmsg = await msg.reply('<a:loading:735794724480483409>');
@@ -105,7 +118,7 @@ export function InitializeCommands() {
   }
 ); */
 
-  cmdGroup.raw('server', async (message) => {
+  cmdGroup.raw({ name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) }, async (message) => {
     const edmsg = message.reply('<a:loading:735794724480483409>');
     const embed = new discord.Embed();
     const guild = await message.getGuild();

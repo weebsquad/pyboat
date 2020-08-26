@@ -2,13 +2,17 @@ import * as ratelimit from './eventHandler/ratelimit';
 import * as queue from './eventHandler/queue';
 import { logDebug } from '../modules/logging/events/custom';
 import * as conf from '../config';
+import { every5Min } from '../modules/infractions';
+import { cleanPool } from '../modules/translation';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
       await ratelimit.clean();
+      await cleanPool();
       queue.cleanQueue();
+      await every5Min();
     },
     started: false,
   },

@@ -7,6 +7,7 @@ export * from './discordHelpers';
 export * from './bitField';
 export * from './permissions';
 export * from './gTranslate';
+export * from './kvManager';
 //import * as moment from 'moment';
 
 

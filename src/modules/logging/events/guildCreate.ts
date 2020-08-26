@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isMaster } from '../main';
 import * as utils from '../../../lib/utils';
 
 export async function getKeys(log: null, guild: discord.Guild) {
@@ -10,7 +10,7 @@ export async function getKeys(log: null, guild: discord.Guild) {
   if (ndiff > 60 * 1000) {
     return ['reconnected'];
   }
-  return ['newGuild'];
+  return isMaster() === true ? ['newGuild'] : [];
 }
 
 export function isAuditLog() {

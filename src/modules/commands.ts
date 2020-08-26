@@ -7,7 +7,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 async function HandleDM(msg: discord.Message) {
   // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
-
+const cooldowns: any = {};
 export async function OnMessageCreate(
   id: string,
   guildId: string,
@@ -31,6 +31,13 @@ export async function OnMessageCreate(
     if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
       return;
     }
+    if (typeof cooldowns[msg.author.id] === 'number') {
+      const diff = Date.now() - cooldowns[msg.author.id];
+      // global cmd cooldown!
+      if (diff < 750) {
+        return;
+      }
+    }
     const validCmd = await commands2.isCommand(msg);
     if (!validCmd) {
       return;
@@ -49,6 +56,7 @@ export async function OnMessageCreate(
         }
       }
     }
+    cooldowns[msg.author.id] = Date.now();
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
       if (!isDevCmd) {

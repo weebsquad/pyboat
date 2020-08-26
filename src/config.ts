@@ -17,7 +17,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.3.8',
+  version: '1.4.3',
 };
 
 const defaultConfig = { // for non-defined configs!
@@ -86,6 +86,24 @@ const defaultConfig = { // for non-defined configs!
         key: '',
       },
     },
+    infractions: {
+      enabled: false,
+      checkLogs: true,
+      integrate: true,
+      muteRole: '',
+      defaultDeleteDays: 0,
+      targetting: {
+        reqDiscordPermissions: true,
+        checkLevels: true,
+        checkRoles: true,
+        othersEditLevel: 100,
+      },
+      confirmation: {
+        reaction: true,
+        message: true,
+        expiry: 10,
+      },
+    },
     utilities: {
       enabled: false,
       // snipe sub-module: whenever a user deletes their own message, the contents are saved in that channel (1 msg per channel)
@@ -107,6 +125,7 @@ const defaultConfig = { // for non-defined configs!
             nick: true,
             mute: true,
             deaf: true,
+            channels: true,
             roleIncludes: [],
             roleExcludes: [],
           }, */
@@ -116,11 +135,11 @@ const defaultConfig = { // for non-defined configs!
             nick: true,
             mute: true,
             deaf: true,
+            channels: true,
             roleIncludes: [],
             roleExcludes: [],
           }, */
         },
-        duration: 31 * 24 * 60 * 60 * 1000,
         saveOnBan: false,
       },
     },
@@ -178,7 +197,6 @@ const defaultConfig = { // for non-defined configs!
         roles: [],
         level: Ranks.Moderator,
       },
-      muteRole: '',
     },
     counting: { // counting module
       enabled: false,
@@ -229,7 +247,9 @@ export async function InitializeConfig(bypass = false) {
     }
     return typeof config !== 'undefined' ? config : false;
   }
-  config = undefined;
+  if (!bypass) {
+    config = undefined;
+  }
   loadingConf = true;
   // await sleep(2000);
   try {
@@ -299,6 +319,9 @@ function str2ab(str) {
 }
 
 export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
+  if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+    return false;
+  }
   if (!(msg instanceof discord.GuildMemberMessage)) {
     return false;
   } // todo : allow dms
@@ -355,7 +378,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         .split('\r')
         .join('');
       // dat = encodeURI(dat);
-      const len = dat.length;
+      const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       try {
         await message.delete();
       } catch (e) {

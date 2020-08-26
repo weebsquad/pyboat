@@ -33,6 +33,7 @@ export const messages = {
       ['_TYPE_', 'MESSAGE_PINNED'],
       ['_CHANNEL_ID_', ev.channelId],
       ['_MESSAGE_ID_', log.options.messageId],
+      ['_USER_ID_', log.targetId],
     ]);
     mp.set('_USERTAG_', '');
     if (_usr !== null) {
@@ -52,6 +53,7 @@ export const messages = {
       ['_TYPE_', 'MESSAGE_UNPINNED'],
       ['_CHANNEL_ID_', ev.channelId],
       ['_MESSAGE_ID_', log.options.messageId],
+      ['_USER_ID_', log.targetId],
     ]);
     mp.set('_USERTAG_', '');
     if (_usr !== null) {

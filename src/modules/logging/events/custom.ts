@@ -53,6 +53,7 @@ export async function logCustom(
   id: string = utils.composeSnowflake(),
 ) {
   cat = cat.toUpperCase();
+  subtype = subtype.toUpperCase();
   if (placeholders && placeholders.has('_USER_ID_') && isIgnoredUser(placeholders.get('_USER_ID_'))) {
     return;
   }
