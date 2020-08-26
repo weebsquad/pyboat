@@ -502,7 +502,6 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
   return false;
 }
 export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-    console.log('emoji action softban', member);
     const res = await inf.SoftBan(member, reactor, 7, `AntiPing Softban`);
     if(typeof res !== 'boolean') {
       return false;
@@ -511,13 +510,6 @@ export async function EmojiActionSoftban(guild: discord.Guild, member: discord.G
 }
 
 export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-    console.log('emoji action ban', member);
-    /*await guild.createBan(userMsg.authorId, {
-      deleteMessageDays: 7,
-      reason: `${reactor.user.getTag()} (${
-        reactor.user.id
-      }) >> Banned due to antiping`,
-    });*/
     const res = await inf.Ban(member, reactor, 7, `AntiPing Ban`);
     if(typeof res !== 'boolean') {
       return false;
