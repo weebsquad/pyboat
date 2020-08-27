@@ -17,7 +17,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.4.3',
+  version: '1.5.0',
 };
 
 const defaultConfig = { // for non-defined configs!
@@ -239,6 +239,8 @@ function loadConfigDefaults(cfg: any) {
 }
 export const guildId = discord.getGuildId();
 
+const configKv = new pylon.KVNamespace('config');
+
 export let config: any;
 let loadingConf = false;
 export async function InitializeConfig(bypass = false) {
@@ -275,23 +277,18 @@ export async function InitializeConfig(bypass = false) {
     loadingConf = false;
     return;
   }
-  let cfg: any = await pylon.kv.get('__guildConfig');
-  if (typeof (cfg) === 'string') {
-    if (cfg.includes('{') || cfg.includes('%')) {
-      if (cfg.includes('%')) {
-        try {
-          cfg = decodeURI(cfg);
-        } catch (e) {}
-      }
-    } else {
-      cfg = atob(cfg);
-      if (cfg.includes('%')) {
-        try {
-          cfg = decodeURI(cfg);
-        } catch (e) {}
-      }
-    }
-    cfg = JSON.parse(cfg);
+  const vers = await pylon.kv.get('__botVersion');
+  if (!vers || vers !== globalConfig.version) {
+    // update!
+    await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
+    await pylon.kv.put('__botVersion', globalConfig.version);
+  }
+
+  // let cfg: any = await pylon.kv.get('__guildConfig');
+  const items = await configKv.items();
+  let cfg: any;
+  if (items.length > 0) {
+    cfg = JSON.parse(items.map((item) => item.value).join(''));
   }
   if (typeof guildConfigs[guildId] !== 'undefined') {
     cfg = guildConfigs[guildId];
@@ -300,12 +297,7 @@ export async function InitializeConfig(bypass = false) {
     return false;
     // cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
-  const vers = await pylon.kv.get('__botVersion');
-  if (!vers || vers !== globalConfig.version) {
-    // update!
-    await updates.runUpdates();
-    await pylon.kv.put('__botVersion', globalConfig.version);
-  }
+
   config = loadConfigDefaults(cfg);
   return config;
 }
@@ -363,34 +355,29 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
     return 'update';
   }
   return 'check';
-  /*
-  const att = msg.attachments[0];
-  if (att.filename !== 'config.json') {
-    return false;
-  }
-  const dat = await (await fetch(att.url)).text(); */
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg === 'update') {
     try {
-      const dat = ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer());
-      JSON.parse(dat);
-      dat.split('\n').join('').split(' ').join('')
-        .split('\t')
-        .join('')
-        .split('\r')
-        .join('');
+      let dat = JSON.parse(ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer()));
+      dat = JSON.stringify(dat);
       // dat = encodeURI(dat);
-      const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
+      // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
+      const len = dat.length;
       try {
         await message.delete();
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
-      await pylon.kv.put('__guildConfig', dat);
+      const parts = dat.match(/.{1,8000}/g);
+      await configKv.clear();
+      for (let i = 0; i < parts.length; i += 1) {
+        await configKv.put(i.toString(), parts[i]);
+      }
+      const items = await configKv.items();
       await InitializeConfig(true);
-      await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config! (${len}/8196 bytes)`);
+      await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
       console.error(e);
       try {
@@ -399,24 +386,10 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
-    // return config to user
-    let cfg: any = await pylon.kv.get('__guildConfig');
-    if (typeof (cfg) === 'string') {
-      if (cfg.includes('{') || cfg.includes('%')) {
-        if (cfg.includes('%')) {
-          try {
-            cfg = decodeURI(cfg);
-          } catch (e) {}
-        }
-      } else {
-        cfg = atob(cfg);
-        if (cfg.includes('%')) {
-          try {
-            cfg = decodeURI(cfg);
-          } catch (e) {}
-        }
-      }
-      cfg = JSON.parse(cfg);
+    const items = await configKv.items();
+    let cfg: any;
+    if (items.length > 0) {
+      cfg = JSON.parse(items.map((item) => item.value).join(''));
     }
     if (typeof guildConfigs[guildId] !== 'undefined') {
       cfg = guildConfigs[guildId];

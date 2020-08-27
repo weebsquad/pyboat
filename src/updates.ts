@@ -1,26 +1,27 @@
 import { KVManager } from './lib/kvManager';
 
-export async function runUpdates() {
+const configKv = new pylon.KVNamespace('config');
+
+export async function runUpdates(oldVersion: string, newVersion: string) {
   console.log('Running update!');
 
   await pylon.requestCpuBurst(async () => {
-    let cfg: any = await pylon.kv.get('__guildConfig');
-    if (typeof (cfg) === 'string') {
-      if (cfg.includes('{') || cfg.includes('%')) {
-        if (cfg.includes('%')) {
-          try {
-            cfg = decodeURI(cfg);
-          } catch (e) {}
+    if (newVersion === '1.5.0') {
+      let oldcfg: any = await pylon.kv.get('__guildConfig');
+      if (typeof oldcfg !== 'undefined') {
+        oldcfg = JSON.parse(oldcfg);
+        const parts = JSON.stringify(oldcfg).match(/.{1,8000}/g);
+        await configKv.clear();
+        for (let i = 0; i < parts.length; i += 1) {
+          await configKv.put(i.toString(), parts[i]);
         }
-      } else {
-        cfg = atob(cfg);
-        if (cfg.includes('%')) {
-          try {
-            cfg = decodeURI(cfg);
-          } catch (e) {}
-        }
+        await pylon.kv.delete('__guildConfig');
       }
-      cfg = JSON.parse(cfg);
+    }
+    let cfg: any;
+    const itemsC = await configKv.items();
+    if (itemsC.length > 0) {
+      cfg = JSON.parse(itemsC.map((item) => item.value).join(''));
     }
     const persistkv = new pylon.KVNamespace('persists');
     const translationkv = new pylon.KVNamespace('translation');
@@ -60,7 +61,11 @@ export async function runUpdates() {
     }
     if (changedCfg === true) {
       console.log('Updated guild config!');
-      await pylon.kv.put('__guildConfig', cfg);
+      const parts = JSON.stringify(cfg).match(/.{1,8000}/g);
+      await configKv.clear();
+      for (let i = 0; i < parts.length; i += 1) {
+        await configKv.put(i.toString(), parts[i]);
+      }
     }
   });
 }
