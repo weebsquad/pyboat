@@ -143,14 +143,14 @@ const defaultConfig = { // for non-defined configs!
         saveOnBan: false,
       },
     },
-    roleManagement: { // for group srv only
+    /*roleManagement: { // for group srv only
       enabled: false,
       lowestHoistRole: '',
       botRoleRP: '',
       botRole: '',
       memberRole: '',
       memberRoleRP: '',
-    },
+    },*/
     antiPing: { // owo
       enabled: false,
       // actual defined message
@@ -209,6 +209,9 @@ const defaultConfig = { // for non-defined configs!
       useWebhook: false,
       webhook: '',
     },
+    starboard: {
+      enabled: true,
+    }
   },
 };
 export const guildConfigs = <any>{};

@@ -1,16 +1,11 @@
 // edgy cases lmao
 
 import { deepCompare } from '../utils';
-import { isMessageConfigUpdate } from '../../config';
+import { isMessageConfigUpdate, globalConfig, guildId } from '../../config';
 
 const eventFilters = <any>{
   global: {
     // Stops event functions from running
-    MESSAGE_UPDATE: (message: discord.Message, oldMessage: discord.Message) => {
-      if (deepCompare(message, oldMessage)) {
-        return true;
-      }
-    },
     GUILD_UPDATE: (guild: discord.Guild, oldGuild: discord.Guild) => {
       if (deepCompare(guild, oldGuild)) {
         return true;
@@ -84,6 +79,9 @@ const eventFilters = <any>{
         return true;
       }
     },
+    CHANNEL_CREATE: (channel: discord.Channel.AnyChannel) => {
+    if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (channel.type === discord.Channel.Type.DM)) return true;
+    },
     CHANNEL_UPDATE: (
       channel: discord.Channel.AnyChannel,
       oldChannel: discord.Channel.AnyChannel,
@@ -105,7 +103,8 @@ const eventFilters = <any>{
         return true;
       }
     },
-    MESSAGE_CREATE: (message: discord.Message) => {
+    MESSAGE_CREATE: (message: discord.Message.AnyMessage) => {
+      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) return true;
       if (message.author !== null && message.author.id === discord.getBotId()) {
         return true;
       }
@@ -113,7 +112,14 @@ const eventFilters = <any>{
         return true;
       }
     },
+    MESSAGE_UPDATE: (message: discord.Message, oldMessage: discord.Message) => {
+      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) return true;
+      if (deepCompare(message, oldMessage)) {
+        return true;
+      }
+    },
     MESSAGE_DELETE: (ev: discord.Event.IMessageDelete, msg: discord.Message.AnyMessage) => {
+      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) return true;
       if (msg !== null && isMessageConfigUpdate(msg) !== false) {
         return true;
       }
@@ -122,9 +128,13 @@ const eventFilters = <any>{
       }
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
+      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) return true;
       if (ev.userId === discord.getBotId()) {
         return true;
       }
+    },
+    VOICE_SERVER_UPDATE: (ev: discord.Event.IVoiceServerUpdate) => {
+      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild) return true;
     },
   },
   auditlog: {

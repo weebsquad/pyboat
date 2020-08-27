@@ -6,7 +6,7 @@ import * as roleManagement from './roleManagement';
 import * as translation from './translation';
 import * as utilities from './utilities';
 import * as infractions from './infractions';
-// import * as starboard from './starboard';
+import * as starboard from './starboard';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
@@ -17,6 +17,6 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   translation,
   infractions,
   utilities,
-  // starboard,
+  starboard,
 };
 export const asyncModules = ['logging'];
