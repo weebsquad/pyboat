@@ -31,6 +31,7 @@ export const messages = {
       return new Map([
         ['_USERTAG_', getUserTag(usr)],
         ['_USER_ID_', usr.id],
+        ['_USER_', usr],
         ['_CHANNEL_ID_', tpdata.channelId],
         ['_TYPE_', 'START_TYPING_DM'],
       ]);
@@ -38,6 +39,7 @@ export const messages = {
     return new Map([
       ['_USERTAG_', getMemberTag(tpdata.member)],
       ['_USER_ID_', tpdata.userId],
+      ['_USER_', tpdata.member.user],
       ['_CHANNEL_ID_', tpdata.channelId],
       ['_TYPE_', 'START_TYPING_GUILD'],
     ]);

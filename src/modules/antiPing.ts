@@ -151,13 +151,16 @@ async function isBypass(member: discord.GuildMember) {
   return is;
 }
 
-async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, string> | undefined = new Map()) {
+async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, any> | undefined = new Map()) {
   if (usr instanceof discord.User) {
     extras.set('_USERTAG_', logUtils.getUserTag(usr));
     extras.set('_USER_ID_', usr.id);
+    extras.set('_USER_', usr);
   }
   if (actor instanceof discord.User) {
-    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
+    extras.set('_ACTOR_', actor);
+    extras.set('_ACTOR_ID_', actor.id);
   }
   await logCustom('ANTIPING', `${type}`, extras);
   /*

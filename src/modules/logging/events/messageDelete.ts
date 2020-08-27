@@ -66,6 +66,8 @@ export const messages = {
 
     mp.set('_AUTHOR_', getUserTag(msg.author));
     mp.set('_USER_ID_', msg.author.id);
+    mp.set('_USERTAG_', getUserTag(msg.author));
+    mp.set('_USER_', msg.author);
     mp.set('_TYPE_', 'MESSAGE_DELETED_DM');
     mp.set('_CONTENT_', await utils2.parseMessageContent(msg));
     mp.set('_CHANNEL_ID_', ev.channelId);
@@ -83,6 +85,7 @@ export const messages = {
     mp.set('_AUTHOR_', getUserTag(msg.author));
     mp.set('_USER_ID_', msg.author.id);
     mp.set('_USERTAG_', getUserTag(msg.author));
+    mp.set('_USER_', msg.author);
     mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD');
     mp.set('_CHANNEL_ID_', ev.channelId);
     mp.set('_CONTENT_', await utils2.parseMessageContent(msg));

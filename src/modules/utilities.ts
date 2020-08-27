@@ -116,7 +116,7 @@ async function savePersistData(member: discord.GuildMember) {
     level: utils.getUserAuth(member),
     channels: channels.length > 0 ? channels : undefined,
   });
-  await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+  await logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
 }
 
 async function restorePersistData(member: discord.GuildMember) {
@@ -203,7 +203,7 @@ async function restorePersistData(member: discord.GuildMember) {
   }
   // await persistkv.delete(member.user.id);
   await utils.KVManager.delete(persistPrefix + member.user.id);
-  await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+  await logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
   return true;
 }
 export async function OnChannelCreate(

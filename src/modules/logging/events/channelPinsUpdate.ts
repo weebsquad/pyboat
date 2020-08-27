@@ -29,7 +29,7 @@ export const messages = {
       return;
     }
     const _usr = await discord.getUser(log.targetId);
-    const mp = new Map([
+    const mp = new Map<string, any>([
       ['_TYPE_', 'MESSAGE_PINNED'],
       ['_CHANNEL_ID_', ev.channelId],
       ['_MESSAGE_ID_', log.options.messageId],
@@ -38,6 +38,7 @@ export const messages = {
     mp.set('_USERTAG_', '');
     if (_usr !== null) {
       mp.set('_USERTAG_', getUserTag(_usr));
+      mp.set('_USER_', _usr);
     }
     return mp;
   },
@@ -49,7 +50,7 @@ export const messages = {
       return;
     }
     const _usr = await discord.getUser(log.targetId);
-    const mp = new Map([
+    const mp = new Map<string, any>([
       ['_TYPE_', 'MESSAGE_UNPINNED'],
       ['_CHANNEL_ID_', ev.channelId],
       ['_MESSAGE_ID_', log.options.messageId],
@@ -58,6 +59,7 @@ export const messages = {
     mp.set('_USERTAG_', '');
     if (_usr !== null) {
       mp.set('_USERTAG_', getUserTag(_usr));
+      mp.set('_USER_', _usr);
     }
     return mp;
   },

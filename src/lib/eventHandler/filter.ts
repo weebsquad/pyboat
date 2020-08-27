@@ -117,6 +117,9 @@ const eventFilters = <any>{
       if (msg !== null && isMessageConfigUpdate(msg) !== false) {
         return true;
       }
+      if (msg !== null && msg.author.id === discord.getBotId()) {
+        return true;
+      }
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
       if (ev.userId === discord.getBotId()) {

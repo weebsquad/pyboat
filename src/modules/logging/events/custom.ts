@@ -31,9 +31,11 @@ export const messages = {
         if (typeof v !== 'string') {
           if (k === '_AUTHOR_') {
             mp.set('_USERTAG_', getUserTag(v));
+            mp.set('_USER_', v);
           }
           if (k === '_MEMBER_') {
             mp.set('_USERTAG_', getMemberTag(v));
+            mp.set('_USER_', v);
           }
         }
         if (typeof v !== 'string') {

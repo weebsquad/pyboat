@@ -35,6 +35,7 @@ export const messages = {
     mp.set('_USER_ID_', member.user.id);
     mp.set('_ACCOUNT_AGE_', utils.getLongAgoFormat(utils.decomposeSnowflake(member.user.id).timestamp, 2, true, 'second'));
     mp.set('_USERTAG_', getMemberTag(member));
+    mp.set('_USER_', member.user);
     return mp;
   },
   botAdd(log: discord.AuditLogEntry, member: discord.GuildMember) {
@@ -42,6 +43,7 @@ export const messages = {
     mp.set('_TYPE_', 'BOT_ADDED');
     mp.set('_USER_ID_', member.user.id);
     mp.set('_USERTAG_', getMemberTag(member));
+    mp.set('_USER_', member.user);
 
     return mp;
   },

@@ -321,7 +321,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember | null, extras: Map<string, string> | undefined = new Map(), id: string | undefined = undefined) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember | null, extras: Map<string, any> | undefined = new Map(), id: string | undefined = undefined) {
   if (member instanceof discord.GuildMember) {
     member = member.user;
   }
@@ -331,6 +331,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
   if (member !== null) {
     extras.set('_USERTAG_', logUtils.getUserTag(member));
     extras.set('_USER_ID_', member.id);
+    extras.set('_USER_', member);
   }
   if (actor === null) {
     extras.set('_ACTORTAG_', 'SYSTEM');
@@ -338,7 +339,9 @@ export async function logAction(actionType: string, actor: discord.User | discor
     if (actor instanceof discord.GuildMember) {
       actor = actor.user;
     }
-    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
+    extras.set('_ACTOR_ID_', actor.id);
+    extras.set('_ACTOR_', actor);
   }
   await logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
@@ -1078,8 +1081,10 @@ export function InitializeCommands() {
                          inf.expiresAt = expiresAt;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_', msg.author);
+                         extras.set('_ACTOR_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'duration');
                          extras.set('_NEW_VALUE_', utils.escapeString(duration));
@@ -1111,8 +1116,10 @@ export function InitializeCommands() {
                          inf.reason = reason;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_ID_', msg.author.id);
+                         extras.set('_ACTOR_', msg.author);
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'reason');
@@ -1142,8 +1149,10 @@ export function InitializeCommands() {
                          }
                          await utils.KVManager.delete(inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_', msg.author);
+                         extras.set('_ACTOR_ID_', msg.author.id);
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          await logCustom('INFRACTIONS', 'DELETED', extras);

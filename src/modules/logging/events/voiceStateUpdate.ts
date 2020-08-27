@@ -109,6 +109,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SERVER_DEAFENED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -129,6 +130,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SERVER_UNDEAFENED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -149,6 +151,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SERVER_MUTED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -169,6 +172,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SERVER_UNMUTED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -189,6 +193,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SELF_DEAFENED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -209,6 +214,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SELF_UNDEAFENED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -229,6 +235,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SELF_MUTED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -249,6 +256,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'SELF_UNMUTED'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -269,6 +277,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'START_STREAM'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -289,6 +298,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'STOP_STREAM'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -309,6 +319,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'ENTERED_CHANNEL'],
       ['_CHANNEL_ID_', voiceState.channelId],
       [
@@ -330,6 +341,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'LEFT_CHANNEL'],
       ['_CHANNEL_ID_', oldVoiceState.channelId],
       [
@@ -352,6 +364,7 @@ export const messages = {
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
+      ['_USER_', voiceState.member.user],
       ['_TYPE_', 'MOVED_CHANNEL'],
       ['_OLD_CHANNEL_ID_', oldVoiceState.channelId],
       [

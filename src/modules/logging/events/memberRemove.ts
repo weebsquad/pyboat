@@ -39,6 +39,7 @@ export const messages = {
     mp.set('_TYPE_', 'MEMBER_LEFT');
     mp.set('_USER_ID_', member.user.id);
     mp.set('_USERTAG_', getUserTag(member.user));
+    mp.set('_USER_', member.user);
     return mp;
   },
   memberKicked(
@@ -49,6 +50,7 @@ export const messages = {
     mp.set('_TYPE_', 'MEMBER_KICKED');
     mp.set('_USER_ID_', member.user.id);
     mp.set('_USERTAG_', getUserTag(member.user));
+    mp.set('_USER_', member.user);
     return mp;
   },
 };
