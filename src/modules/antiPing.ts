@@ -88,8 +88,8 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
   const par = channel.parentId;
   if (typeof par === 'string') {
     if (
-      (Array.isArray(config.modules.antiPing.targets.categories.include) && 
-      config.modules.antiPing.targets.categories.include.indexOf(par) > -1)
+      (Array.isArray(config.modules.antiPing.targets.categories.include)
+      && config.modules.antiPing.targets.categories.include.indexOf(par) > -1)
         && (Array.isArray(config.modules.antiPing.targets.categories.exclude) && config.modules.antiPing.targets.categories.exclude.indexOf(chanId) === -1)
     ) {
       lists.category = true;

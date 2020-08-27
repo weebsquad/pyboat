@@ -243,7 +243,9 @@ function getBoardCfg(channelId: string) {
 }
 export async function isBlocked(userId: string) {
   const blocks = await kv.get('blocks');
-  if(!Array.isArray(blocks)) return false;
+  if (!Array.isArray(blocks)) {
+    return false;
+  }
   return blocks.includes(userId);
 }
 
@@ -639,36 +641,39 @@ export function InitializeCommands() {
     _groupOptions,
   );
 
-  
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
   cmdGroup.subcommand('stars', (subCommandGroup) => {
     subCommandGroup.on({ name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
                        (ctx) => ({ user: ctx.user() }),
                        async (msg, { user }) => {
-                        const isb = await isBlocked(user.id);
-                        if(isb === true) {
-                          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`);
-                          return;
-                        }
-                        let blocks = await kv.get('blocks');
-                        if(!Array.isArray(blocks)) blocks = [];
-                        blocks.push(user.id);
-                        await kv.put('blocks', blocks);
-                        await msg.reply(`${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`);
+                         const isb = await isBlocked(user.id);
+                         if (isb === true) {
+                           await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`);
+                           return;
+                         }
+                         let blocks = await kv.get('blocks');
+                         if (!Array.isArray(blocks)) {
+                           blocks = [];
+                         }
+                         blocks.push(user.id);
+                         await kv.put('blocks', blocks);
+                         await msg.reply(`${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`);
                        });
-                       subCommandGroup.on({ name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
+    subCommandGroup.on({ name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
                        (ctx) => ({ user: ctx.user() }),
                        async (msg, { user }) => {
-                        const isb = await isBlocked(user.id);
-                        if(isb === false) {
-                          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`);
-                          return;
-                        }
-                        let blocks = await kv.get('blocks');
-                        if(!Array.isArray(blocks)) blocks = [];
-                        blocks.splice(blocks.indexOf(user.id), 1);
-                        await kv.put('blocks', blocks);
-                        await msg.reply(`${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`);
+                         const isb = await isBlocked(user.id);
+                         if (isb === false) {
+                           await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`);
+                           return;
+                         }
+                         let blocks = await kv.get('blocks');
+                         if (!Array.isArray(blocks)) {
+                           blocks = [];
+                         }
+                         blocks.splice(blocks.indexOf(user.id), 1);
+                         await kv.put('blocks', blocks);
+                         await msg.reply(`${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`);
                        });
   });
   return cmdGroup;
