@@ -143,14 +143,14 @@ const defaultConfig = { // for non-defined configs!
         saveOnBan: false,
       },
     },
-    /*roleManagement: { // for group srv only
+    /* roleManagement: { // for group srv only
       enabled: false,
       lowestHoistRole: '',
       botRoleRP: '',
       botRole: '',
       memberRole: '',
       memberRoleRP: '',
-    },*/
+    }, */
     antiPing: { // owo
       enabled: false,
       // actual defined message
@@ -212,16 +212,19 @@ const defaultConfig = { // for non-defined configs!
     starboard: {
       enabled: true,
       channels: {
-        "748477106715099136": {
+        '748477106715099136': {
           level: 0,
-          emoji: "⭐",
+          emoji: '⭐',
           minReacts: 1,
+          maxLevel: 2,
+          maxEmoji: '🌟',
           preventSelf: false,
+          messageLifetime: 24,
           includes: [],
-          excludes: []
-        }
-      }
-    }
+          excludes: [],
+        },
+      },
+    },
   },
 };
 export const guildConfigs = <any>{};

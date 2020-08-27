@@ -4,6 +4,7 @@ import { logDebug } from '../modules/logging/events/custom';
 import * as conf from '../config';
 import { every5Min } from '../modules/infractions';
 import { cleanPool } from '../modules/translation';
+import * as starboard from '../modules/starboard'
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
@@ -13,6 +14,7 @@ const _cr: {[key: string]: any} = {
       await cleanPool();
       queue.cleanQueue();
       await every5Min();
+      await starboard.periodicClear();
     },
     started: false,
   },

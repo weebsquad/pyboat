@@ -31,7 +31,7 @@ export function isBlacklisted(member: discord.GuildMember | discord.User | strin
   if (member instanceof discord.GuildMember) {
     member = member.user.id;
   }
-  if(member instanceof discord.User) {
+  if (member instanceof discord.User) {
     member = member.id;
   }
   if (isGlobalAdmin(member)) {

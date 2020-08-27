@@ -80,7 +80,9 @@ const eventFilters = <any>{
       }
     },
     CHANNEL_CREATE: (channel: discord.Channel.AnyChannel) => {
-    if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (channel.type === discord.Channel.Type.DM)) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (channel.type === discord.Channel.Type.DM)) {
+        return true;
+      }
     },
     CHANNEL_UPDATE: (
       channel: discord.Channel.AnyChannel,
@@ -104,7 +106,9 @@ const eventFilters = <any>{
       }
     },
     MESSAGE_CREATE: (message: discord.Message.AnyMessage) => {
-      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) {
+        return true;
+      }
       if (message.author !== null && message.author.id === discord.getBotId()) {
         return true;
       }
@@ -113,13 +117,17 @@ const eventFilters = <any>{
       }
     },
     MESSAGE_UPDATE: (message: discord.Message, oldMessage: discord.Message) => {
-      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) {
+        return true;
+      }
       if (deepCompare(message, oldMessage)) {
         return true;
       }
     },
     MESSAGE_DELETE: (ev: discord.Event.IMessageDelete, msg: discord.Message.AnyMessage) => {
-      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) {
+        return true;
+      }
       if (msg !== null && isMessageConfigUpdate(msg) !== false) {
         return true;
       }
@@ -128,13 +136,17 @@ const eventFilters = <any>{
       }
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
-      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) {
+        return true;
+      }
       if (ev.userId === discord.getBotId()) {
         return true;
       }
     },
     VOICE_SERVER_UPDATE: (ev: discord.Event.IVoiceServerUpdate) => {
-      if(typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild) return true;
+      if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild) {
+        return true;
+      }
     },
   },
   auditlog: {
