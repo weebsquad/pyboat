@@ -308,8 +308,7 @@ export async function InitializeConfig(bypass = false) {
     cfg = guildConfigs[guildId];
   }
   if (typeof cfg !== 'object') {
-    return false;
-    // cfg = JSON.parse(JSON.stringify(defaultConfig));
+    cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
 
   config = loadConfigDefaults(cfg);
