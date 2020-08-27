@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import * as utils from '../lib/utils';
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
@@ -123,7 +124,10 @@ export class StarredMessage {
         if (finalize === true && !emb.footer.text.toLowerCase().includes('message deleted')) {
           emb.setFooter({ text: `Message Deleted | ${emb.footer.text}` });
         }
-        const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxEmoji : this.emojiMention;
+        let emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxReacts : this.emojiMention;
+        if (emjUse === boardCfg.maxReacts && emjUse.length > 2 && emjUse.length < 7) {
+          emjUse = utils.convertEmoji(boardCfg.maxEmoji);
+        }
         if (typeof boardCfg.minReactsPin === 'number') {
           if (oldMsg.pinned === true && this.getReactorCount() < boardCfg.minReactsPin) {
             await oldMsg.setPinned(false);
