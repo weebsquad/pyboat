@@ -98,9 +98,9 @@ export async function OnMessageReactionAdd(
   reaction: discord.Event.IMessageReactionAdd,
 ) {}
 
-export async function OnMessageReactionRemove(id: string, guildId: string) {}
+export async function OnMessageReactionRemove(id: string, guildId: string, reaction: discord.Event.IMessageReactionRemove) {}
 
-export async function OnMessageReactionRemoveAll(id: string, guildId: string) {}
+export async function OnMessageReactionRemoveAll(id: string, guildId: string, reaction: discord.Event.IMessageReactionRemoveAll) {}
 
 export async function OnMessageUpdate(
   id: string,

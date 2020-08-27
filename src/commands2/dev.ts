@@ -6,6 +6,7 @@ import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
 import * as infractions from '../modules/infractions';
 import * as utilities from '../modules/utilities';
+import * as starboard from '../modules/starboard';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -199,6 +200,11 @@ export function InitializeCommands() {
     sub.raw('infs5', async (m) => {
       const now = Date.now();
       await infractions.every5Min();
+      await m.reply(`Done (Took ${Date.now() - now}ms)`);
+    });
+    sub.raw('clearsb', async (m) => {
+      const now = Date.now();
+      await starboard.clearData();
       await m.reply(`Done (Took ${Date.now() - now}ms)`);
     });
     sub.raw('getinfs', async (m) => {

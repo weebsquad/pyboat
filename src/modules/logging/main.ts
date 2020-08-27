@@ -73,15 +73,15 @@ export function getLogChannels(gid: string, event: string, type: string) {
       break;
     }
     if (
-      v.scopes.include.includes('*')
+      Array.isArray(v.scopes.include) && (v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
       || v.scopes.include.includes(`${event}.*`)
-      || v.scopes.include.includes(`${event}.${type}`)
+      || v.scopes.include.includes(`${event}.${type}`))
     ) {
-      if (
+      if (Array.isArray(v.scopes.exclude) && (
         v.scopes.exclude.includes(event)
         || v.scopes.exclude.includes(`${event}.*`)
-        || v.scopes.exclude.includes(`${event}.${type}`)
+        || v.scopes.exclude.includes(`${event}.${type}`))
       ) {
         continue;
       }
@@ -203,7 +203,7 @@ async function sendInLogChannel(
 async function parseChannelsData(
   ev: Event,
 ) {
-  const chans = new Map<string, Array<Map<string, string>>>(); // this typing lmfao
+  const chans = new Map<string, Array<Map<string, any>>>(); // this typing lmfao
   let k2 = [];
   await Promise.all(
     ev.keys.map(async (el: string) => {
@@ -218,7 +218,7 @@ async function parseChannelsData(
     }),
   );
   k2 = k2.filter((el: any) => el instanceof Map && el.has('_TYPE_'));
-  k2.map((el: Map<string, string>) => {
+  k2.map((el: Map<string, any>) => {
     if (!el.has('_TYPE_') || !el.has('_KEY_')) {
       return;
     }
@@ -245,7 +245,9 @@ async function parseChannelsData(
     }
     if (isAuditLog && ev.auditLogEntry instanceof discord.AuditLogEntry) {
       const { reason } = ev.auditLogEntry;
-      el.set('_ACTORTAG_', utils.getActorTag(ev.auditLogEntry));
+      el.set('_ACTORTAG_', utils.getActorTag(ev.auditLogEntry.user));
+      el.set('_ACTOR_ID_', ev.auditLogEntry.user.id);
+      el.set('_ACTOR_', ev.auditLogEntry.user);
       if (reason !== '') {
         el.set('_REASON_RAW_', reason);
         el.set('_REASON_', conf.config.modules.logging.reasonSuffix.replace('_REASON_RAW_', reason));
@@ -273,7 +275,7 @@ async function parseChannelsData(
     }
     thesechannels.forEach((ch) => {
       if (!chans.has(ch)) {
-        chans.set(ch, new Array<Map<string, string>>());
+        chans.set(ch, new Array<Map<string, any>>());
       }
       const curr = chans.get(ch);
       if (!curr) {
@@ -289,7 +291,7 @@ async function parseChannelsData(
 
 async function getMessages(
   guildId: string,
-  chans: Map<string, Array<Map<string, string>>>,
+  chans: Map<string, Array<Map<string, any>>>,
   ev: Event,
 ) {
   // if (avatar === '') avatar = (await discord.getBotUser()).getAvatarUrl();
@@ -423,7 +425,6 @@ async function getMessages(
           if (typeof temp !== 'string') {
             return;
           }
-          let pickedOne = false;
           if (map.has('_ACTORTAG_')) {
             let rep = false;
             if (temp.indexOf('_ACTORTAG_') === 0) {
@@ -437,38 +438,45 @@ async function getMessages(
               rep = utils2.containsOnlyEmojis(cleared);
             }
             if (rep) {
-              if (ev.auditLogEntry instanceof discord.AuditLogEntry) {
-                em.setAuthor({
-                  name: ev.auditLogEntry.user.getTag(),
-                  iconUrl: ev.auditLogEntry.user.getAvatarUrl(),
-                });
-                addFooter = `Actor: ${ev.auditLogEntry.user.id}`;
-                pickedOne = true;
-                temp = temp.replace('_ACTORTAG_', '');
+              let usr;
+              if (map.has('_ACTOR_')) {
+                usr = map.get('_ACTOR_');
+              } else if (map.get('_ACTORTAG_') === 'SYSTEM') {
+                usr = 'SYSTEM';
+              } else if (ev.auditLogEntry instanceof discord.AuditLogEntry) {
+                usr = ev.auditLogEntry.user;
               } else {
-                let usrid = map.get('_ACTORTAG_');
-                if (conf.config.modules.logging.actorTag === '_MENTION_') {
+                let usrid = '';
+                if (map.has('_ACTOR_ID_')) {
+                  usrid = map.get('_ACTOR_ID_');
+                } else if (conf.config.modules.logging.actorTag === '_MENTION_') {
+                  usrid = map.get('_ACTORTAG_');
                   usrid = usrid.substr(2).slice(0, -1);
                   if (usrid.includes('!')) {
                     usrid = usrid.substr(1);
                   }
                 }
-                if (usrid !== '') {
-                  const usr = await discord.getUser(usrid);
-                  if (usr !== null) {
-                    pickedOne = true;
-                    em.setAuthor({
-                      name: usr.getTag(),
-                      iconUrl: usr.getAvatarUrl(),
-                    });
-                    addFooter = `Actor: ${usr.id}`;
-                    temp = temp.replace('_ACTORTAG_', '');
-                  }
+
+                if (usrid !== '' && !(usr instanceof discord.User) && usr !== 'SYSTEM') {
+                  usr = await discord.getUser(usrid);
                 }
               }
+              if (usr instanceof discord.User) {
+                em.setAuthor({
+                  name: usr.getTag(),
+                  iconUrl: usr.getAvatarUrl(),
+                });
+                addFooter = `Actor: ${usr.id}`;
+                temp = temp.replace('_ACTORTAG_', '');
+              } else if (typeof usr === 'string' && usr === 'SYSTEM') {
+                em.setAuthor({
+                  name: usr,
+                });
+                addFooter = `Actor: ${usr}`;
+                temp = temp.replace('_ACTORTAG_', '');
+              }
             }
-          }
-          if (!pickedOne && map.has('_USERTAG_')) {
+          } else if (map.has('_USERTAG_')) {
             let rep = false;
             if (temp.indexOf('_USERTAG_') === 0) {
               rep = true;
@@ -481,25 +489,29 @@ async function getMessages(
               rep = utils2.containsOnlyEmojis(cleared);
             }
             if (rep) {
-              let usrid = `${map.get('_USERTAG_')}`;
-              if (map.has('_USER_ID_')) {
+              let usr;
+              let usrid = '';
+              if (map.has('_USER_')) {
+                usr = map.get('_USER_');
+              } else if (map.has('_USER_ID_')) {
                 usrid = map.get('_USER_ID_');
               } else if (conf.config.modules.logging.userTag === '_MENTION_') {
+                usrid = map.get('_USERTAG_');
                 usrid = usrid.substr(2).slice(0, -1);
                 if (usrid.includes('!')) {
                   usrid = usrid.substr(1);
                 }
               }
-              if (usrid !== '') {
-                const usr = await discord.getUser(usrid);
-                if (usr !== null) {
-                  temp = temp.replace('_USERTAG_', '');
-                  em.setAuthor({
-                    name: usr.getTag(),
-                    iconUrl: usr.getAvatarUrl(),
-                  });
-                  addFooter = `User: ${usr.id}`;
-                }
+              if (usrid !== '' && !(usr instanceof discord.User)) {
+                usr = await discord.getUser(usrid);
+              }
+              if (usr instanceof discord.User) {
+                temp = temp.replace('_USERTAG_', '');
+                em.setAuthor({
+                  name: usr.getTag(),
+                  iconUrl: usr.getAvatarUrl(),
+                });
+                addFooter = `User: ${usr.id}`;
               }
             }
           }

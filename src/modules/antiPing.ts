@@ -70,26 +70,32 @@ async function isStaff(member: discord.GuildMember) {
   });
   return hasStaff; */
   const userAuth = utils.getUserAuth(member);
-  return userAuth >= config.modules.antiPing.staff;
+  return typeof config.modules.antiPing.staff === 'number' && userAuth >= config.modules.antiPing.staff;
 }
 
 function isTargetChannel(channel: discord.GuildTextChannel) {
+  if (typeof config.modules.antiPing !== 'object' || typeof config.modules.antiPing.targets !== 'object') {
+    return false;
+  }
   const chanId = channel.id;
   const lists = {
     channel: false,
     category: false,
   };
-  if (
-    config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1
-    && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
-  ) {
-    lists.channel = true;
+  if (typeof config.modules.antiPing.targets.channels === 'object') {
+    if (
+      (Array.isArray(config.modules.antiPing.targets.channels.include) && config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1)
+    && (Array.isArray(config.modules.antiPing.targets.channels.exclude) && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1)
+    ) {
+      lists.channel = true;
+    }
   }
   const par = channel.parentId;
-  if (typeof par === 'string') {
+  if (typeof par === 'string' && typeof config.modules.antiPing.targets.categories === 'object') {
     if (
-      config.modules.antiPing.targets.categories.include.indexOf(par) > -1
-        && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
+      (Array.isArray(config.modules.antiPing.targets.categories.include)
+      && config.modules.antiPing.targets.categories.include.indexOf(par) > -1)
+        && (Array.isArray(config.modules.antiPing.targets.categories.exclude) && config.modules.antiPing.targets.categories.exclude.indexOf(chanId) === -1)
     ) {
       lists.category = true;
     }
@@ -98,21 +104,24 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
 }
 
 async function isTarget(member: discord.GuildMember) {
-  const userId = member.user.id;
-  if (config.modules.antiPing.targets.users.exclude.indexOf(userId) > -1) {
+  if (typeof config.modules.antiPing !== 'object' || typeof config.modules.antiPing.targets !== 'object') {
     return false;
   }
-  if (config.modules.antiPing.targets.users.include.indexOf(userId) > -1) {
+  const userId = member.user.id;
+  if (typeof config.modules.antiPing.targets.users === 'object' && Array.isArray(config.modules.antiPing.targets.users.exclude) && config.modules.antiPing.targets.users.exclude.indexOf(userId) > -1) {
+    return false;
+  }
+  if (typeof config.modules.antiPing.targets.users === 'object' && Array.isArray(config.modules.antiPing.targets.users.include) && config.modules.antiPing.targets.users.include.indexOf(userId) > -1) {
     return true;
   }
   const roles: Array<discord.Role> = (await utils.getUserRoles(member));
   let hasWhitelist = false;
   let hasBlacklist = false;
   roles.forEach((role) => {
-    if (config.modules.antiPing.targets.roles.include.indexOf(role.id) > -1) {
+    if (typeof config.modules.antiPing.targets.roles === 'object' && Array.isArray(config.modules.antiPing.targets.roles.include) && config.modules.antiPing.targets.roles.include.indexOf(role.id) > -1) {
       hasWhitelist = true;
     }
-    if (config.modules.antiPing.targets.roles.exclude.indexOf(role.id) > -1) {
+    if (typeof config.modules.antiPing.targets.roles === 'object' && Array.isArray(config.modules.antiPing.targets.roles.exclude) && config.modules.antiPing.targets.roles.exclude.indexOf(role.id) > -1) {
       hasBlacklist = true;
     }
   });
@@ -130,11 +139,11 @@ async function isBypass(member: discord.GuildMember) {
     return true;
   }
   const userId = member.user.id;
-  if (config.modules.antiPing.bypass.users.indexOf(userId) > -1) {
+  if (typeof config.modules.antiPing.bypass === 'object' && Array.isArray(config.modules.antiPing.bypass.users) && config.modules.antiPing.bypass.users.indexOf(userId) > -1) {
     return true;
   }
   const lvl = utils.getUserAuth(member);
-  if (lvl >= config.modules.antiPing.bypass.level) {
+  if (typeof config.modules.antiPing.bypass === 'object' && typeof config.modules.antiPing.bypass.level === 'number' && lvl >= config.modules.antiPing.bypass.level) {
     return true;
   }
   if (await isIgnore(userId)) {
@@ -143,7 +152,7 @@ async function isBypass(member: discord.GuildMember) {
   const roles = await utils.getUserRoles(member);
   let is = false;
   roles.forEach((role) => {
-    if (config.modules.antiPing.bypass.roles.indexOf(role.id) > -1) {
+    if (typeof config.modules.antiPing.bypass === 'object' && Array.isArray(config.modules.antiPing.bypass.roles) && config.modules.antiPing.bypass.roles.indexOf(role.id) > -1) {
       is = true;
     }
   });
@@ -151,13 +160,16 @@ async function isBypass(member: discord.GuildMember) {
   return is;
 }
 
-async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, string> | undefined = new Map()) {
+async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, any> | undefined = new Map()) {
   if (usr instanceof discord.User) {
     extras.set('_USERTAG_', logUtils.getUserTag(usr));
     extras.set('_USER_ID_', usr.id);
+    extras.set('_USER_', usr);
   }
   if (actor instanceof discord.User) {
-    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
+    extras.set('_ACTOR_', actor);
+    extras.set('_ACTOR_ID_', actor.id);
   }
   await logCustom('ANTIPING', `${type}`, extras);
   /*
@@ -307,7 +319,7 @@ export async function OnMessageCreate(
     data[author.id] = {};
   }
   let isMute = false;
-  if (Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
+  if (typeof config.modules.antiPing.pingsForAutoMute === 'number' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
       const res = await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
@@ -323,7 +335,7 @@ export async function OnMessageCreate(
     config.modules.antiPing.actualCaughtMessage
   }`;
   const msgReply = await message.reply(msgtorep);
-  if (config.modules.antiPing.instaDeletePings) {
+  if (typeof config.modules.antiPing.instaDeletePings === 'boolean' && config.modules.antiPing.instaDeletePings === true) {
     try {
       await message.delete();
     } catch (e) {}
@@ -610,26 +622,15 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (isBanned !== null) {
     return;
   }
-  const isBan = Object.keys(data[user.id]).length >= config.modules.antiPing.pingsForAutoMute
-    || config.modules.antiPing.banOnLeave;
+  const isBan = (typeof config.modules.antiPing.pingsForAutoMute === 'number' && Object.keys(data[user.id]).length >= config.modules.antiPing.pingsForAutoMute)
+    || (typeof config.modules.antiPing.banOnLeave === 'boolean' && config.modules.antiPing.banOnLeave);
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
   } else {
-    /* await guild.createBan(user.id, {
-      deleteMessageDays: 7,
-      reason:
-        'Auto-Banned for leaving the server with pending autoping moderations',
-    }); */
-    await inf.Ban(user, null, 7, 'AntiPing AutoBan for leaving the server with pending autoping moderations');
+    await inf.Ban(user, null, 7, 'AntiPing AutoBan for leaving the server with pending autoping punishments');
     wipeAllUserMessages(user.id, true);
     await log('LEFT_BANNED', user);
     await clearUserData(user.id);
-    /* await log(
-      ':hammer: Tried to act smart and left the server after pinging and before a punishment was defined\n:white_check_mark: User was banned',
-      user.getTag(),
-      'Member ID: ' + user.id,
-      user.getAvatarUrl()
-    ); */
   }
 }
 export async function OnGuildBanAdd(id: string,

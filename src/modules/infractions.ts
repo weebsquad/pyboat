@@ -134,7 +134,7 @@ export class Infraction {
     return diff > 0;
   }
 }
-const makeFake = <T>(data: object, type: { prototype: object }) => Object.assign(Object.create(type.prototype), data) as T;
+
 export async function getInfractions() {
   const keys = (await utils.KVManager.listKeys());
   // enforce keys having our identifier
@@ -155,7 +155,7 @@ export async function getInfractions() {
       type: splitted[6],
       active: typeof splitted[7] === 'string' ? splitted[7] === 'true' : false,
     };
-    return makeFake<Infraction>(newobj, Infraction);
+    return utils.makeFake<Infraction>(newobj, Infraction);
   });
   const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction).sort((a, b) => a.ts - b.ts);
   return exist;
@@ -321,7 +321,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember | null, extras: Map<string, string> | undefined = new Map(), id: string | undefined = undefined) {
+export async function logAction(actionType: string, actor: discord.User | discord.GuildMember | null, member: discord.User | discord.GuildMember | null, extras: Map<string, any> | undefined = new Map(), id: string | undefined = undefined) {
   if (member instanceof discord.GuildMember) {
     member = member.user;
   }
@@ -331,6 +331,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
   if (member !== null) {
     extras.set('_USERTAG_', logUtils.getUserTag(member));
     extras.set('_USER_ID_', member.id);
+    extras.set('_USER_', member);
   }
   if (actor === null) {
     extras.set('_ACTORTAG_', 'SYSTEM');
@@ -338,7 +339,9 @@ export async function logAction(actionType: string, actor: discord.User | discor
     if (actor instanceof discord.GuildMember) {
       actor = actor.user;
     }
-    extras.set('_ACTORTAG_', logUtils.getUserTag(actor));
+    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
+    extras.set('_ACTOR_ID_', actor.id);
+    extras.set('_ACTOR_', actor);
   }
   await logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
@@ -1078,8 +1081,10 @@ export function InitializeCommands() {
                          inf.expiresAt = expiresAt;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_', msg.author);
+                         extras.set('_ACTOR_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'duration');
                          extras.set('_NEW_VALUE_', utils.escapeString(duration));
@@ -1111,8 +1116,10 @@ export function InitializeCommands() {
                          inf.reason = reason;
                          await inf.updateStorage(oldK, inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_ID_', msg.author.id);
+                         extras.set('_ACTOR_', msg.author);
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          extras.set('_TYPE_', 'reason');
@@ -1142,8 +1149,10 @@ export function InitializeCommands() {
                          }
                          await utils.KVManager.delete(inf.getKey());
                          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
-                         const extras = new Map<string, string>();
-                         extras.set('_ACTORTAG_', logUtils.getUserTag(msg.author));
+                         const extras = new Map<string, any>();
+                         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+                         extras.set('_ACTOR_', msg.author);
+                         extras.set('_ACTOR_ID_', msg.author.id);
                          extras.set('_USER_ID_', msg.author.id);
                          extras.set('_INFRACTION_ID_', inf.id);
                          await logCustom('INFRACTIONS', 'DELETED', extras);
@@ -1307,7 +1316,7 @@ export async function AL_OnGuildMemberUpdate(
       }
       return;
     }
-    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string' || member.user.id === log.userId) {
+    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string' || member.user.id === log.userId || utils.isBlacklisted(log.user)) {
       return;
     }
     const changedNick = member.nick.toLowerCase();
@@ -1364,7 +1373,7 @@ export async function AL_OnGuildBanAdd(
     return;
   }
   let { reason } = log;
-  if (config.modules.infractions.integrate === true) {
+  if (config.modules.infractions.integrate === true && !utils.isBlacklisted(log.user)) {
     if (reason.length > 0 && reason.includes('-')) {
       const sp = reason.split('-');
       const lastc = sp[sp.length - 1].split(' ').join('').toLowerCase();

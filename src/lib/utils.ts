@@ -130,6 +130,11 @@ const timeMap = new Map([
 export function isNumber(n: string) {
   return /^-?[\d.]+(?:e-?\d+)?$/.test(n);
 }
+export function convertEmoji(str) {
+  return str.replace(/([0-9a-fA-F]+)/g, (match, hex) =>
+    String.fromCodePoint(Number.parseInt(hex, 16))
+  );
+}
 const blacklist = ['`', '\t', '@everyone', '@here'];
 export function escapeString(string) {
   blacklist.forEach((vl) => {
@@ -137,7 +142,7 @@ export function escapeString(string) {
   });
   return string;
 }
-
+export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
 export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
   if (n < 2) {
     return [a];

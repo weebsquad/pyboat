@@ -13,6 +13,7 @@ export const messages = {
     return new Map([
       ['_TYPE_', 'USER_UPDATED'],
       ['_USER_ID_', user.id],
+      ['_USER_', user],
       ['_USERTAG_', getUserTag(user)],
     ]);
   },

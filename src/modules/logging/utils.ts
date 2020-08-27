@@ -20,7 +20,7 @@ export function isIgnoredChannel(channel: discord.GuildChannel | string) {
   if (!ignores) {
     return false;
   }
-  let chans = [].concat(ignores.channels);
+  let chans = typeof ignores === 'object' && Array.isArray(ignores.channels) ? [].concat(ignores.channels) : [];
   if (ignores.logChannels === true) {
     const _lc: any = Array.from(Object.keys(conf.config.modules.logging.logChannels));
     chans = chans.concat(_lc);
@@ -39,7 +39,7 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   if (!ignores) {
     return false;
   }
-  const usrs = [].concat(ignores.users);
+  const usrs = Array.isArray(ignores.users) ? [].concat(ignores.users) : [];
   if (ignores.self === true) {
     usrs.push(discord.getBotId());
   }
@@ -59,7 +59,7 @@ export function isIgnoredActor(user: string | discord.User | discord.GuildMember
   if (!ignores) {
     return false;
   }
-  const usrs = conf.config.modules.logging.extendUsersToAuditLogs === true ? [].concat(ignores.users) : [];
+  const usrs = Array.isArray(ignores.users) && conf.config.modules.logging.extendUsersToAuditLogs === true ? [].concat(ignores.users) : [];
   if (ignores.selfAuditLogs === true) {
     usrs.push(discord.getBotId());
   }
@@ -110,7 +110,7 @@ export function getMemberTag(member: discord.GuildMember) {
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
-    tg = tg.split(key).join(value);
+    tg = utils.escapeString(tg.split(key).join(value));
   }
   return tg;
 }
@@ -121,11 +121,12 @@ export function getUserTag(user: discord.User) {
     ['_USERNAME_', user.username],
     ['_DISCRIMINATOR_', user.discriminator],
     ['_ID_', user.id],
+    ['_NICKNAME_', user.username],
     ['_MENTION_', user.toMention()],
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
-    tg = tg.split(key).join(value);
+    tg = utils.escapeString(tg.split(key).join(value));
   }
   return tg;
 }
@@ -271,17 +272,17 @@ export async function parseMessageContent(
   }
   return cont;
 }
-export function getActorTag(log: discord.AuditLogEntry) {
+export function getActorTag(user: discord.User) {
   const map = new Map([
-    ['_TAG_', log.user.getTag()],
-    ['_USERNAME_', log.user.username],
-    ['_DISCRIMINATOR_', log.user.discriminator],
-    ['_ID_', log.user.id],
-    ['_MENTION_', log.user.toMention()],
+    ['_TAG_', user.getTag()],
+    ['_USERNAME_', user.username],
+    ['_DISCRIMINATOR_', user.discriminator],
+    ['_ID_', user.id],
+    ['_MENTION_', user.toMention()],
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
-    tg = tg.split(key).join(value);
+    tg = utils.escapeString(tg.split(key).join(value));
   }
   return tg;
 }

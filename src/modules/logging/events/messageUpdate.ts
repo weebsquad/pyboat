@@ -39,8 +39,9 @@ export const messages = {
     }
     // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_AUTHOR_', getUserTag(message.author));
-    mp.set('_USERTAG_', getUserTag(message.author));
+    mp.set('_AUTHOR_', getMemberTag(message.member));
+    mp.set('_USERTAG_', getMemberTag(message.member));
+    mp.set('_USER_', message.author);
     mp.set('_USER_ID_', message.author.id);
     mp.set('_TYPE_', 'MESSAGE_CONTENT_UPDATED_GUILD');
     mp.set('_CHANNEL_ID_', message.channelId);
@@ -64,6 +65,7 @@ export const messages = {
     const mp = new Map();
     mp.set('_AUTHOR_', getUserTag(message.author));
     mp.set('_USERTAG_', getUserTag(message.author));
+    mp.set('_USER_', message.author);
     mp.set('_USER_ID_', message.author.id);
     mp.set('_TYPE_', 'MESSAGE_CONTENT_UPDATED_DM');
     mp.set('_CHANNEL_ID_', message.channelId);
