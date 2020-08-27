@@ -1316,7 +1316,7 @@ export async function AL_OnGuildMemberUpdate(
       }
       return;
     }
-    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string' || member.user.id === log.userId) {
+    if (!config.modules.infractions.checkLogs || !config.modules.infractions.integrate || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.nick === oldMember.nick || typeof member.nick !== 'string' || member.user.id === log.userId || utils.isBlacklisted(log.user)) {
       return;
     }
     const changedNick = member.nick.toLowerCase();
@@ -1373,7 +1373,7 @@ export async function AL_OnGuildBanAdd(
     return;
   }
   let { reason } = log;
-  if (config.modules.infractions.integrate === true) {
+  if (config.modules.infractions.integrate === true && !utils.isBlacklisted(log.user)) {
     if (reason.length > 0 && reason.includes('-')) {
       const sp = reason.split('-');
       const lastc = sp[sp.length - 1].split(' ').join('').toLowerCase();

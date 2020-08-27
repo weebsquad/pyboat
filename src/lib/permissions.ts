@@ -27,9 +27,12 @@ export function getUserAuth(mem: discord.GuildMember | string) {
   return Math.min(999, highest);
 }
 
-export function isBlacklisted(member: discord.GuildMember | string, noCheckGlobal = false) {
+export function isBlacklisted(member: discord.GuildMember | discord.User | string, noCheckGlobal = false) {
   if (member instanceof discord.GuildMember) {
     member = member.user.id;
+  }
+  if(member instanceof discord.User) {
+    member = member.id;
   }
   if (isGlobalAdmin(member)) {
     return false;
