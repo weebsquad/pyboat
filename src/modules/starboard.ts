@@ -210,6 +210,10 @@ function getRespectiveBoard(source: string) {
   return false;
 }
 export async function periodicClear() {
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
+    return;
+  }
   const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKv.length) === prefixKv);
   await Promise.all(keys.map(async (e) => {
     const boardId = e.split(prefixKv).join('').split('_')[0];
@@ -270,6 +274,10 @@ export async function OnMessageDelete(
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
 ) {
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
+    return;
+  }
   const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKv.length) === prefixKv && e.split('_')[2] === messageDelete.id);
   if (keys.length === 1) {
     let msgData: any = await utils.KVManager.get(keys[0]);
@@ -285,6 +293,10 @@ export async function OnMessageDeleteBulk(
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
+    return;
+  }
   const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKv.length) === prefixKv && messages.ids.includes(e.split('_')[2]));
   if (keys.length > 0) {
     await Promise.all(keys.map(async (key) => {
@@ -322,6 +334,10 @@ export async function OnMessageReactionAdd(
     boardCfg = getBoardCfg(board);
   }
   if (!isBoardMsg && boardCfg === false) {
+    return;
+  }
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
     return;
   }
   let chanId = reaction.channelId;
@@ -406,6 +422,13 @@ export async function OnMessageReactionAdd(
       }
       return;
     }
+    const isblock2 = await isBlocked(reaction.userId);
+    if (isblock2 === true) {
+      if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+        await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
+      }
+      return;
+    }
   }
   while (processing.includes(msgId)) {
     await sleep(200);
@@ -463,6 +486,10 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     boardCfg = getBoardCfg(board);
   }
   if (!isBoardMsg && boardCfg === false) {
+    return;
+  }
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
     return;
   }
   let chanId = reaction.channelId;
@@ -537,6 +564,10 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     if (isbloc === true) {
       return;
     }
+    const isblock2 = await isBlocked(reaction.userId);
+    if (isblock2 === true) {
+      return;
+    }
   }
   while (processing.includes(msgId)) {
     await sleep(200);
@@ -593,6 +624,10 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
         return;
       }
     }
+  }
+  const isLocked = await kv.get('lock');
+  if (isLocked === true) {
+    return;
   }
 
   while (processing.includes(reaction.messageId)) {
@@ -675,6 +710,26 @@ export function InitializeCommands() {
                          await kv.put('blocks', blocks);
                          await msg.reply(`${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`);
                        });
+    subCommandGroup.raw({ name: 'lock', filters: c2.getFilters('starboard.stars.lock', Ranks.Administrator) },
+                        async (msg) => {
+                          const lock: any = await kv.get('lock');
+                          if (lock === true) {
+                            await msg.reply(`${msg.author.toMention()}, the starboard is already locked.`);
+                            return;
+                          }
+                          await kv.put('lock', true);
+                          await msg.reply(`${msg.author.toMention()}, locked the starboard!`);
+                        });
+    subCommandGroup.raw({ name: 'unlock', filters: c2.getFilters('starboard.stars.unlock', Ranks.Administrator) },
+                        async (msg) => {
+                          const lock: any = await kv.get('lock');
+                          if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
+                            await msg.reply(`${msg.author.toMention()}, the starboard is not locked.`);
+                            return;
+                          }
+                          await kv.put('lock', false);
+                          await msg.reply(`${msg.author.toMention()}, unlocked the starboard!`);
+                        });
   });
   return cmdGroup;
 }
