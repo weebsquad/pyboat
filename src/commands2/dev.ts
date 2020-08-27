@@ -6,7 +6,7 @@ import * as loggingEvents from '../modules/logging/tracking';
 import { logDebug } from '../modules/logging/events/custom';
 import * as infractions from '../modules/infractions';
 import * as utilities from '../modules/utilities';
-import * as starboard from '../modules/starboard'
+import * as starboard from '../modules/starboard';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
