@@ -137,7 +137,7 @@ export function escapeString(string) {
   });
   return string;
 }
-
+export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
 export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
   if (n < 2) {
     return [a];

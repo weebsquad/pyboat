@@ -134,7 +134,7 @@ export class Infraction {
     return diff > 0;
   }
 }
-const makeFake = <T>(data: object, type: { prototype: object }) => Object.assign(Object.create(type.prototype), data) as T;
+
 export async function getInfractions() {
   const keys = (await utils.KVManager.listKeys());
   // enforce keys having our identifier
@@ -155,7 +155,7 @@ export async function getInfractions() {
       type: splitted[6],
       active: typeof splitted[7] === 'string' ? splitted[7] === 'true' : false,
     };
-    return makeFake<Infraction>(newobj, Infraction);
+    return utils.makeFake<Infraction>(newobj, Infraction);
   });
   const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction).sort((a, b) => a.ts - b.ts);
   return exist;

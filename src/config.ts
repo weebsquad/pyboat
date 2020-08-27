@@ -211,6 +211,16 @@ const defaultConfig = { // for non-defined configs!
     },
     starboard: {
       enabled: true,
+      channels: {
+        "748477106715099136": {
+          level: 0,
+          emoji: "⭐",
+          minReacts: 1,
+          preventSelf: false,
+          includes: [],
+          excludes: []
+        }
+      }
     }
   },
 };
