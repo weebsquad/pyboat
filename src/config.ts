@@ -217,6 +217,7 @@ const defaultConfig = { // for non-defined configs!
           emoji: '⭐',
           minReacts: 1,
           maxLevel: 2,
+          minReactsPin: 2,
           maxEmoji: '🌟',
           preventSelf: false,
           messageLifetime: 24,

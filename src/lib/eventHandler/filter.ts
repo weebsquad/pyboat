@@ -109,9 +109,9 @@ const eventFilters = <any>{
       if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && (!(message.member instanceof discord.GuildMember))) {
         return true;
       }
-      if (message.author !== null && message.author.id === discord.getBotId()) {
+      /*if (message.author !== null && message.author.id === discord.getBotId() && message.type === discord.Message.Type.DEFAULT) {
         return true;
-      }
+      }*/
       if (isMessageConfigUpdate(message) !== false) {
         return true;
       }

@@ -3,8 +3,8 @@
 // const _c = config.modules.logging.auditLogs === true;
 
 const _c = false; // todo: reflect auditlogs config abvoe
-const jumpMessageText = 'Jump to message';
-const fieldName = '...';
+const jumpMessageText = '→ Jump to message';
+const fieldName = '​​​';
 //  <' + fieldName + '>[' +jumpMessageText +'](https://discord.com/channels/_GUILD_ID_/_CHANNEL_ID_/_MESSAGE_ID_)',
 export const messageJump = ` <${
   fieldName
