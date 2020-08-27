@@ -85,7 +85,7 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
   if (typeof config.modules.antiPing.targets.channels === 'object') {
     if (
       (Array.isArray(config.modules.antiPing.targets.channels.include) && config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1)
-    && (Array.isArray(config.modules.antiPing.targets.channels.exclude) && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1)
+    && (!Array.isArray(config.modules.antiPing.targets.channels.exclude) || config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1)
     ) {
       lists.channel = true;
     }
@@ -95,7 +95,7 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
     if (
       (Array.isArray(config.modules.antiPing.targets.categories.include)
       && config.modules.antiPing.targets.categories.include.indexOf(par) > -1)
-        && (Array.isArray(config.modules.antiPing.targets.categories.exclude) && config.modules.antiPing.targets.categories.exclude.indexOf(chanId) === -1)
+        && (!Array.isArray(config.modules.antiPing.targets.categories.exclude) || config.modules.antiPing.targets.categories.exclude.indexOf(par) === -1)
     ) {
       lists.category = true;
     }
@@ -299,7 +299,6 @@ export async function OnMessageCreate(
       } else {
         ghettoMember = await guild.getMember(mention.id);
       }
-
       if (await isIllegalMention(authorMember, ghettoMember, channel)) {
         illegalMentions.push(ghettoMember);
       }
@@ -403,7 +402,7 @@ export async function OnMessageCreate(
 
   await kv.put(kvDataKey, data);
   for (const key in config.modules.antiPing.emojiActions) {
-    await msgReply.addReaction(key);
+    await msgReply.addReaction(key.split(' ').join(''));
   }
 
   return false; // So nothing else runs :))

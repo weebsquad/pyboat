@@ -40,47 +40,49 @@ export class StarredMessage {
       if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS) || (ogChannel.type !== discord.Channel.Type.GUILD_TEXT && ogChannel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
-      const ogMsg = await ogChannel.getMessage(this.id);
-      const newEmbed = new discord.Embed();
-      newEmbed.setAuthor({ iconUrl: ogMsg.author.getAvatarUrl(), name: ogMsg.author.getTag() });
-      newEmbed.setTimestamp(new Date().toISOString());
-      newEmbed.setFooter({ text: `User: ${ogMsg.author.id} | Message: ${ogMsg.id}` });
-      const attachs: Array<string> = [];
-      const rejectedattach: Array<string> = [];
-      if (ogMsg.attachments.length > 0) {
-        ogMsg.attachments.forEach((e) => {
-          if (e.filename.includes('.')) {
-            const ext = e.filename.split('.');
-            const extension = ext[ext.length - 1];
-            if (allowedFileExtensions.includes(extension) && attachs.length === 0) {
-              attachs.push(e.url);
-            } else {
-              rejectedattach.push(e.url);
+      try {
+        const ogMsg = await ogChannel.getMessage(this.id);
+        const newEmbed = new discord.Embed();
+        newEmbed.setAuthor({ iconUrl: ogMsg.author.getAvatarUrl(), name: ogMsg.author.getTag() });
+        newEmbed.setTimestamp(new Date().toISOString());
+        newEmbed.setFooter({ text: `User: ${ogMsg.author.id} | Message: ${ogMsg.id}` });
+        const attachs: Array<string> = [];
+        const rejectedattach: Array<string> = [];
+        if (ogMsg.attachments.length > 0) {
+          ogMsg.attachments.forEach((e) => {
+            if (e.filename.includes('.')) {
+              const ext = e.filename.split('.');
+              const extension = ext[ext.length - 1];
+              if (allowedFileExtensions.includes(extension) && attachs.length === 0) {
+                attachs.push(e.url);
+              } else {
+                rejectedattach.push(e.url);
+              }
             }
+          });
+        }
+        if (typeof boardCfg.maxReacts === 'number') {
+          newEmbed.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
+        }
+        if (attachs.length === 1) {
+          newEmbed.setImage({ url: attachs[0] });
+        }
+        newEmbed.setFields([{ inline: true, name: '​​​', value: `→ [Jump to message](https://discord.com/channels/${guildId}/${ogMsg.channelId}/${ogMsg.id})` }]);
+        if (ogMsg.content.length > 0) {
+          let cont = ogMsg.content;
+          if (cont.length > 1605) {
+            cont = `${cont.substr(0, 1600)} ...`;
           }
-        });
-      }
-      if (typeof boardCfg.maxReacts === 'number') {
-        newEmbed.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
-      }
-      if (attachs.length === 1) {
-        newEmbed.setImage({ url: attachs[0] });
-      }
-      newEmbed.setFields([{ inline: true, name: '​​​', value: `→ [Jump to message](https://discord.com/channels/${guildId}/${ogMsg.channelId}/${ogMsg.id})` }]);
-      if (ogMsg.content.length > 0) {
-        let cont = ogMsg.content;
-        if (cont.length > 1605) {
-          cont = `${cont.substr(0, 1600)} ...`;
+          if (rejectedattach.length > 0) {
+            cont = `${cont}\n${rejectedattach.join('\n')}`;
+          }
+          newEmbed.setDescription(cont);
         }
-        if (rejectedattach.length > 0) {
-          cont = `${cont}\n${rejectedattach.join('\n')}`;
-        }
-        newEmbed.setDescription(cont);
-      }
 
-      const newmsg = await channel.sendMessage({ embed: newEmbed, allowedMentions: {}, content: `${this.emojiMention} ${this.getReactorCount()} - <#${ogMsg.channelId}>` });
-      this.publishData.messageId = newmsg.id;
-      this.publishData.lastUpdate = Date.now();
+        const newmsg = await channel.sendMessage({ embed: newEmbed, allowedMentions: {}, content: `${this.emojiMention} ${this.getReactorCount()} - <#${ogMsg.channelId}>` });
+        this.publishData.messageId = newmsg.id;
+        this.publishData.lastUpdate = Date.now();
+      } catch (e) {}
     }
     private async unpublish() {
       const channel = await discord.getChannel(this.publishData.channelId);
@@ -124,10 +126,10 @@ export class StarredMessage {
         if (finalize === true && !emb.footer.text.toLowerCase().includes('message deleted')) {
           emb.setFooter({ text: `Message Deleted | ${emb.footer.text}` });
         }
-        let emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxReacts : this.emojiMention;
-        if (emjUse === boardCfg.maxReacts && emjUse.length > 2 && emjUse.length < 7) {
+        const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxEmoji : this.emojiMention;
+        /* if (emjUse === boardCfg.maxReacts && emjUse.length > 2 && emjUse.length < 7) {
           emjUse = utils.convertEmoji(boardCfg.maxEmoji);
-        }
+        } */
         if (typeof boardCfg.minReactsPin === 'number') {
           if (oldMsg.pinned === true && this.getReactorCount() < boardCfg.minReactsPin) {
             await oldMsg.setPinned(false);

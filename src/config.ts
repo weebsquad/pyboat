@@ -19,8 +19,9 @@ export const globalConfig = <any>{
   Ranks, // lol
   version: '1.5.0',
 };
-
+export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
+  guildId,
   levels: {
     users: {},
     roles: {},
@@ -237,7 +238,6 @@ function loadConfigDefaults(cfg: any) {
   cfg = recursiveDefault(defaultConfig, cfg);
   return cfg;
 }
-export const guildId = discord.getGuildId();
 
 const configKv = new pylon.KVNamespace('config');
 
@@ -288,12 +288,26 @@ export async function InitializeConfig(bypass = false) {
   const items = await configKv.items();
   let cfg: any;
   if (items.length > 0) {
-    cfg = JSON.parse(items.map((item) => item.value).join(''));
+    const mapped = items.map((item) => item.value).join('');
+    cfg = JSON.parse(mapped);
+    // console.log(cfg.modules.antiPing.emojiActions);
+    /* if( typeof cfg.modules === 'object' && typeof cfg.modules.antiPing === 'object' && typeof cfg.modules.antiPing.emojiActions === 'object') {
+      console.log('checking antiping shit');
+      for(const key in cfg.modules.antiPing.emojiActions) {
+        //let keyNew = key.replace(/([0-9a-fA-F]+)/ig, (match, hex) => String.fromCodePoint(Number.parseInt(hex, 16)));
+        //let keyNew = key.replace(/\\u([0-9A-F]{4})/ig, (_, g) => String.fromCharCode(Number.parseInt(g, 16)));
+        //if(keyNew !== key) console.log('keyNew', keyNew);
+        //cfg.modules.antiPing.emojiActions[keyNew] = cfg.modules.antiPing.emojiActions[key];
+        //delete cfg.modules.antiPing.emojiActions[key];
+      }
+      console.log(cfg.modules.antiPing.emojiActions);
+    } */
   }
+  // console.log('loaded: ', cfg);
   if (typeof guildConfigs[guildId] !== 'undefined') {
     cfg = guildConfigs[guildId];
   }
-  if (!cfg) {
+  if (typeof cfg !== 'object') {
     return false;
     // cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
@@ -339,7 +353,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   if (msg.flags !== 0) {
     return false;
   }
-  if (msg.content !== '.config.') {
+  if (msg.content !== '.config.' && msg.content !== '.config. delete') {
     return false;
   }
   if (msg.attachments.length > 1) {
@@ -354,6 +368,9 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
     return 'update';
   }
+  if (msg.content === '.config. delete') {
+    return 'delete';
+  }
   return 'check';
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
@@ -361,7 +378,14 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
   if (isCfg === 'update') {
     try {
       let dat = JSON.parse(ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer()));
+      if (typeof dat.guildId !== 'string' || dat.guildId !== guildId) {
+        await message.delete();
+        await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
+        return;
+      }
+      // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
       dat = JSON.stringify(dat);
+      // console.log(dat);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       const len = dat.length;
@@ -370,12 +394,11 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
-      const parts = dat.match(/.{1,8000}/g);
+      const parts = dat.match(/.{1,6500}/g);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
         await configKv.put(i.toString(), parts[i]);
       }
-      const items = await configKv.items();
       await InitializeConfig(true);
       await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
@@ -399,10 +422,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       cfg = defaultConfig;
     }
     cfg = JSON.parse(JSON.stringify(cfg));
-    if (cfg.modules && cfg.modules.logging) {
+    if (typeof cfg.guildId !== 'string' || cfg.guildId !== guildId) {
+      cfg.guildId = guildId;
+    }
+    /* if (cfg.modules && cfg.modules.logging) {
       cfg.modules.logging.messages = undefined;
       cfg.modules.logging.messagesAuditLogs = undefined;
-    }
+    } */
     const cfgToRet = JSON.stringify(cfg, null, 2);
     const returnedMsg = await message.reply({
       content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 14 seconds*`,
@@ -413,5 +439,8 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     });
     await sleep(14000);
     await returnedMsg.delete();
+  } else if (isCfg === 'delete') {
+    await configKv.clear();
+    await message.reply(`${message.author.toMention()} done!\n\nFeel free to request a new config by typing \`.config.\``);
   }
 });

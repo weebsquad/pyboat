@@ -10,7 +10,7 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
       let oldcfg: any = await pylon.kv.get('__guildConfig');
       if (typeof oldcfg !== 'undefined') {
         oldcfg = JSON.parse(oldcfg);
-        const parts = JSON.stringify(oldcfg).match(/.{1,8000}/g);
+        const parts = JSON.stringify(oldcfg).match(/.{1,6500}/g);
         await configKv.clear();
         for (let i = 0; i < parts.length; i += 1) {
           await configKv.put(i.toString(), parts[i]);
@@ -61,7 +61,7 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
     }
     if (changedCfg === true) {
       console.log('Updated guild config!');
-      const parts = JSON.stringify(cfg).match(/.{1,8000}/g);
+      const parts = JSON.stringify(cfg).match(/.{1,6500}/g);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
         await configKv.put(i.toString(), parts[i]);
