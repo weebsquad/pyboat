@@ -160,7 +160,7 @@ async function restorePersistData(member: discord.GuildMember) {
   await member.edit(objEdit);
   const chans = dt.channels;
   const allChannels = await guild.getChannels();
-  if (chans && Array.isArray(chans)) {
+  if (chans && Array.isArray(chans) && thisconf.channels === true) {
     await Promise.all(chans.map(async (chan) => {
       const channel = allChannels.find((e) => e.id === chan.channelId);
       if (!channel || channel === null) {

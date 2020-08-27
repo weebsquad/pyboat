@@ -73,15 +73,15 @@ export function getLogChannels(gid: string, event: string, type: string) {
       break;
     }
     if (
-      v.scopes.include.includes('*')
+      Array.isArray(v.scopes.include) && (v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
       || v.scopes.include.includes(`${event}.*`)
-      || v.scopes.include.includes(`${event}.${type}`)
+      || v.scopes.include.includes(`${event}.${type}`))
     ) {
-      if (
+      if (Array.isArray(v.scopes.exclude) && (
         v.scopes.exclude.includes(event)
         || v.scopes.exclude.includes(`${event}.*`)
-        || v.scopes.exclude.includes(`${event}.${type}`)
+        || v.scopes.exclude.includes(`${event}.${type}`))
       ) {
         continue;
       }

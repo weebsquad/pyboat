@@ -1,9 +1,11 @@
 import * as utils from '../lib/utils';
-import { config, globalConfig, guildId } from '../config';
+import { config, globalConfig, guildId, Ranks } from '../config';
+import * as c2 from '../lib/commands2';
 
 const prefixKv = 'Starboard_';
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
+const kv = new pylon.KVNamespace('starboard');
 export class PublishData {
     channelId: string;
     messageId: string;
@@ -57,8 +59,8 @@ export class StarredMessage {
           }
         });
       }
-      if (typeof boardCfg.maxLevel === 'number') {
-        newEmbed.setColor(getColor(boardCfg.maxLevel, this.getReactorCount()));
+      if (typeof boardCfg.maxReacts === 'number') {
+        newEmbed.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
       }
       if (attachs.length === 1) {
         newEmbed.setImage({ url: attachs[0] });
@@ -115,13 +117,13 @@ export class StarredMessage {
         const oldMsg = await channel.getMessage(this.publishData.messageId);
 
         const emb = oldMsg.embeds[0];
-        if (typeof boardCfg.maxLevel === 'number') {
-          emb.setColor(getColor(boardCfg.maxLevel, this.getReactorCount()));
+        if (typeof boardCfg.maxReacts === 'number') {
+          emb.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
         }
         if (finalize === true && !emb.footer.text.toLowerCase().includes('message deleted')) {
           emb.setFooter({ text: `Message Deleted | ${emb.footer.text}` });
         }
-        const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxLevel === 'number' && this.getReactorCount() >= boardCfg.maxLevel ? boardCfg.maxEmoji : this.emojiMention;
+        const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxEmoji : this.emojiMention;
         if (typeof boardCfg.minReactsPin === 'number') {
           if (oldMsg.pinned === true && this.getReactorCount() < boardCfg.minReactsPin) {
             await oldMsg.setPinned(false);
@@ -240,7 +242,9 @@ function getBoardCfg(channelId: string) {
   return false;
 }
 export async function isBlocked(userId: string) {
-  return false;
+  const blocks = await kv.get('blocks');
+  if(!Array.isArray(blocks)) return false;
+  return blocks.includes(userId);
 }
 
 export async function OnMessageCreate(
@@ -622,4 +626,50 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   if (processing.includes(reaction.messageId)) {
     processing.splice(processing.indexOf(reaction.messageId), 1);
   }
+}
+export function InitializeCommands() {
+  const F = discord.command.filters;
+
+  const _groupOptions = {
+    description: 'Starboard Commands',
+    filters: c2.getFilters('starboard', Ranks.Moderator),
+  };
+
+  const optsGroup = c2.getOpts(
+    _groupOptions,
+  );
+
+  
+  const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  cmdGroup.subcommand('stars', (subCommandGroup) => {
+    subCommandGroup.on({ name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
+                       (ctx) => ({ user: ctx.user() }),
+                       async (msg, { user }) => {
+                        const isb = await isBlocked(user.id);
+                        if(isb === true) {
+                          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`);
+                          return;
+                        }
+                        let blocks = await kv.get('blocks');
+                        if(!Array.isArray(blocks)) blocks = [];
+                        blocks.push(user.id);
+                        await kv.put('blocks', blocks);
+                        await msg.reply(`${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`);
+                       });
+                       subCommandGroup.on({ name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
+                       (ctx) => ({ user: ctx.user() }),
+                       async (msg, { user }) => {
+                        const isb = await isBlocked(user.id);
+                        if(isb === false) {
+                          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`);
+                          return;
+                        }
+                        let blocks = await kv.get('blocks');
+                        if(!Array.isArray(blocks)) blocks = [];
+                        blocks.splice(blocks.indexOf(user.id), 1);
+                        await kv.put('blocks', blocks);
+                        await msg.reply(`${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`);
+                       });
+  });
+  return cmdGroup;
 }

@@ -39,7 +39,7 @@ export function isIgnoredUser(user: string | discord.User | discord.GuildMember)
   if (!ignores) {
     return false;
   }
-  const usrs = [].concat(ignores.users);
+  const usrs = Array.isArray(ignores.users) ? [].concat(ignores.users) : [];
   if (ignores.self === true) {
     usrs.push(discord.getBotId());
   }
@@ -59,7 +59,7 @@ export function isIgnoredActor(user: string | discord.User | discord.GuildMember
   if (!ignores) {
     return false;
   }
-  const usrs = conf.config.modules.logging.extendUsersToAuditLogs === true ? [].concat(ignores.users) : [];
+  const usrs = Array.isArray(ignores.users) && conf.config.modules.logging.extendUsersToAuditLogs === true ? [].concat(ignores.users) : [];
   if (ignores.selfAuditLogs === true) {
     usrs.push(discord.getBotId());
   }

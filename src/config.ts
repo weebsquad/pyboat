@@ -210,22 +210,8 @@ const defaultConfig = { // for non-defined configs!
       webhook: '',
     },
     starboard: {
-      enabled: true,
-      channels: {
-        '748477106715099136': {
-          level: 0,
-          emoji: '⭐',
-          minReacts: 1,
-          maxLevel: 2,
-          minReactsPin: 2,
-          maxEmoji: '🌟',
-          preventSelf: false,
-          messageLifetime: 24,
-          clearOnDelete: false,
-          includes: [],
-          excludes: [],
-        },
-      },
+      enabled: false,
+      channels: {},
     },
   },
 };

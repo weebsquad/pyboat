@@ -80,16 +80,17 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
     category: false,
   };
   if (
-    config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1
-    && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
+    (Array.isArray(config.modules.antiPing.targets.channels.include) && config.modules.antiPing.targets.channels.include.indexOf(chanId) > -1)
+    && (Array.isArray(config.modules.antiPing.targets.channels.exclude) && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1)
   ) {
     lists.channel = true;
   }
   const par = channel.parentId;
   if (typeof par === 'string') {
     if (
-      config.modules.antiPing.targets.categories.include.indexOf(par) > -1
-        && config.modules.antiPing.targets.channels.exclude.indexOf(chanId) === -1
+      (Array.isArray(config.modules.antiPing.targets.categories.include) && 
+      config.modules.antiPing.targets.categories.include.indexOf(par) > -1)
+        && (Array.isArray(config.modules.antiPing.targets.categories.exclude) && config.modules.antiPing.targets.categories.exclude.indexOf(chanId) === -1)
     ) {
       lists.category = true;
     }
@@ -99,20 +100,20 @@ function isTargetChannel(channel: discord.GuildTextChannel) {
 
 async function isTarget(member: discord.GuildMember) {
   const userId = member.user.id;
-  if (config.modules.antiPing.targets.users.exclude.indexOf(userId) > -1) {
+  if (Array.isArray(config.modules.antiPing.targets.users.exclude) && config.modules.antiPing.targets.users.exclude.indexOf(userId) > -1) {
     return false;
   }
-  if (config.modules.antiPing.targets.users.include.indexOf(userId) > -1) {
+  if (Array.isArray(config.modules.antiPing.targets.users.include) && config.modules.antiPing.targets.users.include.indexOf(userId) > -1) {
     return true;
   }
   const roles: Array<discord.Role> = (await utils.getUserRoles(member));
   let hasWhitelist = false;
   let hasBlacklist = false;
   roles.forEach((role) => {
-    if (config.modules.antiPing.targets.roles.include.indexOf(role.id) > -1) {
+    if (Array.isArray(config.modules.antiPing.targets.roles.include) && config.modules.antiPing.targets.roles.include.indexOf(role.id) > -1) {
       hasWhitelist = true;
     }
-    if (config.modules.antiPing.targets.roles.exclude.indexOf(role.id) > -1) {
+    if (Array.isArray(config.modules.antiPing.targets.roles.exclude) && config.modules.antiPing.targets.roles.exclude.indexOf(role.id) > -1) {
       hasBlacklist = true;
     }
   });
@@ -130,11 +131,11 @@ async function isBypass(member: discord.GuildMember) {
     return true;
   }
   const userId = member.user.id;
-  if (config.modules.antiPing.bypass.users.indexOf(userId) > -1) {
+  if (Array.isArray(config.modules.antiPing.bypass.users) && config.modules.antiPing.bypass.users.indexOf(userId) > -1) {
     return true;
   }
   const lvl = utils.getUserAuth(member);
-  if (lvl >= config.modules.antiPing.bypass.level) {
+  if (typeof config.modules.antiPing.bypass.level === 'number' && lvl >= config.modules.antiPing.bypass.level) {
     return true;
   }
   if (await isIgnore(userId)) {
@@ -143,7 +144,7 @@ async function isBypass(member: discord.GuildMember) {
   const roles = await utils.getUserRoles(member);
   let is = false;
   roles.forEach((role) => {
-    if (config.modules.antiPing.bypass.roles.indexOf(role.id) > -1) {
+    if (Array.isArray(config.modules.antiPing.bypass.roles) && config.modules.antiPing.bypass.roles.indexOf(role.id) > -1) {
       is = true;
     }
   });
