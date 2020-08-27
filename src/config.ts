@@ -220,6 +220,7 @@ const defaultConfig = { // for non-defined configs!
           maxEmoji: '🌟',
           preventSelf: false,
           messageLifetime: 24,
+          clearOnDelete: false,
           includes: [],
           excludes: [],
         },

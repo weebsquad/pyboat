@@ -13,7 +13,6 @@ export class StarredMessage {
     channelId: string;
     publishData: PublishData;
     reactors: Array<string> = [];
-    reactorsBoard: Array<string> = [];
     emojiMention: string;
     constructor(channelId: string, messageId: string, reactors: Array<string>, emojiMention: string) {
       this.id = messageId;
@@ -28,7 +27,7 @@ export class StarredMessage {
       return this;
     }
     private getReactorCount() {
-      return this.reactors.length + this.reactorsBoard.length;
+      return this.reactors.length;
     }
     private async publish() {
       const boardCfg = getBoardCfg(this.publishData.channelId);
@@ -61,8 +60,10 @@ export class StarredMessage {
       if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
+      try {
       const oldMsg = await channel.getMessage(this.publishData.messageId);
       await oldMsg.delete();
+      } catch(e) {}
       delete this.publishData.messageId;
       delete this.publishData.lastUpdate;
     }
@@ -79,21 +80,38 @@ export class StarredMessage {
       }
       return false;
     }
-    private async update() {
+    private async update(finalize: boolean = false) {
       const boardCfg = getBoardCfg(this.publishData.channelId);
       console.log('update');
+      try {
       const channel = await discord.getChannel(this.publishData.channelId);
       if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
+      
       const oldMsg = await channel.getMessage(this.publishData.messageId);
+      
       const emb = oldMsg.embeds[0];
       if (typeof boardCfg.maxLevel === 'number') {
         emb.setColor(getColor(boardCfg.maxLevel, this.getReactorCount()));
       }
+      if(finalize === true && !emb.footer.text.toLowerCase().includes('message deleted')) {
+         emb.setFooter({text: `Message Deleted | ${emb.footer.text}`});
+      }
       const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxLevel === 'number' && this.getReactorCount() >= boardCfg.maxLevel ? boardCfg.maxEmoji : this.emojiMention;
       await oldMsg.edit({ embed: emb, content: `${emjUse} ${this.getReactorCount()} - <#${this.channelId}>` });
       this.publishData.lastUpdate = Date.now();
+    } catch(e) {}
+    }
+    async deleted() {
+      if(this.publishData.messageId) {
+        const boardCfg = getBoardCfg(this.publishData.channelId);
+        if(typeof boardCfg.clearOnDelete === 'boolean' && boardCfg.clearOnDelete === true) {
+          await this.unpublish();
+        } else {
+          await this.update(true);
+        }
+      }
     }
     async check() {
       const boardCfg = getBoardCfg(this.publishData.channelId);
@@ -185,18 +203,31 @@ function getBoardCfg(channelId: string) {
 export async function isBlocked(userId: string) {
   return false;
 }
-/*
+
 export async function OnMessageDelete(
   id: string,
   gid: string,
-  messageDelete: discord.Event.IMessageDelete,
-  oldMessage: discord.Message,
-) {}
+  messageDelete: discord.Event.IMessageDelete
+) {
+  const keys = (await utils.KVManager.listKeys()).filter(function(e) {
+    return e.substr(0, prefixKv.length) === prefixKv && e.split('_')[2] === messageDelete.id
+  });
+  if(keys.length === 1) {
+    let msgData: any = await utils.KVManager.get(keys[0]);
+    if(msgData) {
+      await utils.KVManager.delete(keys[0]);
+      msgData = utils.makeFake(msgData, StarredMessage);
+      await msgData.deleted();
+    }
+  }
+}
 export async function OnMessageDeleteBulk(
   id: string,
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
-) {}*/
+) {
+
+}
 export async function OnMessageReactionAdd(
   id: string,
   gid: string,
@@ -232,23 +263,27 @@ export async function OnMessageReactionAdd(
       boardCfg = config.modules.starboard.channels[reaction.channelId];
       if(message.embeds.length === 1 && message.embeds[0].footer.text.length > 0) {
         const foot = message.embeds[0].footer.text;
-        if(foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
+        if(!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
             const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
             msgId = messageid;
             let chanid = message.content.split('-')[1].split(' ').join('').substring(2).split('>').join('');
             chanId = chanid;
-            console.log('channel id: ' + chanid);
             const chan = await discord.getChannel(chanid);
             if (chan === null || (chan.type !== discord.Channel.Type.GUILD_TEXT && chan.type !== discord.Channel.Type.GUILD_NEWS)) {
                 return;
               }
+              try {
             actualMsg = await chan.getMessage(messageid);
-            console.log('got msg');
+              } catch(e) {
+                return;
+              }
+            if(actualMsg === null) return;
         }
     }
   } else {
       actualMsg = message;
   }
+  if(typeof actualMsg === 'undefined') return;
   if(typeof boardCfg.messageLifetime === 'number') {
       const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
       if(diff > 1000*60*60) {
@@ -332,23 +367,61 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (!(reaction.member instanceof discord.GuildMember)) {
     return;
   }
-  const board = getRespectiveBoard(reaction.channelId);
-  if (board === false) {
+  let isBoardMsg = false;
+  let msgId = reaction.messageId;
+  if(Object.keys(config.modules.starboard.channels).includes(reaction.channelId)) {
+      isBoardMsg = true;
+  }
+  let board;
+  if(!isBoardMsg) board = getRespectiveBoard(reaction.channelId);
+  if (!isBoardMsg && board === false) {
     return;
   }
-  const boardCfg = getBoardCfg(board);
-  if (boardCfg === false) {
+  let boardCfg;
+  if(!isBoardMsg)  boardCfg = getBoardCfg(board);
+  if (!isBoardMsg && boardCfg === false) {
     return;
   }
+  let chanId = reaction.channelId;
+  const channel = await discord.getChannel(reaction.channelId);
+  if (channel === null || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
+    return;
+  }
+  const message = await channel.getMessage(msgId);
+  let actualMsg;
+  if(isBoardMsg) {
+      board = reaction.channelId;
+      boardCfg = config.modules.starboard.channels[reaction.channelId];
+      if(message.embeds.length === 1 && message.embeds[0].footer.text.length > 0) {
+        const foot = message.embeds[0].footer.text;
+        if(!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
+            const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
+            msgId = messageid;
+            let chanid = message.content.split('-')[1].split(' ').join('').substring(2).split('>').join('');
+            chanId = chanid;
+            const chan = await discord.getChannel(chanid);
+            if (chan === null || (chan.type !== discord.Channel.Type.GUILD_TEXT && chan.type !== discord.Channel.Type.GUILD_NEWS)) {
+                return;
+              }
+              try {
+            actualMsg = await chan.getMessage(messageid);
+              } catch(e) {return;
+              }if(actualMsg === null) return;
+        }
+    }
+  } else {
+      actualMsg = message;
+  }
+  if(typeof actualMsg === 'undefined') return;
   if(typeof boardCfg.messageLifetime === 'number') {
-    const diff = Date.now() - utils.decomposeSnowflake(reaction.messageId).timestamp;
-    if(diff > 1000*60*60) {
-      const hours = Math.floor(diff/(1000*60*60));
-      if(hours >= boardCfg.messageLifetime) {
-          return;
-      }
+      const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
+      if(diff > 1000*60*60) {
+        const hours = Math.floor(diff/(1000*60*60));
+        if(hours >= boardCfg.messageLifetime) {
+            return;
+        }
+    }
   }
-}
 
   const { emoji } = reaction;
   if (utils.isNumber(boardCfg.emoji)) {
@@ -359,12 +432,7 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     return;
   }
 
-  const channel = await discord.getChannel(reaction.channelId);
-  if (channel === null || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
-    return;
-  }
-  const message = await channel.getMessage(reaction.messageId);
-  if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === message.author.id)) {
+  if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === actualMsg.author.id)) {
     return;
   } if (typeof boardCfg.level === 'number' && boardCfg.level > 0) {
     const canRun = await utils.canMemberRun(boardCfg.level, reaction.member);
@@ -372,19 +440,19 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
       return;
     }
   } else {
-    const isbloc = await isBlocked(message.author.id);
+    const isbloc = await isBlocked(actualMsg.author.id);
     if (isbloc === true) {
       return;
     }
   }
-  while (processing.includes(reaction.messageId)) {
+  while (processing.includes(msgId)) {
     await sleep(200);
   }
-  if (!processing.includes(reaction.messageId)) {
-    processing.push(reaction.messageId);
+  if (!processing.includes(msgId)) {
+    processing.push(msgId);
   }
   let data: any;
-  const checkStorage: any = (await utils.KVManager.get(`${prefixKv}${board}_${reaction.messageId}`));
+  const checkStorage: any = (await utils.KVManager.get(`${prefixKv}${board}_${msgId}`));
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
@@ -395,8 +463,8 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     changes = true;
     data.reactors.splice(data.reactors.indexOf(reaction.userId), 1);
   } else {
-    if (processing.includes(reaction.messageId)) {
-      processing.splice(processing.indexOf(reaction.messageId), 1);
+    if (processing.includes(msgId)) {
+      processing.splice(processing.indexOf(msgId), 1);
     }
     return;
   }
@@ -405,10 +473,10 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     changes = true;
   }
   if (changes === true) {
-    await utils.KVManager.set(`${prefixKv}${board}_${reaction.messageId}`, data);
+    await utils.KVManager.set(`${prefixKv}${board}_${msgId}`, data);
   }
-  if (processing.includes(reaction.messageId)) {
-    processing.splice(processing.indexOf(reaction.messageId), 1);
+  if (processing.includes(msgId)) {
+    processing.splice(processing.indexOf(msgId), 1);
   }
 }
 
