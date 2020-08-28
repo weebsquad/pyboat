@@ -7,11 +7,11 @@ import * as translation from './translation';
 import * as utilities from './utilities';
 import * as infractions from './infractions';
 import * as starboard from './starboard';
-import * as censor from './censor'
+import * as censor from './censor';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
-  censor: censor,
+  censor,
   antiPing,
   counting,
   roleManagement,

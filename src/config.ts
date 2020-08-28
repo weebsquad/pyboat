@@ -214,6 +214,43 @@ const defaultConfig = { // for non-defined configs!
       enabled: false,
       channels: {},
     },
+    censor: {
+      enabled: true,
+      channel: {
+        "740904916649902090": {
+          invites: {
+            vanityUrl: true,
+            self: true,
+            whitelist: {
+              codes: [],
+              guilds: [],
+            },
+            blacklist: {
+              codes: [],
+              guilds: [],
+            },
+          },
+          urls: {
+            allowSubdomains: true,
+            whitelist: ['google.com'],
+            blacklist: []
+          },
+          zalgo: {},
+          words: ['nwtest'],
+          tokens: ['nwwwww'],
+          caps: {
+            followed: 6,
+            percentage: 70,
+            minLength: 5
+          },
+          chars: {
+            limit: 1000,
+            newLines: 30,
+            noAscii: true
+          }
+        },
+      },
+    },
   },
 };
 export const guildConfigs = <any>{};
@@ -222,10 +259,16 @@ function recursiveDefault(source: any, dest: any) {
   for (const key in source) {
     const obj = source[key];
     if (obj !== null && typeof obj === 'object') {
-      if (typeof (dest[key]) !== 'object') {
-        dest[key] = {};
+      if (Array.isArray(obj) && !Array.isArray(dest[key])) {
+        dest[key] = obj;
+        continue;
+      } else {
+        if (typeof (dest[key]) !== 'object') {
+          dest[key] = {};
+        }
+
+        dest[key] = recursiveDefault(obj, dest[key]);
       }
-      dest[key] = recursiveDefault(obj, dest[key]);
     }
     if (dest[key] === undefined) {
       dest[key] = obj;
