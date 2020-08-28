@@ -285,14 +285,14 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     if (txt.length >= minLength) {
       const matches = txt.match(/[A-z]/gi);
       if (Array.isArray(matches) && matches.length > 0) {
-        if (typeof thisCfg.caps.percentage === 'number') {
+        if (typeof thisCfg.caps.percentage === 'number' && thisCfg.caps.percentage > 1) {
           const thisCapped = matches.filter((e) => e.toUpperCase() === e).length;
           const thisPct = Math.floor((thisCapped / matches.length) * 100);
           if (thisPct > thisCfg.caps.percentage) {
             toRet.caps.push(`${thisPct}% / ${thisCfg.caps.percentage}%`);
           }
         }
-        if (typeof thisCfg.caps.followed === 'number') {
+        if (typeof thisCfg.caps.followed === 'number' && thisCfg.caps.followed > 1) {
           let inARow = 0;
           for (let i = 0; i < matches.length; i += 1) {
             const thisc = matches[i];
