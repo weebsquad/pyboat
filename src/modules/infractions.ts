@@ -868,7 +868,7 @@ export function InitializeCommands() {
       if (typeof reason !== 'string') {
         reason = '';
       }
-      const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
+      const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
       const result = await Ban(user, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to ban user.');
@@ -973,7 +973,7 @@ export function InitializeCommands() {
       if (typeof reason !== 'string') {
         reason = '';
       }
-      const _del: any = config.modules.infractions.defaultDeleteDays; // fuck off TS
+      const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
       const result = await TempBan(user, msg.member, _del, time, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to tempban user.');

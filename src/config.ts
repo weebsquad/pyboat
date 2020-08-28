@@ -271,7 +271,7 @@ const defaultConfig = { // for non-defined configs!
             actionDuration: '2m',
           },
           globalViolations: {
-            trigger: '10/60', // count/second
+            trigger: '13/60', // count/second
             action: 'SLOWMODE', // SLOWMODE, LOCK_CHANNEL, LOCK_GUILD
             actionDuration: 5, // minutes
             actionValue: 10, // how long to slowmode

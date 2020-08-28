@@ -8,7 +8,7 @@ import * as infractions from './infractions';
 const kvPool = new pylon.KVNamespace('censor');
 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
-const VALID_ACTIONS_GLOBAL = ['SLOWMODE'];
+const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many censor violations';
 class PoolEntry {
@@ -160,6 +160,7 @@ export async function checkViolations(id: string, key: string, member: string, c
         action,
         actionDuration: typeof conf.globalViolations.actionDuration === 'string' ? conf.globalViolations.actionDuration : undefined,
         actionValue: dur,
+        individuals: action === 'MASSBAN' ? individuals : undefined,
       };
     }
   }
@@ -423,32 +424,49 @@ export async function processViolations(id: string, member: discord.GuildMember,
   if (isVio === false) {
     return;
   }
-  const checkMember = await (await member.getGuild()).getMember(member.user.id);
+  const guild = await member.getGuild();
+  const checkMember = await guild.getMember(member.user.id);
   if (checkMember === null) {
     return;
   }
+  const objs = [];
   const { action, actionDuration, actionValue, individuals } = isVio;
   switch (action) {
     case 'KICK':
       await infractions.Kick(member, null, ACTION_REASON);
       break;
     case 'SOFTBAN':
-      await infractions.SoftBan(member, null, 1, ACTION_REASON);
+      await infractions.SoftBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
       break;
     case 'MUTE':
       await infractions.Mute(member, null, ACTION_REASON);
       break;
     case 'BAN':
-      await infractions.Ban(member, null, 1, ACTION_REASON);
+      await infractions.Ban(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
       break;
     case 'TEMPMUTE':
       await infractions.TempMute(member, null, actionDuration, ACTION_REASON);
       break;
     case 'TEMPBAN':
-      await infractions.TempBan(member, null, 1, actionDuration, ACTION_REASON);
+      await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
       break;
     case 'SLOWMODE':
       await channel.edit({ rateLimitPerUser: actionValue });
+      break;
+    case 'MASSBAN':
+
+      await Promise.all(individuals.map(async (ido) => {
+        const gm = await guild.getMember(ido);
+        if (gm !== null) {
+          objs.push(gm);
+          return;
+        }
+        const usr = await discord.getUser(ido);
+        if (usr !== null) {
+          objs.push(usr);
+        }
+      }));
+      await infractions.MassBan(objs, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
       break;
     default:
       break;
@@ -468,7 +486,9 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   if (!(message instanceof discord.GuildMemberMessage)) {
     return;
   }
-  if(utils.isGlobalAdmin(message.author.id)) return;
+  if (utils.isGlobalAdmin(message.author.id)) {
+    return;
+  }
   const channel = await message.getChannel();
   if (channel === null) {
     return;
@@ -581,7 +601,9 @@ export async function OnMessageUpdate(
 }
 
 export async function checkName(eventId: string, member: discord.GuildMember) {
-  if(utils.isGlobalAdmin(member.user.id)) return;
+  if (utils.isGlobalAdmin(member.user.id)) {
+    return;
+  }
   const guild = await member.getGuild();
   if (guild === null) {
     return;
