@@ -127,7 +127,7 @@ const ZALGO_CHARS = [
   '\u0323',
 ]
 export const ZalgoRegex = new RegExp(ZALGO_CHARS.join('|'), 'gi');
-export const NonAscii = new RegExp( '','gi')
+export const AsciiRegex = /[\x00-\x08\x0E-\x1F\x7F-\uFFFF]/g;
 export const PermissionFlags: {[key: string]: any} = {
   CREATE_INSTANT_INVITE: 1 << 0,
   KICK_MEMBERS: 1 << 1,

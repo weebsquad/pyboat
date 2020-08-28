@@ -1,5 +1,5 @@
 import { config, globalConfig, Ranks, guildId } from '../config';
-import { UrlRegex, EmojiRegex, InviteRegex, ZalgoRegex } from '../constants/constants';
+import { UrlRegex, EmojiRegex, InviteRegex, ZalgoRegex, AsciiRegex } from '../constants/constants';
 import * as utils from '../lib/utils';
 import { messageJump } from './logging/messages';
 
@@ -154,7 +154,23 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
         }
     }
     if(checkChars === true) {
-
+        const charCfg = thisCfg.chars;
+        if (typeof charCfg.limit === 'number' && txt.length > charCfg.limit) {
+            toRet.chars.push(`${txt.length}/${charCfg.limit} characters`);
+        }
+        if (typeof charCfg.newLines === 'number' && txt.includes('\n')) {
+            const newlines = txt.split('\n').length-1;
+            if(newlines > charCfg.newLines) {
+                toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
+            }
+        }
+        if (typeof charCfg.noAscii === 'boolean' && charCfg.noAscii=== true) {
+            let asciiremoved = txt.replace(AsciiRegex, '');
+            console.log('noascii', asciiremoved);
+            if(asciiremoved !== txt) {
+                toRet.chars.push(`Illegal ASCII`);
+            }
+        }
     }
     return toRet;
 }
@@ -258,7 +274,10 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   if (channel === null) {
     return;
   }
+  const me = await (await channel.getGuild()).getMember(discord.getBotId());
+  if(!channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) return;
   const appConfigs = getApplicableConfigs(message.member, channel);
+  console.log('hi', appConfigs);
   let grabInvites = false;
   let grabUrls = false;
   let grabZalgo = false;
@@ -278,7 +297,6 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
       if(typeof val.stop === 'boolean' && val.stop === true) break;
   }
   const data = await getCensorshipData(message.content, grabInvites, grabUrls, grabZalgo);
-  //console.log('Data:', data);
   for (let i = 0; i < appConfigs.length; i += 1) {
     const extraData = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
     let _newd = Object.assign(Object.assign({}, data), Object.assign({}, extraData));
@@ -304,3 +322,89 @@ export async function OnMessageCreate(
   const _ret = await checkMessage(message);
   return _ret;
 }
+
+export async function checkName(member: discord.GuildMember) {
+    const guild = await member.getGuild();
+    if(guild === null) return;
+    const me = await guild.getMember(discord.getBotId());
+    if(me === null ) return;
+    const myHighest = await utils.getMemberHighestRole(me);
+    const memberHighest = await utils.getMemberHighestRole(member);
+    if(myHighest.position <= memberHighest.position)return;
+    if(!me.can(discord.Permissions.MANAGE_NICKNAMES)) return;
+    const visibleName = typeof member.nick === 'string' && member.nick.length > 0 ? member.nick : member.user.username;
+
+
+      const cfgMod = config.modules.censor;
+      if(typeof cfgMod.nameChecks !== 'object') return;
+          let appConfigs = [];
+        const auth = utils.getUserAuth(member);
+    Object.keys(cfgMod.nameChecks).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
+      .map((lvl) => {
+        if (typeof lvl === 'number' && lvl >= auth && lvl >= 0) {
+            appConfigs.push(cfgMod.nameChecks[lvl]);
+        }
+      });
+    let grabInvites = false;
+    let grabUrls = false;
+    let grabZalgo = false;
+    let grabWords = false;
+    let grabTokens = false;
+    let grabCaps = false;
+    let grabChars = false;
+    for (let i = 0; i < appConfigs.length; i += 1) {
+        const val = appConfigs[i];
+        if(typeof val.invites === 'object') grabInvites = true;
+        if(typeof val.urls === 'object') grabUrls = true;
+        if(typeof val.zalgo === 'object') grabZalgo = true;
+        if(Array.isArray(val.words)) grabWords = true;
+        if(Array.isArray(val.tokens)) grabTokens = true;
+        if(typeof val.caps === 'object') grabCaps = true;
+        if(typeof val.chars === 'object') grabChars = true;
+        if(typeof val.stop === 'boolean' && val.stop === true) break;
+    }
+    const data = await getCensorshipData(visibleName, grabInvites, grabUrls, grabZalgo);
+    for (let i = 0; i < appConfigs.length; i += 1) {
+      const extraData = await getDataFromConfig(visibleName, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+      let _newd = Object.assign(Object.assign({}, data), Object.assign({}, extraData));
+      const check = checkCensors(_newd, appConfigs[i]);
+      if (check instanceof CensorCheck) {
+        if (check.check === true) {
+          await member.edit({nick: 'censored name'})
+          return false;
+        }
+        if (check.stop === true) {
+          break;
+        }
+      }
+    }
+}
+
+export async function AL_OnGuildMemberAdd( // Only provides logs if joined member is a bot
+    id: string,
+    gid: string,
+    log: any,
+    member: discord.GuildMember,
+  ) {
+    if(log instanceof discord.AuditLogEntry) return;
+    const _ret = await checkName(member);
+    return _ret;
+  }
+
+  export async function AL_OnGuildMemberUpdate(
+    id: string,
+    gid: string,
+    log: any,
+    member: discord.GuildMember,
+    oldMember: discord.GuildMember,
+  ) {
+    if(!(log instanceof discord.AuditLogEntry) || oldMember === null || member.user.bot === true) return;
+    if(log.userId !== member.user.id) return;
+    if(member.user.username === oldMember.user.username && member.nick === oldMember.nick) return;
+    const visibleName = typeof member.nick === 'string' && member.nick.length > 0 ? member.nick : member.user.username;
+    const visibleNameOld = typeof oldMember.nick === 'string' && oldMember.nick.length > 0 ? oldMember.nick : oldMember.user.username;
+      if(visibleName === 'censored name' || visibleName === visibleNameOld) return;
+    const _ret = await checkName(member);
+    return _ret;
+      
+  }

@@ -216,6 +216,40 @@ const defaultConfig = { // for non-defined configs!
     },
     censor: {
       enabled: true,
+      nameChecks: {
+        1000: {
+          invites: {
+            vanityUrl: false,
+            self: true,
+            whitelist: {
+              codes: [],
+              guilds: [],
+            },
+            blacklist: {
+              codes: [],
+              guilds: [],
+            },
+          },
+          urls: {
+            allowSubdomains: false,
+            whitelist: [],
+            blacklist: []
+          },
+          zalgo: {},
+          words: ['nig'],
+          tokens: [],
+          caps: {
+            followed: 6,
+            percentage: 70,
+            minLength: 5
+          },
+          chars: {
+            limit: 100,
+            newLines: 5,
+            noAscii: true
+          }
+        }
+      },
       channel: {
         "740904916649902090": {
           invites: {
@@ -244,8 +278,8 @@ const defaultConfig = { // for non-defined configs!
             minLength: 5
           },
           chars: {
-            limit: 1000,
-            newLines: 30,
+            limit: 100,
+            newLines: 5,
             noAscii: true
           }
         },
