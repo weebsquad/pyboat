@@ -4,6 +4,7 @@ import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import { getUserTag, getMemberTag } from './logging/main';
 import * as infractions from './infractions';
+import { BitField, Permissions } from '../lib/utils';
 
 const kvPool = new pylon.KVNamespace('censor');
 
@@ -102,34 +103,12 @@ export async function getViolations(key: string, member: string | null) {
   }
   return pool;
 }
-export async function checkViolations(id: string, key: string, member: string, conf: any) {
+export async function checkViolations(id: string, noServerActions: boolean, key: string, member: string, conf: any) {
   const now = Date.now();
   // const diff = now - timestamp;
   const violations = await getViolations(key, null);
   const memberViolations = violations.filter((e) => e.member === member);
-  if (typeof conf.violations === 'object' && typeof conf.violations.trigger === 'string' && typeof conf.violations.action === 'string' && conf.violations.trigger.includes('/') && VALID_ACTIONS_INDIVIDUAL.includes(conf.violations.action.toUpperCase())) {
-    const action = conf.violations.action.toUpperCase();
-    if (['TEMPMUTE', 'TEMPBAN'].includes(action) && typeof conf.violations.actionDuration !== 'string') {
-      throw new ConfigError(`config.modules.censor.${conf._key}.violations.actionDuration`, 'Incorrect formatting');
-    }
-    const { trigger } = conf.violations;
-    let triggerCount = trigger.split('/')[0];
-    let triggerSeconds = trigger.split('/')[1];
-    if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
-      throw new ConfigError(`config.modules.censor.${conf._key}.violations.trigger`, 'Incorrect formatting');
-    }
-    triggerCount = parseInt(triggerCount, 10);
-    triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
-    const compare = now - (Math.floor(triggerSeconds * 1000));
-    const matchesThis = memberViolations.filter((e) => e.ts > compare);
-    if (matchesThis.length >= triggerCount) {
-      return {
-        action,
-        actionDuration: typeof conf.violations.actionDuration === 'string' ? conf.violations.actionDuration : undefined,
-      };
-    }
-  }
-  if (typeof conf.globalViolations === 'object' && typeof conf.globalViolations.trigger === 'string' && typeof conf.globalViolations.action === 'string' && conf.globalViolations.trigger.includes('/') && VALID_ACTIONS_GLOBAL.includes(conf.globalViolations.action.toUpperCase())) {
+  if ((typeof conf.globalViolations === 'object' && typeof conf.globalViolations.trigger === 'string' && typeof conf.globalViolations.action === 'string' && conf.globalViolations.trigger.includes('/') && VALID_ACTIONS_GLOBAL.includes(conf.globalViolations.action.toUpperCase())) && (!noServerActions || conf.globalViolations.action.toUpperCase() === 'MASSBAN')) {
     const action = conf.globalViolations.action.toUpperCase();
     if (['LOCK_CHANNEL', 'LOCK_GUILD'].includes(action) && typeof conf.globalViolations.actionDuration !== 'string') {
       throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.actionDuration`, 'Incorrect formatting');
@@ -161,6 +140,28 @@ export async function checkViolations(id: string, key: string, member: string, c
         actionDuration: typeof conf.globalViolations.actionDuration === 'string' ? conf.globalViolations.actionDuration : undefined,
         actionValue: dur,
         individuals: action === 'MASSBAN' ? individuals : undefined,
+      };
+    }
+  }
+  if (typeof conf.violations === 'object' && typeof conf.violations.trigger === 'string' && typeof conf.violations.action === 'string' && conf.violations.trigger.includes('/') && VALID_ACTIONS_INDIVIDUAL.includes(conf.violations.action.toUpperCase())) {
+    const action = conf.violations.action.toUpperCase();
+    if (['TEMPMUTE', 'TEMPBAN'].includes(action) && typeof conf.violations.actionDuration !== 'string') {
+      throw new ConfigError(`config.modules.censor.${conf._key}.violations.actionDuration`, 'Incorrect formatting');
+    }
+    const { trigger } = conf.violations;
+    let triggerCount = trigger.split('/')[0];
+    let triggerSeconds = trigger.split('/')[1];
+    if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
+      throw new ConfigError(`config.modules.censor.${conf._key}.violations.trigger`, 'Incorrect formatting');
+    }
+    triggerCount = parseInt(triggerCount, 10);
+    triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
+    const compare = now - (Math.floor(triggerSeconds * 1000));
+    const matchesThis = memberViolations.filter((e) => e.ts > compare);
+    if (matchesThis.length >= triggerCount) {
+      return {
+        action,
+        actionDuration: typeof conf.violations.actionDuration === 'string' ? conf.violations.actionDuration : undefined,
       };
     }
   }
@@ -420,11 +421,30 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
 }
 export async function processViolations(id: string, member: discord.GuildMember, channel: discord.GuildTextChannel | undefined, conf: any) {
   await addViolation(id, conf._key, member.user.id);
-  const isVio = await checkViolations(id, conf._key, member.user.id, conf);
+  const guild = await member.getGuild();
+  let noActions = false;
+  if(channel) {
+    if(channel.rateLimitPerUser !== 0) {noActions = true;} else {
+      const defaultRole = await guild.getRole(guild.id);
+      const perms = new Permissions(defaultRole.permissions);
+      if(!perms.has('SEND_MESSAGES')) {
+        noActions = true;
+      } else {
+        const powDefault = channel.permissionOverwrites.find((e) => e.id === guild.id);
+        if(powDefault) {
+          const permsPow = new Permissions(powDefault.deny);
+          if(permsPow.has('SEND_MESSAGES')) {
+            noActions = true;
+          }
+        }
+      }
+    }
+  }
+  const isVio = await checkViolations(id, noActions, conf._key, member.user.id, conf);
   if (isVio === false) {
     return;
   }
-  const guild = await member.getGuild();
+  
   const checkMember = await guild.getMember(member.user.id);
   if (checkMember === null) {
     return;
