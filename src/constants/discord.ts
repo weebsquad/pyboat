@@ -125,7 +125,7 @@ const ZALGO_CHARS = [
   '\u0359',
   '\u035a',
   '\u0323',
-]
+];
 export const ZalgoRegex = new RegExp(ZALGO_CHARS.join('|'), 'gi');
 export const AsciiRegex = /[\x00-\x08\x0E-\x1F\x7F-\uFFFF]/g;
 export const PermissionFlags: {[key: string]: any} = {

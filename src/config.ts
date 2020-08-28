@@ -218,9 +218,12 @@ const defaultConfig = { // for non-defined configs!
       enabled: true,
       nameChecks: {
         1000: {
+          violations: {
+
+          },
           invites: {
             vanityUrl: false,
-            self: true,
+            self: false,
             whitelist: {
               codes: [],
               guilds: [],
@@ -233,25 +236,23 @@ const defaultConfig = { // for non-defined configs!
           urls: {
             allowSubdomains: false,
             whitelist: [],
-            blacklist: []
+            blacklist: [],
           },
           zalgo: {},
-          words: ['nig'],
-          tokens: [],
+          words: [],
+          tokens: ['nig'],
           caps: {
             followed: 6,
             percentage: 70,
-            minLength: 5
+            minLength: 5,
           },
           chars: {
-            limit: 100,
-            newLines: 5,
-            noAscii: true
-          }
-        }
+            noAscii: true,
+          },
+        },
       },
-      channel: {
-        "740904916649902090": {
+      channels: {
+        '740904916649902090': {
           invites: {
             vanityUrl: true,
             self: true,
@@ -267,7 +268,7 @@ const defaultConfig = { // for non-defined configs!
           urls: {
             allowSubdomains: true,
             whitelist: ['google.com'],
-            blacklist: []
+            blacklist: [],
           },
           zalgo: {},
           words: ['nwtest'],
@@ -275,13 +276,13 @@ const defaultConfig = { // for non-defined configs!
           caps: {
             followed: 6,
             percentage: 70,
-            minLength: 5
+            minLength: 5,
           },
           chars: {
             limit: 100,
             newLines: 5,
-            noAscii: true
-          }
+            noAscii: true,
+          },
         },
       },
     },
