@@ -225,89 +225,11 @@ const defaultConfig = { // for non-defined configs!
       channels: {},
     },
     censor: {
-      enabled: true,
-      nameChecks: {
-        1000: {
-          violations: {
-            trigger: '3/10', // count/second (max 120sec)
-            action: 'TEMPMUTE', // MUTE, TEMPMUTE, KICK, SOFTBAN, TEMPBAN, BAN
-            actionDuration: '2m',
-          },
-          invites: {
-            vanityUrl: false,
-            self: false,
-            whitelist: {
-              codes: [],
-              guilds: [],
-            },
-            blacklist: {
-              codes: [],
-              guilds: [],
-            },
-          },
-          urls: {
-            allowSubdomains: false,
-            whitelist: [],
-            blacklist: [],
-          },
-          zalgo: {},
-          words: [],
-          tokens: ['nig'],
-          caps: {
-            followed: 6,
-            percentage: 70,
-            minLength: 5,
-          },
-          chars: {
-            noAscii: true,
-          },
-        },
-      },
-      channels: {
-        '740904916649902090': {
-          violations: {
-            trigger: '3/10', // count/second (max 120sec)
-            action: 'TEMPMUTE', // MUTE, TEMPMUTE, KICK, SOFTBAN, TEMPBAN, BAN
-            actionDuration: '2m',
-          },
-          globalViolations: {
-            trigger: '13/60', // count/second
-            action: 'SLOWMODE', // SLOWMODE, LOCK_CHANNEL, LOCK_GUILD
-            actionDuration: 5, // minutes
-            actionValue: 10, // how long to slowmode
-          },
-          invites: {
-            vanityUrl: true,
-            self: true,
-            whitelist: {
-              codes: [],
-              guilds: [],
-            },
-            blacklist: {
-              codes: [],
-              guilds: [],
-            },
-          },
-          urls: {
-            allowSubdomains: true,
-            whitelist: ['google.com'],
-            blacklist: [],
-          },
-          zalgo: {},
-          words: ['nwtest'],
-          tokens: ['nwwwww'],
-          caps: {
-            followed: 6,
-            percentage: 70,
-            minLength: 5,
-          },
-          chars: {
-            limit: 100,
-            newLines: 5,
-            noAscii: true,
-          },
-        },
-      },
+      enabled: false,
+      nameChecks: {},
+      channels: {},
+      categories: {},
+      levels: {}
     },
   },
 };
