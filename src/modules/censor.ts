@@ -312,10 +312,10 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
   }
   if (checkChars === true) {
     const charCfg = thisCfg.chars;
-    if (typeof charCfg.limit === 'number' && txt.length > charCfg.limit) {
+    if (typeof charCfg.limit === 'number' && charCfg.limit > 0 && txt.length > charCfg.limit) {
       toRet.chars.push(`${txt.length}/${charCfg.limit} characters`);
     }
-    if (typeof charCfg.newLines === 'number' && txt.includes('\n')) {
+    if (typeof charCfg.newLines === 'number' && charCfg.newLines > 0 && txt.includes('\n')) {
       const newlines = txt.split('\n').length - 1;
       if (newlines > charCfg.newLines) {
         toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
@@ -423,17 +423,19 @@ export async function processViolations(id: string, member: discord.GuildMember,
   await addViolation(id, conf._key, member.user.id);
   const guild = await member.getGuild();
   let noActions = false;
-  if(channel) {
-    if(channel.rateLimitPerUser !== 0) {noActions = true;} else {
+  if (channel) {
+    if (channel.rateLimitPerUser !== 0) {
+      noActions = true;
+    } else {
       const defaultRole = await guild.getRole(guild.id);
       const perms = new Permissions(defaultRole.permissions);
-      if(!perms.has('SEND_MESSAGES')) {
+      if (!perms.has('SEND_MESSAGES')) {
         noActions = true;
       } else {
         const powDefault = channel.permissionOverwrites.find((e) => e.id === guild.id);
-        if(powDefault) {
+        if (powDefault) {
           const permsPow = new Permissions(powDefault.deny);
-          if(permsPow.has('SEND_MESSAGES')) {
+          if (permsPow.has('SEND_MESSAGES')) {
             noActions = true;
           }
         }
@@ -444,7 +446,7 @@ export async function processViolations(id: string, member: discord.GuildMember,
   if (isVio === false) {
     return;
   }
-  
+
   const checkMember = await guild.getMember(member.user.id);
   if (checkMember === null) {
     return;
