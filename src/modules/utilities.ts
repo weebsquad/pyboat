@@ -337,132 +337,146 @@ export function InitializeCommands() {
 
   // SNIPE COMMAND
   if (config.modules.utilities.snipe.enabled === true) {
-    cmdGroup.raw({ name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
-      let _sn: any = await snipekvs.get(msg.channelId);
-      if (typeof _sn === 'string') {
-        _sn = JSON.parse(_sn);
-      }
-      if (
-        _sn === undefined
+    cmdGroup.raw(
+      { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
+        let _sn: any = await snipekvs.get(msg.channelId);
+        if (typeof _sn === 'string') {
+          _sn = JSON.parse(_sn);
+        }
+        if (
+          _sn === undefined
       || typeof _sn.author !== 'object'
       || typeof _sn.id !== 'string'
-      ) {
-        await msg.reply('Nothing to snipe.');
-        return;
-      }
-      if (
-        _sn.author.id === msg.author.id
+        ) {
+          await msg.reply('Nothing to snipe.');
+          return;
+        }
+        if (
+          _sn.author.id === msg.author.id
       && !msg.member.can(discord.Permissions.ADMINISTRATOR)
-      ) {
-        await msg.reply('Nothing to snipe.');
-        return;
-      }
-      const emb = new discord.Embed();
-      const _usr = await discord.getUser(_sn.author.id);
-      if (!_usr) {
-        return;
-      }
-      emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
-      emb.setTimestamp(
-        new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
-      );
-      emb.setFooter({
-        iconUrl: msg.author.getAvatarUrl(),
-        text: `Requested by: ${msg.author.getTag()}`,
-      });
-      emb.setDescription(_sn.content);
-      emb.setColor(0x03fc52);
-      await snipekvs.delete(msg.channelId);
-      await msg.reply({
-        embed: emb,
-        content: `${_usr.toMention()} said ...`,
-        allowedMentions: {},
-      });
-    });
+        ) {
+          await msg.reply('Nothing to snipe.');
+          return;
+        }
+        const emb = new discord.Embed();
+        const _usr = await discord.getUser(_sn.author.id);
+        if (!_usr) {
+          return;
+        }
+        emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
+        emb.setTimestamp(
+          new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
+        );
+        emb.setFooter({
+          iconUrl: msg.author.getAvatarUrl(),
+          text: `Requested by: ${msg.author.getTag()}`,
+        });
+        emb.setDescription(_sn.content);
+        emb.setColor(0x03fc52);
+        await snipekvs.delete(msg.channelId);
+        await msg.reply({
+          embed: emb,
+          content: `${_usr.toMention()} said ...`,
+          allowedMentions: {},
+        });
+      },
+    );
   }
 
   // BACKUP
   if (config.modules.utilities.persist.enabled === true) {
     cmdGroup.subcommand('backup', (subCommandGroup) => {
-      subCommandGroup.on({ name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
-                         (ctx) => ({ member: ctx.guildMember() }),
-                         async (msg, { member }) => {
-                           const ret = await restorePersistData(member);
-                           if (ret === true) {
-                             await msg.reply({
-                               allowedMentions: {},
-                               content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
-                             });
-                           } else {
-                             await msg.reply({
-                               allowedMentions: {},
-                               content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
-                             });
-                           }
-                         });
-      subCommandGroup.on({ name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
-                         (ctx) => ({ member: ctx.guildMember() }),
-                         async (msg, { member }) => {
-                           const ret = await savePersistData(member);
-                           await msg.reply({
-                             allowedMentions: {},
-                             content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
-                           });
-                         });
-      subCommandGroup.on({ name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
-                         (ctx) => ({ usr: ctx.user() }),
-                         async (msg, { usr }) => {
-                           const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
-                           if (!thiskv) {
-                             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
-                             return;
-                           }
-                           let rls = 'None';
-                           if (thiskv.roles.length > 0) {
-                             const rlsfo = thiskv.roles.map((rl) => `<@&${rl}>`).join(', ');
-                             rls = rlsfo;
-                           }
-                           const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}${Array.isArray(thiskv.channels) ? `\n**Channel Overwrites**: ${thiskv.channels.length}` : ''}`;
-                           await msg.reply({ content: txt, allowedMentions: {} });
-                         });
-      subCommandGroup.on({ name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
-                         (ctx) => ({ usr: ctx.user() }),
-                         async (msg, { usr }) => {
-                           const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
-                           if (!thiskv) {
-                             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
-                             return;
-                           }
-                           await utils.KVManager.delete(`${persistPrefix}${usr.id}`);
-                           await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`);
-                         });
+      subCommandGroup.on(
+        { name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
+        (ctx) => ({ member: ctx.guildMember() }),
+        async (msg, { member }) => {
+          const ret = await restorePersistData(member);
+          if (ret === true) {
+            await msg.reply({
+              allowedMentions: {},
+              content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+            });
+          } else {
+            await msg.reply({
+              allowedMentions: {},
+              content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
+            });
+          }
+        },
+      );
+      subCommandGroup.on(
+        { name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
+        (ctx) => ({ member: ctx.guildMember() }),
+        async (msg, { member }) => {
+          const ret = await savePersistData(member);
+          await msg.reply({
+            allowedMentions: {},
+            content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
+          });
+        },
+      );
+      subCommandGroup.on(
+        { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
+        (ctx) => ({ usr: ctx.user() }),
+        async (msg, { usr }) => {
+          const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+          if (!thiskv) {
+            await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
+            return;
+          }
+          let rls = 'None';
+          if (thiskv.roles.length > 0) {
+            const rlsfo = thiskv.roles.map((rl) => `<@&${rl}>`).join(', ');
+            rls = rlsfo;
+          }
+          const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}${Array.isArray(thiskv.channels) ? `\n**Channel Overwrites**: ${thiskv.channels.length}` : ''}`;
+          await msg.reply({ content: txt, allowedMentions: {} });
+        },
+      );
+      subCommandGroup.on(
+        { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
+        (ctx) => ({ usr: ctx.user() }),
+        async (msg, { usr }) => {
+          const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+          if (!thiskv) {
+            await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
+            return;
+          }
+          await utils.KVManager.delete(`${persistPrefix}${usr.id}`);
+          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`);
+        },
+      );
     });
   }
 
   // snowflake
-  cmdGroup.on({ name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },
-              (ctx) => ({ snowflakee: ctx.string() }),
-              async (msg, { snowflakee }) => {
-                const now = new Date();
-                const baseId = snowflakee;
-                const normalTs = utils.getSnowflakeDate(baseId);
-                await msg.reply(
-                  `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
-                );
-              });
+  cmdGroup.on(
+    { name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },
+    (ctx) => ({ snowflakee: ctx.string() }),
+    async (msg, { snowflakee }) => {
+      const now = new Date();
+      const baseId = snowflakee;
+      const normalTs = utils.getSnowflakeDate(baseId);
+      await msg.reply(
+        `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
+      );
+    },
+  );
 
-  cmdGroup.raw({ name: 'cat', filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
-    const file = await (await fetch('http://aws.random.cat/meow')).json();
-    const catpic = await (await fetch(file.file)).arrayBuffer();
+  cmdGroup.raw(
+    { name: 'cat', filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('http://aws.random.cat/meow')).json();
+      const catpic = await (await fetch(file.file)).arrayBuffer();
 
-    await msg.reply({
-      content: '',
-      allowedMentions: {},
-      attachments: [{
-        name: 'cat.jpg',
-        data: catpic,
-      }],
-    });
-  });
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: 'cat.jpg',
+          data: catpic,
+        }],
+      });
+    },
+  );
   return cmdGroup;
 }

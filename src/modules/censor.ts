@@ -1,8 +1,27 @@
-import { config, globalConfig, Ranks, guildId } from '../config';
+import { config, globalConfig, Ranks, guildId, ConfigError } from '../config';
 import { UrlRegex, EmojiRegex, InviteRegex, ZalgoRegex, AsciiRegex } from '../constants/constants';
 import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import { getUserTag, getMemberTag } from './logging/main';
+import * as infractions from './infractions';
+
+const kvPool = new pylon.KVNamespace('censor');
+
+const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
+const VALID_ACTIONS_GLOBAL = ['SLOWMODE'];
+const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
+const ACTION_REASON = 'Too many censor violations';
+class PoolEntry {
+  ts: number;
+  key: string;
+  member: string;
+  constructor(key: string, member: string) {
+    this.ts = Date.now();
+    this.key = key;
+    this.member = member;
+    return this;
+  }
+}
 
 enum CensorType {
     'INVITE'= 'invite',
@@ -28,21 +47,148 @@ class CensorCheck {
       return this;
     }
 }
+async function getPool(userId: string) {
+  const pool: any = await kvPool.get(`pool_${userId}`);
+  if (typeof pool !== 'object') {
+    const ret: Array<PoolEntry> = [];
+    return ret;
+  }
+  const ret:Array<PoolEntry> = pool;
+  return ret;
+}
+async function savePool(userId: string, data: any[]) {
+  userId = userId.split('pool_').join('');
+  if (data.length === 0) {
+    await kvPool.delete(`pool_${userId}`);
+    return;
+  }
+  await kvPool.put(`pool_${userId}`, data, { ttl: MAX_POOL_ENTRY_LIFETIME });
+}
+export async function clean() {
+  const now = Date.now();
+  const poolItems = await kvPool.items();
+  await Promise.all(poolItems.map(async (poolItem: any) => {
+    const pool: any = poolItem.value;
+    if (!Array.isArray(pool)) {
+      return;
+    }
+    const p: Array<PoolEntry> = pool;
+    let edit = false;
+    const newP = p.filter((ele) => {
+      const diff = now - ele.ts;
+      if (diff < 0 || diff < MAX_POOL_ENTRY_LIFETIME) {
+        return true;
+      }
+      edit = true;
+      return false;
+    });
+    if (edit) {
+      await savePool(poolItem.key.split('pool_').join(''), newP);
+    }
+  }));
+}
+export async function getViolations(key: string, member: string | null) {
+  let pool: Array<PoolEntry>;
+  if (member === null) {
+    const grab: any = (await kvPool.items()).map((e: any) => e.value);
+    pool = [];
+    grab.forEach((e) => {
+      if (Array.isArray(e)) {
+        pool.push(...e);
+      }
+    });
+  } else {
+    pool = await getPool(member);
+  }
+  return pool;
+}
+export async function checkViolations(id: string, key: string, member: string, conf: any) {
+  const now = Date.now();
+  // const diff = now - timestamp;
+  const violations = await getViolations(key, null);
+  const memberViolations = violations.filter((e) => e.member === member);
+  if (typeof conf.violations === 'object' && typeof conf.violations.trigger === 'string' && typeof conf.violations.action === 'string' && conf.violations.trigger.includes('/') && VALID_ACTIONS_INDIVIDUAL.includes(conf.violations.action.toUpperCase())) {
+    const action = conf.violations.action.toUpperCase();
+    if (['TEMPMUTE', 'TEMPBAN'].includes(action) && typeof conf.violations.actionDuration !== 'string') {
+      throw new ConfigError(`config.modules.censor.${conf._key}.violations.actionDuration`, 'Incorrect formatting');
+    }
+    const { trigger } = conf.violations;
+    let triggerCount = trigger.split('/')[0];
+    let triggerSeconds = trigger.split('/')[1];
+    if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
+      throw new ConfigError(`config.modules.censor.${conf._key}.violations.trigger`, 'Incorrect formatting');
+    }
+    triggerCount = parseInt(triggerCount, 10);
+    triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
+    const compare = now - (Math.floor(triggerSeconds * 1000));
+    const matchesThis = memberViolations.filter((e) => e.ts > compare);
+    if (matchesThis.length >= triggerCount) {
+      return {
+        action,
+        actionDuration: typeof conf.violations.actionDuration === 'string' ? conf.violations.actionDuration : undefined,
+      };
+    }
+  }
+  if (typeof conf.globalViolations === 'object' && typeof conf.globalViolations.trigger === 'string' && typeof conf.globalViolations.action === 'string' && conf.globalViolations.trigger.includes('/') && VALID_ACTIONS_GLOBAL.includes(conf.globalViolations.action.toUpperCase())) {
+    const action = conf.globalViolations.action.toUpperCase();
+    if (['LOCK_CHANNEL', 'LOCK_GUILD'].includes(action) && typeof conf.globalViolations.actionDuration !== 'string') {
+      throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.actionDuration`, 'Incorrect formatting');
+    }
+    if (action === 'SLOWMODE' && typeof conf.globalViolations.actionValue !== 'number') {
+      throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.actionValue`, 'Incorrect formatting');
+    }
+    const dur = typeof conf.globalViolations.actionValue === 'number' ? Math.min(21600, conf.globalViolations.actionValue) : undefined;
+    const { trigger } = conf.globalViolations;
+    let triggerCount = trigger.split('/')[0];
+    let triggerSeconds = trigger.split('/')[1];
+    if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
+      throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.trigger`, 'Incorrect formatting');
+    }
+    triggerCount = parseInt(triggerCount, 10);
+    triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
+    const individuals = [];
+    const indNeeded = Math.max(2, Math.floor(triggerCount / 3));
+    const compare = now - (Math.floor(triggerSeconds * 1000));
+    const matchesThis = violations.filter((e) => {
+      if (!individuals.includes(e.member)) {
+        individuals.push(e.member);
+      }
+      return e.ts > compare;
+    });
+    if (matchesThis.length >= triggerCount && individuals.length >= indNeeded) {
+      return {
+        action,
+        actionDuration: typeof conf.globalViolations.actionDuration === 'string' ? conf.globalViolations.actionDuration : undefined,
+        actionValue: dur,
+      };
+    }
+  }
+
+  return false;
+}
+export async function addViolation(id: string, key: string, member: string) {
+  const newVio = new PoolEntry(key, member);
+  newVio.ts = utils.decomposeSnowflake(id).timestamp;
+  const pool = await getPool(member);
+  pool.push(newVio);
+  await savePool(member, pool);
+  return pool;
+}
 export function getApplicableConfigs(member: discord.GuildMember, channel: discord.GuildChannel | undefined = undefined): Array<any> {
   const toret = [];
   const cfgMod = config.modules.censor;
   if (typeof channel !== 'undefined' && typeof cfgMod.channels === 'object' && Object.keys(cfgMod.channels).includes(channel.id)) {
-    toret.push(cfgMod.channels[channel.id]);
+    toret.push({ _key: `channel_${channel.id}`, ...cfgMod.channels[channel.id] });
   }
   if (typeof channel !== 'undefined' && typeof channel.parentId === 'string' && channel.parentId !== '' && channel.type !== discord.Channel.Type.GUILD_CATEGORY && typeof cfgMod.categories === 'object' && Object.keys(cfgMod.categories).includes(channel.parentId)) {
-    toret.push(cfgMod.categories[channel.parentId]);
+    toret.push({ _key: `category_${channel.parentId}`, ...cfgMod.categories[channel.parentId] });
   }
   if (typeof cfgMod.levels === 'object') {
     const auth = utils.getUserAuth(member);
     Object.keys(cfgMod.levels).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
       .map((lvl) => {
         if (typeof lvl === 'number' && lvl >= auth && lvl >= 0) {
-          toret.push(cfgMod.levels[lvl]);
+          toret.push({ _key: `level_${lvl.toString()}`, ...cfgMod.levels[lvl] });
         }
       });
   }
@@ -271,7 +417,47 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   }
   return new CensorCheck(false, undefined, undefined, undefined, _stop);
 }
-export async function censorMessage(message: discord.GuildMemberMessage, check: CensorCheck) {
+export async function processViolations(id: string, member: discord.GuildMember, channel: discord.GuildTextChannel | undefined, conf: any) {
+  await addViolation(id, conf._key, member.user.id);
+  const isVio = await checkViolations(id, conf._key, member.user.id, conf);
+  if (isVio === false) {
+    return;
+  }
+  const checkMember = await (await member.getGuild()).getMember(member.user.id);
+  if (checkMember === null) {
+    return;
+  }
+  const { action, actionDuration, actionValue, individuals } = isVio;
+  switch (action) {
+    case 'KICK':
+      await infractions.Kick(member, null, ACTION_REASON);
+      break;
+    case 'SOFTBAN':
+      await infractions.SoftBan(member, null, 1, ACTION_REASON);
+      break;
+    case 'MUTE':
+      await infractions.Mute(member, null, ACTION_REASON);
+      break;
+    case 'BAN':
+      await infractions.Ban(member, null, 1, ACTION_REASON);
+      break;
+    case 'TEMPMUTE':
+      await infractions.TempMute(member, null, actionDuration, ACTION_REASON);
+      break;
+    case 'TEMPBAN':
+      await infractions.TempBan(member, null, 1, actionDuration, ACTION_REASON);
+      break;
+    case 'SLOWMODE':
+      await channel.edit({ rateLimitPerUser: actionValue });
+      break;
+    default:
+      break;
+  }
+}
+
+export async function censorMessage(message: discord.GuildMemberMessage, check: CensorCheck, conf: any) {
+  const channel = await message.getChannel();
+  await processViolations(message.id, message.member, channel && channel.type === discord.Channel.Type.GUILD_TEXT ? channel : undefined, conf);
   await message.delete();
   await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
 }
@@ -282,6 +468,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   if (!(message instanceof discord.GuildMemberMessage)) {
     return;
   }
+  if(utils.isGlobalAdmin(message.author.id)) return;
   const channel = await message.getChannel();
   if (channel === null) {
     return;
@@ -340,6 +527,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
 
   for (let i = 0; i < appConfigs.length; i += 1) {
     const extraDataContent = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+    // attachments
     if (Object.keys(dataAttach).length > 0) {
       for (const key in dataAttach) {
         const val = dataAttach[key];
@@ -348,7 +536,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
         const check = checkCensors(_newd, appConfigs[i]);
         if (check instanceof CensorCheck) {
           if (check.check === true) {
-            await censorMessage(message, check);
+            await censorMessage(message, check, appConfigs[i]);
             return false;
           }
           if (check.stop === true) {
@@ -357,11 +545,12 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
         }
       }
     }
+    // normal content
     const _newd = { ...dataContent, ...extraDataContent };
     const check = checkCensors(_newd, appConfigs[i]);
     if (check instanceof CensorCheck) {
       if (check.check === true) {
-        await censorMessage(message, check);
+        await censorMessage(message, check, appConfigs[i]);
         return false;
       }
       if (check.stop === true) {
@@ -391,7 +580,8 @@ export async function OnMessageUpdate(
   return _ret;
 }
 
-export async function checkName(member: discord.GuildMember) {
+export async function checkName(eventId: string, member: discord.GuildMember) {
+  if(utils.isGlobalAdmin(member.user.id)) return;
   const guild = await member.getGuild();
   if (guild === null) {
     return;
@@ -463,8 +653,9 @@ export async function checkName(member: discord.GuildMember) {
     const check = checkCensors(_newd, appConfigs[i]);
     if (check instanceof CensorCheck) {
       if (check.check === true) {
-        await member.edit({ nick: `censored name (${Math.max(9999, Math.min(Math.random() * 1000), 1000).toString()})` });
-        await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        await member.edit({ nick: `censored name (${Math.floor(Math.min(9999, 1000 + (Math.random() * 10000)))})` });
+        await logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        await processViolations(eventId, member, undefined, appConfigs[i]);
         return false;
       }
       if (check.stop === true) {
@@ -483,7 +674,7 @@ export async function AL_OnGuildMemberAdd( // Only provides logs if joined membe
   if (log instanceof discord.AuditLogEntry) {
     return;
   }
-  const _ret = await checkName(member);
+  const _ret = await checkName(id, member);
   return _ret;
 }
 
@@ -508,6 +699,6 @@ export async function AL_OnGuildMemberUpdate(
   if (visibleName === visibleNameOld) {
     return;
   }
-  const _ret = await checkName(member);
+  const _ret = await checkName(id, member);
   return _ret;
 }

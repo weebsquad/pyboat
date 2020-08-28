@@ -1,6 +1,16 @@
 /* eslint-disable import/no-mutable-exports */
 import * as messages from './modules/logging/messages';
 import * as updates from './updates';
+
+export class ConfigError extends Error {
+  configPath: string;
+  constructor(configPath: string, message) {
+    super(message);
+    this.name = 'ConfigError';
+    this.configPath = configPath;
+    return this;
+  }
+}
 // levels
 export enum Ranks {
     'Guest' = 0,
@@ -219,7 +229,9 @@ const defaultConfig = { // for non-defined configs!
       nameChecks: {
         1000: {
           violations: {
-
+            trigger: '3/10', // count/second (max 120sec)
+            action: 'TEMPMUTE', // MUTE, TEMPMUTE, KICK, SOFTBAN, TEMPBAN, BAN
+            actionDuration: '2m',
           },
           invites: {
             vanityUrl: false,
@@ -253,6 +265,17 @@ const defaultConfig = { // for non-defined configs!
       },
       channels: {
         '740904916649902090': {
+          violations: {
+            trigger: '3/10', // count/second (max 120sec)
+            action: 'TEMPMUTE', // MUTE, TEMPMUTE, KICK, SOFTBAN, TEMPBAN, BAN
+            actionDuration: '2m',
+          },
+          globalViolations: {
+            trigger: '10/60', // count/second
+            action: 'SLOWMODE', // SLOWMODE, LOCK_CHANNEL, LOCK_GUILD
+            actionDuration: 5, // minutes
+            actionValue: 10, // how long to slowmode
+          },
           invites: {
             vanityUrl: true,
             self: true,

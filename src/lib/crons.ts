@@ -5,6 +5,7 @@ import * as conf from '../config';
 import { every5Min } from '../modules/infractions';
 import { cleanPool } from '../modules/translation';
 import * as starboard from '../modules/starboard';
+import * as censor from '../modules/censor';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
@@ -15,6 +16,7 @@ const _cr: {[key: string]: any} = {
       queue.cleanQueue();
       await every5Min();
       await starboard.periodicClear();
+      await censor.clean();
     },
     started: false,
   },
