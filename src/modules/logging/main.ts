@@ -1,6 +1,5 @@
 // todo
 import * as conf from '../../config';
-import { ChannelConfig } from './classes';
 import { getTimestamp } from './messages';
 import * as utils from './utils';
 import * as utils2 from '../../lib/utils';
@@ -64,25 +63,23 @@ export function getLogChannels(gid: string, event: string, type: string) {
   if (event.substr(0, 1) === '|') {
     event = event.substr(1);
   }
+
   for (const k in mp) {
     const v = mp[k];
     if (typeof v.scopes !== 'object') {
       break;
     }
-    if (!Array.isArray(v.scopes.include) || !Array.isArray(v.scopes.exclude)) {
+    if (!Array.isArray(v.scopes.include) && !Array.isArray(v.scopes.exclude)) {
       break;
     }
-    if (
-      Array.isArray(v.scopes.include) && (v.scopes.include.includes('*')
+    if ((Array.isArray(v.scopes.include)) && (v.scopes.include.includes('*')
       || v.scopes.include.includes(event)
       || v.scopes.include.includes(`${event}.*`)
-      || v.scopes.include.includes(`${event}.${type}`))
-    ) {
-      if (Array.isArray(v.scopes.exclude) && (
+      || v.scopes.include.includes(`${event}.${type}`))) {
+      if ((Array.isArray(v.scopes.exclude)) && (
         v.scopes.exclude.includes(event)
         || v.scopes.exclude.includes(`${event}.*`)
-        || v.scopes.exclude.includes(`${event}.${type}`))
-      ) {
+        || v.scopes.exclude.includes(`${event}.${type}`))) {
         continue;
       }
       arr.push(k);

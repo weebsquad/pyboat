@@ -51,8 +51,8 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
   '|CENSOR': {
-    CENSORED_MESSAGE: `${discord.decor.Emojis.SPEECH_BALLOON} _USERTAG_ had their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_> censored: \`_CENSOR_MESSAGE_\`**[**_CENSOR_TYPE_**]** due to \`_CENSOR_TARGET_\``,
-    CENSORED_USERNAME: `${discord.decor.Emojis.SPEECH_BALLOON} _USERTAG_ had their name censored: \`_CENSOR_MESSAGE_\`**[**_CENSOR_TYPE_**]** due to \`_CENSOR_TARGET_\``,
+    CENSORED_MESSAGE: `${discord.decor.Emojis.SPEECH_BALLOON} _USERTAG_ had their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_> censored: \`_CENSOR_MESSAGE_\`**[**:_CENSOR_TP_**]** => \`_CENSOR_TARGET_\``,
+    CENSORED_USERNAME: `${discord.decor.Emojis.SPEECH_BALLOON} _USERTAG_ had their name censored: \`_CENSOR_MESSAGE_\`**[**:_CENSOR_TP_**]** => \`_CENSOR_TARGET_\``,
   },
   '|ANTIPING': {
     FAIL_MARK_MEMBER_NOT_FOUND: '_ACTORTAG_ tried to mark anti-ping punishment of _USERTAG_ as _ACTION_ but _USERTAG_ left the server',
