@@ -3,6 +3,7 @@ import * as utils from '../lib/utils';
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 
+const MAX_LIFETIME = 336;
 const prefixKv = 'Starboard_';
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
@@ -232,13 +233,14 @@ export async function periodicClear() {
   await Promise.all(keys.map(async (e) => {
     const boardId = e.split(prefixKv).join('').split('_')[0];
     const cfg = getBoardCfg(boardId);
-    if (typeof cfg === 'object' && typeof cfg.messageLifetime === 'number') {
+    const lifetime = typeof cfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, cfg.messageLifetime) : MAX_LIFETIME;
+    if (typeof cfg === 'object') {
       const messageId = e.split(prefixKv).join('').split('_')[1];
       const ts = utils.decomposeSnowflake(messageId).timestamp;
       const diff = Date.now() - ts;
       if (diff > 1000 * 60 * 60) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
-        if (hours >= cfg.messageLifetime) {
+        if (hours >= lifetime) {
           await utils.KVManager.delete(e);
         }
       }
@@ -404,11 +406,12 @@ export async function OnMessageReactionAdd(
   } else if (emoji.name !== boardCfg.emoji) {
     return;
   }
+  const lifetime = typeof boardCfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, boardCfg.messageLifetime) : MAX_LIFETIME;
   if (typeof boardCfg.messageLifetime === 'number') {
     const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
     if (diff > 1000 * 60 * 60) {
       const hours = Math.floor(diff / (1000 * 60 * 60));
-      if (hours >= boardCfg.messageLifetime) {
+      if (hours >= lifetime) {
         return;
       }
     }
@@ -555,13 +558,12 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   } else if (emoji.name !== boardCfg.emoji) {
     return;
   }
-  if (typeof boardCfg.messageLifetime === 'number') {
-    const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
-    if (diff > 1000 * 60 * 60) {
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      if (hours >= boardCfg.messageLifetime) {
-        return;
-      }
+  const lifetime = typeof boardCfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, boardCfg.messageLifetime) : MAX_LIFETIME;
+  const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
+  if (diff > 1000 * 60 * 60) {
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours >= lifetime) {
+      return;
     }
   }
 
@@ -630,15 +632,15 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   if (boardCfg === false) {
     return;
   }
-  if (typeof boardCfg.messageLifetime === 'number') {
-    const diff = Date.now() - utils.decomposeSnowflake(reaction.messageId).timestamp;
-    if (diff > 1000 * 60 * 60) {
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      if (hours >= boardCfg.messageLifetime) {
-        return;
-      }
+  const lifetime = typeof boardCfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, boardCfg.messageLifetime) : MAX_LIFETIME;
+  const diff = Date.now() - utils.decomposeSnowflake(reaction.messageId).timestamp;
+  if (diff > 1000 * 60 * 60) {
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours >= lifetime) {
+      return;
     }
   }
+
   const isLocked = await kv.get('lock');
   if (isLocked === true) {
     return;
