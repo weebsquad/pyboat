@@ -229,7 +229,7 @@ const defaultConfig = { // for non-defined configs!
       nameChecks: {},
       channels: {},
       categories: {},
-      levels: {}
+      levels: {},
     },
   },
 };

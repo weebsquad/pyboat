@@ -18,13 +18,12 @@ export class StarredMessage {
     publishData: PublishData;
     reactors: Array<string> = [];
     emojiMention: string;
-    constructor(channelId: string, messageId: string, reactors: Array<string>, emojiMention: string) {
+    constructor(channelId: string, messageId: string, board: string | false, reactors: Array<string>, emojiMention: string) {
       this.id = messageId;
       this.channelId = channelId;
       this.reactors = reactors;
       this.publishData = new PublishData();
       this.emojiMention = emojiMention;
-      const board = getRespectiveBoard(channelId);
       if (board !== false) {
         this.publishData.channelId = board;
       }
@@ -198,10 +197,19 @@ function getColor(max: number, count: number) {
   const ratio = Math.min(count / max, 1);
   return ((255 << 16) + (Math.floor((194 * ratio) + (253 * (1 - ratio))) << 8) + Math.floor((12 * ratio) + (247 * (1 - ratio))));
 }
-function getRespectiveBoard(source: string) {
+function getRespectiveBoard(source: string, emoji: any) {
   if (typeof (config.modules.starboard.channels) === 'object') {
     for (const key in config.modules.starboard.channels) {
       const val = config.modules.starboard.channels[key];
+      if (typeof emoji !== 'undefined') {
+        if (utils.isNumber(val.emoji)) {
+          if (typeof emoji.id === 'string' && val.emoji !== emoji.id) {
+            continue;
+          }
+        } else if (typeof emoji.name === 'string' && val.emoji !== emoji.name) {
+          continue;
+        }
+      }
       if (Array.isArray(val.excludes) && val.excludes.includes(source)) {
         continue;
       }
@@ -323,6 +331,7 @@ export async function OnMessageReactionAdd(
   if (!(reaction.member instanceof discord.GuildMember)) {
     return;
   }
+  const { emoji } = reaction;
   let isBoardMsg = false;
   let msgId = reaction.messageId;
   if (Object.keys(config.modules.starboard.channels).includes(reaction.channelId)) {
@@ -330,7 +339,7 @@ export async function OnMessageReactionAdd(
   }
   let board;
   if (!isBoardMsg) {
-    board = getRespectiveBoard(reaction.channelId);
+    board = getRespectiveBoard(reaction.channelId, emoji);
   }
   if (!isBoardMsg && board === false) {
     return;
@@ -387,6 +396,14 @@ export async function OnMessageReactionAdd(
   if (actualMsg.type !== discord.Message.Type.DEFAULT || (actualMsg.content.length < 1 && actualMsg.attachments.length === 0)) {
     return;
   }
+
+  if (utils.isNumber(boardCfg.emoji)) {
+    if (emoji.id !== boardCfg.emoji) {
+      return;
+    }
+  } else if (emoji.name !== boardCfg.emoji) {
+    return;
+  }
   if (typeof boardCfg.messageLifetime === 'number') {
     const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
     if (diff > 1000 * 60 * 60) {
@@ -395,15 +412,6 @@ export async function OnMessageReactionAdd(
         return;
       }
     }
-  }
-
-  const { emoji } = reaction;
-  if (utils.isNumber(boardCfg.emoji)) {
-    if (emoji.id !== boardCfg.emoji) {
-      return;
-    }
-  } else if (emoji.name !== boardCfg.emoji) {
-    return;
   }
 
   const me = await (await channel.getGuild()).getMember(discord.getBotId());
@@ -447,7 +455,7 @@ export async function OnMessageReactionAdd(
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
-    data = new StarredMessage(chanId, msgId, [], emoji.toMention());
+    data = new StarredMessage(chanId, msgId, board, [], emoji.toMention());
   }
   let changes = false;
   if (!data.reactors.includes(reaction.userId)) {
@@ -475,6 +483,7 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (!(reaction.member instanceof discord.GuildMember)) {
     return;
   }
+  const { emoji } = reaction;
   let isBoardMsg = false;
   let msgId = reaction.messageId;
   if (Object.keys(config.modules.starboard.channels).includes(reaction.channelId)) {
@@ -482,7 +491,7 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   }
   let board;
   if (!isBoardMsg) {
-    board = getRespectiveBoard(reaction.channelId);
+    board = getRespectiveBoard(reaction.channelId, emoji);
   }
   if (!isBoardMsg && board === false) {
     return;
@@ -539,6 +548,13 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (actualMsg.type !== discord.Message.Type.DEFAULT || (actualMsg.content.length < 1 && actualMsg.attachments.length === 0)) {
     return;
   }
+  if (utils.isNumber(boardCfg.emoji)) {
+    if (emoji.id !== boardCfg.emoji) {
+      return;
+    }
+  } else if (emoji.name !== boardCfg.emoji) {
+    return;
+  }
   if (typeof boardCfg.messageLifetime === 'number') {
     const diff = Date.now() - utils.decomposeSnowflake(msgId).timestamp;
     if (diff > 1000 * 60 * 60) {
@@ -547,15 +563,6 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
         return;
       }
     }
-  }
-
-  const { emoji } = reaction;
-  if (utils.isNumber(boardCfg.emoji)) {
-    if (emoji.id !== boardCfg.emoji) {
-      return;
-    }
-  } else if (emoji.name !== boardCfg.emoji) {
-    return;
   }
 
   if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === actualMsg.author.id)) {
@@ -614,7 +621,8 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   if (!reaction.guildId) {
     return;
   }
-  const board = getRespectiveBoard(reaction.channelId);
+
+  const board = getRespectiveBoard(reaction.channelId, undefined);
   if (board === false) {
     return;
   }
