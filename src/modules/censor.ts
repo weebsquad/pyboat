@@ -175,7 +175,6 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     }
     if (typeof charCfg.noAscii === 'boolean' && charCfg.noAscii === true) {
       const asciiremoved = txt.replace(AsciiRegex, '');
-      console.log('noascii', asciiremoved);
       if (asciiremoved !== txt) {
         toRet.chars.push('Illegal ASCII');
       }
@@ -272,7 +271,10 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   }
   return new CensorCheck(false, undefined, undefined, undefined, _stop);
 }
-
+export async function censorMessage(message: discord.GuildMemberMessage, check: CensorCheck) {
+  await message.delete();
+  await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
+}
 export async function checkMessage(message: discord.Message.AnyMessage) {
   if (message.guildId === null || !(message.member instanceof discord.GuildMember) || message.type !== discord.Message.Type.DEFAULT || message.webhookId !== null || !message.author || message.author.bot === true || message.flags !== 0) {
     return;
@@ -324,17 +326,42 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
       break;
     }
   }
-  const data = await getCensorshipData(message.content, grabInvites, grabUrls, grabZalgo);
+  const dataContent = await getCensorshipData(message.content, grabInvites, grabUrls, grabZalgo);
+  const dataAttach: any = {};
+  if (message.attachments.length > 0) {
+    await Promise.all(message.attachments.map(async (attach) => {
+      if (typeof dataAttach[attach.filename] !== 'undefined') {
+        return;
+      }
+      const _thisData = await getCensorshipData(attach.filename, grabInvites, grabUrls, grabZalgo);
+      dataAttach[attach.filename] = _thisData;
+    }));
+  }
+
   for (let i = 0; i < appConfigs.length; i += 1) {
-    const extraData = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
-    const _newd = { ...data, ...extraData };
-    console.log(_newd);
+    const extraDataContent = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+    if (Object.keys(dataAttach).length > 0) {
+      for (const key in dataAttach) {
+        const val = dataAttach[key];
+        const extraDataAttach = await getDataFromConfig(key, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+        const _newd = { ...val, ...extraDataAttach };
+        const check = checkCensors(_newd, appConfigs[i]);
+        if (check instanceof CensorCheck) {
+          if (check.check === true) {
+            await censorMessage(message, check);
+            return false;
+          }
+          if (check.stop === true) {
+            break;
+          }
+        }
+      }
+    }
+    const _newd = { ...dataContent, ...extraDataContent };
     const check = checkCensors(_newd, appConfigs[i]);
     if (check instanceof CensorCheck) {
       if (check.check === true) {
-        await message.delete();
-        await message.reply(JSON.stringify(check));
-        await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TYPE_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
+        await censorMessage(message, check);
         return false;
       }
       if (check.stop === true) {
@@ -437,7 +464,7 @@ export async function checkName(member: discord.GuildMember) {
     if (check instanceof CensorCheck) {
       if (check.check === true) {
         await member.edit({ nick: `censored name (${Math.max(9999, Math.min(Math.random() * 1000), 1000).toString()})` });
-        await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TYPE_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
         return false;
       }
       if (check.stop === true) {
