@@ -240,9 +240,9 @@ const defaultConfig = { // for non-defined configs!
         1000: {
           stop: false,
           clean: true,
-          // cleanDuration: 90, // seconds
-          //action: "TEMPMUTE",
-          //actionDuration: "10m",
+          cleanDuration: 90, // seconds
+          action: "TEMPMUTE",
+          actionDuration: "1m",
           messages: "4/5",
           newlines: "3/10",
           emoji: "20/5",

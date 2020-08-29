@@ -171,7 +171,7 @@ export async function every5Min() {
       for(var i = 0; i < actives.length; i+=1) {
         const inf = actives[i];
         if (inf.isExpired()) {
-          await sleep(100);
+          await sleep(300);
           promises2.push(inf.checkExpired());
         }
       }

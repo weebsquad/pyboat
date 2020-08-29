@@ -1,8 +1,9 @@
 import {ConfigError, guildId, config} from '../config'
 import * as utils from '../lib/utils';
 import * as infractions from './infractions';
+import { AsciiRegex } from '../constants/discord';
 
-
+const removeWhenComparing = ['\n', '\r', '\t', ' '];
 const poolsKv = new pylon.KVNamespace('antiSpam');
 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
@@ -139,7 +140,16 @@ export async function getMessagesBy(userId: string) {
     const ps = (await getAllPools()).filter((e) => e.authorId === userId);
     return ps;
 }
-
+export async function checkDuplicates(msg: discord.GuildMemberMessage, items: Array<MessageEntry>) {
+    let toRet = [];
+    let cleanContent = msg.content.replace(AsciiRegex, "");
+    removeWhenComparing.forEach((e) => { if(cleanContent.includes(e)) {
+        cleanContent.split(e).join('')
+    }
+});
+    console.log('cleanContent:',cleanContent);
+    return toRet;
+}
 export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowed: number, after: number) {
     let _matches = 0;
     items.every((item) => {
@@ -165,6 +175,10 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     let flagged = [];
     for(let i = 0; i < appConfigs.length; i+=1) {
         const thisCfg = appConfigs[i];
+        let theseItems = previous;
+        if(thisCfg._key.includes('channel_') || thisCfg._key.includes('category_')) {
+            theseItems = previous.filter((e) => e.channelId === msg.channelId);
+        }
         flagged = normalKeysCheck.filter((check) => {
             if(typeof thisCfg[check] !== 'string') return false;
             if(typeof thisObj[check] !== 'number' || thisObj[check] < 1) return false;
@@ -174,8 +188,10 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
             const dur = Math.floor((+trigger.split('/')[1])*1000);
             const after = msgTs-dur;
-            return exceedsThreshold(previous, check, count, after);
+            return exceedsThreshold(theseItems, check, count, after);
         });
+        const dupes = await checkDuplicates(msg, theseItems);
+        console.log(dupes.length);
         if(flagged.length > 0) {
             
             const cleanDuration = typeof thisCfg.cleanDuration === 'number' ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
@@ -209,7 +225,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                   }
             }
             if(thisCfg.clean === true) {
-                const messagesToClear = previous.filter((item) => {
+                const messagesToClear = theseItems.filter((item) => {
                     for(const key in item) {
                         if(typeof key !== 'string' || !flagged.includes(key)) continue;
                         if(typeof item[key] === 'number' && item[key] > 0) {
