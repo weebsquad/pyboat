@@ -1,10 +1,10 @@
-import { config, globalConfig, Ranks, guildId, ConfigError } from '../config';
-import { UrlRegex, EmojiRegex, InviteRegex, ZalgoRegex, AsciiRegex } from '../constants/constants';
+import { config, guildId, ConfigError } from '../config';
+import { UrlRegex, InviteRegex, ZalgoRegex, AsciiRegex } from '../constants/constants';
 import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
-import { getUserTag, getMemberTag } from './logging/main';
+import { getMemberTag } from './logging/main';
 import * as infractions from './infractions';
-import { BitField, Permissions } from '../lib/utils';
+import { Permissions } from '../lib/utils';
 
 const kvPool = new pylon.KVNamespace('censor');
 

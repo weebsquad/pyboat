@@ -231,6 +231,9 @@ const defaultConfig = { // for non-defined configs!
       categories: {},
       levels: {},
     },
+    antiSpam: {
+      enabled: true,
+    },
   },
 };
 export const guildConfigs = <any>{};

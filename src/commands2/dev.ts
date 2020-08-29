@@ -8,6 +8,7 @@ import * as infractions from '../modules/infractions';
 import * as utilities from '../modules/utilities';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
+import * as antiSpam from '../modules/antiSpam';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -265,6 +266,34 @@ export function InitializeCommands() {
         const now = Date.now();
         await censor.clean();
         await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'asSave', async (m) => {
+        const now = Date.now();
+        const res = await antiSpam.saveToPool(m);
+        await m.reply(`${res} - Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'asclean', async (m) => {
+        const now = Date.now();
+        await antiSpam.cleanPool();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'asclear', async (m) => {
+        const now = Date.now();
+        await new pylon.KVNamespace('antiSpam').clear();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'asget', async (m) => {
+        const now = Date.now();
+        const res = await antiSpam.getAllPools();
+        await m.reply(`Done - ${res.length} - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(

@@ -12,7 +12,7 @@ import * as antiSpam from './antiSpam';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
-  antiSpam: antiSpam,
+  antiSpam,
   censor,
   antiPing,
   counting,

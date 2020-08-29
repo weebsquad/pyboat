@@ -584,7 +584,10 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (channel === null || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
     return;
   }
-  const message = await channel.getMessage(msgId);
+  let message;
+  try {
+  message = await channel.getMessage(msgId);
+  }  catch(e) {return;}
 
   let actualMsg;
   if (isBoardMsg) {
