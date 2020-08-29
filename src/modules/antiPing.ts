@@ -189,7 +189,12 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
 async function messageDeleted(messageId: string) {
   //const data:any = await kv.get(kvDataKey);
   await kv.transact(kvDataKey, function(prev: any) {
-  const data = {...prev};
+  let data;
+    if(typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
+    }
   for (const userId in data) {
     for (const mId in data[userId]) {
       const obj = data[userId][mId].BotReplyMsg;
@@ -217,10 +222,14 @@ export async function periodicDataClear() {
       }
     }
   }
-  console.log('toRem', toRem);
   if(toRem.length > 0) {
     await kv.transact(kvDataKey, function(prev: any) {
-      const _cp = {...prev};
+      let _cp;
+    if(typeof prev === 'object') {
+      _cp = JSON.parse(JSON.stringify(prev));
+    } else {
+      _cp = {};
+    }
       for (const userId in _cp) {
         for (const mId in _cp[userId]) {
           if(toRem.includes(mId)) {
@@ -243,7 +252,12 @@ async function clearUserData(userId: string) {
     await kv.put(kvIgnoresKey, ignores);
   }
   await kv.transact(kvDataKey, function(prev: any) {
-    const _new = {...prev};
+    let _new;
+    if(typeof prev === 'object') {
+      _new = JSON.parse(JSON.stringify(prev));
+    } else {
+      _new = {};
+    }
     if(typeof(_new[userId]) === 'object') delete _new[userId];
     return _new;
   });
@@ -340,12 +354,12 @@ export async function OnMessageCreate(
   const msg = config.modules.antiPing.caughtMessages[
     Math.floor(Math.random() * config.modules.antiPing.caughtMessages.length)
   ];
-
+  const data = await kv.get(kvDataKey);
   let isMute = false;
-  if (typeof config.modules.antiPing.pingsForAutoMute === 'number' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
+  if (typeof data === 'object' && typeof config.modules.antiPing.pingsForAutoMute === 'number' && typeof data[author.id] === 'object' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
-      const res = await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
+      await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
     } catch (e) {
       isMute = false; // fallback meme
     }
@@ -421,7 +435,12 @@ export async function OnMessageCreate(
   }
 
   await kv.transact(kvDataKey, function(prev: any) {
-    let data = {...prev};
+    let data;
+    if(typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
+    }
     if (typeof data !== 'object') {
       data = {};
     }
@@ -628,6 +647,9 @@ export async function OnMessageReactionAdd(id: string,
       await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
     await wipeAllUserMessages(userMsg.authorId, wipeAll);
+    if(emojiAction.toLowerCase() === 'ignore' || emojiAction.toLowerCase() === 'ignoreonce') {
+      await clearUserData(userMsg.authorId);
+    }
   }
 }
 

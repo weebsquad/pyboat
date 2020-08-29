@@ -31,6 +31,7 @@ class MessageEntry {
       this.id = message.id;
       this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.content = cleanString(message.content);
+      this.mentions = message.mentions.length > 0 ? message.mentions.length : undefined;
       if(this.content.includes('\n')) {
           this.newlines = this.content.split('\n').length-1;
       }
@@ -164,7 +165,6 @@ export function cleanString(str: string) {
 export function checkDuplicateContent(msg: discord.GuildMemberMessage, items: Array<MessageEntry>): Array<MessageEntry> {
     let toRet = [];
     let cleanContent = cleanString(msg.content);
-    console.log('cleanContent: ',cleanContent);
     toRet = items.filter((item) => {
         if(msg.id === item.id) return false;
         const thisCont = item.content;
@@ -309,18 +309,43 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                         channelMapping[e.channelId].push(e.id);
                     });
                     if(flagged.includes('mentions')) {
+                        // push our antiping stuff
                         const pingkv = antiping.kv;
                         const data:any = await pingkv.get(antiping.kvDataKey);
                         if(typeof data === 'object') {
                         let antiPingMessages = [];
                         for (const userId in data) {
+                            if(thisCfg._key !== 'antiRaid' && userId !== msg.author.id) continue;
                             for (const mId in data[userId]) {
                                 const obj = data[userId][mId];
                                 if(typeof(obj) === 'object') {
                                     const BotReply = data[userId][mId].BotReplyMsg;
                                     const Original = data[userId][mId].OriginalMsg;
+                                    const isValid = messagesToClear.find((e) => e.id === Original.id);
+                                    if(!isValid) continue;
+                                    antiPingMessages.push(mId);
+                                    if(!Array.isArray(channelMapping[BotReply.channelId])) channelMapping[BotReply.channelId] = [];
+                                    if(!channelMapping[BotReply.channelId].includes(BotReply.id)) {
+                                        channelMapping[BotReply.channelId].push(BotReply.id);
+                                    }
                                 }
                             }
+                        }
+                        if(antiPingMessages.length > 0) {
+                            // we dont really care if this fails because the periodic clear will clear it eventually regardless
+                            try {
+                                await pingkv.transact(antiping.kvDataKey, function(prev) {
+                                    let data = JSON.parse(JSON.stringify(prev));
+                                    for (const userId in data) {
+                                        if(thisCfg._key !== 'antiRaid' && userId !== msg.author.id) continue;
+                                        for (const mId in data[userId]) {
+                                            if(!antiPingMessages.includes(mId)) continue;
+                                            delete data[userId][mId];
+                                        }
+                                    }
+                                    return data;
+                                });
+                            } catch(e) {}
                         }
                     }
 
@@ -407,8 +432,17 @@ export async function OnMessageCreate(
         messages: discord.Event.IMessageDeleteBulk,
       ) {
           const dt = Date.now();
+          if(messages.ids.length > 8) {
+              // transact .... ?
+              await pylon.requestCpuBurst(async function() {
+            await Promise.all(messages.ids.map(async function(msg) {
+                await editPool(null, msg);
+              }));
+            });
+          } else {
           await Promise.all(messages.ids.map(async function(msg) {
             await editPool(null, msg);
           }));
+        }
           console.log(`Took ${Date.now()-dt}ms to process antiSpam bulkdelete of ${messages.ids.length} messages`);
       }

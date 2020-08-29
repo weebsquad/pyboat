@@ -243,15 +243,15 @@ const defaultConfig = { // for non-defined configs!
           cleanDuration: 90, // seconds
           action: "TEMPMUTE",
           actionDuration: "1m",
-          characters: "400/20",
-          messages: "4/5",
+          //characters: "400/20",
+          //messages: "4/5",
           newlines: "3/10",
           emoji: "20/5",
-          attachments: "2/10",
-          links: "3/10",
-          mentions: "2/6",
+          //attachments: "2/10",
+          //links: "3/10",
+          mentions: "10/120",
           duplicateAttachments: "1/20",
-          duplicateMessages: "2/20"
+          //duplicateMessages: "2/20"
         }
       }
     },
@@ -297,7 +297,7 @@ export async function InitializeConfig(bypass = false) {
       if (typeof config !== 'undefined' || !loadingConf) {
         break;
       }
-      if ((Date.now() - start) >= 14000) {
+      if ((Date.now() - start) >= 10000) {
         break;
       }
       await sleep(400);

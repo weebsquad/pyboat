@@ -18,13 +18,13 @@ const _cr: {[key: string]: any} = {
       await pylon.requestCpuBurst(async function() {
         let dt = Date.now();
         await ratelimit.clean();
-        console.log(`Ratelimit clean took ${Date.now()-dt}ms`);
+        //console.log(`Ratelimit clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         await cleanPool();
-        console.log(`Translation clean took ${Date.now()-dt}ms`);
+        //console.log(`Translation clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         queue.cleanQueue();
-        console.log(`Queue clean took ${Date.now()-dt}ms`);
+        //console.log(`Queue clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         await every5Min();
         console.log(`Infractions clean took ${Date.now()-dt}ms`);
@@ -33,13 +33,13 @@ const _cr: {[key: string]: any} = {
         console.log(`Starboard clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         await censor.clean();
-        console.log(`Censor clean took ${Date.now()-dt}ms`);
+        //console.log(`Censor clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         await antiSpam.cleanPool();
         console.log(`AntiSpam clean took ${Date.now()-dt}ms`);
         dt = Date.now();
         await antiPing.periodicDataClear();
-        console.log(`AntiPing clean took ${Date.now()-dt}ms`);
+        //console.log(`AntiPing clean took ${Date.now()-dt}ms`);
 
       });
       console.log(`Took ${Date.now()-now}ms to execute cron`);

@@ -19,7 +19,6 @@ import * as ratelimit from './ratelimit';
 import {
   addToQueue,
   QueuedEvent,
-  checkObject,
   getProcQueueSize,
   resolveQueue,
 } from './queue';
