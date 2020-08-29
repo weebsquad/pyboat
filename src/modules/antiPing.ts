@@ -453,9 +453,11 @@ export async function OnMessageCreate(
     };
     return data;
   });
+  try {
   for (const key in config.modules.antiPing.emojiActions) {
     await msgReply.addReaction(key.split(' ').join(''));
   }
+} catch(e) {}
 
   return false; // So nothing else runs :))
 }
