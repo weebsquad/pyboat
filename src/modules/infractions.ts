@@ -162,24 +162,22 @@ export async function getInfractions() {
 }
 export async function every5Min() {
   try {
-    const now = Date.now();
     const infs = (await getInfractionBy({
       active: true,
     }));
     const actives = infs.filter((inf) => inf.active && inf.isExpired());
     if (actives.length > 0) {
       const promises2 = [];
-      actives.forEach((inf) => {
+      for(var i = 0; i < actives.length; i+=1) {
+        const inf = actives[i];
         if (inf.isExpired()) {
+          await sleep(100);
           promises2.push(inf.checkExpired());
         }
-      });
+      }
+      
       await Promise.all(promises2);
     }
-    const diff = Date.now() - now;
-    /* if (actives.length > 0) {
-      console.log(`Every5min Took ${diff}ms to pass thru ${actives.length} inf keys (~${Math.floor(diff / actives.length)}ms per key)`);
-    } */
   } catch (e) {
     console.error(e);
   }

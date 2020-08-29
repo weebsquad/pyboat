@@ -13,13 +13,15 @@ const _cr: {[key: string]: any} = {
     name: 'every_5_min',
     async function() {
       const now = Date.now();
-      await ratelimit.clean();
-      await cleanPool();
-      queue.cleanQueue();
-      await every5Min();
-      await starboard.periodicClear();
-      await censor.clean();
-      await antiSpam.cleanPool();
+      await pylon.requestCpuBurst(async function() {
+        await ratelimit.clean();
+        await cleanPool();
+        queue.cleanQueue();
+        await every5Min();
+        await starboard.periodicClear();
+        await censor.clean();
+        await antiSpam.cleanPool();
+      });
       console.log(`Took ${Date.now()-now}ms to execute cron`);
     },
     started: false,
