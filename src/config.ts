@@ -268,8 +268,12 @@ export let config: any;
 let loadingConf = false;
 export async function InitializeConfig(bypass = false) {
   if (loadingConf === true && !bypass) {
+    const start = Date.now();
     while (typeof config === 'undefined' && loadingConf) {
       if (typeof config !== 'undefined' || !loadingConf) {
+        break;
+      }
+      if ((Date.now() - start) >= 14000) {
         break;
       }
       await sleep(400);
@@ -280,7 +284,7 @@ export async function InitializeConfig(bypass = false) {
     config = undefined;
   }
   loadingConf = true;
-  // await sleep(2000);
+
   try {
     const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
     for (const k in globs) {
@@ -289,48 +293,37 @@ export async function InitializeConfig(bypass = false) {
     }
   } catch (e) {
     console.error(e);
+    return false;
   }
   if (globalConfig.disabled && globalConfig.disabled === true) {
+    console.error('Disabled');
     loadingConf = false;
     config = undefined;
     return false;
   }
   if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+    console.error('Not whitelisted');
     config = undefined;
     loadingConf = false;
-    return;
+    return false;
   }
   const vers = await pylon.kv.get('__botVersion');
   if (!vers || vers !== globalConfig.version) {
-    // update!
     await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
     await pylon.kv.put('__botVersion', globalConfig.version);
   }
 
-  // let cfg: any = await pylon.kv.get('__guildConfig');
   const items = await configKv.items();
   let cfg: any;
   if (items.length > 0) {
     const mapped = items.map((item) => item.value).join('');
     cfg = JSON.parse(mapped);
-    // console.log(cfg.modules.antiPing.emojiActions);
-    /* if( typeof cfg.modules === 'object' && typeof cfg.modules.antiPing === 'object' && typeof cfg.modules.antiPing.emojiActions === 'object') {
-      console.log('checking antiping shit');
-      for(const key in cfg.modules.antiPing.emojiActions) {
-        //let keyNew = key.replace(/([0-9a-fA-F]+)/ig, (match, hex) => String.fromCodePoint(Number.parseInt(hex, 16)));
-        //let keyNew = key.replace(/\\u([0-9A-F]{4})/ig, (_, g) => String.fromCharCode(Number.parseInt(g, 16)));
-        //if(keyNew !== key) console.log('keyNew', keyNew);
-        //cfg.modules.antiPing.emojiActions[keyNew] = cfg.modules.antiPing.emojiActions[key];
-        //delete cfg.modules.antiPing.emojiActions[key];
-      }
-      console.log(cfg.modules.antiPing.emojiActions);
-    } */
   }
-  // console.log('loaded: ', cfg);
   if (typeof guildConfigs[guildId] !== 'undefined') {
     cfg = guildConfigs[guildId];
   }
   if (typeof cfg !== 'object') {
+    console.error('No config');
     cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
 

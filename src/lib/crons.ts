@@ -28,7 +28,10 @@ async function onCron(name: string) {
       continue;
     }
     if (typeof conf.config === 'undefined') {
-      await conf.InitializeConfig();
+      const res = await conf.InitializeConfig();
+      if (res === false) {
+        return;
+      }
     }
     await _cr[key].function();
     await logDebug(
