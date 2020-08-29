@@ -210,6 +210,30 @@ async function messageDeleted(messageId: string) {
   return data;
 });
 }
+async function messagesDeleted(messageIds: Array<string>) {
+  //const data:any = await kv.get(kvDataKey);
+  await kv.transact(kvDataKey, function(prev: any) {
+  let data;
+    if(typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
+    }
+  for (const userId in data) {
+    for (const mId in data[userId]) {
+      const obj = data[userId][mId].BotReplyMsg;
+      if(messageIds.includes(obj.id)) {
+        delete data[userId][mId];
+        break;
+      }
+    }
+    if (Object.keys(data[userId]).length === 0) {
+      delete data[userId];
+    }
+  }
+  return data;
+});
+}
 
 export async function periodicDataClear() {
   const data:any = await kv.get(kvDataKey);
@@ -472,10 +496,7 @@ export async function OnMessageDelete(id: string,
 export async function OnMessageDeleteBulk(id: string,
                                           guildId: string,
                                           ev: discord.Event.IMessageDeleteBulk) {
-  // check if deleted message is bot's reply
-  for (const key in ev.ids) {
-    await messageDeleted(key);
-  }
+  await messagesDeleted(ev.ids);
 }
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {

@@ -143,6 +143,14 @@ export function escapeString(string) {
   return string;
 }
 export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
+
+export function chunkArrayInGroups(arr, size) {
+  var myArray = [];
+  for(var i = 0; i < arr.length; i += size) {
+    myArray.push(arr.slice(i, i+size));
+  }
+  return myArray;
+}
 export function chunkify(a: Array<any>, n: number, balanced: boolean = false) {
   if (n < 2) {
     return [a];

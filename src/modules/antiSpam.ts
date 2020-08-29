@@ -1,8 +1,9 @@
 import {ConfigError, guildId, config} from '../config'
 import * as utils from '../lib/utils';
 import * as infractions from './infractions';
-import { AsciiRegex } from '../constants/discord';
+import { AsciiRegex, UrlRegex } from '../constants/discord';
 import * as antiping from './antiPing'
+import * as constants from '../constants/constants';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 const poolsKv = new pylon.KVNamespace('antiSpam');
@@ -20,10 +21,11 @@ class MessageEntry {
     content: string;
     characters: number | undefined = undefined;
     attachments: number | undefined = undefined;
-    attachmentHashes: Array<string> | undefined = undefined;
+    //attachmentHashes: Array<string> | undefined = undefined;
     newlines: number | undefined = undefined;
     mentions: number | undefined = undefined;
     links: number | undefined = undefined;
+    emoji: number | undefined = undefined;
     constructor(message: discord.GuildMemberMessage) {
       this.attachments = message.attachments.length > 0 ? message.attachments.length : undefined;
       this.authorId = message.author.id;
@@ -31,11 +33,19 @@ class MessageEntry {
       this.id = message.id;
       this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.content = cleanString(message.content);
+      this.characters = this.content.length;
       this.mentions = message.mentions.length > 0 ? message.mentions.length : undefined;
       if(this.content.includes('\n')) {
           this.newlines = this.content.split('\n').length-1;
       }
-      this.characters = this.content.length;
+      const links = message.content.match(UrlRegex);
+      if(Array.isArray(links) && links.length > 0) this.links = links.length;
+      let emj = 0;
+      const normalEmoji1 = message.content.match(new RegExp('[\uD83C-\uDBFF\uDC00-\uDFFF]+', 'gi'));
+      if(Array.isArray(normalEmoji1)) emj += normalEmoji1.length;
+      const customEmoji = message.content.match(constants.EmojiRegex);
+      if(Array.isArray(customEmoji)) emj += customEmoji.length;
+      if(emj > 0) this.emoji = emj;
     }
 }
 export function getApplicableConfigs(member: discord.GuildMember, channel: discord.GuildChannel | undefined = undefined): Array<any> {
@@ -154,6 +164,31 @@ export async function getMessagesBy(userId: string) {
     return ps;
 }
 
+export async function editPools(ids: Array<string>, callback: Function) {
+    const items = await poolsKv.items();
+    let transactPools = items.filter((item: any) => {
+        if(Array.isArray(item.value)) {
+            const _val: Array<MessageEntry> = item.value;
+            const hasAny = _val.find((entry) => ids.includes(entry.id));
+            if(!hasAny) return false;
+            return true;
+        }
+        return false;
+    })
+    if(transactPools.length > 0) {
+        await Promise.all(transactPools.map(async function(item) {
+            await poolsKv.transact(item.key, function(prev: any) {
+                let dt: Array<MessageEntry> = JSON.parse(JSON.stringify(prev))
+                dt = dt.map((val) => callback(val))
+                return dt;
+            });
+        }))
+        return true;
+    }
+    return false;
+    
+}
+
 export function cleanString(str: string) {
     let _str = str + '';
     _str = _str.toLowerCase().replace(AsciiRegex, "");
@@ -169,6 +204,7 @@ export function checkDuplicateContent(msg: discord.GuildMemberMessage, items: Ar
         if(msg.id === item.id) return false;
         const thisCont = item.content;
         const len = thisCont.length;
+        if(len === 0 && item.attachments > 0) return false;
         if(len < 4) return thisCont === cleanContent;
         const similarity = (utils.stringSimilarity(cleanContent, thisCont))*100;
         return similarity > 90;
@@ -198,7 +234,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     if(!thisObj || previous.length === 0) return;
     let appConfigs = getApplicableConfigs(member, channel);
     if (typeof config.modules.antiSpam === 'object' && typeof config.modules.antiSpam.antiRaid === 'object') {
-        appConfigs.push({_key: 'antiRaid', ...config.modules.antiSpam.antiRaid});
+        appConfigs.unshift({_key: 'antiRaid', ...config.modules.antiSpam.antiRaid});
     }
     if(appConfigs.length === 0) return;
     const normalKeysCheck = ['newlines', 'attachments', 'emoji', 'mentions', 'links'];
@@ -209,7 +245,10 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         if(thisCfg._key.includes('channel_') || thisCfg._key.includes('category_')) {
             theseItems = previous.filter((e) => e.channelId === msg.channelId);
         }
-        if(thisCfg._key === 'antiRaid') continue;
+        if(thisCfg._key === 'antiRaid') {
+            theseItems = await getAllPools();
+            continue;
+        }
         flagged = normalKeysCheck.filter((check) => {
             if(typeof thisCfg[check] !== 'string') return false;
             if(typeof thisObj[check] !== 'number' || thisObj[check] < 1) return false;
@@ -342,6 +381,9 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                                             if(!antiPingMessages.includes(mId)) continue;
                                             delete data[userId][mId];
                                         }
+                                        if (Object.keys(data[userId]).length === 0) {
+                                            delete data[userId];
+                                        }
                                     }
                                     return data;
                                 });
@@ -366,7 +408,14 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                                 }
                                 const mIds = channelMapping[channelId];
                                 if(mIds.length >= 2) {
-                                    await thisChan.bulkDeleteMessages(mIds);
+                                    if(mIds.length > 100) {
+                                        const splits = utils.chunkArrayInGroups(mIds, 99);
+                                        await Promise.all(splits.map(async function(newmids) {
+                                            await thisChan.bulkDeleteMessages(newmids);
+                                        }));
+                                    } else {
+                                        await thisChan.bulkDeleteMessages(mIds);
+                                    }
                                 } else {
                                     try {
                                         const mid = mIds[0];
@@ -432,17 +481,10 @@ export async function OnMessageCreate(
         messages: discord.Event.IMessageDeleteBulk,
       ) {
           const dt = Date.now();
-          if(messages.ids.length > 8) {
-              // transact .... ?
-              await pylon.requestCpuBurst(async function() {
-            await Promise.all(messages.ids.map(async function(msg) {
-                await editPool(null, msg);
-              }));
+            await editPools(messages.ids, function(val: MessageEntry) {
+                if(messages.ids.includes(val.id)) val.deleted = true;
+                return val;
             });
-          } else {
-          await Promise.all(messages.ids.map(async function(msg) {
-            await editPool(null, msg);
-          }));
-        }
+
           console.log(`Took ${Date.now()-dt}ms to process antiSpam bulkdelete of ${messages.ids.length} messages`);
       }

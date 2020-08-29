@@ -248,9 +248,9 @@ const defaultConfig = { // for non-defined configs!
           newlines: "3/10",
           emoji: "20/5",
           //attachments: "2/10",
-          //links: "3/10",
-          mentions: "10/120",
-          duplicateAttachments: "1/20",
+          links: "3/10",
+          mentions: "16/120",
+          //duplicateAttachments: "1/20",
           //duplicateMessages: "2/20"
         }
       }
