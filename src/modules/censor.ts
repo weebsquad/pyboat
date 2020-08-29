@@ -508,7 +508,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   if (!(message instanceof discord.GuildMemberMessage)) {
     return;
   }
-  if (utils.isGlobalAdmin(message.author.id)) {
+  if (utils.isGlobalAdmin(message.author.id) && guildId !== "307927177154789386") {
     return;
   }
   const channel = await message.getChannel();
@@ -623,7 +623,7 @@ export async function OnMessageUpdate(
 }
 
 export async function checkName(eventId: string, member: discord.GuildMember) {
-  if (utils.isGlobalAdmin(member.user.id)) {
+  if (utils.isGlobalAdmin(member.user.id) && guildId !== "307927177154789386") {
     return;
   }
   const guild = await member.getGuild();
