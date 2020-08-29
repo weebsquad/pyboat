@@ -123,6 +123,7 @@ const eventFilters = <any>{
       if (deepCompare(message, oldMessage)) {
         return true;
       }
+      if(oldMessage !== null && message.content === oldMessage.content) return true;
     },
     MESSAGE_DELETE: (ev: discord.Event.IMessageDelete, msg: discord.Message.AnyMessage) => {
       if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) {
