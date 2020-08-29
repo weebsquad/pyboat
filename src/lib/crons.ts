@@ -7,20 +7,40 @@ import { cleanPool } from '../modules/translation';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam'
+import * as antiPing from '../modules/antiPing';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
+      console.log('\n\nRunning cron');
       const now = Date.now();
       await pylon.requestCpuBurst(async function() {
+        let dt = Date.now();
         await ratelimit.clean();
+        console.log(`Ratelimit clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         await cleanPool();
+        console.log(`Translation clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         queue.cleanQueue();
+        console.log(`Queue clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         await every5Min();
+        console.log(`Infractions clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         await starboard.periodicClear();
+        console.log(`Starboard clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         await censor.clean();
+        console.log(`Censor clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
         await antiSpam.cleanPool();
+        console.log(`AntiSpam clean took ${Date.now()-dt}ms`);
+        dt = Date.now();
+        await antiPing.periodicDataClear();
+        console.log(`AntiPing clean took ${Date.now()-dt}ms`);
+
       });
       console.log(`Took ${Date.now()-now}ms to execute cron`);
     },

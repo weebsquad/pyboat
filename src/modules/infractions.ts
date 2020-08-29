@@ -165,13 +165,13 @@ export async function every5Min() {
     const infs = (await getInfractionBy({
       active: true,
     }));
-    const actives = infs.filter((inf) => inf.active && inf.isExpired());
+    const actives = infs.filter((inf) => inf.active === true && inf.isExpired());
     if (actives.length > 0) {
       const promises2 = [];
       for(var i = 0; i < actives.length; i+=1) {
         const inf = actives[i];
         if (inf.isExpired()) {
-          await sleep(300);
+          await sleep(200);
           promises2.push(inf.checkExpired());
         }
       }

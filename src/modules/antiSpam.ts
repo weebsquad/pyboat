@@ -2,6 +2,7 @@ import {ConfigError, guildId, config} from '../config'
 import * as utils from '../lib/utils';
 import * as infractions from './infractions';
 import { AsciiRegex } from '../constants/discord';
+import * as antiping from './antiPing'
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 const poolsKv = new pylon.KVNamespace('antiSpam');
@@ -29,10 +30,11 @@ class MessageEntry {
       this.channelId = message.channelId;
       this.id = message.id;
       this.ts = utils.decomposeSnowflake(this.id).timestamp;
-      this.content = message.content;
+      this.content = cleanString(message.content);
       if(this.content.includes('\n')) {
           this.newlines = this.content.split('\n').length-1;
       }
+      this.characters = this.content.length;
     }
 }
 export function getApplicableConfigs(member: discord.GuildMember, channel: discord.GuildChannel | undefined = undefined): Array<any> {
@@ -165,7 +167,7 @@ export function checkDuplicateContent(msg: discord.GuildMemberMessage, items: Ar
     console.log('cleanContent: ',cleanContent);
     toRet = items.filter((item) => {
         if(msg.id === item.id) return false;
-        const thisCont = cleanString(item.content);
+        const thisCont = item.content;
         const len = thisCont.length;
         if(len < 4) return thisCont === cleanContent;
         const similarity = (utils.stringSimilarity(cleanContent, thisCont))*100;
@@ -299,12 +301,30 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                 });
                 console.log(`msgstoclear : ${messagesToClear.length}`);
                 if(messagesToClear.length > 0) {
+                    // todo: check antiping if this is a flag for mentions and add those messages here as well
+                    
                     let channelMapping: {[key: string]: Array<string>} = {}
                     messagesToClear.forEach((e) => {
                         if(!Array.isArray(channelMapping[e.channelId])) channelMapping[e.channelId] = [];
                         channelMapping[e.channelId].push(e.id);
                     });
-                    // todo: check antiping if this is a flag for mentions and add those messages here as well
+                    if(flagged.includes('mentions')) {
+                        const pingkv = antiping.kv;
+                        const data:any = await pingkv.get(antiping.kvDataKey);
+                        if(typeof data === 'object') {
+                        let antiPingMessages = [];
+                        for (const userId in data) {
+                            for (const mId in data[userId]) {
+                                const obj = data[userId][mId];
+                                if(typeof(obj) === 'object') {
+                                    const BotReply = data[userId][mId].BotReplyMsg;
+                                    const Original = data[userId][mId].OriginalMsg;
+                                }
+                            }
+                        }
+                    }
+
+                    }
                     const me = await guild.getMember(discord.getBotId());
                     if(me !== null) {
                         let promises = [];
@@ -345,7 +365,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             if(typeof thisCfg.stop === 'boolean' && thisCfg.stop === true) break;
         }
 }  
-return flaggedOnce;
+return !flaggedOnce;
 }
 
 export async function OnMessageCreate(
