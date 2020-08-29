@@ -234,7 +234,29 @@ export function InitializeCommands() {
     sub.raw(
       'clearsb', async (m) => {
         const now = Date.now();
+        await starboard.periodicClear();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'clearsball', async (m) => {
+        const now = Date.now();
         await starboard.clearData();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'sbstats', async (m) => {
+        const now = Date.now();
+        const keys = await starboard.getStats();
+        console.log(keys);
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'clearsbstats', async (m) => {
+        const now = Date.now();
+        await starboard.clearStats();
         await m.reply(`Done (Took ${Date.now() - now}ms)`);
       },
     );
