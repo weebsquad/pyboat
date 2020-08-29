@@ -8,9 +8,11 @@ import * as utilities from './utilities';
 import * as infractions from './infractions';
 import * as starboard from './starboard';
 import * as censor from './censor';
+import * as antiSpam from './antiSpam';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
+  antiSpam: antiSpam,
   censor,
   antiPing,
   counting,
