@@ -5,7 +5,7 @@ import * as c2 from '../lib/commands2';
 
 const MAX_LIFETIME = 336;
 const prefixKvMessages = 'Starboard_messages_';
-const prefixKvMessagesStats = 'Starboard_stats_'
+const prefixKvMessagesStats = 'Starboard_stats_';
 const seperator = '|';
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
@@ -103,13 +103,19 @@ export class StarredMessage {
     private async awardStats() {
       const stats = await getStats();
       const uniqueReactors = this.reactors.filter((e) => e !== this.author).length;
-      //const uniqueReactors = this.reactors.length;
-      if(uniqueReactors === 0) return;
-      console.log(`Awarding stats for ${this.id}`, this.reactors);
-      let authorStats: StarStats = stats.find((e) => e.id === this.author);
-      if(!authorStats) authorStats = utils.makeFake({id: this.author, given:0, received: 0}, StarStats);
+      // const uniqueReactors = this.reactors.length;
+      if (uniqueReactors === 0) {
+        return;
+      }
+      let authorStats: StarStats | undefined = stats.find((e) => e.id === this.author);
+      if (!authorStats) {
+        authorStats = utils.makeFake({ id: this.author, given: 0, received: 0 }, StarStats);
+      }
+
+      const _Key = authorStats.getKey();
       authorStats.received += uniqueReactors;
-      await utils.KVManager.set(authorStats.getKey(), 0);
+      await authorStats.update(_Key);
+      // await utils.KVManager.set(authorStats.getKey(), 0);
       /*
       for(var i = 0; i < this.reactors.length; i++) {
         //if(this.reactors[i] === this.author) continue;
@@ -117,9 +123,7 @@ export class StarredMessage {
         if(!_f) _f = utils.makeFake({id: this.reactors[i], given:0, received: 0}, StarStats);
         _f.given+=1;
         await utils.KVManager.set(_f.getKey(), 0);
-      }
-      console.log(`Done Stats, took ${Date.now()-dt}ms total, = ${Math.ceil((Date.now()-dt)/uniqueReactors)}ms per reactor`);*/
-
+      } */
     }
     private async needsUpdate() {
       const channel = await discord.getChannel(this.publishData.channelId);
@@ -211,16 +215,23 @@ export class StarredMessage {
       return false;
     }
     getKey() {
-      return `${prefixKvMessages}${this.publishData.channelId}${seperator}${this.id}`
+      return `${prefixKvMessages}${this.publishData.channelId}${seperator}${this.id}`;
     }
 }
 
 export class StarStats {
   id: string;
-  given: number = 0;
-  received: number = 0;
+  given = 0;
+  received = 0;
+  async update(oldKey) {
+    if (oldKey === this.getKey()) {
+      return;
+    }
+    await utils.KVManager.delete(oldKey);
+    await utils.KVManager.set(this.getKey(), 0);
+  }
   getKey() {
-    return `${prefixKvMessagesStats}${this.id}${seperator}${this.given}${seperator}${this.received}`
+    return `${prefixKvMessagesStats}${this.id}${seperator}${this.given}${seperator}${this.received}`;
   }
 }
 async function checkKey(key: string) {
@@ -290,11 +301,14 @@ export async function periodicClear() {
 }
 export async function getStats(userId: string | undefined = undefined): Promise<Array<StarStats>> {
   let keys: Array<StarStats> = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessagesStats.length) === prefixKvMessagesStats).map((e) => {
-    let vals = e.substr(prefixKvMessagesStats.length+1).split(seperator);
+    const vals = e.substr(prefixKvMessagesStats.length).split(seperator);
     const [id, given, received] = vals;
-    return utils.makeFake({id: id, given:+given, received: +received}, StarStats)});
-    if(typeof userId === 'string') keys = keys.filter((e) => e.id === userId);
-    return keys;
+    return utils.makeFake({ id, given: +given, received: +received }, StarStats);
+  });
+  if (typeof userId === 'string') {
+    keys = keys.filter((e) => e.id === userId);
+  }
+  return keys;
 }
 export async function clearStats() {
   const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessagesStats.length) === prefixKvMessagesStats);
@@ -349,9 +363,7 @@ export async function OnMessageDelete(
   if (isLocked === true) {
     return;
   }
-  const keys = (await utils.KVManager.listKeys()).find((e) => {
-    return e.substr(0, prefixKvMessages.length) === prefixKvMessages && e.substr(prefixKvMessages.length).split(seperator)[1] === messageDelete.id
-  });
+  const keys = (await utils.KVManager.listKeys()).find((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages && e.substr(prefixKvMessages.length).split(seperator)[1] === messageDelete.id);
   if (keys) {
     let msgData: any = await utils.KVManager.get(keys);
     if (msgData) {
@@ -738,7 +750,6 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   }
 }
 export function InitializeCommands() {
-
   const _groupOptions = {
     description: 'Starboard Commands',
     filters: c2.getFilters('starboard', Ranks.Moderator),
