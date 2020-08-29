@@ -14,8 +14,10 @@ class MessageEntry {
     authorId: string;
     id: string;
     channelId: string;
+    deleted: boolean = false;
     ts: number;
     content: string;
+    characters: number | undefined = undefined;
     attachments: number | undefined = undefined;
     attachmentHashes: Array<string> | undefined = undefined;
     newlines: number | undefined = undefined;
@@ -37,17 +39,17 @@ export function getApplicableConfigs(member: discord.GuildMember, channel: disco
     const toret = [];
     const cfgMod = config.modules.antiSpam;
     if (typeof channel !== 'undefined' && typeof cfgMod.channels === 'object' && Object.keys(cfgMod.channels).includes(channel.id)) {
-      toret.push({ key: `channel_${channel.id}`, ...cfgMod.channels[channel.id] });
+      toret.push({ _key: `channel_${channel.id}`, ...cfgMod.channels[channel.id] });
     }
     if (typeof channel !== 'undefined' && typeof channel.parentId === 'string' && channel.parentId !== '' && channel.type !== discord.Channel.Type.GUILD_CATEGORY && typeof cfgMod.categories === 'object' && Object.keys(cfgMod.categories).includes(channel.parentId)) {
-      toret.push({ key: `category_${channel.parentId}`, ...cfgMod.categories[channel.parentId] });
+      toret.push({ _key: `category_${channel.parentId}`, ...cfgMod.categories[channel.parentId] });
     }
     if (typeof cfgMod.levels === 'object') {
       const auth = utils.getUserAuth(member);
       Object.keys(cfgMod.levels).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
         .map((lvl) => {
           if (typeof lvl === 'number' && lvl >= auth && lvl >= 0) {
-            toret.push({ key: `level_${lvl}`, ...cfgMod.levels[lvl] });
+            toret.push({ _key: `level_${lvl}`, ...cfgMod.levels[lvl] });
           }
         });
     }
@@ -69,16 +71,24 @@ export async function cleanPool() {
         }
     }))
 }
-export async function editPool(msg: discord.GuildMemberMessage) {
-    const newObj = new MessageEntry(msg);
+export async function editPool(msg: discord.GuildMemberMessage | null, msgId: string | undefined = undefined) {
+    let newObj;
+    if(msg !== null) {
+        newObj = new MessageEntry(msg);
+        msgId = msg.id;
+    }
   const items = await poolsKv.items();
-  const res = items.find((item: any) => item.value.find((e: MessageEntry) => e.id === msg.id) !== undefined);
+  const res = items.find((item: any) => item.value.find((e: MessageEntry) => e.id === msgId) !== undefined);
   if(res) {
       for(var i = 0; i <2; i+=1) {
           try {
             await poolsKv.transact(res.key, function(prev: any) {
-                const _ind = prev.findIndex((e: MessageEntry) => e.id === msg.id);
-                if(_ind !== -1) prev[_ind] = newObj;
+                const _ind = prev.findIndex((e: MessageEntry) => e.id === msgId);
+                if(_ind !== -1 && msg !== null) {
+                    prev[_ind] = newObj;
+                } else if(_ind !== -1 && msg === null) {
+                    prev[_ind].deleted = true;
+                }
                 return prev;
             });
             return true;
@@ -140,14 +150,27 @@ export async function getMessagesBy(userId: string) {
     const ps = (await getAllPools()).filter((e) => e.authorId === userId);
     return ps;
 }
-export async function checkDuplicates(msg: discord.GuildMemberMessage, items: Array<MessageEntry>) {
+
+export function cleanString(str: string) {
+    let _str = str + '';
+    _str = _str.toLowerCase().replace(AsciiRegex, "");
+    removeWhenComparing.forEach((e) => { if(_str.includes(e)) {
+        _str = _str.split(e).join('')}
+    });
+    return _str;
+}
+export function checkDuplicateContent(msg: discord.GuildMemberMessage, items: Array<MessageEntry>): Array<MessageEntry> {
     let toRet = [];
-    let cleanContent = msg.content.replace(AsciiRegex, "");
-    removeWhenComparing.forEach((e) => { if(cleanContent.includes(e)) {
-        cleanContent.split(e).join('')
-    }
-});
-    console.log('cleanContent:',cleanContent);
+    let cleanContent = cleanString(msg.content);
+    console.log('cleanContent: ',cleanContent);
+    toRet = items.filter((item) => {
+        if(msg.id === item.id) return false;
+        const thisCont = cleanString(item.content);
+        const len = thisCont.length;
+        if(len < 4) return thisCont === cleanContent;
+        const similarity = (utils.stringSimilarity(cleanContent, thisCont))*100;
+        return similarity > 90;
+    });
     return toRet;
 }
 export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowed: number, after: number) {
@@ -162,6 +185,7 @@ export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowe
     return _matches >= allowed;
 }
 export async function doChecks(msg: discord.GuildMemberMessage) {
+    let flaggedOnce = false;
     const msgTs = utils.decomposeSnowflake(msg.id).timestamp;
     const channel = await msg.getChannel();
     const guild = await msg.getGuild();
@@ -169,7 +193,11 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     if(channel === null || guild === null) return;
     const previous = await getMessagesBy(msg.author.id);
     const thisObj = previous.find((e) => e.id === msg.id);
-    const appConfigs = getApplicableConfigs(member, channel);
+    if(!thisObj || previous.length === 0) return;
+    let appConfigs = getApplicableConfigs(member, channel);
+    if (typeof config.modules.antiSpam === 'object' && typeof config.modules.antiSpam.antiRaid === 'object') {
+        appConfigs.push({_key: 'antiRaid', ...config.modules.antiSpam.antiRaid});
+    }
     if(appConfigs.length === 0) return;
     const normalKeysCheck = ['newlines', 'attachments', 'emoji', 'mentions', 'links'];
     let flagged = [];
@@ -179,6 +207,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         if(thisCfg._key.includes('channel_') || thisCfg._key.includes('category_')) {
             theseItems = previous.filter((e) => e.channelId === msg.channelId);
         }
+        if(thisCfg._key === 'antiRaid') continue;
         flagged = normalKeysCheck.filter((check) => {
             if(typeof thisCfg[check] !== 'string') return false;
             if(typeof thisObj[check] !== 'number' || thisObj[check] < 1) return false;
@@ -190,10 +219,31 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             const after = msgTs-dur;
             return exceedsThreshold(theseItems, check, count, after);
         });
-        const dupes = await checkDuplicates(msg, theseItems);
-        console.log(dupes.length);
+        let duplicateMessages: undefined | Array<MessageEntry>;
+        let repeatedMessages: undefined | Array<MessageEntry>;
+        if(typeof thisCfg.messages === 'string') {
+            const trigger = thisCfg.messages;
+            if(trigger.includes('/')) {
+                const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
+                const dur = Math.floor((+trigger.split('/')[1])*1000);
+                const after = msgTs-dur;
+                repeatedMessages = theseItems.filter((item) => item.ts > after && item.id !== msg.id);
+                if(repeatedMessages.length >= count) flagged.push('messages');
+            }
+        }
+        if(typeof thisCfg.duplicateMessages === 'string') {
+            const trigger = thisCfg.duplicateMessages;
+            if(trigger.includes('/')) {
+                duplicateMessages = checkDuplicateContent(msg, theseItems)
+                const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
+                const dur = Math.floor((+trigger.split('/')[1])*1000);
+                const after = msgTs-dur;
+                duplicateMessages = duplicateMessages.filter((item) => item.ts > after)
+                if(duplicateMessages.length >= count) flagged.push('duplicateMessages');
+            }
+        }
         if(flagged.length > 0) {
-            
+            flaggedOnce = true;
             const cleanDuration = typeof thisCfg.cleanDuration === 'number' ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
             console.log('Flagged!', flagged);
             
@@ -226,31 +276,35 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             }
             if(thisCfg.clean === true) {
                 const messagesToClear = theseItems.filter((item) => {
-                    for(const key in item) {
-                        if(typeof key !== 'string' || !flagged.includes(key)) continue;
+                    if(item.deleted === true) return false;
+                    for(const int in flagged) {
+                        const key = flagged[int];
                         if(typeof item[key] === 'number' && item[key] > 0) {
-                            
                             let dur = cleanDuration !== undefined ? cleanDuration : undefined;
                             if(dur !== undefined) {
-                                console.log('using predefined');
                                 return item.ts > (msgTs-(Math.floor(dur*1000)));
                             } else {
-                                console.log('using automatic');
                                 const trigger = thisCfg[key];
                                 if(typeof trigger !== 'string') continue;
                                 dur = Math.floor((+trigger.split('/')[1])*1000);
                                 return item.ts > (msgTs-dur);
                             }
+                        } else if(key === 'duplicateMessages') {
+                            return duplicateMessages.find((e) => e.id === item.id) !== undefined;
+                        } else if(key === 'messages') {
+                            return repeatedMessages.find((e) => e.id === item.id) !== undefined;
                         }
                     }
                     return false;
                 });
+                console.log(`msgstoclear : ${messagesToClear.length}`);
                 if(messagesToClear.length > 0) {
                     let channelMapping: {[key: string]: Array<string>} = {}
                     messagesToClear.forEach((e) => {
                         if(!Array.isArray(channelMapping[e.channelId])) channelMapping[e.channelId] = [];
                         channelMapping[e.channelId].push(e.id);
                     });
+                    // todo: check antiping if this is a flag for mentions and add those messages here as well
                     const me = await guild.getMember(discord.getBotId());
                     if(me !== null) {
                         let promises = [];
@@ -291,6 +345,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             if(typeof thisCfg.stop === 'boolean' && thisCfg.stop === true) break;
         }
 }  
+return flaggedOnce;
 }
 
 export async function OnMessageCreate(
@@ -301,7 +356,8 @@ export async function OnMessageCreate(
       if(!(message instanceof discord.GuildMemberMessage) || message.author.bot === true || message.webhookId !== null || typeof message.webhookId === 'string' || message.flags !== 0 || !(message.member instanceof discord.GuildMember) || message.type !== discord.Message.Type.DEFAULT) return;
       if(utils.isGlobalAdmin(message.author.id) && guildId !== '307927177154789386') return;
       await saveToPool(message);
-      await doChecks(message);
+      const ret = await doChecks(message);
+      return ret;
   }
   export async function OnMessageUpdate(
     id: string,
@@ -314,5 +370,25 @@ export async function OnMessageCreate(
       const lf = Date.now() - utils.decomposeSnowflake(message.id).timestamp;
       if(lf > MAX_POOL_ENTRY_LIFETIME) return;
         await editPool(message);
-        await doChecks(message);
+        const ret = await doChecks(message);
+        return ret;
     }
+    export async function OnMessageDelete(
+        id: string,
+        gid: string,
+        messageDelete: discord.Event.IMessageDelete
+      ) {
+          await editPool(null, messageDelete.id);
+      }
+
+      export async function OnMessageDeleteBulk(
+        id: string,
+        gid: string,
+        messages: discord.Event.IMessageDeleteBulk,
+      ) {
+          const dt = Date.now();
+          await Promise.all(messages.ids.map(async function(msg) {
+            await editPool(null, msg);
+          }));
+          console.log(`Took ${Date.now()-dt}ms to process antiSpam bulkdelete of ${messages.ids.length} messages`);
+      }

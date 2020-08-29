@@ -243,6 +243,7 @@ const defaultConfig = { // for non-defined configs!
           cleanDuration: 90, // seconds
           action: "TEMPMUTE",
           actionDuration: "1m",
+          characters: "400/20",
           messages: "4/5",
           newlines: "3/10",
           emoji: "20/5",
