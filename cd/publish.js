@@ -129,11 +129,17 @@ _dep.forEach((deployment_id) => {
       } else {
         console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
-          toPost += `✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**\n\n`;
+          toPost = `${toPost}✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**\n\n`;
         }
         if (isDebug && !isGh) {
           // console.log(obj);
           workbenchWs(obj.workbench_url);
+        }
+      }
+    }).then(() => {
+      if (_dep.length === doneGuilds.length) {
+        if (toPost !== '') {
+          sendWebhook(toPost);
         }
       }
     })
@@ -142,7 +148,4 @@ _dep.forEach((deployment_id) => {
       console.error(e);
       process.exit(1);
     });
-  if (toPost !== '') {
-    sendWebhook(toPost);
-  }
 });
