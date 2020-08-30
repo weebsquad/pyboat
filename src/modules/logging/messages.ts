@@ -50,6 +50,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   '|COMMANDS': {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
+  '|ADMIN': {
+    CLEAN: `${discord.decor.Emojis.WASTEBASKET} _ACTORTAG_ cleared _MESSAGES_`
+  },
   '|ANTISPAM': {
     ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,
     ANTIRAID_VIOLATION: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and there were **_DELETED_MESSAGES_** messages deleted.`,

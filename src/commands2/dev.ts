@@ -263,7 +263,7 @@ export function InitializeCommands() {
       'trackingkeys', async (m) => {
         const now = Date.now();
         const res = await new pylon.KVNamespace('admin').list();
-        await m.reply(`Done - ${res.length}keys - (Took ${Date.now() - now}ms)`);
+        await m.reply(`Done - **${res.length} key(s)** - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(

@@ -115,7 +115,10 @@ export function getMemberTag(member: discord.GuildMember) {
   return tg;
 }
 
-export function getUserTag(user: discord.User) {
+export function getUserTag(user: discord.User | discord.GuildMember) {
+  if(user instanceof discord.GuildMember) {
+    user = user.user;
+  }
   const map = new Map([
     ['_TAG_', user.getTag()],
     ['_USERNAME_', user.username],
@@ -272,7 +275,10 @@ export async function parseMessageContent(
   }
   return cont;
 }
-export function getActorTag(user: discord.User) {
+export function getActorTag(user: discord.User | discord.GuildMember) {
+  if(user instanceof discord.GuildMember) {
+    user = user.user;
+  }
   const map = new Map([
     ['_TAG_', user.getTag()],
     ['_USERNAME_', user.username],
