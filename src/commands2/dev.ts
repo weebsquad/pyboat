@@ -154,6 +154,12 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
+      'kvmkeys', async (m) => {
+        const keys = await utils.KVManager.listKeys();
+        await m.reply(`Found ${keys.length} keys!`);
+      },
+    );
+    sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
         embed.setDescription('does this even look good');
