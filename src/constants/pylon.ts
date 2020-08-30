@@ -1,4 +1,4 @@
-export const MAX_KV_SIZE = 7500;
+export const MAX_KV_SIZE = 7900;
 export const discordEventsMap: {[key: string]: any} = {
   CHANNEL_CREATE: discord.Event.CHANNEL_CREATE,
   CHANNEL_DELETE: discord.Event.CHANNEL_DELETE,
