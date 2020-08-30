@@ -280,6 +280,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
+    console.log('highestTarget', highestRoleTarget, highestRoleMe);
     if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
@@ -868,11 +869,15 @@ export function InitializeCommands() {
     { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
+      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      if (member === null) {
+        member = user;
+      }
       if (typeof reason !== 'string') {
         reason = '';
       }
       const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
-      const result = await Ban(user, msg.member, _del, reason);
+      const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to ban user.');
         return;
@@ -933,11 +938,15 @@ export function InitializeCommands() {
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
+      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      if (member === null) {
+        member = user;
+      }
       if (typeof reason !== 'string') {
         reason = '';
       }
       const _del: any = deleteDays; // fuck off TS
-      const result = await Ban(user, msg.member, _del, reason);
+      const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to cleanban user.');
         return;
@@ -953,11 +962,15 @@ export function InitializeCommands() {
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
+      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      if (member === null) {
+        member = user;
+      }
       if (typeof reason !== 'string') {
         reason = '';
       }
       const _del: any = deleteDays; // fuck off TS
-      const result = await SoftBan(user, msg.member, _del, reason);
+      const result = await SoftBan(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to softban user.');
         return;
@@ -973,11 +986,15 @@ export function InitializeCommands() {
     { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { user, time, reason }) => {
+      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      if (member === null) {
+        member = user;
+      }
       if (typeof reason !== 'string') {
         reason = '';
       }
       const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
-      const result = await TempBan(user, msg.member, _del, time, reason);
+      const result = await TempBan(member, msg.member, _del, time, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to tempban user.');
         return;
@@ -995,10 +1012,14 @@ export function InitializeCommands() {
     { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
+      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      if (member === null) {
+        member = user;
+      }
       if (typeof reason !== 'string') {
         reason = '';
       }
-      const result = await UnBan(user, msg.member, reason);
+      const result = await UnBan(member, msg.member, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, 'Failed to unban user.');
         return;
