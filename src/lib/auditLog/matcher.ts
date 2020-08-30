@@ -177,6 +177,7 @@ export async function validateAuditEvent(
     }
     return def[auditLogEntry.actionType](data, auditLogEntry);
   }
+
   const parsedData = def.getCompareData(data);
   for (const key in def) {
     if (key !== 'targetId') {
@@ -193,6 +194,7 @@ export async function validateAuditEvent(
       return false;
     }
   }
+
   const valsCheck = ['newValue', 'oldValue'];
   for (const key in auditLogEntry.changes) {
     if (typeof auditLogEntry.changes[key] !== 'object') {
@@ -328,7 +330,6 @@ export async function getAuditLogData(
   if (!isAuditLogEnabled(eventName)) {
     return getAuditLogErrorJson('Audit logs not setup for this event');
   }
-
   const def = auditLogDefinitions[eventName];
   if (typeof def.beforeFetch === 'function') {
     const checkShouldFetch = def.beforeFetch(eventPayload);
@@ -374,7 +375,6 @@ export async function getAuditLogData(
   if (minwait > 0 && diffw < minwait) {
     await sleep(Math.max(50, minwait - diffw));
   }
-
   let tmpstore;
   for await (const item of guild.iterAuditLogs(opts)) {
     // check too long ago
@@ -387,9 +387,13 @@ export async function getAuditLogData(
     if (actionsForThis.indexOf(item.actionType) === -1) {
       continue;
     }
-    const res = await validateAuditEvent(eventName, eventPayload, item);
-    if (!res) {
-      continue;
+    try {
+      const res = await validateAuditEvent(eventName, eventPayload, item);
+      if (!res) {
+        continue;
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     if (typeof def.store === 'object') {

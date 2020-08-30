@@ -400,7 +400,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
       if (dt[0].channelId !== log.targetId) {
         return false;
       }
-      if (store instanceof discord.AuditLogEntry.MessageBulkDelete) {
+      if (typeof store === 'object') {
         if (dt[0].ids.length.toString() !== log.options.count.toString()) {
           if (log.id === store.id) {
             return true;
