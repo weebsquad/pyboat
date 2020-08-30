@@ -14,6 +14,7 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
+const TRACKING_KEYS_LIMIT = 150;
 
 enum ActionType {
     'CLEAN'
@@ -42,12 +43,18 @@ class TrackedMessage {
 }
 
 export async function cleanPool() {
-  const diff = Date.now();
+  let diff = Date.now() - BOT_DELETE_DAYS;
   const items = await poolsKv.items();
+  const count = items.length;
+  if (count >= TRACKING_KEYS_LIMIT) {
+    // every 10 keys after 150 = 1 day removed
+    const extraRemove = Math.floor(((count - TRACKING_KEYS_LIMIT) / 10) * 1000 * 60 * 60 * 24);
+    diff += extraRemove;
+  }
   await Promise.all(items.map(async (item: any) => {
     const vl: Array<TrackedMessage> = item.value;
     const { key } = item;
-    const toRemove = vl.filter((e) => e === null || diff > (BOT_DELETE_DAYS + e.ts)).map((e) => (e === null ? null : e.id));
+    const toRemove = vl.filter((e) => e === null || diff < e.ts).map((e) => (e === null ? null : e.id));
     if (toRemove.length > 0) {
       await poolsKv.transact(key, (prev: any) => prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id)));
     }
