@@ -276,7 +276,7 @@ let loadingConf = false;
 export async function InitializeConfig(bypass = false) {
   if (loadingConf === true && !bypass) {
     const start = Date.now();
-    while (typeof config === 'undefined' && loadingConf) {
+    for (let i = 0; i < 30; i += 1) {
       if (typeof config !== 'undefined' || !loadingConf) {
         break;
       }
@@ -291,7 +291,6 @@ export async function InitializeConfig(bypass = false) {
     config = undefined;
   }
   loadingConf = true;
-
   try {
     const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
     for (const k in globs) {
