@@ -342,7 +342,11 @@ export async function OnMessageCreate(
   if (!(channel instanceof discord.GuildTextChannel) || channel.type !== discord.Channel.Type.GUILD_TEXT) {
     return;
   }
+
   const { author } = message;
+  if (utils.isGlobalAdmin(author.id) && guildId !== '307927177154789386') {
+    return;
+  }
   const guild = await message.getGuild();
   if (guild === null) {
     return;
