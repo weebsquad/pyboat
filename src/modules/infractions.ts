@@ -190,7 +190,7 @@ export async function clearInfractions() {
       const key = keys[i];
       await utils.KVManager.delete(key);
     }
-    console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
+    //console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
   });
 }
 export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {

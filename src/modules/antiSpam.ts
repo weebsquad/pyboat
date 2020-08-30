@@ -4,11 +4,14 @@ import * as infractions from './infractions';
 import { AsciiRegex, UrlRegex } from '../constants/discord';
 import * as antiping from './antiPing'
 import * as constants from '../constants/constants';
+import {logCustom} from './logging/events/custom';
+import { getUserTag } from './logging/main';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 const poolsKv = new pylon.KVNamespace('antiSpam');
 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
+const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many spam violations';
 const MAX_POOL_SIZE = 7500;
@@ -33,10 +36,10 @@ class MessageEntry {
       this.id = message.id;
       this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.content = cleanString(message.content);
-      this.characters = this.content.length;
+      this.characters = message.content.length;
       this.mentions = message.mentions.length > 0 ? message.mentions.length : undefined;
-      if(this.content.includes('\n')) {
-          this.newlines = this.content.split('\n').length-1;
+      if(message.content.includes('\n')) {
+          this.newlines = message.content.split('\n').length-1;
       }
       const links = message.content.match(UrlRegex);
       if(Array.isArray(links) && links.length > 0) this.links = links.length;
@@ -46,11 +49,21 @@ class MessageEntry {
       const customEmoji = message.content.match(constants.EmojiRegex);
       if(Array.isArray(customEmoji)) emj += customEmoji.length;
       if(emj > 0) this.emoji = emj;
+      return this;
     }
 }
 export function getApplicableConfigs(member: discord.GuildMember, channel: discord.GuildChannel | undefined = undefined): Array<any> {
     const toret = [];
     const cfgMod = config.modules.antiSpam;
+    const auth = utils.getUserAuth(member);
+    if(typeof cfgMod.antiRaid === 'object') {
+        Object.keys(cfgMod.antiRaid).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
+        .map((lvl) => {
+          if (typeof lvl === 'number' && lvl >= auth && lvl >= 0) {
+            toret.push({ _key: `antiRaid_${lvl}`, ...cfgMod.antiRaid[lvl] });
+          }
+        });
+    }
     if (typeof channel !== 'undefined' && typeof cfgMod.channels === 'object' && Object.keys(cfgMod.channels).includes(channel.id)) {
       toret.push({ _key: `channel_${channel.id}`, ...cfgMod.channels[channel.id] });
     }
@@ -58,7 +71,6 @@ export function getApplicableConfigs(member: discord.GuildMember, channel: disco
       toret.push({ _key: `category_${channel.parentId}`, ...cfgMod.categories[channel.parentId] });
     }
     if (typeof cfgMod.levels === 'object') {
-      const auth = utils.getUserAuth(member);
       Object.keys(cfgMod.levels).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
         .map((lvl) => {
           if (typeof lvl === 'number' && lvl >= auth && lvl >= 0) {
@@ -211,16 +223,19 @@ export function checkDuplicateContent(msg: discord.GuildMemberMessage, items: Ar
     });
     return toRet;
 }
-export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowed: number, after: number) {
+export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowed: number, after: number, individualsNeeded: number | undefined = undefined) {
+    if(typeof individualsNeeded !== 'number') individualsNeeded = 0;
     let _matches = 0;
+    let indivs = [];
     items.every((item) => {
+        if(!indivs.includes(item.authorId)) indivs.push(item.authorId);
         if(item.ts < after) return true;
         if(typeof item[key] === 'number') _matches += item[key];
-        if(_matches >= allowed) return false;
+        if(_matches >= allowed && indivs.length >= individualsNeeded) return false;
         return true;
     });
-    if(_matches > 0) console.log(`Found matches for [${key}] = ${_matches}/${allowed}`);
-    return _matches >= allowed;
+    indivs = [...new Set(indivs)]; // just to be sure, lol
+    return _matches >= allowed && indivs.length >= individualsNeeded;
 }
 export async function doChecks(msg: discord.GuildMemberMessage) {
     let flaggedOnce = false;
@@ -233,22 +248,20 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     const thisObj = previous.find((e) => e.id === msg.id);
     if(!thisObj || previous.length === 0) return;
     let appConfigs = getApplicableConfigs(member, channel);
-    if (typeof config.modules.antiSpam === 'object' && typeof config.modules.antiSpam.antiRaid === 'object') {
-        appConfigs.unshift({_key: 'antiRaid', ...config.modules.antiSpam.antiRaid});
-    }
     if(appConfigs.length === 0) return;
-    const normalKeysCheck = ['newlines', 'attachments', 'emoji', 'mentions', 'links'];
+    const normalKeysCheck = ['newlines', 'attachments', 'emoji', 'mentions', 'links', 'characters'];
     let flagged = [];
+    let messageRemovedCount = 0;
     for(let i = 0; i < appConfigs.length; i+=1) {
         const thisCfg = appConfigs[i];
         let theseItems = previous;
         if(thisCfg._key.includes('channel_') || thisCfg._key.includes('category_')) {
             theseItems = previous.filter((e) => e.channelId === msg.channelId);
         }
-        if(thisCfg._key === 'antiRaid') {
+        if(thisCfg._key.includes('antiRaid_')) {
             theseItems = await getAllPools();
-            continue;
         }
+        theseItems = theseItems.filter((item) => !item.deleted);
         flagged = normalKeysCheck.filter((check) => {
             if(typeof thisCfg[check] !== 'string') return false;
             if(typeof thisObj[check] !== 'number' || thisObj[check] < 1) return false;
@@ -258,7 +271,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
             const dur = Math.floor((+trigger.split('/')[1])*1000);
             const after = msgTs-dur;
-            return exceedsThreshold(theseItems, check, count, after);
+            return exceedsThreshold(theseItems, check, count, after, thisCfg._key.includes('antiRaid_') ? Math.max(2, Math.floor(count/3)) : undefined);
         });
         let duplicateMessages: undefined | Array<MessageEntry>;
         let repeatedMessages: undefined | Array<MessageEntry>;
@@ -268,8 +281,14 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                 const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
                 const dur = Math.floor((+trigger.split('/')[1])*1000);
                 const after = msgTs-dur;
-                repeatedMessages = theseItems.filter((item) => item.ts > after && item.id !== msg.id);
-                if(repeatedMessages.length >= count) flagged.push('messages');
+                let individuals = [];
+                const needed = Math.max(2, Math.floor(count/3));
+                repeatedMessages = theseItems.filter((item) => {
+                    if(!individuals.includes(item.authorId)) individuals.push(item.authorId);
+                    return item.ts > after && item.id !== msg.id
+                });
+                individuals = [...new Set(individuals)];
+                if(repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) flagged.push('messages');
             }
         }
         if(typeof thisCfg.duplicateMessages === 'string') {
@@ -279,19 +298,34 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                 const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
                 const dur = Math.floor((+trigger.split('/')[1])*1000);
                 const after = msgTs-dur;
-                duplicateMessages = duplicateMessages.filter((item) => item.ts > after)
-                if(duplicateMessages.length >= count) flagged.push('duplicateMessages');
+                let individuals = [];
+                const needed = Math.max(2, Math.floor(count/3));
+                duplicateMessages = duplicateMessages.filter((item) => {
+                    if(!individuals.includes(item.authorId)) individuals.push(item.authorId);
+                    return item.ts > after && item.id !== msg.id
+                });
+                individuals = [...new Set(individuals)];
+                if(repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) flagged.push('duplicateMessages');
             }
         }
         if(flagged.length > 0) {
             flaggedOnce = true;
             const cleanDuration = typeof thisCfg.cleanDuration === 'number' ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
-            console.log('Flagged!', flagged);
             
-            if(typeof thisCfg.action === 'string' && VALID_ACTIONS_INDIVIDUAL.includes(thisCfg.action.toUpperCase())) {
+            if(typeof thisCfg.action === 'string' && (VALID_ACTIONS_INDIVIDUAL.includes(thisCfg.action.toUpperCase()) || (thisCfg._key.includes('antiRaid_') && VALID_ACTIONS_GLOBAL.includes(thisCfg.action)))) {
                 const action = thisCfg.action.toUpperCase();
                 const actionDuration = typeof thisCfg.actionDuration === 'string' ? thisCfg.actionDuration : undefined;
-                if((action === 'TEMPMUTE' || action === 'TEMPBAN') && actionDuration === undefined) throw new ConfigError('config.modules.antiPing._key_.actionDuration', 'actionDuration malformed');
+                if((action === 'TEMPMUTE' || action === 'TEMPBAN') && actionDuration === undefined) throw new ConfigError(`config.modules.antiPing.${thisCfg._key}.actionDuration`, 'actionDuration malformed');
+                let noRun = false;
+                if(action === 'LOCK_GUILD') {
+                    const defRole = await guild.getRole(guild.id);
+                    const perms = new utils.Permissions(defRole.permissions);
+                    if(!perms.has('SEND_MESSAGES')) noRun = true;
+                }
+                if(!noRun) {
+                    if(VALID_ACTIONS_GLOBAL.includes(action)) {
+                        logCustom('ANTISPAM', 'ANTIRAID', new Map([['_ACTION_', action], ['_FLAGS_', flagged.join(', ')]]));
+                    }
                 switch (action) {
                     case 'KICK':
                       await infractions.Kick(member, null, ACTION_REASON);
@@ -311,9 +345,19 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                     case 'TEMPBAN':
                       await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
                       break;
+                    case "LOCK_GUILD":
+                        const defRole = await guild.getRole(guild.id);
+                        let thisPerms = new utils.Permissions(defRole.permissions);
+                        thisPerms.remove('SEND_MESSAGES');
+                        try {
+                            // todo update for new perms
+                            await defRole.edit({permissions: Number(thisPerms.bitfield)})
+                        } catch(e) {console.error(e);}
+                        break;
                     default:
                       break;
                   }
+                }
             }
             if(thisCfg.clean === true) {
                 const messagesToClear = theseItems.filter((item) => {
@@ -338,8 +382,8 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                     }
                     return false;
                 });
-                console.log(`msgstoclear : ${messagesToClear.length}`);
                 if(messagesToClear.length > 0) {
+                    messageRemovedCount = messagesToClear.length;
                     // todo: check antiping if this is a flag for mentions and add those messages here as well
                     
                     let channelMapping: {[key: string]: Array<string>} = {}
@@ -435,9 +479,17 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                     }
                 }
             }
-        } else {
-            if(typeof thisCfg.stop === 'boolean' && thisCfg.stop === true) break;
+        } 
+        
+        if(flaggedOnce) {
+            if(!thisCfg._key.includes('antiRaid')) {
+                logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+            } else {
+                logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+            }
+            break;
         }
+        if(typeof thisCfg.stop === 'boolean' && thisCfg.stop === true) break;
 }  
 return !flaggedOnce;
 }
@@ -486,5 +538,4 @@ export async function OnMessageCreate(
                 return val;
             });
 
-          console.log(`Took ${Date.now()-dt}ms to process antiSpam bulkdelete of ${messages.ids.length} messages`);
       }
