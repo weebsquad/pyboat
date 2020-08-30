@@ -254,14 +254,6 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'tracking', async (m) => {
-        const now = Date.now();
-        const res = await admin.getAllPools();
-        console.log(res);
-        await m.reply(`Done - ${res.length} - (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
       'cleantracking', async (m) => {
         const now = Date.now();
         const res = await admin.cleanPool();
@@ -269,10 +261,11 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'trackingkeys', async (m) => {
+      'tracking', async (m) => {
         const now = Date.now();
         const res = await new pylon.KVNamespace('admin').list();
-        await m.reply(`Done - **${res.length} key(s)** - (Took ${Date.now() - now}ms)`);
+        const pools = await admin.getAllPools();
+        await m.reply(`Done - **${res.length} key(s)** // **${pools.length} total items** - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(
