@@ -494,7 +494,7 @@ export function InitializeCommands() {
   );
 
   cmdGroup.raw(
-    { name: 'cat', filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
+    { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
       const file = await (await fetch('http://aws.random.cat/meow')).json();
       const catpic = await (await fetch(file.file)).arrayBuffer();
 
@@ -504,6 +504,21 @@ export function InitializeCommands() {
         attachments: [{
           name: 'cat.jpg',
           data: catpic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'dog', aliases: ['doge', 'doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://random.dog/woof.json')).json();
+      const pic = await (await fetch(file.url)).arrayBuffer();
+
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: 'dog.jpg',
+          data: pic,
         }],
       });
     },
