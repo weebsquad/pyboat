@@ -6,7 +6,7 @@ import * as constants from '../constants/constants';
 import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
-import {getActorTag, getUserTag} from './logging/main'
+import { getActorTag, getUserTag } from './logging/main';
 
 const poolsKv = new pylon.KVNamespace('admin');
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
@@ -316,21 +316,20 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   }
   await Promise.all(promises);
   cleaning = false;
-  if(deleted.length > 0) 
-  {
-      let _placeholders = new Map([['_MESSAGES_', deleted.length.toString()], ['_ACTORTAG_', 'SYSTEM'], ['_CHANNEL_', ''], ['_USERTAG_', '']]);
-      if(actor !== null) {
-          _placeholders.set('_ACTORTAG_', getActorTag(actor));
-          _placeholders.set('_ACTOR_ID_', actor.user.id);
-      }
-      if(typeof channelTarget === 'string') {
-        _placeholders.set('_CHANNEL_', ` in <#${channelTarget}>`);
-      }
-      if(typeof memberId === 'string') {
-          _placeholders.set('_USERTAG_', getUserTag(target));
-          _placeholders.set('_USER_ID_', memberId);
-      }
-      logCustom('ADMIN', 'CLEAN', _placeholders);
+  if (deleted.length > 0) {
+    const _placeholders = new Map([['_MESSAGES_', deleted.length.toString()], ['_ACTORTAG_', 'SYSTEM'], ['_CHANNEL_', ''], ['_USERTAG_', '']]);
+    if (actor !== null) {
+      _placeholders.set('_ACTORTAG_', getActorTag(actor));
+      _placeholders.set('_ACTOR_ID_', actor.user.id);
+    }
+    if (typeof channelTarget === 'string') {
+      _placeholders.set('_CHANNEL_', ` in <#${channelTarget}>`);
+    }
+    if (typeof memberId === 'string') {
+      _placeholders.set('_USERTAG_', ` from ${getUserTag(target)}`);
+      _placeholders.set('_USER_ID_', memberId);
+    }
+    logCustom('ADMIN', 'CLEAN', _placeholders);
   }
   return deleted.length;
 }

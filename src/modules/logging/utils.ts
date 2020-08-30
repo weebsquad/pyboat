@@ -116,7 +116,7 @@ export function getMemberTag(member: discord.GuildMember) {
 }
 
 export function getUserTag(user: discord.User | discord.GuildMember) {
-  if(user instanceof discord.GuildMember) {
+  if (user instanceof discord.GuildMember) {
     user = user.user;
   }
   const map = new Map([
@@ -276,7 +276,7 @@ export async function parseMessageContent(
   return cont;
 }
 export function getActorTag(user: discord.User | discord.GuildMember) {
-  if(user instanceof discord.GuildMember) {
+  if (user instanceof discord.GuildMember) {
     user = user.user;
   }
   const map = new Map([
