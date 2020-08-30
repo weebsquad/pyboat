@@ -137,7 +137,7 @@ _dep.forEach((deployment_id) => {
         }
       }
     }).then(() => {
-      if (_dep.length === doneGuilds.length) {
+      if (deployment_id === _dep[_dep.length - 1]) {
         if (toPost !== '') {
           sendWebhook(toPost);
         }
