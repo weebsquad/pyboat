@@ -231,12 +231,40 @@ export async function OnChannelDelete(
 export async function OnChannelUpdate(
   id: string,
   guildId: string,
-  channel: discord.Channel,
+  channel: discord.GuildChannel,
+  oldChannel: discord.GuildChannel,
 ) {
   if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
     return;
   }
-  await storeChannelData();
+  const permschange = false;
+  let hasChange = channel.permissionOverwrites.every((ow) => {
+    const _f = oldChannel.permissionOverwrites.find((ow2) => ow2.id === ow.id);
+    if (!_f) {
+      return false;
+    }
+    if (_f.allow !== ow.allow || _f.deny !== ow.deny) {
+      return false;
+    }
+    return true;
+  });
+  if (!hasChange) {
+    await storeChannelData();
+    return;
+  }
+  hasChange = oldChannel.permissionOverwrites.every((ow) => {
+    const _f = channel.permissionOverwrites.find((ow2) => ow2.id === ow.id);
+    if (!_f) {
+      return false;
+    }
+    if (_f.allow !== ow.allow || _f.deny !== ow.deny) {
+      return false;
+    }
+    return true;
+  });
+  if (!hasChange) {
+    await storeChannelData();
+  }
 }
 export async function OnGuildBanAdd(
   id: string,

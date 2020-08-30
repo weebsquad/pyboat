@@ -156,9 +156,18 @@ export function InitializeCommands() {
     sub.raw(
       'kvmkeys', async (m) => {
         const keys = await utils.KVManager.listKeys();
+        console.log(keys);
         await m.reply(`Found ${keys.length} keys!`);
       },
     );
+    sub.on('getkvm',
+           (ctx) => ({ key: ctx.string() }),
+           async (m, { key }) => {
+             const dt = Date.now();
+             const keys = await utils.KVManager.get(key);
+             console.log(keys);
+             await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+           });
     sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
