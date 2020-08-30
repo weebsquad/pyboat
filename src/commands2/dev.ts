@@ -154,12 +154,6 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'started', async (m) => {
-        logDebug('BOT_STARTED');
-        await m.reply('done');
-      },
-    );
-    sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
         embed.setDescription('does this even look good');
