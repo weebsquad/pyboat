@@ -295,6 +295,7 @@ export async function InitializeConfig(bypass = false) {
     config = undefined;
   }
   loadingConf = true;
+  console.info('Initializing config');
   try {
     const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
     for (const k in globs) {
@@ -305,14 +306,15 @@ export async function InitializeConfig(bypass = false) {
     console.error(e);
     return false;
   }
+  console.info('Fetched globals');
   if (globalConfig.disabled && globalConfig.disabled === true) {
-    console.error('Disabled');
+    console.warn('Disabled');
     loadingConf = false;
     config = undefined;
     return false;
   }
   if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
-    console.error('Not whitelisted');
+    console.warn('Not whitelisted');
     config = undefined;
     loadingConf = false;
     return false;
@@ -322,7 +324,7 @@ export async function InitializeConfig(bypass = false) {
     await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
     await pylon.kv.put('__botVersion', globalConfig.version);
   }
-
+  console.info('Fetched version');
   const items = await configKv.items();
   let cfg: any;
   if (items.length > 0) {
@@ -333,8 +335,10 @@ export async function InitializeConfig(bypass = false) {
     cfg = guildConfigs[guildId];
   }
   if (typeof cfg !== 'object') {
-    console.error('No config');
+    console.warn('No config');
     cfg = JSON.parse(JSON.stringify(defaultConfig));
+  } else {
+    console.info('Fetched config');
   }
 
   config = loadConfigDefaults(cfg);
