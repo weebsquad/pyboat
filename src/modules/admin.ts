@@ -54,9 +54,20 @@ export async function cleanPool() {
   await Promise.all(items.map(async (item: any) => {
     const vl: Array<TrackedMessage> = item.value;
     const { key } = item;
-    const toRemove = vl.filter((e) => e === null || diff < e.ts).map((e) => (e === null ? null : e.id));
+    const toRemove = vl.filter((e) => e === null || diff > e.ts).map((e) => (e === null ? null : e.id));
     if (toRemove.length > 0) {
-      await poolsKv.transact(key, (prev: any) => prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id)));
+      let vlCheckEmpty: undefined | Array<TrackedMessage>;
+      await poolsKv.transact(key, (prev: any) => {
+        const newDt = prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id));
+        vlCheckEmpty = newDt;
+        return newDt;
+      });
+      if (Array.isArray(vlCheckEmpty) && vlCheckEmpty.length === 0) {
+        try {
+          await poolsKv.delete(key, { prevValue: [] });
+        } catch (e) {
+        }
+      }
     }
   }));
 }
