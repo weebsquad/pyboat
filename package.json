@@ -33,6 +33,7 @@
     "@typescript-eslint/eslint-plugin": "^3.8.0",
     "@typescript-eslint/parser": "^3.8.0",
     "install": "^0.13.0",
+    "js-yaml": "^3.14.0",
     "npm": "^6.14.7",
     "path": "^0.12.7",
     "typescript-tslint-plugin": "^0.5.5",
