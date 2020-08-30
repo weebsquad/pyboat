@@ -586,8 +586,10 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   }
   let message;
   try {
-  message = await channel.getMessage(msgId);
-  }  catch(e) {return;}
+    message = await channel.getMessage(msgId);
+  } catch (e) {
+    return;
+  }
 
   let actualMsg;
   if (isBoardMsg) {

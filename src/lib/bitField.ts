@@ -46,7 +46,7 @@ export class BitField {
   }
   add(...bits: any[]) {
     let total = BigInt('0');
-    for (let bit of bits) {
+    for (const bit of bits) {
       total |= this.resolve(bit);
     }
     if (typeof this.bitfield === 'bigint') {
@@ -61,7 +61,7 @@ export class BitField {
 
   remove(...bits: any[]) {
     let total = BigInt('0');
-    for (let bit of bits) {
+    for (const bit of bits) {
       total |= this.resolve(bit);
     }
     if (Object.isFrozen(this)) {
@@ -113,7 +113,9 @@ export class BitField {
     }
     if (typeof bit === 'string' && typeof this.FLAGS[bit] !== 'undefined') {
       let ret: number | BigInt = this.FLAGS[bit];
-      if(typeof ret === 'number') ret = BigInt(ret);
+      if (typeof ret === 'number') {
+        ret = BigInt(ret);
+      }
       return ret;
     }
     throw new Error('BITFIELD_INVALID');

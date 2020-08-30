@@ -168,14 +168,14 @@ export async function every5Min() {
     const actives = infs.filter((inf) => inf.active === true && inf.isExpired());
     if (actives.length > 0) {
       const promises2 = [];
-      for(var i = 0; i < actives.length; i+=1) {
+      for (let i = 0; i < actives.length; i += 1) {
         const inf = actives[i];
         if (inf.isExpired()) {
           await sleep(200);
           promises2.push(inf.checkExpired());
         }
       }
-      
+
       await Promise.all(promises2);
     }
   } catch (e) {
@@ -190,7 +190,7 @@ export async function clearInfractions() {
       const key = keys[i];
       await utils.KVManager.delete(key);
     }
-    //console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
+    // console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
   });
 }
 export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {

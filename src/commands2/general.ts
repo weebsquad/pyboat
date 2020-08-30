@@ -126,6 +126,5 @@ export function InitializeCommands() {
   }
 ); */
 
-
   return cmdGroup;
 }

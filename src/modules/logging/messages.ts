@@ -51,9 +51,9 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
   },
   '|ANTISPAM': {
-    'ANTIRAID': `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,
-    'ANTIRAID_VIOLATION': `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and there were **_DELETED_MESSAGES_** messages deleted.`,
-    'VIOLATION': `${discord.decor.Emojis.TOOLBOX} _USERTAG_ violated anti-spam flags: \`_FLAGS_\` and had **_DELETED_MESSAGES_** messages deleted.`
+    ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,
+    ANTIRAID_VIOLATION: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and there were **_DELETED_MESSAGES_** messages deleted.`,
+    VIOLATION: `${discord.decor.Emojis.TOOLBOX} _USERTAG_ violated anti-spam flags: \`_FLAGS_\` and had **_DELETED_MESSAGES_** messages deleted.`,
   },
   '|CENSOR': {
     CENSORED_MESSAGE: `${discord.decor.Emojis.SPEECH_BALLOON} _USERTAG_ had their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_> censored: \`_CENSOR_MESSAGE_\`**[**:_CENSOR_TP_**]** => \`_CENSOR_TARGET_\``,

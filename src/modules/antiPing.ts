@@ -187,80 +187,82 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
 }
 
 async function messageDeleted(messageId: string) {
-  //const data:any = await kv.get(kvDataKey);
-  await kv.transact(kvDataKey, function(prev: any) {
-  let data;
-    if(typeof prev === 'object') {
+  // const data:any = await kv.get(kvDataKey);
+  await kv.transact(kvDataKey, (prev: any) => {
+    let data;
+    if (typeof prev === 'object') {
       data = JSON.parse(JSON.stringify(prev));
     } else {
       data = {};
     }
-  for (const userId in data) {
-    for (const mId in data[userId]) {
-      const obj = data[userId][mId].BotReplyMsg;
-      if (obj.id === messageId) {
-        delete data[userId][mId];
-        break;
+    for (const userId in data) {
+      for (const mId in data[userId]) {
+        const obj = data[userId][mId].BotReplyMsg;
+        if (obj.id === messageId) {
+          delete data[userId][mId];
+          break;
+        }
+      }
+      if (Object.keys(data[userId]).length === 0) {
+        delete data[userId];
       }
     }
-    if (Object.keys(data[userId]).length === 0) {
-      delete data[userId];
-    }
-  }
-  return data;
-});
+    return data;
+  });
 }
 async function messagesDeleted(messageIds: Array<string>) {
-  //const data:any = await kv.get(kvDataKey);
-  await kv.transact(kvDataKey, function(prev: any) {
-  let data;
-    if(typeof prev === 'object') {
+  // const data:any = await kv.get(kvDataKey);
+  await kv.transact(kvDataKey, (prev: any) => {
+    let data;
+    if (typeof prev === 'object') {
       data = JSON.parse(JSON.stringify(prev));
     } else {
       data = {};
     }
-  for (const userId in data) {
-    for (const mId in data[userId]) {
-      const obj = data[userId][mId].BotReplyMsg;
-      if(messageIds.includes(obj.id)) {
-        delete data[userId][mId];
-        break;
+    for (const userId in data) {
+      for (const mId in data[userId]) {
+        const obj = data[userId][mId].BotReplyMsg;
+        if (messageIds.includes(obj.id)) {
+          delete data[userId][mId];
+          break;
+        }
+      }
+      if (Object.keys(data[userId]).length === 0) {
+        delete data[userId];
       }
     }
-    if (Object.keys(data[userId]).length === 0) {
-      delete data[userId];
-    }
-  }
-  return data;
-});
+    return data;
+  });
 }
 
 export async function periodicDataClear() {
   const data:any = await kv.get(kvDataKey);
-  let toRem = [];
+  const toRem = [];
   for (const userId in data) {
     for (const mId in data[userId]) {
       const ts = utils.decomposeSnowflake(mId).timestamp;
-      if(Date.now()-ts >= 24*60*60*1000) {
+      if (Date.now() - ts >= 24 * 60 * 60 * 1000) {
         toRem.push(mId);
       }
     }
   }
-  if(toRem.length > 0) {
-    await kv.transact(kvDataKey, function(prev: any) {
+  if (toRem.length > 0) {
+    await kv.transact(kvDataKey, (prev: any) => {
       let _cp;
-    if(typeof prev === 'object') {
-      _cp = JSON.parse(JSON.stringify(prev));
-    } else {
-      _cp = {};
-    }
+      if (typeof prev === 'object') {
+        _cp = JSON.parse(JSON.stringify(prev));
+      } else {
+        _cp = {};
+      }
       for (const userId in _cp) {
         for (const mId in _cp[userId]) {
-          if(toRem.includes(mId)) {
+          if (toRem.includes(mId)) {
             delete _cp[userId][mId];
           }
         }
-        if(Object.keys(_cp[userId]).length === 0) delete _cp[userId];
+        if (Object.keys(_cp[userId]).length === 0) {
+          delete _cp[userId];
+        }
       }
       return _cp;
     });
@@ -275,14 +277,16 @@ async function clearUserData(userId: string) {
     ignores.splice(ignores.indexOf(userId), 1);
     await kv.put(kvIgnoresKey, ignores);
   }
-  await kv.transact(kvDataKey, function(prev: any) {
+  await kv.transact(kvDataKey, (prev: any) => {
     let _new;
-    if(typeof prev === 'object') {
+    if (typeof prev === 'object') {
       _new = JSON.parse(JSON.stringify(prev));
     } else {
       _new = {};
     }
-    if(typeof(_new[userId]) === 'object') delete _new[userId];
+    if (typeof (_new[userId]) === 'object') {
+      delete _new[userId];
+    }
     return _new;
   });
 }
@@ -437,7 +441,7 @@ export async function OnMessageCreate(
       dataSaves[i][key] = objtarg[key];
     }
     dataSaves[i].authorId = objtarg.author.id;
-    //dataSaves[i].guildId = guild.id;
+    // dataSaves[i].guildId = guild.id;
   }
 
   const pingCount = message.mentions.length;
@@ -458,9 +462,9 @@ export async function OnMessageCreate(
     await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   }
 
-  await kv.transact(kvDataKey, function(prev: any) {
+  await kv.transact(kvDataKey, (prev: any) => {
     let data;
-    if(typeof prev === 'object') {
+    if (typeof prev === 'object') {
       data = JSON.parse(JSON.stringify(prev));
     } else {
       data = {};
@@ -478,10 +482,10 @@ export async function OnMessageCreate(
     return data;
   });
   try {
-  for (const key in config.modules.antiPing.emojiActions) {
-    await msgReply.addReaction(key.split(' ').join(''));
-  }
-} catch(e) {}
+    for (const key in config.modules.antiPing.emojiActions) {
+      await msgReply.addReaction(key.split(' ').join(''));
+    }
+  } catch (e) {}
 
   return false; // So nothing else runs :))
 }
@@ -670,7 +674,7 @@ export async function OnMessageReactionAdd(id: string,
       await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
     await wipeAllUserMessages(userMsg.authorId, wipeAll);
-    if(emojiAction.toLowerCase() === 'ignore' || emojiAction.toLowerCase() === 'ignoreonce') {
+    if (emojiAction.toLowerCase() === 'ignore' || emojiAction.toLowerCase() === 'ignoreonce') {
       await clearUserData(userMsg.authorId);
     }
   }
