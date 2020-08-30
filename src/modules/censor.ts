@@ -499,7 +499,7 @@ export async function censorMessage(message: discord.GuildMemberMessage, check: 
   const channel = await message.getChannel();
   await processViolations(message.id, message.member, channel && channel.type === discord.Channel.Type.GUILD_TEXT ? channel : undefined, conf);
   await message.delete();
-  await logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
+  logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
 }
 export async function checkMessage(message: discord.Message.AnyMessage) {
   if (message.guildId === null || !(message.member instanceof discord.GuildMember) || message.type !== discord.Message.Type.DEFAULT || message.webhookId !== null || !message.author || message.author.bot === true || message.flags !== 0) {
@@ -698,7 +698,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     if (check instanceof CensorCheck) {
       if (check.check === true) {
         await member.edit({ nick: `censored name (${Math.floor(Math.min(9999, 1000 + (Math.random() * 10000)))})` });
-        await logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_OLD_NAME_', utils.escapeString(visibleName)], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_OLD_NAME_', utils.escapeString(visibleName)], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
         await processViolations(eventId, member, undefined, appConfigs[i]);
         return false;
       }

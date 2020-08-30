@@ -110,7 +110,7 @@ export async function resolveQueue() {
       await routing.ExecuteQueuedEvents(queue);
     }
   } catch (_e) {
-    await logDebug(
+    logDebug(
       'BOT_ERROR',
       new Map<string, any>([
         [

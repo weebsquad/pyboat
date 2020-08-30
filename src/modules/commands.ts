@@ -60,7 +60,7 @@ export async function OnMessageCreate(
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
       if (!isDevCmd) {
-        await logCustom(
+        logCustom(
           'COMMANDS',
           'COMMAND_USED',
           new Map<string, any>([
@@ -86,7 +86,7 @@ export async function OnMessageCreate(
         console.error(_e);
       }
 
-      await logDebug(
+      logDebug(
         'BOT_ERROR',
         new Map<string, any>([
           [

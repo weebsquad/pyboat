@@ -344,7 +344,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
     extras.set('_ACTOR_ID_', actor.id);
     extras.set('_ACTOR_', actor);
   }
-  await logCustom('INFRACTIONS', `${actionType}`, extras, id);
+  logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
 async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
   if (!(me instanceof discord.GuildMember)) {
@@ -1116,7 +1116,7 @@ export function InitializeCommands() {
         extras.set('_INFRACTION_ID_', inf.id);
         extras.set('_TYPE_', 'duration');
         extras.set('_NEW_VALUE_', utils.escapeString(duration));
-        await logCustom('INFRACTIONS', 'EDITED', extras);
+        logCustom('INFRACTIONS', 'EDITED', extras);
       },
     );
     subCommandGroup.on(
@@ -1154,7 +1154,7 @@ export function InitializeCommands() {
         extras.set('_INFRACTION_ID_', inf.id);
         extras.set('_TYPE_', 'reason');
         extras.set('_NEW_VALUE_', utils.escapeString(reason));
-        await logCustom('INFRACTIONS', 'EDITED', extras);
+        logCustom('INFRACTIONS', 'EDITED', extras);
       },
     );
     subCommandGroup.on(
@@ -1187,7 +1187,7 @@ export function InitializeCommands() {
         extras.set('_ACTOR_ID_', msg.author.id);
         extras.set('_USER_ID_', msg.author.id);
         extras.set('_INFRACTION_ID_', inf.id);
-        await logCustom('INFRACTIONS', 'DELETED', extras);
+        logCustom('INFRACTIONS', 'DELETED', extras);
       },
     );
     subCommandGroup.on(

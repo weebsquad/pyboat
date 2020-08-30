@@ -58,7 +58,7 @@ async function onCron(name: string) {
     if (_cr[key].name !== name) {
       continue;
     }
-    await logDebug(
+    logDebug(
       'CRON_RAN',
       new Map<string, any>([['CRON_NAME', name]]),
     );

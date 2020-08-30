@@ -35,7 +35,7 @@ async function _Initialize() {
   }
   rl = true;
   InitializeCommands2();
-  await logDebug('BOT_STARTED');
+  logDebug('BOT_STARTED');
 }
 let cachedConfig;
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
@@ -108,7 +108,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     if (conf.guildId === conf.globalConfig.masterGuild) {
       console.error(e);
     }
-    await logDebug(
+    logDebug(
       'BOT_ERROR',
       new Map<string, any>([
         ['ERROR', `Error at event ${event}\n${err.stack}`],
@@ -308,7 +308,7 @@ export async function ExecuteModules(
 
 export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
   const { guildId } = conf;
-  await logDebug(
+  logDebug(
     'RAW_EVENT',
     new Map<string, any>([
       ['EVENT', 'QUEUE_RUN'],

@@ -827,7 +827,7 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     if (utils.isDebug()) {
       console.error(e);
     }
-    await logDebug('BOT_ERROR', new Map<string, any>([
+    logDebug('BOT_ERROR', new Map<string, any>([
       ['ERROR', `Error at logging.handleMultiEvents\n${e.stack}`],
     ]));
   }
@@ -927,9 +927,9 @@ export async function handleEvent(
     if (utils.isDebug(true)) {
       console.error(e);
     }
-    await logDebug('BOT_ERROR', new Map<string, any>([
+    logDebug('BOT_ERROR', new Map<string, any>([
       ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
     ]),
-                   id);
+             id);
   }
 }

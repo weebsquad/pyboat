@@ -171,7 +171,7 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
     extras.set('_ACTOR_', actor);
     extras.set('_ACTOR_ID_', actor.id);
   }
-  await logCustom('ANTIPING', `${type}`, extras);
+  logCustom('ANTIPING', `${type}`, extras);
   /*
   let chan = (await discord.getChannel(
     config.modules.antiPing.logChannel

@@ -141,7 +141,7 @@ export async function reportBlockedAction(member: discord.GuildMember, action: s
       return;
     }
     await reportingCooldowns.put(keyCdGlobal, true, { ttl: 10 * 1000 });
-    await logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user], ['_ACTION_', action]]));
+    logDebug('BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user], ['_ACTION_', action]]));
   }
   if (isBlacklisted(member, true)) {
     const _cd = await reportingCooldowns.get(keyCdGlobal);
@@ -149,6 +149,6 @@ export async function reportBlockedAction(member: discord.GuildMember, action: s
       return;
     }
     await reportingCooldowns.put(keyCdLocal, true, { ttl: 10 * 1000 });
-    await logCustom('CORE', 'BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user], ['_ACTION_', action]]));
+    logCustom('CORE', 'BLACKLISTED_USER_ACTION', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user], ['_ACTION_', action]]));
   }
 }
