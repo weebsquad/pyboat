@@ -1,17 +1,319 @@
-import { config, globalConfig, guildId } from '../config';
+/* eslint-disable @typescript-eslint/ban-types */
+import { config, globalConfig, guildId, Ranks } from '../config';
+import * as utils from '../lib/utils';
+import * as constants from '../constants/constants';
+import * as c2 from '../lib/commands2';
 
+const poolsKv = new pylon.KVNamespace('admin');
+const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
+// const BOT_DELETE_DAYS = 14*24*60*60*1000;
+const BOT_DELETE_DAYS = 60 * 1000;
+
+enum ActionType {
+    'CLEAN'
+}
+class TrackedMessage {
+    authorId: string;
+    id: string;
+    channelId: string;
+    bot: boolean;
+    // ts: number;
+    // type: discord.Message.Type;
+    // flags: discord.Message.Flags;
+    constructor(message: discord.Message.AnyMessage) {
+      this.authorId = message.author.id;
+      this.channelId = message.channelId;
+      this.id = message.id;
+      // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+      this.bot = message.author.bot;
+      if (message.webhookId !== null) {
+        this.bot = true;
+      }
+      // this.type = message.type;
+      // this.flags = message.flags;
+      return this;
+    }
+}
+
+export async function cleanPool() {
+  console.log('Running clean');
+  const diff = Date.now();
+  const items = await poolsKv.items();
+  await Promise.all(items.map(async (item: any) => {
+    const vl: Array<TrackedMessage> = item.value;
+    const { key } = item;
+    const toRemove = vl.filter((e) => e === null || diff > (BOT_DELETE_DAYS + utils.decomposeSnowflake(e.id).timestamp)).map((e) => (e === null ? null : e.id));
+    if (toRemove.length > 0) {
+      console.log(`Removing ${toRemove.length} items!`);
+      await poolsKv.transact(key, (prev: any) => prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id)));
+    }
+  }));
+}
+export async function saveToPool(msg: discord.GuildMemberMessage) {
+  const newObj = JSON.parse(JSON.stringify(new TrackedMessage(msg)));
+  const thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
+  const items = await poolsKv.items();
+  let saveTo;
+  const res = items.every((item: any) => {
+    if (!Array.isArray(item.value)) {
+      return true;
+    }
+    const _entries: Array<TrackedMessage> = item.value;
+    const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + thisLen;
+    console.log(`[${item.key}] using ${len} bytes`);
+    if (len < MAX_POOL_SIZE) {
+      saveTo = item.key;
+      return false;
+    }
+    return true;
+  });
+  if (res === true) {
+    await poolsKv.put(utils.composeSnowflake(), [newObj]);
+    return true;
+  }
+  if (res === false && typeof saveTo === 'string') {
+    for (let i = 0; i < 2; i += 1) {
+      try {
+        await poolsKv.transact(saveTo, (prev: any) => prev.concat(newObj));
+        return true;
+      } catch (e) {
+      }
+    }
+    return false;
+  }
+
+  return false;
+}
+export async function editPool(msg: discord.GuildMemberMessage | null, msgId: string | undefined = undefined) {
+  let newObj;
+  if (msg !== null) {
+    newObj = new TrackedMessage(msg);
+    msgId = msg.id;
+  }
+  const items = await poolsKv.items();
+  const res = items.find((item: any) => item.value.find((e: TrackedMessage) => e !== null && e.id === msgId) !== undefined);
+  if (res) {
+    for (let i = 0; i < 2; i += 1) {
+      try {
+        await poolsKv.transact(res.key, (prev: any) => {
+          const newData = JSON.parse(JSON.stringify(prev));
+          const _ind = newData.findIndex((e: TrackedMessage) => e !== null && e.id === msgId);
+          if (_ind !== -1 && msg !== null) {
+            newData[_ind] = newObj;
+          } else if (_ind !== -1 && msg === null) {
+            delete newData[_ind];
+          }
+          return newData;
+        });
+        return true;
+      } catch (e) {
+      }
+    }
+    return false;
+  }
+
+  return false;
+}
+export async function getAllPools(): Promise<Array<TrackedMessage>> {
+  const now = Date.now();
+  const diff = now - BOT_DELETE_DAYS;
+  const items = await poolsKv.items();
+  let _ret: Array<TrackedMessage> = [];
+  items.map((e: any) => {
+    if (Array.isArray(e.value)) {
+      _ret.push(...e.value);
+    }
+  });
+  _ret = _ret.filter((item) => item !== null && utils.decomposeSnowflake(item.id).timestamp >= diff);
+  return _ret;
+}
+
+export async function getMessagesBy(query: any) {
+  const ps = (await getAllPools());
+  if (query === null) {
+    return ps;
+  }
+  const newPs = ps.filter((inf) => {
+    for (const key in query) {
+      if (inf[key] !== query[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return newPs;
+}
+export async function editPools(ids: Array<string>, callback: Function) {
+  const items = await poolsKv.items();
+  const transactPools = items.filter((item: any) => {
+    if (Array.isArray(item.value)) {
+      const _val: Array<TrackedMessage> = item.value;
+      const hasAny = _val.find((entry) => entry !== null && ids.includes(entry.id));
+      if (!hasAny) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  });
+  if (transactPools.length > 0) {
+    await Promise.all(transactPools.map(async (item) => {
+      await poolsKv.transact(item.key, (prev: any) => {
+        let dt: Array<TrackedMessage> = JSON.parse(JSON.stringify(prev));
+        dt = dt.map((val) => callback(val));
+        return dt;
+      });
+    }));
+    return true;
+  }
+  return false;
+}
 export async function OnMessageCreate(
   id: string,
   gid: string,
   message: discord.Message,
 ) {
-  console.log('msg creat');
+  if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
+    return;
+  }
+  saveToPool(message);
 }
 export async function OnMessageDelete(
   id: string,
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
-  oldMessage: discord.Message,
 ) {
-  console.log('msg delet');
+  editPool(null, messageDelete.id);
+}
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
+  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+  if (targetId === discord.getBotId()) {
+    return false;
+  }
+  if (actor === null) {
+    if (target instanceof discord.User) {
+      return true;
+    }
+    let isTargetOverride = false;
+    if (utils.isGlobalAdmin(target.user.id)) {
+      isTargetOverride = await utils.isGAOverride(target.user.id);
+      return !isTargetOverride;
+    }
+    return true;
+  }
+  const isGA = utils.isGlobalAdmin(actor.user.id);
+  let isOverride = false;
+  if (isGA) {
+    isOverride = await utils.isGAOverride(actor.user.id);
+  }
+  let isTargetOverride = false;
+  if (utils.isGlobalAdmin(targetId)) {
+    isTargetOverride = await utils.isGAOverride(targetId);
+  }
+
+  const guild = await actor.getGuild();
+  const me = await guild.getMember(discord.getBotId());
+  // check bot can actually do it
+  if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+    return 'I can\'t manage messages';
+  }
+
+  const highestRoleMe = await utils.getMemberHighestRole(me);
+  const isGuildOwner = guild.ownerId === actor.user.id;
+
+  const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
+
+  // check levels and discord perms
+  if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
+    const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
+    const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
+    const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
+    const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
+
+    if (requireExtraPerms === true) {
+      if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+        return 'You can\'t manage messages';
+      }
+    }
+    if (actor.user.id === targetId) {
+      if (!allowSelf) {
+        return 'You can\'t target yourself';
+      }
+      return true;
+    }
+    if (checkLevels === true && target instanceof discord.GuildMember) {
+      const actorLevel = utils.getUserAuth(actor);
+      const targetLevel = utils.getUserAuth(target);
+      if (actorLevel <= targetLevel) {
+        return `You can't target this user (due to their level of ${targetLevel})`;
+      }
+    }
+    if (checkRoles === true) {
+      const highestActor = await utils.getMemberHighestRole(actor);
+      if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
+        return 'You can\'t target this user (due to their role hierarchy)';
+      }
+    }
+  }
+  if (isTargetOverride === true && !isOverride && actor.user.id !== targetId) {
+    if (!isGuildOwner) {
+      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable, please have the server owner perform it.';
+    }
+  }
+  return true;
+}
+
+export async function Clean(target: discord.GuildMember | discord.User, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, reason: string): Promise<string | boolean | number> {
+  const memberId = target instanceof discord.GuildMember ? target.user.id : target.id;
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  const canT = await canTarget(actor, target, channel, ActionType.CLEAN);
+  if (canT !== true) {
+    return canT;
+  }
+  return 0;
+}
+export function InitializeCommands() {
+  const F = discord.command.filters;
+
+  const _groupOptions = {
+    description: 'Admin Commands',
+    filters: c2.getFilters('admin', Ranks.Guest),
+  };
+
+  const optsGroup = c2.getOpts(
+    _groupOptions,
+  );
+  const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  cmdGroup.subcommand('clean', (subCommandGroup) => {
+    subCommandGroup.on(
+      { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
+      (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
+      async (msg, { user, reason }) => {
+        if (typeof reason !== 'string') {
+          reason = '';
+        }
+        // const msgs = await getMessagesBy({authorId: user.id});
+        const chan = await msg.getChannel();
+        const guild = await msg.getGuild();
+        let member: discord.User | discord.GuildMember = user;
+        const _tryf = await guild.getMember(user.id);
+        if (_tryf !== null) {
+          member = _tryf;
+        }
+        const res = await Clean(member, msg.member, chan, 5, reason);
+        if (typeof res !== 'number') {
+          if (res === false) {
+
+          }
+        }
+      },
+    );
+  });
+
+  return cmdGroup;
 }

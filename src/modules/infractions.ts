@@ -253,9 +253,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (utils.isGlobalAdmin(targetId)) {
     isTargetOverride = await utils.isGAOverride(targetId);
   }
-  if (actor.user.id === targetId && !isOverride) {
-    return 'You can\'t target yourself';
-  }
+
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
   // check bot can actually do it
@@ -291,6 +289,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
     const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
     const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
+    const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
@@ -299,6 +298,12 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       } if ((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
       }
+    }
+    if (actor.user.id === targetId) {
+      if (!allowSelf) {
+        return 'You can\'t target yourself';
+      }
+      return true;
     }
     if (checkLevels === true && target instanceof discord.GuildMember) {
       const actorLevel = utils.getUserAuth(actor);

@@ -9,6 +9,7 @@ import * as utilities from '../modules/utilities';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam';
+import * as admin from '../modules/admin';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -241,6 +242,28 @@ export function InitializeCommands() {
       'clearinfs', async (m) => {
         await infractions.clearInfractions();
         await m.reply('Done');
+      },
+    );
+    sub.raw(
+      'tracking', async (m) => {
+        const now = Date.now();
+        const res = await admin.getAllPools();
+        console.log(res);
+        await m.reply(`Done - ${res.length} - (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'cleantracking', async (m) => {
+        const now = Date.now();
+        const res = await admin.cleanPool();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'trackingkeys', async (m) => {
+        const now = Date.now();
+        const res = await new pylon.KVNamespace('admin').list();
+        await m.reply(`Done - ${res.length}keys - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(
