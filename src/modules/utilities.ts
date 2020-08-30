@@ -811,10 +811,12 @@ export function InitializeCommands() {
         if (statuses.length > 0) {
           desc += `\n  ${statuses.join('\n  ')}󠇰`;
         }
-        // actual server stuff
-        if (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id])) {
-          desc += `\n\n**❯ PyBoat Badges**\n${globalConfig.userBadges[user.id].join('\n')}`;
-        }
+      }
+      // actual server stuff
+      if (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id])) {
+        desc += `\n\n**❯ PyBoat Badges**\n${globalConfig.userBadges[user.id].join('\n')}`;
+      }
+      if (member !== null) {
         const roles = member.roles.map((rl) => `<@&${rl}>`).join(' ');
         desc += '\n\n**❯ Member Information**';
         const dtJoin = new Date(member.joinedAt);
