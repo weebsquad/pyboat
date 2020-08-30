@@ -267,6 +267,13 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
+      'cleartracking', async (m) => {
+        const now = Date.now();
+        await new pylon.KVNamespace('admin').clear();
+        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
       'join', async (m) => {
         const ch = await discord.getChannel('691752063134203974');
         if (!(ch instanceof discord.GuildVoiceChannel)) {

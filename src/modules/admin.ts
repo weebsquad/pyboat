@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-async-promise-executor */
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
 import * as constants from '../constants/constants';
 import * as c2 from '../lib/commands2';
+import * as infractions from './infractions';
+import { AL_OnChannelCreate } from './logging/tracking';
 
 const poolsKv = new pylon.KVNamespace('admin');
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
 // const BOT_DELETE_DAYS = 14*24*60*60*1000;
-const BOT_DELETE_DAYS = 60 * 1000;
+const BOT_DELETE_DAYS = 60 * 60 * 1000;
 
 enum ActionType {
     'CLEAN'
@@ -17,14 +20,14 @@ class TrackedMessage {
     id: string;
     channelId: string;
     bot: boolean;
-    // ts: number;
+    ts: number;
     // type: discord.Message.Type;
     // flags: discord.Message.Flags;
     constructor(message: discord.Message.AnyMessage) {
       this.authorId = message.author.id;
       this.channelId = message.channelId;
       this.id = message.id;
-      // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+      this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.bot = message.author.bot;
       if (message.webhookId !== null) {
         this.bot = true;
@@ -42,7 +45,7 @@ export async function cleanPool() {
   await Promise.all(items.map(async (item: any) => {
     const vl: Array<TrackedMessage> = item.value;
     const { key } = item;
-    const toRemove = vl.filter((e) => e === null || diff > (BOT_DELETE_DAYS + utils.decomposeSnowflake(e.id).timestamp)).map((e) => (e === null ? null : e.id));
+    const toRemove = vl.filter((e) => e === null || diff > (BOT_DELETE_DAYS + e.ts)).map((e) => (e === null ? null : e.id));
     if (toRemove.length > 0) {
       console.log(`Removing ${toRemove.length} items!`);
       await poolsKv.transact(key, (prev: any) => prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id)));
@@ -60,7 +63,6 @@ export async function saveToPool(msg: discord.GuildMemberMessage) {
     }
     const _entries: Array<TrackedMessage> = item.value;
     const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + thisLen;
-    console.log(`[${item.key}] using ${len} bytes`);
     if (len < MAX_POOL_SIZE) {
       saveTo = item.key;
       return false;
@@ -124,9 +126,177 @@ export async function getAllPools(): Promise<Array<TrackedMessage>> {
       _ret.push(...e.value);
     }
   });
-  _ret = _ret.filter((item) => item !== null && utils.decomposeSnowflake(item.id).timestamp >= diff);
+  _ret = _ret.filter((item) => item !== null && item.ts >= diff).sort((a, b) => a.ts - b.ts);
   return _ret;
 }
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
+    const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+    if (targetId === discord.getBotId()) {
+      return false;
+    }
+    if (actor === null) {
+      if (target instanceof discord.User) {
+        return true;
+      }
+      let isTargetOverride = false;
+      if (utils.isGlobalAdmin(target.user.id)) {
+        isTargetOverride = await utils.isGAOverride(target.user.id);
+        return !isTargetOverride;
+      }
+      return true;
+    }
+    const isGA = utils.isGlobalAdmin(actor.user.id);
+    let isOverride = false;
+    if (isGA) {
+      isOverride = await utils.isGAOverride(actor.user.id);
+    }
+    let isTargetOverride = false;
+    if (utils.isGlobalAdmin(targetId)) {
+      isTargetOverride = await utils.isGAOverride(targetId);
+    }
+  
+    const guild = await actor.getGuild();
+    const me = await guild.getMember(discord.getBotId());
+    // check bot can actually do it
+    if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+      return 'I can\'t manage messages';
+    }
+  
+    const highestRoleMe = await utils.getMemberHighestRole(me);
+    const isGuildOwner = guild.ownerId === actor.user.id;
+  
+    const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
+  
+    // check levels and discord perms
+    if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
+      const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
+      const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
+      const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
+      const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
+  
+      if (requireExtraPerms === true) {
+        if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+          return 'You can\'t manage messages';
+        }
+      }
+      if (actor.user.id === targetId) {
+        if (!allowSelf) {
+          return 'You can\'t target yourself';
+        }
+        return true;
+      }
+      if (checkLevels === true && target instanceof discord.GuildMember) {
+        const actorLevel = utils.getUserAuth(actor);
+        const targetLevel = utils.getUserAuth(target);
+        if (actorLevel <= targetLevel) {
+          return `You can't target this user (due to their level of ${targetLevel})`;
+        }
+      }
+      if (checkRoles === true) {
+        const highestActor = await utils.getMemberHighestRole(actor);
+        if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
+          return 'You can\'t target this user (due to their role hierarchy)';
+        }
+      }
+    }
+    if (isTargetOverride === true && !isOverride && actor.user.id !== targetId) {
+      if (!isGuildOwner) {
+        return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable, please have the server owner perform it.';
+      }
+    }
+    return true;
+  }
+  
+  let cleaning = false;
+  export async function Clean(dtBegin: number, target: discord.GuildMember | discord.User, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, channelTarget: string | undefined, reason: string, bypassCleaning: boolean = false): Promise<string | boolean | number> {
+    const memberId = target instanceof discord.GuildMember ? target.user.id : target.id;
+    const guild = await channel.getGuild();
+    if(guild === null) return false;
+    if (typeof reason !== 'string') {
+      reason = '';
+    }
+    if (reason.length > 101) {
+      reason = reason.substr(0, 100);
+    }
+    if (count === 0) {
+      return false;
+    }
+    const canT = await canTarget(actor, target, channel, ActionType.CLEAN);
+    if (canT !== true) {
+      return canT;
+    }
+    if(cleaning === true && !bypassCleaning) {
+        return 'Already running a clean operation, please try again later';
+    }
+    const diff = dtBegin-500;
+    let msgs = (await getMessagesBy({ authorId: memberId, channelId: channelTarget })).filter((item) => item.ts < diff);
+    if (msgs.length === 0) {
+      return 0;
+    }
+    msgs = msgs.slice(Math.max(msgs.length - count, 0));
+    if (msgs.length === 0) {
+        return 0;
+      }
+    cleaning = true;
+    const deleted = [];
+    const channelMapping: {[key: string]: Array<string>} = {};
+    if (typeof channelTarget === 'string') {
+      channelMapping[channelTarget] = [].concat(msgs).map((item) => item.id);
+    } else {
+      msgs.forEach((item) => {
+        if (!Array.isArray(channelMapping[item.channelId])) {
+          channelMapping[item.channelId] = [];
+        }
+        channelMapping[item.channelId].push(item.id);
+      });
+    }
+    const me = await guild.getMember(discord.getBotId());
+    if(me === null) return;
+    const promises = [];
+    for (const channelId in channelMapping) {
+      promises.push(new Promise(async (resolve, reject) => {
+        const msgIds = channelMapping[channelId];
+        let channeltest: discord.GuildChannel;
+        if (channel.id === channelId) {
+          channeltest = channel;
+        } else {
+          const _chan = await discord.getChannel(channelId);
+          if (_chan instanceof discord.GuildChannel) {
+            channeltest = _chan;
+          }
+        }
+        if (!channeltest || (!(channeltest instanceof discord.GuildTextChannel) && !(channeltest instanceof discord.GuildNewsChannel))) {
+          resolve();
+          return;
+        }
+        const channelThis: discord.GuildTextChannel | discord.GuildNewsChannel = channeltest;
+        if(!channelThis.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+            resolve();
+            return;
+        }
+        if (msgIds.length === 1) {
+          try {
+            const msg = await channelThis.getMessage(msgIds[0]);
+            await msg.delete();
+            deleted.push(msgIds[0]);
+          } catch (e) {}
+        } else if (msgIds.length > 100) {
+          const splits = utils.chunkArrayInGroups(msgIds, 99);
+          await Promise.all(splits.map(async (newmids) => {
+            await channelThis.bulkDeleteMessages(newmids);
+            deleted.push(...newmids);
+          }));
+        } else {
+          await channelThis.bulkDeleteMessages(msgIds);
+          deleted.push(...msgIds);
+        }
+        resolve();
+      }));
+    }
+    await Promise.all(promises);
+    cleaning = false;
+    return deleted.length;
+  }
 
 export async function getMessagesBy(query: any) {
   const ps = (await getAllPools());
@@ -135,6 +305,9 @@ export async function getMessagesBy(query: any) {
   }
   const newPs = ps.filter((inf) => {
     for (const key in query) {
+      if (typeof query[key] === 'undefined') {
+        continue;
+      }
       if (inf[key] !== query[key]) {
         return false;
       }
@@ -160,7 +333,7 @@ export async function editPools(ids: Array<string>, callback: Function) {
     await Promise.all(transactPools.map(async (item) => {
       await poolsKv.transact(item.key, (prev: any) => {
         let dt: Array<TrackedMessage> = JSON.parse(JSON.stringify(prev));
-        dt = dt.map((val) => callback(val));
+        dt = dt.map((val) => callback(val)).filter((val) => val !== null && typeof val !== 'undefined')
         return dt;
       });
     }));
@@ -185,101 +358,23 @@ export async function OnMessageDelete(
 ) {
   editPool(null, messageDelete.id);
 }
-export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
-  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
-  if (targetId === discord.getBotId()) {
-    return false;
-  }
-  if (actor === null) {
-    if (target instanceof discord.User) {
-      return true;
-    }
-    let isTargetOverride = false;
-    if (utils.isGlobalAdmin(target.user.id)) {
-      isTargetOverride = await utils.isGAOverride(target.user.id);
-      return !isTargetOverride;
-    }
-    return true;
-  }
-  const isGA = utils.isGlobalAdmin(actor.user.id);
-  let isOverride = false;
-  if (isGA) {
-    isOverride = await utils.isGAOverride(actor.user.id);
-  }
-  let isTargetOverride = false;
-  if (utils.isGlobalAdmin(targetId)) {
-    isTargetOverride = await utils.isGAOverride(targetId);
-  }
 
-  const guild = await actor.getGuild();
-  const me = await guild.getMember(discord.getBotId());
-  // check bot can actually do it
-  if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-    return 'I can\'t manage messages';
-  }
-
-  const highestRoleMe = await utils.getMemberHighestRole(me);
-  const isGuildOwner = guild.ownerId === actor.user.id;
-
-  const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
-
-  // check levels and discord perms
-  if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
-    const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
-    const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
-    const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
-    const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
-
-    if (requireExtraPerms === true) {
-      if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
-        return 'You can\'t manage messages';
+export async function OnMessageDeleteBulk(
+    id: string,
+    gid: string,
+    messages: discord.Event.IMessageDeleteBulk,
+  ) {
+    editPools(messages.ids, (val: TrackedMessage) => {
+        if(val === null) return null;
+      if (messages.ids.includes(val.id)) {
+        return null;
       }
-    }
-    if (actor.user.id === targetId) {
-      if (!allowSelf) {
-        return 'You can\'t target yourself';
-      }
-      return true;
-    }
-    if (checkLevels === true && target instanceof discord.GuildMember) {
-      const actorLevel = utils.getUserAuth(actor);
-      const targetLevel = utils.getUserAuth(target);
-      if (actorLevel <= targetLevel) {
-        return `You can't target this user (due to their level of ${targetLevel})`;
-      }
-    }
-    if (checkRoles === true) {
-      const highestActor = await utils.getMemberHighestRole(actor);
-      if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
-        return 'You can\'t target this user (due to their role hierarchy)';
-      }
-    }
+      return val;
+    });
   }
-  if (isTargetOverride === true && !isOverride && actor.user.id !== targetId) {
-    if (!isGuildOwner) {
-      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable, please have the server owner perform it.';
-    }
-  }
-  return true;
-}
 
-export async function Clean(target: discord.GuildMember | discord.User, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, reason: string): Promise<string | boolean | number> {
-  const memberId = target instanceof discord.GuildMember ? target.user.id : target.id;
-  if (typeof reason !== 'string') {
-    reason = '';
-  }
-  if (reason.length > 101) {
-    reason = reason.substr(0, 100);
-  }
-  const canT = await canTarget(actor, target, channel, ActionType.CLEAN);
-  if (canT !== true) {
-    return canT;
-  }
-  return 0;
-}
+
 export function InitializeCommands() {
-  const F = discord.command.filters;
-
   const _groupOptions = {
     description: 'Admin Commands',
     filters: c2.getFilters('admin', Ranks.Guest),
@@ -292,10 +387,10 @@ export function InitializeCommands() {
   cmdGroup.subcommand('clean', (subCommandGroup) => {
     subCommandGroup.on(
       { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
-      (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
-      async (msg, { user, reason }) => {
-        if (typeof reason !== 'string') {
-          reason = '';
+      (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({maxValue: 1000, minValue: 1}) }),
+      async (msg, { user, count }) => {
+        if(typeof count !== 'number') {
+            count = 50;
         }
         // const msgs = await getMessagesBy({authorId: user.id});
         const chan = await msg.getChannel();
@@ -305,11 +400,17 @@ export function InitializeCommands() {
         if (_tryf !== null) {
           member = _tryf;
         }
-        const res = await Clean(member, msg.member, chan, 5, reason);
+        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, member, msg.member, chan, count, undefined, "");
         if (typeof res !== 'number') {
           if (res === false) {
-
+            await infractions.confirmResult(undefined, msg, false, 'Failed to clean user');
+          } else if (typeof res === 'string') {
+            await infractions.confirmResult(undefined, msg, false, res);
           }
+        } else if (res > 0) {
+          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from ${user.getTag()}`);
+        } else {
+          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
         }
       },
     );
