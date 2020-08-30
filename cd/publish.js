@@ -17,7 +17,7 @@ if (dep.includes('|')) {
   _dep = [].concat(dep.split('|'));
 }
 const isDebug = !isGh && _dep.length === 1;
-
+let toPost = '';
 function deserialize(value) {
   if (typeof value === 'object' && value !== null) {
     switch (value['@t']) {
@@ -129,7 +129,7 @@ _dep.forEach((deployment_id) => {
       } else {
         console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
-          sendWebhook(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**`);
+          toPost += `✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**\n\n`;
         }
         if (isDebug && !isGh) {
           // console.log(obj);
@@ -142,4 +142,7 @@ _dep.forEach((deployment_id) => {
       console.error(e);
       process.exit(1);
     });
+  if (toPost !== '') {
+    sendWebhook(toPost);
+  }
 });

@@ -7,9 +7,9 @@ import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 import * as inf from './infractions';
 
-const kv = new pylon.KVNamespace('antiPing');
+export const kv = new pylon.KVNamespace('antiPing');
 
-const kvDataKey = 'antiPingData';
+export const kvDataKey = 'antiPingData';
 const kvIgnoresKey = 'antiPingIgnores';
 
 async function isIllegalMention(
@@ -187,27 +187,87 @@ async function log(type: string, usr: discord.User | undefined = undefined, acto
 }
 
 async function messageDeleted(messageId: string) {
-  const data:any = await kv.get(kvDataKey);
-  let changed = false;
-  for (const userId in data) {
-    for (const mId in data[userId]) {
-      const obj = data[userId][mId].BotReplyMsg;
-      if (obj.id === messageId) {
-        delete data[userId][mId];
-        changed = true;
-        break;
+  // const data:any = await kv.get(kvDataKey);
+  await kv.transact(kvDataKey, (prev: any) => {
+    let data;
+    if (typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
+    }
+    for (const userId in data) {
+      for (const mId in data[userId]) {
+        const obj = data[userId][mId].BotReplyMsg;
+        if (obj.id === messageId) {
+          delete data[userId][mId];
+          break;
+        }
+      }
+      if (Object.keys(data[userId]).length === 0) {
+        delete data[userId];
       }
     }
-    if (Object.keys(data[userId]).length === 0) {
-      changed = true;
-      delete data[userId];
+    return data;
+  });
+}
+async function messagesDeleted(messageIds: Array<string>) {
+  // const data:any = await kv.get(kvDataKey);
+  await kv.transact(kvDataKey, (prev: any) => {
+    let data;
+    if (typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
     }
-  }
-  if (changed) {
-    await kv.put(kvDataKey, data);
-  }
+    for (const userId in data) {
+      for (const mId in data[userId]) {
+        const obj = data[userId][mId].BotReplyMsg;
+        if (messageIds.includes(obj.id)) {
+          delete data[userId][mId];
+          break;
+        }
+      }
+      if (Object.keys(data[userId]).length === 0) {
+        delete data[userId];
+      }
+    }
+    return data;
+  });
 }
 
+export async function periodicDataClear() {
+  const data:any = await kv.get(kvDataKey);
+  const toRem = [];
+  for (const userId in data) {
+    for (const mId in data[userId]) {
+      const ts = utils.decomposeSnowflake(mId).timestamp;
+      if (Date.now() - ts >= 24 * 60 * 60 * 1000) {
+        toRem.push(mId);
+      }
+    }
+  }
+  if (toRem.length > 0) {
+    await kv.transact(kvDataKey, (prev: any) => {
+      let _cp;
+      if (typeof prev === 'object') {
+        _cp = JSON.parse(JSON.stringify(prev));
+      } else {
+        _cp = {};
+      }
+      for (const userId in _cp) {
+        for (const mId in _cp[userId]) {
+          if (toRem.includes(mId)) {
+            delete _cp[userId][mId];
+          }
+        }
+        if (Object.keys(_cp[userId]).length === 0) {
+          delete _cp[userId];
+        }
+      }
+      return _cp;
+    });
+  }
+}
 async function clearUserData(userId: string) {
   let ignores = await kv.get(kvIgnoresKey);
   if (!Array.isArray(ignores)) {
@@ -217,6 +277,18 @@ async function clearUserData(userId: string) {
     ignores.splice(ignores.indexOf(userId), 1);
     await kv.put(kvIgnoresKey, ignores);
   }
+  await kv.transact(kvDataKey, (prev: any) => {
+    let _new;
+    if (typeof prev === 'object') {
+      _new = JSON.parse(JSON.stringify(prev));
+    } else {
+      _new = {};
+    }
+    if (typeof (_new[userId]) === 'object') {
+      delete _new[userId];
+    }
+    return _new;
+  });
 }
 
 async function wipeAllUserMessages(userId: string, allMessages = false) {
@@ -310,18 +382,12 @@ export async function OnMessageCreate(
   const msg = config.modules.antiPing.caughtMessages[
     Math.floor(Math.random() * config.modules.antiPing.caughtMessages.length)
   ];
-  let data = await kv.get(kvDataKey);
-  if (typeof data !== 'object') {
-    data = {};
-  }
-  if (typeof data[author.id] !== 'object') {
-    data[author.id] = {};
-  }
+  const data = await kv.get(kvDataKey);
   let isMute = false;
-  if (typeof config.modules.antiPing.pingsForAutoMute === 'number' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
+  if (typeof data === 'object' && typeof config.modules.antiPing.pingsForAutoMute === 'number' && typeof data[author.id] === 'object' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
-      const res = await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
+      await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
     } catch (e) {
       isMute = false; // fallback meme
     }
@@ -360,6 +426,7 @@ export async function OnMessageCreate(
     'type',
     'timestamp',
     'content',
+    'embeds',
     'guildId',
   ];
   for (let i = 0; i < 2; i += 1) {
@@ -368,19 +435,14 @@ export async function OnMessageCreate(
       objtarg = msgReply;
     }
     for (const key in objtarg) {
-      if (clearKeys.indexOf(key) > -1) {
+      if (clearKeys.includes(key)) {
         continue;
       }
       dataSaves[i][key] = objtarg[key];
     }
     dataSaves[i].authorId = objtarg.author.id;
-    dataSaves[i].guildId = guild.id;
+    // dataSaves[i].guildId = guild.id;
   }
-
-  data[author.id][message.id] = {
-    BotReplyMsg: dataSaves[0],
-    OriginalMsg: dataSaves[1],
-  };
 
   const pingCount = message.mentions.length;
   let pingText = `${pingCount} users`;
@@ -400,10 +462,30 @@ export async function OnMessageCreate(
     await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
   }
 
-  await kv.put(kvDataKey, data);
-  for (const key in config.modules.antiPing.emojiActions) {
-    await msgReply.addReaction(key.split(' ').join(''));
-  }
+  await kv.transact(kvDataKey, (prev: any) => {
+    let data;
+    if (typeof prev === 'object') {
+      data = JSON.parse(JSON.stringify(prev));
+    } else {
+      data = {};
+    }
+    if (typeof data !== 'object') {
+      data = {};
+    }
+    if (typeof data[author.id] !== 'object') {
+      data[author.id] = {};
+    }
+    data[author.id][message.id] = {
+      BotReplyMsg: dataSaves[0],
+      OriginalMsg: dataSaves[1],
+    };
+    return data;
+  });
+  try {
+    for (const key in config.modules.antiPing.emojiActions) {
+      await msgReply.addReaction(key.split(' ').join(''));
+    }
+  } catch (e) {}
 
   return false; // So nothing else runs :))
 }
@@ -418,10 +500,7 @@ export async function OnMessageDelete(id: string,
 export async function OnMessageDeleteBulk(id: string,
                                           guildId: string,
                                           ev: discord.Event.IMessageDeleteBulk) {
-  // check if deleted message is bot's reply
-  for (const key in ev.ids) {
-    await messageDeleted(key);
-  }
+  await messagesDeleted(ev.ids);
 }
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
@@ -595,6 +674,9 @@ export async function OnMessageReactionAdd(id: string,
       await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
     }
     await wipeAllUserMessages(userMsg.authorId, wipeAll);
+    if (emojiAction.toLowerCase() === 'ignore' || emojiAction.toLowerCase() === 'ignoreonce') {
+      await clearUserData(userMsg.authorId);
+    }
   }
 }
 
@@ -628,7 +710,7 @@ export async function AL_OnGuildMemberRemove(id: string,
   } else {
     await inf.Ban(user, null, 7, 'AntiPing AutoBan for leaving the server with pending autoping punishments');
     wipeAllUserMessages(user.id, true);
-    await log('LEFT_BANNED', user);
+    log('LEFT_BANNED', user);
     await clearUserData(user.id);
   }
 }
@@ -636,7 +718,6 @@ export async function OnGuildBanAdd(id: string,
                                     guildId: string,
                                     ban: discord.GuildBan) {
   // If they get banned after memeing us (let's clear their shit)
-  const data = await kv.get(kvDataKey);
   const { user } = ban;
   wipeAllUserMessages(user.id, true);
   await clearUserData(user.id);

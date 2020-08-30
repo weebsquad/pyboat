@@ -161,44 +161,7 @@ async function resetInterval(retry = true) {
     }, _r);
   }
 }
-export async function checkObject(obj: QueuedEvent) {
-  const _st = new Date();
-  let run = true;
-  // eslint-disable-next-line no-undef
-  await sleep(Math.min(maxEventRuntime, interval) + 100);
-  const _e = obj;
-  let tries = 0;
-  const mx = Math.min(maxEventRuntime, Math.ceil(interval * 6));
-  while (run === true) {
-    tries += 1;
-    // eslint-disable-next-line no-undef
-    // eslint-disable-next-line no-restricted-properties
-    await sleep(Math.min(2000, Math.pow(2, tries)));
-    const diff = new Date().getTime() - _st.getTime();
-    if (diff >= mx) {
-      run = false;
-      return;
-    }
-    const _f = queue.findIndex((e) => e.id === _e.id);
-    if (_f === -1 && !_e.processed && !_e.verified) {
-      console.warn(`Event ${_e.id} gone! Re-adding...`, _lock, queue);
-      /* await logDebug(
-        'BOT_ERROR',
-        new Map<string, any>([
-          ['ERROR', `Event ${_e.id} (${_e.eventName}) gone! Re-adding...`]
-        ])
-      ); */
-      queue.push(_e);
-      // resetInterval();
-      tries = 0;
-    } else if (queue[_f].processed === true) {
-      queue[_f].verified = true;
-      _e.processed = true;
-      _e.verified = true;
-      return;
-    }
-  }
-}
+
 export async function addToQueue(eventName: string, ts: string, ...args: any) {
   const obj = new QueuedEvent(eventName, ...args);
   obj.id = ts;
