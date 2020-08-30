@@ -13,7 +13,6 @@ const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
-      console.log('\n\nRunning cron');
       const now = Date.now();
       await pylon.requestCpuBurst(async () => {
         let dt = Date.now();

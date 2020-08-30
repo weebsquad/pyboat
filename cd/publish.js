@@ -106,9 +106,6 @@ _dep.forEach((deployment_id) => {
 
   // eslint-disable-next-line consistent-return
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
-    // if (!isGh) {
-    //   console.log(r);
-    // }
     try {
       const txtJson = r.json();
       return txtJson;
@@ -132,7 +129,6 @@ _dep.forEach((deployment_id) => {
           toPost.push(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**`);
         }
         if (isDebug && !isGh) {
-          // console.log(obj);
           workbenchWs(obj.workbench_url);
         }
       }

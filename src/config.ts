@@ -238,6 +238,9 @@ const defaultConfig = { // for non-defined configs!
       categories: {},
       levels: {},
     },
+    admin: {
+      enabled: true,
+    },
   },
 };
 export const guildConfigs = <any>{};
@@ -406,7 +409,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
       dat = JSON.stringify(dat);
-      // console.log(dat);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       const len = dat.length;
