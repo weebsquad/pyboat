@@ -863,6 +863,9 @@ export function InitializeCommands() {
         if (hasPerms.ADMINISTRATOR === true) {
           hasPerms = { ADMINISTRATOR: true };
         }
+        if (guild.ownerId === user.id) {
+          hasPerms = { SERVER_OWNER: true };
+        }
         hasPerms = Object.keys(hasPerms).map((str) => str.split('_').map((upp) => `${upp.substr(0, 1).toUpperCase()}${upp.substr(1).toLowerCase()}`).join(' '));
         const auth = utils.getUserAuth(member);
         if ((Number(perms.bitfield) > 0 && hasPerms.length > 0) || auth > 0) {
