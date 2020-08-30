@@ -10,11 +10,43 @@ import { getMemberTag } from './logging/utils';
 import { KVManager } from '../lib/utils';
 import { getInfractionBy } from './infractions';
 
+const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
+
 /* ROLE PERSIST */
+
 const persistPrefix = 'Persist_';
+
+interface ChannelPersist extends discord.Channel.IPermissionOverwrite {
+  channelId: string;
+}
+class MemberPersist {
+  ts: number;
+  memberId: string;
+  roles: Array<string> | undefined;
+  nick: string | undefined;
+  level: number | undefined;
+  channels: Array<ChannelPersist> | undefined;
+  constructor(member: string, roles: Array<string> | undefined, nick: string | undefined | null, level: number | undefined, channels: Array<ChannelPersist> | undefined) {
+    this.ts = Date.now();
+    this.memberId = member;
+    this.roles = roles;
+    if (typeof nick === 'string' && nick.length > 0) {
+      this.nick = nick;
+    }
+    if (typeof level === 'number' && level > 0) {
+      this.level = level;
+    }
+    if (channels.length > 0) {
+      this.channels = channels;
+    }
+    return this;
+  }
+}
+const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
+
 export async function getStoredUserOverwrites(userId: string) {
   const ows = await KVManager.get(`${persistPrefix}channels`);
-  const res = [];
+  const res: Array<ChannelPersist> = [];
   if (ows && ows !== null && typeof ows === 'object') {
     for (const channelId in ows) {
       const overwrites = ows[channelId].filter((ow) => ow.id === userId).map((ow) => {
@@ -105,19 +137,8 @@ async function savePersistData(member: discord.GuildMember) {
     return;
   }
   const channels = await getStoredUserOverwrites(member.user.id);
-  /*
-  await persistkv.put(member.user.id, {
-    roles: member.roles,
-    nick: member.nick,
-    level: utils.getUserAuth(member),
-  }, { ttl: config.modules.utilities.persist.duration }); */
-
-  await utils.KVManager.set(persistPrefix + member.user.id, {
-    roles: member.roles,
-    nick: member.nick,
-    level: utils.getUserAuth(member),
-    channels: channels.length > 0 ? channels : undefined,
-  });
+  const newObj = new MemberPersist(member.user.id, member.roles, member.nick, utils.getUserAuth(member), channels);
+  await persistPool.saveToPool(newObj);
   logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
 }
 
@@ -125,12 +146,13 @@ async function restorePersistData(member: discord.GuildMember) {
   if (!config.modules.utilities.persist || config.modules.utilities.persist.enabled !== true) {
     return false;
   }
-
-  const dt: any = await utils.KVManager.get(persistPrefix + member.user.id);
-  if (!dt || dt === null) {
+  const dt = await persistPool.getById<MemberPersist>(member.user.id);
+  if (!dt) {
     return false;
   }
-  const thisconf = getPersistConf(member, dt.level);
+
+  const lvl = typeof dt.level === 'number' ? dt.level : 0;
+  const thisconf = getPersistConf(member, lvl);
   if (thisconf === null) {
     return false;
   }
@@ -202,9 +224,9 @@ async function restorePersistData(member: discord.GuildMember) {
       }
       await channel.edit({ permissionOverwrites: ows });
     }));
-  }
-  // await persistkv.delete(member.user.id);
-  await utils.KVManager.delete(persistPrefix + member.user.id);
+  } 
+
+  await persistPool.editPool(member.user.id, undefined);
   logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
   return true;
 }
@@ -276,8 +298,7 @@ export async function OnGuildBanAdd(
   }
   try {
     if (config.modules.utilities.persist.saveOnBan !== true) {
-      // await persistkv.delete(ban.user.id);
-      await utils.KVManager.delete(persistPrefix + ban.user.id);
+     persistPool.editPool(ban.user.id, undefined);
     }
   } catch (e) {}
 }
@@ -298,7 +319,7 @@ export async function AL_OnGuildMemberRemove(
       }
     }
   }
-  await savePersistData(oldMember);
+  savePersistData(oldMember);
 }
 
 export async function OnGuildMemberAdd(
@@ -309,7 +330,7 @@ export async function OnGuildMemberAdd(
   if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
     return;
   }
-  await restorePersistData(member);
+  restorePersistData(member);
 }
 
 /* SNIPE */
@@ -449,17 +470,17 @@ export function InitializeCommands() {
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
         (ctx) => ({ usr: ctx.user() }),
         async (msg, { usr }) => {
-          const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
-          if (!thiskv) {
+          const thisObj = await persistPool.getById<MemberPersist>(usr.id);
+          if (!thisObj) {
             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
             return;
           }
           let rls = 'None';
-          if (thiskv.roles.length > 0) {
-            const rlsfo = thiskv.roles.map((rl) => `<@&${rl}>`).join(', ');
+          if (thisObj.roles.length > 0) {
+            const rlsfo = thisObj.roles.map((rl) => `<@&${rl}>`).join(', ');
             rls = rlsfo;
           }
-          const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thiskv.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thiskv.nick === null ? 'None' : `\`${utils.escapeString(thiskv.nick)}\``}${Array.isArray(thiskv.channels) ? `\n**Channel Overwrites**: ${thiskv.channels.length}` : ''}`;
+          const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thisObj.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thisObj.nick === null || typeof thisObj.nick !== 'string' ? 'None' : `\`${utils.escapeString(thisObj.nick)}\``}${Array.isArray(thisObj.channels) ? `\n**Channel Overwrites**: ${thisObj.channels.length}` : ''}`;
           await msg.reply({ content: txt, allowedMentions: {} });
         },
       );
@@ -467,12 +488,12 @@ export function InitializeCommands() {
         { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
         (ctx) => ({ usr: ctx.user() }),
         async (msg, { usr }) => {
-          const thiskv: any = await utils.KVManager.get(`${persistPrefix}${usr.id}`);
+          const thiskv = await persistPool.getById<MemberPersist>(usr.id);
           if (!thiskv) {
             await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
             return;
           }
-          await utils.KVManager.delete(`${persistPrefix}${usr.id}`);
+          await persistPool.editPool(usr.id, undefined);
           await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`);
         },
       );

@@ -7,14 +7,17 @@ import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag } from './logging/main';
+import {StoragePool} from '../lib/storagePools'
 
-const poolsKv = new pylon.KVNamespace('admin');
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
 const TRACKING_KEYS_LIMIT = 150;
+const ENTRIES_PER_POOL = 37; // approximate maximum
+
+export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
 enum ActionType {
     'CLEAN'
@@ -42,112 +45,10 @@ class TrackedMessage {
     }
 }
 
-export async function cleanPool() {
-  let diff = Date.now() - BOT_DELETE_DAYS;
-  const items = await poolsKv.items();
-  const count = items.length;
-  if (count >= TRACKING_KEYS_LIMIT) {
-    // every 10 keys after 150 = 1 day removed
-    const extraRemove = Math.floor(((count - TRACKING_KEYS_LIMIT) / 10) * 1000 * 60 * 60 * 24);
-    diff += extraRemove;
-  }
-  await Promise.all(items.map(async (item: any) => {
-    const vl: Array<TrackedMessage> = item.value;
-    const { key } = item;
-    const toRemove = vl.filter((e) => e === null || diff > e.ts).map((e) => (e === null ? null : e.id));
-    if (toRemove.length > 0) {
-      let vlCheckEmpty: undefined | Array<TrackedMessage>;
-      await poolsKv.transact(key, (prev: any) => {
-        const newDt = prev.filter((e: TrackedMessage) => e !== null && !toRemove.includes(e.id));
-        vlCheckEmpty = newDt;
-        return newDt;
-      });
-      if (Array.isArray(vlCheckEmpty) && vlCheckEmpty.length === 0) {
-        try {
-          await poolsKv.delete(key, { prevValue: [] });
-        } catch (e) {
-        }
-      }
-    }
-  }));
-}
-export async function saveToPool(msg: discord.GuildMemberMessage) {
-  const newObj = JSON.parse(JSON.stringify(new TrackedMessage(msg)));
-  const thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
-  const items = await poolsKv.items();
-  let saveTo;
-  const res = items.every((item: any) => {
-    if (!Array.isArray(item.value)) {
-      return true;
-    }
-    const _entries: Array<TrackedMessage> = item.value;
-    const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + thisLen;
-    if (len < MAX_POOL_SIZE) {
-      saveTo = item.key;
-      return false;
-    }
-    return true;
-  });
-  if (res === true) {
-    await poolsKv.put(utils.composeSnowflake(), [newObj]);
-    return true;
-  }
-  if (res === false && typeof saveTo === 'string') {
-    for (let i = 0; i < 2; i += 1) {
-      try {
-        await poolsKv.transact(saveTo, (prev: any) => prev.concat(newObj));
-        return true;
-      } catch (e) {
-      }
-    }
-    return false;
-  }
 
-  return false;
-}
-export async function editPool(msg: discord.GuildMemberMessage | null, msgId: string | undefined = undefined) {
-  let newObj;
-  if (msg !== null) {
-    newObj = new TrackedMessage(msg);
-    msgId = msg.id;
-  }
-  const items = await poolsKv.items();
-  const res = items.find((item: any) => item.value.find((e: TrackedMessage) => e !== null && e.id === msgId) !== undefined);
-  if (res) {
-    for (let i = 0; i < 2; i += 1) {
-      try {
-        await poolsKv.transact(res.key, (prev: any) => {
-          const newData = JSON.parse(JSON.stringify(prev));
-          const _ind = newData.findIndex((e: TrackedMessage) => e !== null && e.id === msgId);
-          if (_ind !== -1 && msg !== null) {
-            newData[_ind] = newObj;
-          } else if (_ind !== -1 && msg === null) {
-            delete newData[_ind];
-          }
-          return newData;
-        });
-        return true;
-      } catch (e) {
-      }
-    }
-    return false;
-  }
 
-  return false;
-}
-export async function getAllPools(): Promise<Array<TrackedMessage>> {
-  const now = Date.now();
-  const diff = now - BOT_DELETE_DAYS;
-  const items = await poolsKv.items();
-  let _ret: Array<TrackedMessage> = [];
-  items.map((e: any) => {
-    if (Array.isArray(e.value)) {
-      _ret.push(...e.value);
-    }
-  });
-  _ret = _ret.filter((item) => item !== null && item.ts >= diff).sort((a, b) => a.ts - b.ts);
-  return _ret;
-}
+
+
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   if (targetId === discord.getBotId()) {
@@ -420,7 +321,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
       delete query[k];
     }
   }
-  let msgs = (await getMessagesBy(query)).filter((item) => item.ts < diff);
+  let msgs = (await adminPool.getByQuery<TrackedMessage>(query)).filter((item) => item.ts < diff);
   if (msgs.length === 0) {
     return 0;
   }
@@ -506,49 +407,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   return deleted.length;
 }
 
-export async function getMessagesBy(query: any) {
-  const ps = (await getAllPools());
-  if (query === null) {
-    return ps;
-  }
-  const newPs = ps.filter((inf) => {
-    for (const key in query) {
-      if (typeof query[key] === 'undefined') {
-        continue;
-      }
-      if (inf[key] !== query[key]) {
-        return false;
-      }
-    }
-    return true;
-  });
-  return newPs;
-}
-export async function editPools(ids: Array<string>, callback: Function) {
-  const items = await poolsKv.items();
-  const transactPools = items.filter((item: any) => {
-    if (Array.isArray(item.value)) {
-      const _val: Array<TrackedMessage> = item.value;
-      const hasAny = _val.find((entry) => entry !== null && ids.includes(entry.id));
-      if (!hasAny) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  });
-  if (transactPools.length > 0) {
-    await Promise.all(transactPools.map(async (item) => {
-      await poolsKv.transact(item.key, (prev: any) => {
-        let dt: Array<TrackedMessage> = JSON.parse(JSON.stringify(prev));
-        dt = dt.map((val) => callback(val)).filter((val) => val !== null && typeof val !== 'undefined');
-        return dt;
-      });
-    }));
-    return true;
-  }
-  return false;
-}
+
 export async function OnMessageCreate(
   id: string,
   gid: string,
@@ -557,14 +416,14 @@ export async function OnMessageCreate(
   if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
     return;
   }
-  saveToPool(message);
+  adminPool.saveToPool(new TrackedMessage(message));
 }
 export async function OnMessageDelete(
   id: string,
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
 ) {
-  editPool(null, messageDelete.id);
+  adminPool.editPool(messageDelete.id, null);
 }
 
 export async function OnMessageDeleteBulk(
@@ -572,7 +431,7 @@ export async function OnMessageDeleteBulk(
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
-  editPools(messages.ids, (val: TrackedMessage) => {
+  adminPool.editPools(messages.ids, (val: TrackedMessage) => {
     if (val === null) {
       return null;
     }

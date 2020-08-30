@@ -8,6 +8,7 @@ export * from './bitField';
 export * from './permissions';
 export * from './gTranslate';
 export * from './kvManager';
+export * from './storagePools';
 //import * as moment from 'moment';
 
 

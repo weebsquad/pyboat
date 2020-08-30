@@ -10,6 +10,7 @@ import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam';
 import * as admin from '../modules/admin';
+import * as pools from '../lib/storagePools';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -160,6 +161,22 @@ export function InitializeCommands() {
         await m.reply(`Found ${keys.length} keys!`);
       },
     );
+    sub.raw(
+      'clearkvm', async (m) => {
+        const dt = Date.now();
+        await utils.KVManager.clear();
+        await m.reply(`Done (${Date.now() - dt}ms)`);
+      },
+    );
+    sub.raw(
+      'runcleans', async (m) => {
+        const dt = Date.now();
+        await Promise.all(pools.InitializedPools.map(async function(pool) {
+          await pool.clean();
+        }));
+        await m.reply(`Done (${Date.now() - dt}ms)`);
+      },
+    );
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
            async (m, { key }) => {
@@ -235,7 +252,7 @@ export function InitializeCommands() {
     sub.raw(
       'asget', async (m) => {
         const now = Date.now();
-        const res = await antiSpam.getAllPools();
+        const res = await antiSpam.pools.getAll();
         await m.reply(`Done - ${res.length} - (Took ${Date.now() - now}ms)`);
       },
     );
@@ -254,17 +271,10 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'cleantracking', async (m) => {
-        const now = Date.now();
-        const res = await admin.cleanPool();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
       'tracking', async (m) => {
         const now = Date.now();
         const res = await new pylon.KVNamespace('admin').list();
-        const pools = await admin.getAllPools();
+        const pools = await admin.adminPool.getAll();
         await m.reply(`Done - **${res.length} key(s)** // **${pools.length} total items** - (Took ${Date.now() - now}ms)`);
       },
     );

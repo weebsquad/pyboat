@@ -11,13 +11,15 @@ import { logCustom } from './logging/events/custom';
 import { getUserTag } from './logging/main';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
-const poolsKv = new pylon.KVNamespace('antiSpam');
+
 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many spam violations';
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
+
+export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined);
 class MessageEntry {
     authorId: string;
     id: string;
@@ -92,122 +94,6 @@ export function getApplicableConfigs(member: discord.GuildMember, channel: disco
   return toret;
 }
 
-export async function cleanPool() {
-  const diff = Date.now();
-  const items = await poolsKv.items();
-  await Promise.all(items.map(async (item: any) => {
-    const vl: Array<MessageEntry> = item.value;
-    const { key } = item;
-    const toRemove = vl.filter((e) => diff > (MAX_POOL_ENTRY_LIFETIME + e.ts)).map((e) => e.id);
-    if (toRemove.length > 0) {
-      await poolsKv.transact(key, (prev: any) => prev.filter((e: MessageEntry) => !toRemove.includes(e.id)));
-    }
-  }));
-}
-export async function editPool(msg: discord.GuildMemberMessage | null, msgId: string | undefined = undefined) {
-  let newObj;
-  if (msg !== null) {
-    newObj = new MessageEntry(msg);
-    msgId = msg.id;
-  }
-  const items = await poolsKv.items();
-  const res = items.find((item: any) => item.value.find((e: MessageEntry) => e.id === msgId) !== undefined);
-  if (res) {
-    for (let i = 0; i < 2; i += 1) {
-      try {
-        await poolsKv.transact(res.key, (prev: any) => {
-          const newData = JSON.parse(JSON.stringify(prev));
-          const _ind = prev.findIndex((e: MessageEntry) => e.id === msgId);
-          if (_ind !== -1 && msg !== null) {
-            newData[_ind] = newObj;
-          } else if (_ind !== -1 && msg === null) {
-            newData[_ind].deleted = true;
-          }
-          return newData;
-        });
-        return true;
-      } catch (e) {
-      }
-    }
-    return false;
-  }
-
-  return false;
-}
-export async function saveToPool(msg: discord.GuildMemberMessage) {
-  const newObj = JSON.parse(JSON.stringify(new MessageEntry(msg)));
-  const thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
-  const items = await poolsKv.items();
-  let saveTo;
-  const res = items.every((item: any) => {
-    if (!Array.isArray(item.value)) {
-      return true;
-    }
-    const _entries: Array<MessageEntry> = item.value;
-    const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + thisLen;
-    if (len < MAX_POOL_SIZE) {
-      saveTo = item.key;
-      return false;
-    }
-    return true;
-  });
-  if (res === true) {
-    await poolsKv.put(utils.composeSnowflake(), [newObj]);
-    return true;
-  }
-  if (res === false && typeof saveTo === 'string') {
-    for (let i = 0; i < 2; i += 1) {
-      try {
-        await poolsKv.transact(saveTo, (prev: any) => prev.concat(newObj));
-        return true;
-      } catch (e) {
-      }
-    }
-    return false;
-  }
-
-  return false;
-}
-export async function getAllPools(): Promise<Array<MessageEntry>> {
-  const items = await poolsKv.items();
-  const _ret: Array<MessageEntry> = [];
-  items.map((e: any) => {
-    if (Array.isArray(e.value)) {
-      _ret.push(...e.value);
-    }
-  });
-  return _ret;
-}
-export async function getMessagesBy(userId: string) {
-  const ps = (await getAllPools()).filter((e) => e.authorId === userId);
-  return ps;
-}
-
-export async function editPools(ids: Array<string>, callback: Function) {
-  const items = await poolsKv.items();
-  const transactPools = items.filter((item: any) => {
-    if (Array.isArray(item.value)) {
-      const _val: Array<MessageEntry> = item.value;
-      const hasAny = _val.find((entry) => ids.includes(entry.id));
-      if (!hasAny) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  });
-  if (transactPools.length > 0) {
-    await Promise.all(transactPools.map(async (item) => {
-      await poolsKv.transact(item.key, (prev: any) => {
-        let dt: Array<MessageEntry> = JSON.parse(JSON.stringify(prev));
-        dt = dt.map((val) => callback(val));
-        return dt;
-      });
-    }));
-    return true;
-  }
-  return false;
-}
 
 export function cleanString(str: string) {
   let _str = `${str}`;
@@ -272,7 +158,8 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
   if (channel === null || guild === null) {
     return;
   }
-  const previous = await getMessagesBy(msg.author.id);
+  const previous = await pools.getByQuery<MessageEntry>({authorId: msg.author.id});
+  console.log('previous:', previous.length)
   const thisObj = previous.find((e) => e.id === msg.id);
   if (!thisObj || previous.length === 0) {
     return;
@@ -291,7 +178,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
       theseItems = previous.filter((e) => e.channelId === msg.channelId);
     }
     if (thisCfg._key.includes('antiRaid_')) {
-      theseItems = await getAllPools();
+      theseItems = await pools.getAll();
     }
     theseItems = theseItems.filter((item) => !item.deleted);
     flagged = normalKeysCheck.filter((check) => {
@@ -442,6 +329,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
           return false;
         });
         if (messagesToClear.length > 0) {
+          console.log('ToClear:', messagesToClear.length);
           messageRemovedCount = messagesToClear.length;
           // todo: check antiping if this is a flag for mentions and add those messages here as well
 
@@ -577,7 +465,7 @@ export async function OnMessageCreate(
   if (utils.isGlobalAdmin(message.author.id) && guildId !== '307927177154789386') {
     return;
   }
-  await saveToPool(message);
+  await pools.saveToPool(new MessageEntry(message));
   const ret = await doChecks(message);
   return ret;
 }
@@ -597,7 +485,7 @@ export async function OnMessageUpdate(
   if (lf > MAX_POOL_ENTRY_LIFETIME) {
     return;
   }
-  await editPool(message);
+  await pools.editPool(message.id, new MessageEntry(message));
   const ret = await doChecks(message);
   return ret;
 }
@@ -606,7 +494,7 @@ export async function OnMessageDelete(
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
 ) {
-  editPool(null, messageDelete.id);
+  pools.editPool(messageDelete.id, null);
 }
 
 export async function OnMessageDeleteBulk(
@@ -614,8 +502,8 @@ export async function OnMessageDeleteBulk(
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
-  const dt = Date.now();
-  editPools(messages.ids, (val: MessageEntry) => {
+  pools.editPools(messages.ids, (val: MessageEntry) => {
+    if(val === null) return val;
     if (messages.ids.includes(val.id)) {
       val.deleted = true;
     }
