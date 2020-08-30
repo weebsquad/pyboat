@@ -132,10 +132,6 @@ export function InitializeCommands() {
     },
   );
   cmdGroup.subcommand('test', (sub) => {
-    sub.raw('type', async (m) => {
-      await m.reply({ content: `${typeof m}` });
-    });
-
     sub.on(
       'override',
       (ctx) => ({ level: ctx.number(), string: ctx.string() }),
@@ -163,12 +159,6 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'queueenabled', async (m) => {
-        const isQ = routing.isQueueEnabled();
-        await m.reply({ content: `${isQ}` });
-      },
-    );
-    sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
         embed.setDescription('does this even look good');
@@ -184,36 +174,6 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'guildcreate', async (m) => {
-        await loggingEvents.OnGuildCreate(
-          utils.composeSnowflake(),
-          m.guildId,
-          await m.getGuild(),
-        );
-        await m.reply('done');
-      },
-    );
-    sub.raw(
-      'userupdate', async (m) => {
-        await loggingEvents.OnUserUpdate(
-          utils.composeSnowflake(),
-          m.guildId,
-          m.author,
-        );
-        await m.reply('done');
-      },
-    );
-    sub.raw(
-      'guildintegrations', async (m) => {
-        await loggingEvents.OnGuildIntegrationsUpdate(
-          utils.composeSnowflake(),
-          m.guildId,
-          { guildId: m.guildId },
-        );
-        await m.reply('done');
-      },
-    );
-    sub.raw(
       'channelow', async (m) => {
         await utilities.storeChannelData();
       },
@@ -225,22 +185,9 @@ export function InitializeCommands() {
         console.log(res);
       },
     );
-    sub.raw(
-      'infs5', async (m) => {
-        const now = Date.now();
-        await infractions.every5Min();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
+
     sub.raw(
       'clearsb', async (m) => {
-        const now = Date.now();
-        await starboard.periodicClear();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
-      'clearsball', async (m) => {
         const now = Date.now();
         await starboard.clearData();
         await m.reply(`Done (Took ${Date.now() - now}ms)`);
@@ -269,20 +216,6 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
-      'asSave', async (m) => {
-        const now = Date.now();
-        const res = await antiSpam.saveToPool(m);
-        await m.reply(`${res} - Done (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
-      'asclean', async (m) => {
-        const now = Date.now();
-        await antiSpam.cleanPool();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
       'asclear', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('antiSpam').clear();
@@ -302,23 +235,6 @@ export function InitializeCommands() {
         const infs = await infractions.getInfractions();
         await m.reply(`Done (Took ${Date.now() - now}ms)`);
         console.log(infs);
-      },
-    );
-    sub.on(
-      'addinfs', (ctx) => ({ count: ctx.number() }),
-      async (m, { count }) => {
-        if (count >= 15) {
-          await pylon.requestCpuBurst(async () => {
-            for (let i = 0; i < count; i += 1) {
-              await infractions.addInfraction(m.member, m.member, infractions.InfractionType.KICK, undefined);
-            }
-          });
-        } else {
-          for (let i = 0; i < count; i += 1) {
-            await infractions.addInfraction(m.member, m.member, infractions.InfractionType.KICK, undefined);
-          }
-        }
-        await m.reply(`Done adding ${count} infractions`);
       },
     );
     sub.raw(
