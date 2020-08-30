@@ -26,8 +26,6 @@ import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
 import { InitializeCommands2 } from '../commands2';
 
-let { config } = conf;
-
 let rl = false;
 async function _Initialize() {
   if (rl === true) {
@@ -40,13 +38,12 @@ async function _Initialize() {
 let cachedConfig;
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
-    if (typeof config === 'undefined') {
+    if (typeof conf.config === 'undefined') {
       const ret = await conf.InitializeConfig();
       if (ret === false) {
         return;
       }
-      config = conf.config;
-      cachedConfig = config;
+      cachedConfig = conf.config;
     }
     if (!rl) {
       await _Initialize();
@@ -516,14 +513,14 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
 }
 
 export function isModuleEnabled(modName: string) {
-  if (typeof config === 'undefined') {
+  if (typeof conf.config === 'undefined') {
     return true;
   }
 
   if (typeof modName !== 'string' || modName === null) {
     return false;
   }
-  const cfgMod = config.modules[modName];
+  const cfgMod = conf.config.modules[modName];
   if (typeof cfgMod !== 'object') {
     return false;
   }
@@ -595,7 +592,7 @@ export function EventHasAuditLog(event: string) {
 }
 
 export function isQueueEnabled() {
-  if (typeof config !== 'undefined' && !config.modules.queue) {
+  if (typeof conf.config !== 'undefined' && !conf.config.modules.queue) {
     return false;
   }
   for (const moduleName in moduleDefinitions) {
@@ -620,7 +617,7 @@ export function isQueueEnabled() {
 }
 
 export function isAlQueueEnabled() {
-  if (typeof config !== 'undefined' && !config.modules.queue) {
+  if (typeof conf.config !== 'undefined' && !conf.config.modules.queue) {
     return false;
   }
   for (const moduleName in moduleDefinitions) {
