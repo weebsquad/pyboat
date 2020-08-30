@@ -785,7 +785,7 @@ export function InitializeCommands() {
           if (pres.type === discord.Presence.ActivityType.CUSTOM) {
             let emjMention = '';
             if (pres.emoji !== null) {
-              emjMention = pres.emoji.id === null ? pres.emoji.name : `<${pres.emoji.animated === true ? 'a' : ''}:${pres.emoji.id}:${pres.emoji.name}>`;
+              emjMention = pres.emoji.id === null ? pres.emoji.name : `<${pres.emoji.animated === true ? 'a' : ''}:${pres.emoji.name}:${pres.emoji.id}>`;
             } else {
               emjMention = discord.decor.Emojis.NOTEPAD_SPIRAL;
             }
@@ -812,9 +812,8 @@ export function InitializeCommands() {
           desc += `\n  ${statuses.join('\n  ')}󠇰`;
         }
         // actual server stuff
-        const isAdmin = utils.isGlobalAdmin(user.id);
-        if (isAdmin) {
-          desc += '\n\n**❯ PyBoat Badges**\n <:staff:735780704146685983>** Global Administrator**';
+        if (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id])) {
+          desc += `\n\n**❯ PyBoat Badges**\n${globalConfig.userBadges[user.id].join('\n')}`;
         }
         const roles = member.roles.map((rl) => `<@&${rl}>`).join(' ');
         desc += '\n\n**❯ Member Information**';
