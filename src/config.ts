@@ -107,6 +107,7 @@ const defaultConfig = { // for non-defined configs!
         reqDiscordPermissions: true,
         checkLevels: true,
         checkRoles: true,
+        allowSelf: true,
         othersEditLevel: 100,
       },
       confirmation: {
@@ -237,6 +238,9 @@ const defaultConfig = { // for non-defined configs!
       channels: {},
       categories: {},
       levels: {},
+    },
+    admin: {
+      enabled: false,
     },
   },
 };
@@ -406,7 +410,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
       dat = JSON.stringify(dat);
-      // console.log(dat);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       const len = dat.length;

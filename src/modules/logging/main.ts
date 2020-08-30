@@ -253,7 +253,7 @@ async function parseChannelsData(
         el.set('_REASON_RAW_', '');
       }
     }
-    if (el.has('_USERTAG_') && !el.has('_USER_ID_')) {
+    if (el.has('_USERTAG_') && !el.has('_USER_ID_') && el.get('_USERTAG_') !== '') {
       let usrid = `${el.get('_USERTAG_')}`;
       if (conf.config.modules.logging.userTag === '_MENTION_') {
         usrid = usrid.substr(2).slice(0, -1);
@@ -473,7 +473,7 @@ async function getMessages(
                 temp = temp.replace('_ACTORTAG_', '');
               }
             }
-          } else if (map.has('_USERTAG_')) {
+          } else if (map.has('_USERTAG_') && map.get('_USERTAG_') !== '') {
             let rep = false;
             if (temp.indexOf('_USERTAG_') === 0) {
               rep = true;

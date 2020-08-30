@@ -17,7 +17,7 @@ const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many spam violations';
-const MAX_POOL_SIZE = 7500;
+const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
 class MessageEntry {
     authorId: string;
     id: string;
@@ -116,13 +116,14 @@ export async function editPool(msg: discord.GuildMemberMessage | null, msgId: st
     for (let i = 0; i < 2; i += 1) {
       try {
         await poolsKv.transact(res.key, (prev: any) => {
+          const newData = JSON.parse(JSON.stringify(prev));
           const _ind = prev.findIndex((e: MessageEntry) => e.id === msgId);
           if (_ind !== -1 && msg !== null) {
-            prev[_ind] = newObj;
+            newData[_ind] = newObj;
           } else if (_ind !== -1 && msg === null) {
-            prev[_ind].deleted = true;
+            newData[_ind].deleted = true;
           }
-          return prev;
+          return newData;
         });
         return true;
       } catch (e) {
@@ -605,7 +606,7 @@ export async function OnMessageDelete(
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
 ) {
-  await editPool(null, messageDelete.id);
+  editPool(null, messageDelete.id);
 }
 
 export async function OnMessageDeleteBulk(
@@ -614,7 +615,7 @@ export async function OnMessageDeleteBulk(
   messages: discord.Event.IMessageDeleteBulk,
 ) {
   const dt = Date.now();
-  await editPools(messages.ids, (val: MessageEntry) => {
+  editPools(messages.ids, (val: MessageEntry) => {
     if (messages.ids.includes(val.id)) {
       val.deleted = true;
     }

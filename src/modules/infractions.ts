@@ -253,9 +253,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (utils.isGlobalAdmin(targetId)) {
     isTargetOverride = await utils.isGAOverride(targetId);
   }
-  if (actor.user.id === targetId && !isOverride) {
-    return 'You can\'t target yourself';
-  }
+
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
   // check bot can actually do it
@@ -291,6 +289,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
     const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
     const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
+    const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
@@ -299,6 +298,12 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       } if ((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
       }
+    }
+    if (actor.user.id === targetId) {
+      if (!allowSelf) {
+        return 'You can\'t target yourself';
+      }
+      return true;
     }
     if (checkLevels === true && target instanceof discord.GuildMember) {
       const actorLevel = utils.getUserAuth(actor);
@@ -346,7 +351,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
   }
   logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
-async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
+export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
   if (!(me instanceof discord.GuildMember)) {
     me = await (await ogMsg.getGuild()).getMember(discord.getBotId());
   }
@@ -881,7 +886,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
-    (ctx) => ({ deleteDays: ctx.integer(), args: ctx.text() }),
+    (ctx) => ({ deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), args: ctx.text() }),
     async (msg, { deleteDays, args }) => {
       let ids = [];
       const reas = [];
@@ -926,7 +931,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       if (typeof reason !== 'string') {
         reason = '';
@@ -946,7 +951,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       if (typeof reason !== 'string') {
         reason = '';
