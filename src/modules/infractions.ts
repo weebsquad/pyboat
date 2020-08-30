@@ -351,7 +351,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
   }
   logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
-async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
+export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
   if (!(me instanceof discord.GuildMember)) {
     me = await (await ogMsg.getGuild()).getMember(discord.getBotId());
   }
@@ -886,7 +886,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
-    (ctx) => ({ deleteDays: ctx.integer(), args: ctx.text() }),
+    (ctx) => ({ deleteDays: ctx.integer({choices: [0,1,2,3,4,5,6,7]}), args: ctx.text() }),
     async (msg, { deleteDays, args }) => {
       let ids = [];
       const reas = [];
@@ -931,7 +931,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({choices: [0,1,2,3,4,5,6,7]}), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       if (typeof reason !== 'string') {
         reason = '';
@@ -951,7 +951,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer(), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({choices: [0,1,2,3,4,5,6,7]}), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       if (typeof reason !== 'string') {
         reason = '';
