@@ -208,6 +208,49 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
+export async function SlowmodeChannel(actor: discord.GuildMember | null, channel: discord.GuildChannel, seconds: number, reason = ''): Promise<string | boolean> {
+    const guild = await channel.getGuild();
+    if (guild === null) {
+      return false;
+    }
+    const me = await guild.getMember(discord.getBotId());
+    if (me === null) {
+      return;
+    }
+    if (!channel.canMember(me, discord.Permissions.MANAGE_CHANNELS)) {
+      return 'I can\'t manage this channel';
+    }
+    if (typeof reason !== 'string') {
+      reason = '';
+    }
+    if (reason.length > 101) {
+      reason = reason.substr(0, 100);
+    }
+    if (!(channel instanceof discord.GuildTextChannel)) {
+      return 'Invalid channel';
+    }
+    if(channel.rateLimitPerUser === seconds) {
+        return 'Channel is already at this slowmode'
+    }
+
+    await channel.edit({ rateLimitPerUser: seconds});
+    const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_SECONDS_', seconds.toString()], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
+    if (actor !== null) {
+      placeholders.set('_ACTORTAG_', getActorTag(actor));
+      placeholders.set('_ACTOR_ID_', actor.user.id);
+    }
+    if (reason.length > 0) {
+      placeholders.set('_REASON_', ` with reason ${reason}`);
+    }
+    logCustom('ADMIN', 'SLOWMODE', placeholders);
+    if (channel.canMember(me, discord.Permissions.SEND_MESSAGES) && seconds > 0) {
+      let txt = `**This channel has been set to ${seconds}s slowmode** by ${placeholders.get('_ACTORTAG_')}${reason.length > 0 ? ` with reason** \`${utils.escapeString(reason)}\`` : ''}`;
+      channel.sendMessage({ allowedMentions: {}, content: txt });
+      
+    }
+    return true;
+  }
+
 export async function LockChannel(actor: discord.GuildMember | null, channel: discord.GuildChannel, state: boolean, reason = ''): Promise<string | boolean> {
   const guild = await channel.getGuild();
   if (guild === null) {
@@ -678,7 +721,23 @@ export function InitializeCommands() {
       }
     },
   );
-
+  cmdGroup.on(
+    { name: 'slowmode', filters: c2.getFilters('admin.slowmode', Ranks.Moderator) },
+    (ctx) => ({ seconds: ctx.integerOptional({default:0, minValue:0, maxValue: 21600}), channel: ctx.guildChannelOptional() }),
+    async (msg, { seconds, channel }) => {
+      if (channel === null) {
+        channel = await msg.getChannel();
+      }
+      const res = await SlowmodeChannel(msg.member, channel, seconds);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**`);
+      } else 
+        await infractions.confirmResult(undefined, msg, false, 'Failed to set slowmode');
+      });
   cmdGroup.raw(
     { name: 'lockdown', filters: c2.getFilters('admin.lockdown', Ranks.Moderator) },
     async (msg) => {

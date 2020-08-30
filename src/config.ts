@@ -240,7 +240,7 @@ const defaultConfig = { // for non-defined configs!
       levels: {},
     },
     admin: {
-      enabled: true,
+      enabled: false,
     },
   },
 };
