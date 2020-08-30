@@ -430,7 +430,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       try {
         await message.delete();
       } catch (e2) {}
-      await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.stack}\n\`\`\``);
+      await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
     const items = await configKv.items();
