@@ -318,14 +318,19 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   cleaning = false;
   if(deleted.length > 0) 
   {
-      let _placeholders = new Map([['_MESSAGES_', deleted.length.toString()]]);
-      if(typeof memberId === 'string') {
-          _placeholders.set('_ACTORTAG_', getActorTag(target));
-          _placeholders.set('_ACTOR_ID_', memberId);
-      } else {
-          _placeholders.set('_ACTORTAG_', 'SYSTEM');
+      let _placeholders = new Map([['_MESSAGES_', deleted.length.toString()], ['_ACTORTAG_', 'SYSTEM'], ['_CHANNEL_', ''], ['_USERTAG_', '']]);
+      if(actor !== null) {
+          _placeholders.set('_ACTORTAG_', getActorTag(actor));
+          _placeholders.set('_ACTOR_ID_', actor.user.id);
       }
-      await logCustom('ADMIN', 'CLEAN', _placeholders);
+      if(typeof channelTarget === 'string') {
+        _placeholders.set('_CHANNEL_', ` in <#${channelTarget}>`);
+      }
+      if(typeof memberId === 'string') {
+          _placeholders.set('_USERTAG_', getUserTag(target));
+          _placeholders.set('_USER_ID_', memberId);
+      }
+      logCustom('ADMIN', 'CLEAN', _placeholders);
   }
   return deleted.length;
 }
