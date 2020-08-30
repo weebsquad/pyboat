@@ -27,21 +27,21 @@ const _cr: {[key: string]: any} = {
         // console.log(`Queue clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
         dt = Date.now();
         await every5Min();
-        console.log(`Infractions clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
+        // console.log(`Infractions clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
         dt = Date.now();
         await starboard.periodicClear();
-        console.log(`Starboard clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
+        // console.log(`Starboard clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
         dt = Date.now();
         await censor.clean();
         // console.log(`Censor clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
         dt = Date.now();
         await antiSpam.cleanPool();
-        console.log(`AntiSpam clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
+        // console.log(`AntiSpam clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
         dt = Date.now();
         await antiPing.periodicDataClear();
-        console.log(`AntiPing clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
+        // console.log(`AntiPing clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
       }, 300);
-      console.log(`Took ${Date.now() - now}ms to execute cron`);
+      // console.log(`Took ${Date.now() - now}ms to execute cron`);
     },
     started: false,
   },
