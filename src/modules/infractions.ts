@@ -190,7 +190,6 @@ export async function clearInfractions() {
       const key = keys[i];
       await utils.KVManager.delete(key);
     }
-    // console.log(`Took ${Date.now() - now}ms to clear ${keys.length} inf keys`);
   });
 }
 export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {
@@ -280,7 +279,6 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
-    console.log('highestTarget', highestRoleTarget, highestRoleMe);
     if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
@@ -412,7 +410,6 @@ export async function getInfractionBy(query: any) {
   const newInfs = infs.filter((inf) => {
     for (const key in query) {
       if (inf[key] !== query[key]) {
-        // console.log(`mismatch in ${key}, ${query[key]} (${typeof query[key]}) !== ${inf[key]} (${typeof inf[key]})`);
         return false;
       }
     }
