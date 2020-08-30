@@ -208,6 +208,118 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
+export async function LockChannel(actor: discord.GuildMember | null, channel: discord.GuildChannel, state: boolean, reason = ''): Promise<string | boolean> {
+  const guild = await channel.getGuild();
+  if (guild === null) {
+    return false;
+  }
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  if (!channel.canMember(me, discord.Permissions.MANAGE_ROLES) || !channel.canMember(me, discord.Permissions.MANAGE_CHANNELS)) {
+    return 'I can\'t manage this channel';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
+    return 'Invalid channel';
+  }
+  const defaultOw = channel.permissionOverwrites.find((ow) => ow.id === guild.id);
+  if (!defaultOw) {
+    return false;
+  }
+  const perms = new utils.Permissions(defaultOw.deny);
+  if (perms.has('SEND_MESSAGES') && state === true) {
+    return 'Channel already locked';
+  } if (!perms.has('SEND_MESSAGES') && !state) {
+    return 'Channel not locked';
+  }
+  const newOws = channel.permissionOverwrites.map((ow) => {
+    if (ow.id === guild.id) {
+      if (state === true) {
+        ow.deny = Number(new utils.Permissions(ow.deny).add('SEND_MESSAGES').bitfield);
+      } else {
+        ow.deny = Number(new utils.Permissions(ow.deny).remove('SEND_MESSAGES').bitfield);
+      }
+    }
+    return ow;
+  });
+  await channel.edit({ permissionOverwrites: newOws });
+  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
+  let type = 'LOCKED_CHANNEL';
+  if (state === false) {
+    type = 'UNLOCKED_CHANNEL';
+  }
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason ${reason}`);
+  }
+  logCustom('ADMIN', type, placeholders);
+  if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
+    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('_ACTORTAG_')}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason)}\`` : ''}`;
+    channel.sendMessage({ allowedMentions: {}, content: txt });
+  }
+  return true;
+}
+
+export async function LockGuild(actor: discord.GuildMember | null, state: boolean, reason = ''): Promise<string | boolean> {
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return false;
+  }
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  if (!me.can(discord.Permissions.MANAGE_ROLES)) {
+    return 'I can\'t manage roles';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  const defaultRole = await guild.getRole(guild.id);
+  if (!defaultRole) {
+    return false;
+  }
+  const perms = new utils.Permissions(defaultRole.permissions);
+  if (!perms.has('SEND_MESSAGES') && state === true) {
+    return 'Guild already locked';
+  } if (perms.has('SEND_MESSAGES') && !state) {
+    return 'Guild not locked';
+  }
+  if (state === true) {
+    perms.remove('SEND_MESSAGES');
+  } else {
+    perms.add('SEND_MESSAGES');
+  }
+  await defaultRole.edit({ permissions: Number(perms.bitfield) });
+  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  let type = 'LOCKED_GUILD';
+  if (state === false) {
+    type = 'UNLOCKED_GUILD';
+  }
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason ${reason}`);
+  }
+  logCustom('ADMIN', type, placeholders);
+  return true;
+}
+
 let cleaning = false;
 export async function Clean(dtBegin: number, target: any, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, channelTarget: string | undefined = undefined, reason = '', bypassCleaning = false): Promise<string | boolean | number> {
   let memberId;
@@ -527,6 +639,76 @@ export function InitializeCommands() {
       },
     );
   });
+
+  cmdGroup.on(
+    { name: 'cease', filters: c2.getFilters('admin.cease', Ranks.Moderator) },
+    (ctx) => ({ channel: ctx.guildChannelOptional() }),
+    async (msg, { channel }) => {
+      if (channel === null) {
+        channel = await msg.getChannel();
+      }
+      const res = await LockChannel(msg.member, channel, true);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, 'Locked channel');
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to lock channel');
+      }
+    },
+  );
+  cmdGroup.on(
+    { name: 'uncease', filters: c2.getFilters('admin.uncase', Ranks.Moderator) },
+    (ctx) => ({ channel: ctx.guildChannelOptional() }),
+    async (msg, { channel }) => {
+      if (channel === null) {
+        channel = await msg.getChannel();
+      }
+      const res = await LockChannel(msg.member, channel, false);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, 'Unlocked channel');
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to unlock channel');
+      }
+    },
+  );
+
+  cmdGroup.raw(
+    { name: 'lockdown', filters: c2.getFilters('admin.lockdown', Ranks.Moderator) },
+    async (msg) => {
+      const res = await LockGuild(msg.member, true);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, 'Locked Guild');
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to lock guild');
+      }
+    },
+  );
+  cmdGroup.raw(
+    { name: 'unlockdown', filters: c2.getFilters('admin.unlockdown', Ranks.Moderator) },
+    async (msg) => {
+      const res = await LockGuild(msg.member, false);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, 'Unlocked Guild');
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to unlock guild');
+      }
+    },
+  );
 
   return cmdGroup;
 }

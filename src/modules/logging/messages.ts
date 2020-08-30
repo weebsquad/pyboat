@@ -52,6 +52,10 @@ export const messages: {[key: string]: {[key: string]: string}} = {
   },
   '|ADMIN': {
     CLEAN: `${discord.decor.Emojis.WASTEBASKET} _ACTORTAG_ cleaned **_MESSAGES_** messages_CHANNEL__USERTAG_`,
+    LOCKED_CHANNEL: `${discord.decor.Emojis.LOCK} _ACTORTAG_ locked <#_CHANNEL_ID_>_REASON_`,
+    UNLOCKED_CHANNEL: `${discord.decor.Emojis.UNLOCK} _ACTORTAG_ unlocked <#_CHANNEL_ID_>_REASON_`,
+    LOCKED_GUILD: `${discord.decor.Emojis.LOCK} _ACTORTAG_ locked the server_REASON_`,
+    UNLOCKED_GUILD: `${discord.decor.Emojis.UNLOCK} _ACTORTAG_ unlocked the server_REASON_`,
   },
   '|ANTISPAM': {
     ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,
