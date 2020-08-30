@@ -7,6 +7,7 @@ import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/utils';
 import { KVManager } from '../lib/utils';
+import { getInfractionBy } from './infractions';
 
 /* ROLE PERSIST */
 const persistPrefix = 'Persist_';
@@ -744,12 +745,13 @@ export function InitializeCommands() {
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
       (ctx) => ({ user: ctx.userOptional() }),
       async (msg, {user}) => {
+        const loadingMsg = await msg.reply({allowedMentions: {}, content: '<a:loading:735794724480483409>'});
         if(user === null) user = msg.author;
         let emb = new discord.Embed();
         emb.setAuthor({name: user.getTag(), iconUrl: user.getAvatarUrl()});
         let desc = `**❯ ${user.bot === false ? 'User' : 'Bot'} Information**
-  󠇰**ID**: \`${user.id}\`
-  󠇰**Profile**: ${user.toMention()}`;
+        <:rich_presence:735781410509684786> 󠇰**ID**: \`${user.id}\`
+        ${discord.decor.Emojis.LINK} **Profile**: ${user.toMention()}`;
 const dtCreation = new Date(utils.decomposeSnowflake(user.id).timestamp);
 const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
 const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
@@ -757,7 +759,7 @@ year: 'numeric',
 month: 'long',
 day: 'numeric',
 })}`;
-desc+=`\n  **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
+desc+=`\n ${discord.decor.Emojis.CALENDAR_SPIRAL} **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
         const guild = await msg.getGuild();
         const member = await guild.getMember(user.id);
         if(member !== null) {
@@ -779,7 +781,6 @@ desc+=`\n  **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
             emj = '<:spotify:735788337897406535>';
           }
           if(pres.type === discord.Presence.ActivityType.CUSTOM) {
-            console.log('custom status!', pres);
             let emjMention = '';
             if(pres.emoji !== null) {
               emjMention = pres.emoji.id === null ? pres.emoji.name : `<${pres.emoji.animated === true ? 'a': ''}:${pres.emoji.id}:${pres.emoji.name}>`
@@ -791,17 +792,30 @@ desc+=`\n  **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
           
           return `${emj}${pres.name.length > 0 ? ` \`${pres.name}\``: ''}`
         });
-        desc += `\n  󠇰**Status**: ${presence.status.toLowerCase()}`
+        let emjStatus = '';
+        if (presence.status === 'online') {
+          emjStatus = '<:status_online:735780704167919636>';
+        }
+        if (presence.status === 'dnd') {
+          emjStatus = '<:status_busy:735780703983239168>';
+        }
+        if (presence.status === 'idle') {
+          emjStatus = '<:status_away:735780703710478407>';
+        }
+        if (presence.status === 'offline') {
+          emjStatus = '<:status_offline:735780703802753076>';
+        }
+        desc += `\n ${emjStatus} **Status**: ${presence.status.substr(0,1).toUpperCase()}${presence.status.substr(1).toLowerCase()}`
         if(statuses.length > 0) {
           desc += `\n  ${statuses.join('\n  ')}󠇰`;
         }
           // actual server stuff
           const isAdmin = utils.isGlobalAdmin(user.id);
           if(isAdmin) {
-            desc += `\n\n**❯ PyBoat Badges**\n  **Global Administrator**`
+            desc += `\n\n**❯ PyBoat Badges**\n <:staff:735780704146685983>** Global Administrator**`
           }
           const roles = member.roles.map((rl) => `<@&${rl}>`).join(' ');
-          desc += '\n\n**❯ Member Information**\n'
+          desc += '\n\n**❯ Member Information**'
           const dtJoin = new Date(member.joinedAt);
 const tdiffjoin = utils.getLongAgoFormat(dtJoin.getTime(), 2, true, 'second');
 const formattedDtJoin = `${dtJoin.toLocaleDateString('en-US', {
@@ -809,25 +823,53 @@ year: 'numeric',
 month: 'long',
 day: 'numeric',
 })}`;
-          desc += `\n${discord.decor.Emojis.INBOX_TRAY} **Joined**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`
+          desc += `\n ${discord.decor.Emojis.INBOX_TRAY} **Joined**: ${tdiffjoin} ago **[**\`${formattedDtJoin}\`**]**`
           if(member.nick && member.nick !== null && member.nick.length > 0) {
-            desc += `\n  󠇰**Nickname**: \`${utils.escapeString(member.nick)}\``;
+            desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**Nickname**: \`${utils.escapeString(member.nick)}\``;
           }
           if(member.premiumSince !== null) {
             const boostDt = new Date(member.premiumSince);
             const tdiffboost = utils.getLongAgoFormat(boostDt.getTime(), 2, true, 'second');
-            const formattedDtBoost = `${dtJoin.toLocaleDateString('en-US', {
+            const formattedDtBoost = `${boostDt.toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
               })}`;
-            desc+=`<:booster:735780703912067160> **Boosting since**: ${tdiffboost} ago **[**\`${formattedDtBoost}\`**]**`
+            desc+=`\n <:booster:735780703912067160> **Boosting since**: ${tdiffboost} ago **[**\`${formattedDtBoost}\`**]**`
+          }
+          if(member.roles.length > 0) {
+            desc+=`\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
+          }
+          const infsGiven = await getInfractionBy({actorId: user.id});
+          const infsReceived = await getInfractionBy({memberId: user.id});
+          if(infsGiven.length > 0 || infsReceived.length > 0) desc += `\n\n**❯ Infractions**` ;
+          if(infsGiven.length > 0) desc += `\n ${discord.decor.Emojis.HAMMER} **Applied**: **${infsGiven.length}**`;
+          if(infsReceived.length > 0) desc += `\n ${discord.decor.Emojis.NO_ENTRY} **Received**: **${infsReceived.length}**`;
+          let perms = new utils.Permissions(member.permissions);
+          let hasPerms: any = perms.serialize();
+          const irrelevant = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER'];
+            for(var key in hasPerms) {
+              if(hasPerms[key] === false || irrelevant.includes(key)) delete hasPerms[key];
+            }
+            if(hasPerms['ADMINISTRATOR'] === true) hasPerms = {'ADMINISTRATOR': true};
+            hasPerms = Object.keys(hasPerms).map((str) => {
+              return str.split('_').map((upp) => `${upp.substr(0,1).toUpperCase()}${upp.substr(1).toLowerCase()}`).join(' ');
+            });
+          const auth = utils.getUserAuth(member);
+          if((Number(perms.bitfield) > 0 && hasPerms.length > 0) || auth > 0) {
+            desc += `\n\n**❯ Permissions**`;
+          }
+          if(Number(perms.bitfield) > 0 && hasPerms.length > 0) {
+            desc += `\n <:settings:735782884836638732> **Staff**: \`${hasPerms.join(', ')}\``;
+          }
+          if(auth > 0) {
+            desc += `\n ${discord.decor.Emojis.CYCLONE} **Bot Level**: **${auth}**`
           }
         }
 
 
         emb.setDescription(desc);
-        await msg.reply({content: '', allowedMentions: {}, embed: emb});
+        await loadingMsg.edit({content: '', embed: emb});
     },
   );
   return cmdGroup;
