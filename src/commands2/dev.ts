@@ -269,33 +269,6 @@ export function InitializeCommands() {
         );
       },
     );
-    sub.raw(
-      'massEvents', async (m) => {
-        const count = 20;
-        const event = 'MESSAGE_DELETE';
-        const args = [
-          {
-            id: m.id,
-            channelId: m.channelId,
-            guildId: m.guildId,
-          },
-          m,
-        ];
-        let cc = 0;
-        // await pylon.requestCpuBurst(async function() {
-        for (let i = 0; i < count; i += 1) {
-          routing.OnEvent(
-            'MESSAGE_DELETE',
-            utils.composeSnowflake(new Date().getTime()),
-            ...args,
-          );
-          await sleep(30);
-          cc += 1;
-        }
-        // }, 300);
-        await m.reply(`sent ${cc} ${event} events!`);
-      },
-    );
   });
 
   cmdGroup.on(
