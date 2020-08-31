@@ -8,7 +8,7 @@ import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiPing from '../modules/antiPing';
 import { InitializedPools } from './storagePools';
-import * as routing from './eventHandler/routing'
+import * as routing from './eventHandler/routing';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
