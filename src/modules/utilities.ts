@@ -390,45 +390,45 @@ export function InitializeCommands() {
   if (config.modules.utilities.snipe.enabled === true) {
     cmdGroup.raw(
       { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
-        let _sn: any = await snipekvs.get(msg.channelId);
-        if (typeof _sn === 'string') {
-          _sn = JSON.parse(_sn);
-        }
-        if (
-          _sn === undefined
+        await msg.reply(async () => {
+          let _sn: any = await snipekvs.get(msg.channelId);
+          if (typeof _sn === 'string') {
+            _sn = JSON.parse(_sn);
+          }
+          if (
+            _sn === undefined
       || typeof _sn.author !== 'object'
       || typeof _sn.id !== 'string'
-        ) {
-          await msg.reply('Nothing to snipe.');
-          return;
-        }
-        if (
-          _sn.author.id === msg.author.id
+          ) {
+            return { content: 'Nothing to snipe.' };
+          }
+          if (
+            _sn.author.id === msg.author.id
       && !msg.member.can(discord.Permissions.ADMINISTRATOR)
-        ) {
-          await msg.reply('Nothing to snipe.');
-          return;
-        }
-        const emb = new discord.Embed();
-        const _usr = await discord.getUser(_sn.author.id);
-        if (!_usr) {
-          return;
-        }
-        emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
-        emb.setTimestamp(
-          new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
-        );
-        emb.setFooter({
-          iconUrl: msg.author.getAvatarUrl(),
-          text: `Requested by: ${msg.author.getTag()}`,
-        });
-        emb.setDescription(_sn.content);
-        emb.setColor(0x03fc52);
-        await snipekvs.delete(msg.channelId);
-        await msg.reply({
-          embed: emb,
-          content: `${_usr.toMention()} said ...`,
-          allowedMentions: {},
+          ) {
+            return { content: 'Nothing to snipe.' };
+          }
+          const emb = new discord.Embed();
+          const _usr = await discord.getUser(_sn.author.id);
+          if (!_usr) {
+            return { content: 'User not found (?)' };
+          }
+          emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
+          emb.setTimestamp(
+            new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
+          );
+          emb.setFooter({
+            iconUrl: msg.author.getAvatarUrl(),
+            text: `Requested by: ${msg.author.getTag()}`,
+          });
+          emb.setDescription(_sn.content);
+          emb.setColor(0x03fc52);
+          await snipekvs.delete(msg.channelId);
+          return {
+            embed: emb,
+            content: `${_usr.toMention()} said ...`,
+            allowedMentions: {},
+          };
         });
       },
     );
