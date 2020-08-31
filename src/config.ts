@@ -413,11 +413,17 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
   console.log('received msg');
   const isCfg = isMessageConfigUpdate(message);
+  if (isCfg !== false) {
+    try {
+      await message.delete();
+    } catch (e) {
+      await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
+    }
+  }
   if (isCfg === 'update') {
     try {
       let dat = JSON.parse(ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer()));
       if (typeof dat.guildId !== 'string' || dat.guildId !== guildId) {
-        await message.delete();
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
         return;
       }
@@ -425,12 +431,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       dat = JSON.stringify(dat);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
-      const len = dat.length;
-      try {
-        await message.delete();
-      } catch (e) {
-        await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
-      }
       const parts = dat.match(/.{1,6500}/g);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
@@ -440,9 +440,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
       console.error(e);
-      try {
-        await message.delete();
-      } catch (e2) {}
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {

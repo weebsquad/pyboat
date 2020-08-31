@@ -20,19 +20,12 @@ const _cr: {[key: string]: any} = {
               await pool.clean();
             }));
           }
-          let dt = Date.now();
           await ratelimit.clean();
-          dt = Date.now();
           await cleanPool();
-          dt = Date.now();
           queue.cleanQueue();
-          dt = Date.now();
           await every5Min();
-          dt = Date.now();
           await starboard.periodicClear();
-          dt = Date.now();
           await censor.clean();
-          dt = Date.now();
           await antiPing.periodicDataClear();
           throw new Error('');
         }, 300);
