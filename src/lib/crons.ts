@@ -14,36 +14,32 @@ const _cr: {[key: string]: any} = {
     name: 'every_5_min',
     async function() {
       const now = Date.now();
-      await pylon.requestCpuBurst(async () => {
-        if (InitializedPools.length > 0) {
-          await Promise.all(InitializedPools.map(async (pool) => {
-            // console.log(`Cleaning Pool:${pool.kvName}`);
-            await pool.clean();
-          }));
-        }
-        let dt = Date.now();
-        await ratelimit.clean();
-        // console.log(`Ratelimit clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
-        dt = Date.now();
-        await cleanPool();
-        // console.log(`Translation clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
-        dt = Date.now();
-        queue.cleanQueue();
-        // console.log(`Queue clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
-        dt = Date.now();
-        await every5Min();
-        // console.log(`Infractions clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
-        dt = Date.now();
-        await starboard.periodicClear();
-        // console.log(`Starboard clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
-        dt = Date.now();
-        await censor.clean();
-        // console.log(`Censor clean took ${Date.now()-dt}ms // Total: ${Date.now()-now}`);
-        dt = Date.now();
-        await antiPing.periodicDataClear();
-        // console.log(`AntiPing clean took ${Date.now() - dt}ms // Total: ${Date.now() - now}`);
-      }, 300);
-      // console.log(`Took ${Date.now() - now}ms to execute cron`);
+      try {
+        await pylon.requestCpuBurst(async () => {
+          if (InitializedPools.length > 0) {
+            await Promise.all(InitializedPools.map(async (pool) => {
+              await pool.clean();
+            }));
+          }
+          let dt = Date.now();
+          await ratelimit.clean();
+          dt = Date.now();
+          await cleanPool();
+          dt = Date.now();
+          queue.cleanQueue();
+          dt = Date.now();
+          await every5Min();
+          dt = Date.now();
+          await starboard.periodicClear();
+          dt = Date.now();
+          await censor.clean();
+          dt = Date.now();
+          await antiPing.periodicDataClear();
+          throw new Error();
+        }, 300);
+      } catch (e) {
+        console.error(e);
+      }
     },
     started: false,
   },

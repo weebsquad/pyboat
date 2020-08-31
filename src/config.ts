@@ -277,10 +277,17 @@ const configKv = new pylon.KVNamespace('config');
 
 export let config: any;
 let loadingConf = false;
+let lastTry = Date.now();
 export async function InitializeConfig(bypass = false) {
+  if (loadingConf === true) {
+    const diff = Date.now() - lastTry;
+    if (diff > 60 * 1000) {
+      loadingConf = false;
+    }
+  }
   if (loadingConf === true && !bypass) {
     const start = Date.now();
-    for (let i = 0; i < 30; i += 1) {
+    for (let i = 0; i < 5; i += 1) {
       if (typeof config !== 'undefined' || !loadingConf) {
         break;
       }
@@ -294,6 +301,7 @@ export async function InitializeConfig(bypass = false) {
   if (!bypass) {
     config = undefined;
   }
+  lastTry = Date.now();
   loadingConf = true;
   console.info('Initializing config');
   try {
@@ -303,10 +311,10 @@ export async function InitializeConfig(bypass = false) {
       globalConfig[k] = obj;
     }
   } catch (e) {
-    console.error(e);
+    console.error(`Loading globals error: ${e.stack}`);
     return false;
   }
-  console.info('Fetched globals');
+  //console.info('Fetched globals');
   if (globalConfig.disabled && globalConfig.disabled === true) {
     console.warn('Disabled');
     loadingConf = false;
@@ -403,6 +411,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   return 'check';
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
+  console.log('received msg');
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg === 'update') {
     try {
@@ -437,6 +446,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
+    console.log('received config check');
     const items = await configKv.items();
     let cfg: any;
     if (items.length > 0) {
