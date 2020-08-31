@@ -412,15 +412,6 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
   const isCfg = isMessageConfigUpdate(message);
-  if (isCfg !== false) {
-    try {
-      if (isCfg !== 'update') {
-        await message.delete();
-      }
-    } catch (e) {
-      await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
-    }
-  }
   if (isCfg === 'update') {
     try {
       // let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
@@ -454,6 +445,10 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     }
   } else if (isCfg === 'check') {
     console.log('received config check');
+    try {
+      await message.delete();
+    } catch (e) {
+    }
     const items = await configKv.items();
     let cfg: any;
     if (items.length > 0) {
@@ -485,6 +480,10 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     await sleep(14000);
     await returnedMsg.delete();
   } else if (isCfg === 'delete') {
+    try {
+      await message.delete();
+    } catch (e) {
+    }
     await configKv.clear();
     await message.reply(`${message.author.toMention()} done!\n\nFeel free to request a new config by typing \`.config.\``);
   }
