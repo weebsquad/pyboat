@@ -2,11 +2,10 @@
 import * as utils from '../lib/utils';
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
-import {StoragePool} from '../lib/storagePools'
+import { StoragePool } from '../lib/storagePools';
 
 const MAX_LIFETIME = 336;
 const prefixKvMessages = 'Starboard_messages_';
-const prefixKvMessagesStats = 'Starboard_stats_';
 const seperator = '|';
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
@@ -127,27 +126,25 @@ export class StarredMessage {
         authorStats = new StarStats(this.author);
       }
       authorStats = utils.makeFake(authorStats, StarStats);
-      authorStats.received+=uniqueReactors;
+      authorStats.received += uniqueReactors;
       await authorStats.update();
-       let nf = this.reactors.filter((reactor) => {
-         const _e = stats.find((st) => st.id === reactor);
-         return _e === undefined && reactor !== this.author;
-       });
-       console.log('not found:', nf);
-       await Promise.all(nf.map(async function(e) {
-         const obj = new StarStats(e);
-         obj.given+=1;
+      const nf = this.reactors.filter((reactor) => {
+        const _e = stats.find((st) => st.id === reactor);
+        return _e === undefined && reactor !== this.author;
+      });
+      await Promise.all(nf.map(async (e) => {
+        const obj = new StarStats(e);
+        obj.given += 1;
         await statsKv.saveToPool(obj);
-       }));
-       if(nf.length !== this.reactors.length) {
-         let f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
-         console.log('found:', f);
-         await statsKv.editPools(f, function(vl: StarStats) {
-           vl.given+=1;
-           return vl;
-         })
-       }
-       /*
+      }));
+      if (nf.length !== this.reactors.length) {
+        const f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
+        await statsKv.editPools(f, (vl: StarStats) => {
+          vl.given += 1;
+          return vl;
+        });
+      }
+      /*
       for(var i = 0; i < this.reactors.length; i++) {
         //if(this.reactors[i] === this.author) continue;
         let _f = stats.find((e) => e.id === this.reactors[i]);
@@ -250,7 +247,6 @@ export class StarredMessage {
     }
 }
 
-
 async function checkKey(key: string) {
   let val: any = await utils.KVManager.get(key);
   if (val) {
@@ -316,23 +312,7 @@ export async function periodicClear() {
     }
   }));
 }
-export async function getStats(userId: string | undefined = undefined): Promise<Array<StarStats>> {
-  let keys: Array<StarStats> = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessagesStats.length) === prefixKvMessagesStats).map((e) => {
-    const vals = e.substr(prefixKvMessagesStats.length).split(seperator);
-    const [id, given, received] = vals;
-    return utils.makeFake({ id, given: +given, received: +received }, StarStats);
-  });
-  if (typeof userId === 'string') {
-    keys = keys.filter((e) => e.id === userId);
-  }
-  return keys;
-}
-export async function clearStats() {
-  const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessagesStats.length) === prefixKvMessagesStats);
-  await Promise.all(keys.map(async (e) => {
-    await utils.KVManager.delete(e);
-  }));
-}
+
 export async function clearData() {
   const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages);
   await Promise.all(keys.map(async (e) => {

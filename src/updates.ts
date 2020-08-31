@@ -6,6 +6,9 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
   console.log('Running update!');
 
   await pylon.requestCpuBurst(async () => {
+    if (newVersion === '1.5.1') {
+      await KVManager.clear();
+    }
     if (newVersion === '1.5.0') {
       let oldcfg: any = await pylon.kv.get('__guildConfig');
       if (typeof oldcfg !== 'undefined') {

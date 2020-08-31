@@ -7,16 +7,17 @@ import { cleanPool } from '../modules/translation';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiPing from '../modules/antiPing';
-import {InitializedPools} from './storagePools';
+import { InitializedPools } from './storagePools';
+
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
       const now = Date.now();
       await pylon.requestCpuBurst(async () => {
-        if(InitializedPools.length > 0) {
-          await Promise.all(InitializedPools.map(async function(pool) {
-            console.log(`Cleaning Pool:${pool.kvName}`);
+        if (InitializedPools.length > 0) {
+          await Promise.all(InitializedPools.map(async (pool) => {
+            // console.log(`Cleaning Pool:${pool.kvName}`);
             await pool.clean();
           }));
         }

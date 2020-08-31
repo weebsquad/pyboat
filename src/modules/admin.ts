@@ -7,7 +7,7 @@ import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag } from './logging/main';
-import {StoragePool} from '../lib/storagePools'
+import { StoragePool } from '../lib/storagePools';
 
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
@@ -44,10 +44,6 @@ class TrackedMessage {
       return this;
     }
 }
-
-
-
-
 
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
@@ -406,7 +402,6 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   }
   return deleted.length;
 }
-
 
 export async function OnMessageCreate(
   id: string,

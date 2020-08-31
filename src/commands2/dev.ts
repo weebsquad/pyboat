@@ -171,7 +171,7 @@ export function InitializeCommands() {
     sub.raw(
       'runcleans', async (m) => {
         const dt = Date.now();
-        await Promise.all(pools.InitializedPools.map(async function(pool) {
+        await Promise.all(pools.InitializedPools.map(async (pool) => {
           await pool.clean();
         }));
         await m.reply(`Done (${Date.now() - dt}ms)`);
@@ -220,21 +220,7 @@ export function InitializeCommands() {
         await m.reply(`Done (Took ${Date.now() - now}ms)`);
       },
     );
-    sub.raw(
-      'sbstats', async (m) => {
-        const now = Date.now();
-        const keys = await starboard.getStats();
-        console.log(keys);
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
-    sub.raw(
-      'clearsbstats', async (m) => {
-        const now = Date.now();
-        await starboard.clearStats();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
-      },
-    );
+
     sub.raw(
       'clearcensor', async (m) => {
         const now = Date.now();
@@ -274,8 +260,8 @@ export function InitializeCommands() {
       'tracking', async (m) => {
         const now = Date.now();
         const res = await new pylon.KVNamespace('admin').list();
-        const pools = await admin.adminPool.getAll();
-        await m.reply(`Done - **${res.length} key(s)** // **${pools.length} total items** - (Took ${Date.now() - now}ms)`);
+        const poolsL = await admin.adminPool.getAll();
+        await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(

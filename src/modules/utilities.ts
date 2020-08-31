@@ -224,7 +224,7 @@ async function restorePersistData(member: discord.GuildMember) {
       }
       await channel.edit({ permissionOverwrites: ows });
     }));
-  } 
+  }
 
   await persistPool.editPool(member.user.id, undefined);
   logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
@@ -298,7 +298,7 @@ export async function OnGuildBanAdd(
   }
   try {
     if (config.modules.utilities.persist.saveOnBan !== true) {
-     persistPool.editPool(ban.user.id, undefined);
+      persistPool.editPool(ban.user.id, undefined);
     }
   } catch (e) {}
 }

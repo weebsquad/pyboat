@@ -12,7 +12,6 @@ import { getUserTag } from './logging/main';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 
-
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
@@ -94,7 +93,6 @@ export function getApplicableConfigs(member: discord.GuildMember, channel: disco
   return toret;
 }
 
-
 export function cleanString(str: string) {
   let _str = `${str}`;
   _str = _str.toLowerCase().replace(AsciiRegex, '');
@@ -158,8 +156,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
   if (channel === null || guild === null) {
     return;
   }
-  const previous = await pools.getByQuery<MessageEntry>({authorId: msg.author.id});
-  console.log('previous:', previous.length)
+  const previous = await pools.getByQuery<MessageEntry>({ authorId: msg.author.id });
   const thisObj = previous.find((e) => e.id === msg.id);
   if (!thisObj || previous.length === 0) {
     return;
@@ -329,7 +326,6 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
           return false;
         });
         if (messagesToClear.length > 0) {
-          console.log('ToClear:', messagesToClear.length);
           messageRemovedCount = messagesToClear.length;
           // todo: check antiping if this is a flag for mentions and add those messages here as well
 
@@ -503,7 +499,9 @@ export async function OnMessageDeleteBulk(
   messages: discord.Event.IMessageDeleteBulk,
 ) {
   pools.editPools(messages.ids, (val: MessageEntry) => {
-    if(val === null) return val;
+    if (val === null) {
+      return val;
+    }
     if (messages.ids.includes(val.id)) {
       val.deleted = true;
     }

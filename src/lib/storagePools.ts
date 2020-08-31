@@ -3,7 +3,7 @@
 import * as utils from './utils';
 import * as constants from '../constants/constants';
 
-export let InitializedPools: Array<StoragePool> = [];
+export const InitializedPools: Array<StoragePool> = [];
 const ASSUMED_MAX_KEYS = 256;
 export class StoragePool {
     kvName: string;
@@ -21,16 +21,18 @@ export class StoragePool {
       this.timestampProperty = timestampProperty;
       this.maxObjects = maxObjects;
       this.reduceAt = reduceAt;
-      const _ex = InitializedPools.find((e)=> e.kvName === this.kvName);
-      if(!_ex) InitializedPools.push(this);
+      const _ex = InitializedPools.find((e) => e.kvName === this.kvName);
+      if (!_ex) {
+        InitializedPools.push(this);
+      }
       return this;
     }
     private async err(txt: string) {
       throw new TypeError(`[Storage Pool]: ${this.kvName}: ${txt}`);
     }
     async exists(id: string) {
-        const ex = (await this.getAll()).find((item) => item[this.uniqueId] === id);
-        return ex !== undefined;
+      const ex = (await this.getAll()).find((item) => item[this.uniqueId] === id);
+      return ex !== undefined;
     }
     private getTimestamp(obj: any) {
       if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'number') {
@@ -42,16 +44,18 @@ export class StoragePool {
       return utils.decomposeSnowflake(obj[this.uniqueId]).timestamp;
     }
     async clean() {
-      if(typeof this.duration !== 'number' || this.duration  === 0) return;
+      if (typeof this.duration !== 'number' || this.duration === 0) {
+        return;
+      }
       let diff = Date.now() - this.duration;
       const items = await this.kv.items();
       if (typeof this.reduceAt === 'number' && this.reduceAt > 0) {
         const count = items.length;
         if (count > this.reduceAt) {
-          const leftToMax = ASSUMED_MAX_KEYS-this.reduceAt;
-          const toInc = this.duration/Math.max(1, leftToMax);
-          const extra = Math.floor(toInc*(count-this.reduceAt));
-          //console.log(`Count: ${count},  reduceAt: ${this.reduceAt}, leftToMax: ${leftToMax} , toInc: ${toInc},,, extra: ${extra}/${this.duration}`);
+          const leftToMax = ASSUMED_MAX_KEYS - this.reduceAt;
+          const toInc = this.duration / Math.max(1, leftToMax);
+          const extra = Math.floor(toInc * (count - this.reduceAt));
+          // console.log(`Count: ${count},  reduceAt: ${this.reduceAt}, leftToMax: ${leftToMax} , toInc: ${toInc},,, extra: ${extra}/${this.duration}`);
           diff += extra;
         }
       }
@@ -60,7 +64,7 @@ export class StoragePool {
         const { key } = item;
         const toRemove = vl.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
         if (toRemove.length > 0) {
-            console.log(`${this.kvName}: Removing ${toRemove.length} items!`)
+          console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
           let vlCheckEmpty: undefined | Array<any>;
           await this.kv.transact(key, (prev: any) => {
             const newDt = prev.filter((e: any) => e !== null && !toRemove.includes(e[this.uniqueId]));
@@ -73,13 +77,11 @@ export class StoragePool {
             } catch (e) {
             }
           }
-        } else {
-            if(item.value.length === 0) {
-                try {
-                    await this.kv.delete(key, { prevValue: [] });
-                  } catch (e) {
-                  }
-            }
+        } else if (item.value.length === 0) {
+          try {
+            await this.kv.delete(key, { prevValue: [] });
+          } catch (e) {
+          }
         }
       }));
     }
@@ -87,8 +89,7 @@ export class StoragePool {
       const thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
       const items = await this.kv.items();
       const ex = (await this.getAll()).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
-      if(typeof ex !== 'undefined') {
-          console.log('Already exists! editing instead')
+      if (typeof ex !== 'undefined') {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
       }
@@ -190,10 +191,10 @@ export class StoragePool {
           _ret.push(...e.value);
         }
       });
-      //export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
+      // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
       _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(a) - this.getTimestamp(b));
-      if(typeof objSample === 'object') {
+      if (typeof objSample === 'object') {
         _ret = _ret.map((item) => utils.makeFake(item, objSample));
       }
       return _ret as Array<T>;
@@ -203,13 +204,17 @@ export class StoragePool {
       return _f as T;
     }
     async getByQuery<T>(query: any): Promise<Array<T>> {
-        let toRet = (await this.getAll()).filter((item) => {
-            for(const key in query) {
-                if(typeof query[key] === 'undefined') continue;
-                if(query[key] === item[key]) return true;
-            }
-            return false;
-        })
-        return toRet as Array<T>;
+      const toRet = (await this.getAll()).filter((item) => {
+        for (const key in query) {
+          if (typeof query[key] === 'undefined') {
+            continue;
+          }
+          if (query[key] === item[key]) {
+            return true;
+          }
+        }
+        return false;
+      });
+      return toRet as Array<T>;
     }
 }
