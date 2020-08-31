@@ -314,7 +314,7 @@ export async function InitializeConfig(bypass = false) {
     console.error(`Loading globals error: ${e.stack}`);
     return false;
   }
-  //console.info('Fetched globals');
+  // console.info('Fetched globals');
   if (globalConfig.disabled && globalConfig.disabled === true) {
     console.warn('Disabled');
     loadingConf = false;

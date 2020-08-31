@@ -13,7 +13,6 @@ const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
-      const now = Date.now();
       try {
         await pylon.requestCpuBurst(async () => {
           if (InitializedPools.length > 0) {
@@ -35,10 +34,12 @@ const _cr: {[key: string]: any} = {
           await censor.clean();
           dt = Date.now();
           await antiPing.periodicDataClear();
-          throw new Error();
+          throw new Error('');
         }, 300);
       } catch (e) {
-        console.error(e);
+        if (e.message !== '') {
+          console.error(e);
+        }
       }
     },
     started: false,
@@ -56,11 +57,11 @@ async function onCron(name: string) {
     if (_cr[key].name !== name) {
       continue;
     }
-    logDebug(
+    /* logDebug(
       'CRON_RAN',
       new Map<string, any>([['CRON_NAME', name]]),
-    );
-    _cr[key].function();
+    ); */
+    await _cr[key].function();
   }
 }
 
