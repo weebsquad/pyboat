@@ -13,6 +13,7 @@ const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
+      const dt = Date.now();
       try {
         await pylon.requestCpuBurst(async () => {
           if (InitializedPools.length > 0) {
@@ -34,6 +35,7 @@ const _cr: {[key: string]: any} = {
           console.error(e);
         }
       }
+      console.log(`Took ${Date.now() - dt}ms to run cron`);
     },
     started: false,
   },
