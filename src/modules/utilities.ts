@@ -1019,8 +1019,17 @@ export function InitializeCommands() {
           }
         }
         // actual server stuff
-        if (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id])) {
-          desc += `\n\n**❯ PyBoat Badges**\n${globalConfig.userBadges[user.id].join('\n')}`;
+        const isAdmin = utils.isGlobalAdmin(user.id);
+        if (typeof globalConfig.badges === 'object') {
+          if (isAdmin || (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id]))) {
+            desc += '\n\n**❯ PyBoat Badges**';
+            if (isAdmin && typeof globalConfig.badges.globaladmin === 'string') {
+              desc += `\n${globalConfig.badges.globaladmin}`;
+            }
+            if ((typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id]))) {
+              desc += `\n${globalConfig.userBadges[user.id].map((bd) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
+            }
+          }
         }
         if (member !== null) {
           const roles = member.roles.map((rl) => `<@&${rl}>`).join(' ');
