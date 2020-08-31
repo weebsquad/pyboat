@@ -11,6 +11,8 @@ import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam';
 import * as admin from '../modules/admin';
 import * as pools from '../lib/storagePools';
+import * as ratelimit from '../lib/eventHandler/ratelimit';
+import * as queue from '../lib/eventHandler/queue';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -266,6 +268,20 @@ export function InitializeCommands() {
           txt += `\n[${item.key}] => ${item.value.length}`;
         });
         await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
+      },
+    );
+    sub.raw(
+      'ratelimit', async (m) => {
+        const now = Date.now();
+        const res = ratelimit.poolGlob;
+        await m.reply(`Done - **${res.length} item(s)** - (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'queue', async (m) => {
+        const now = Date.now();
+        const res = queue.queue;
+        await m.reply(`Done - **${res.length} item(s)** - (Took ${Date.now() - now}ms)`);
       },
     );
     sub.raw(

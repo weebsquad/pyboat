@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 import * as utils from '../utils';
 import * as routing from './routing';
 import { logDebug } from '../../modules/logging/events/custom';
@@ -23,7 +24,7 @@ export class QueuedEvent {
 const cpuTimePerEvent = 10; // to determine when to use burst :P
 const interval = 5000;
 const maxEventRuntime = 13000;
-let queue = new Array<QueuedEvent>();
+export let queue = new Array<QueuedEvent>();
 // let timeout: any;
 // const kv = new pylon.KVNamespace('loggingQueue');
 let _lock: undefined | number;

@@ -1,9 +1,10 @@
+/* eslint-disable import/no-mutable-exports */
 import { deepCompare } from '../utils';
 
 const kv = new pylon.KVNamespace('eventHandlerRatelimit');
 const globals = true;
 const eventPool = 'pool'; // Array
-let poolGlob = new Array<PoolEntry>();
+export let poolGlob = new Array<PoolEntry>();
 
 const limits = {
   global: ['20/5000', '60/20000', '200/40000'], // Doesn't check per-event type
@@ -38,6 +39,7 @@ export async function clean() {
       }
       return false;
     });
+    return;
   }
   const pool = await getPool();
   const newP = pool.filter((ele) => {

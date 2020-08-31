@@ -411,27 +411,37 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   return 'check';
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
-  console.log('received msg');
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg !== false) {
     try {
-      await message.delete();
+      if(isCfg !== 'update') {
+        await message.delete();
+      }
     } catch (e) {
       await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
     }
   }
   if (isCfg === 'update') {
     try {
-      let dat = JSON.parse(ab2str(await (await fetch(message.attachments[0].url)).arrayBuffer()));
-      if (typeof dat.guildId !== 'string' || dat.guildId !== guildId) {
+      //let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
+      let data: any = await fetch(message.attachments[0].url);
+      try {
+          await message.delete();
+      } catch (e) {
+        await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
+      }
+      data = await data.arrayBuffer();
+      data = ab2str(data);
+      data = JSON.parse(data);
+      if (typeof data.guildId !== 'string' || data.guildId !== guildId) {
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
         return;
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
-      dat = JSON.stringify(dat);
+      data = JSON.stringify(data);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
-      const parts = dat.match(/.{1,6500}/g);
+      const parts = data.match(/.{1,6500}/g);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
         await configKv.put(i.toString(), parts[i]);
