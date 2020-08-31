@@ -83,7 +83,7 @@ export async function eventTracker(
   if (time instanceof Date) {
     time = time.getTime();
   }
-  // await clean();
+  await clean();
   if (globals) {
     if (poolGlob.length >= 20) {
       console.warn('Ratelimit pool leak?', poolGlob.length);
