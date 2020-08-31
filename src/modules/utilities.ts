@@ -518,27 +518,148 @@ export function InitializeCommands() {
     { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
       const file = await (await fetch('http://aws.random.cat/meow')).json();
       const catpic = await (await fetch(file.file)).arrayBuffer();
-
+      const ext = file.file.split('.')[file.file.split('.').length - 1];
       await msg.reply({
         content: '',
         allowedMentions: {},
         attachments: [{
-          name: 'cat.jpg',
+          name: `cat.${ext}`,
           data: catpic,
         }],
       });
     },
   );
   cmdGroup.raw(
-    { name: 'dog', aliases: ['doge', 'doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
+    { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
       const file = await (await fetch('https://random.dog/woof.json')).json();
       const pic = await (await fetch(file.url)).arrayBuffer();
-
+      const ext = file.url.split('.')[file.url.split('.').length - 1];
       await msg.reply({
         content: '',
         allowedMentions: {},
         attachments: [{
-          name: 'dog.jpg',
+          name: `dog.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'doge', filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
+      const pic = await (await fetch(file.message)).arrayBuffer();
+      const ext = file.message.split('.')[file.message.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `dog.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+
+  cmdGroup.raw(
+    { name: 'fox', filters: c2.getFilters('utilities.fox', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://randomfox.ca/floof/')).json();
+      const pic = await (await fetch(file.image)).arrayBuffer();
+      const ext = file.image.split('.')[file.image.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `fox.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'pikachu', filters: c2.getFilters('utilities.pikachu', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `pika.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'koala', filters: c2.getFilters('utilities.koala', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `koala.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'pat', filters: c2.getFilters('utilities.pat', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `pat.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'hug', filters: c2.getFilters('utilities.hug', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `hug.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.birb', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `birb.${ext}`,
+          data: pic,
+        }],
+      });
+    },
+  );
+  cmdGroup.raw(
+    { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.panda', Ranks.Guest) }, async (msg) => {
+      const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
+      const pic = await (await fetch(file.link)).arrayBuffer();
+      const ext = file.link.split('.')[file.link.split('.').length - 1];
+      await msg.reply({
+        content: '',
+        allowedMentions: {},
+        attachments: [{
+          name: `panda.${ext}`,
           data: pic,
         }],
       });
