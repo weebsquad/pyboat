@@ -21,7 +21,7 @@ export class QueuedEvent {
   }
 }
 
-const cpuTimePerEvent = 10; // to determine when to use burst :P
+const cpuTimePerEvent = 20; // to determine when to use burst :P
 const interval = 5000;
 const maxEventRuntime = 13000;
 export let queue = new Array<QueuedEvent>();
