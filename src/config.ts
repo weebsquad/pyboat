@@ -414,7 +414,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg !== false) {
     try {
-      if(isCfg !== 'update') {
+      if (isCfg !== 'update') {
         await message.delete();
       }
     } catch (e) {
@@ -423,10 +423,10 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
   }
   if (isCfg === 'update') {
     try {
-      //let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
+      // let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
       let data: any = await fetch(message.attachments[0].url);
       try {
-          await message.delete();
+        await message.delete();
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
