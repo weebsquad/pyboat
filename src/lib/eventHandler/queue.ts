@@ -143,6 +143,8 @@ export function cleanQueue(q: Array<QueuedEvent> | undefined = undefined) {
       const diff = new Date().getTime() - ts;
       if (e.verified && diff >= Math.floor(interval * 3)) {
         return false;
+      } if (!e.verified && diff >= Math.floor(interval * 30)) {
+        return false;
       }
     }
     return true;

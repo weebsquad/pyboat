@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 import * as conf from '../../config';
 import {
   eventFunctions,
@@ -27,7 +28,7 @@ import { logDebug } from '../../modules/logging/events/custom';
 import { InitializeCommands2 } from '../commands2';
 
 let rl = false;
-async function _Initialize() {
+export async function _Initialize() {
   if (rl === true) {
     return;
   }
