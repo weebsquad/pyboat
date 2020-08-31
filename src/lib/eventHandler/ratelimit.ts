@@ -93,6 +93,9 @@ export async function eventTracker(
     return;
   }
   const pool = await getPool();
+  if (pool.length >= 20) {
+    console.warn('Ratelimit pool leak?', pool.length);
+  }
   pool.push({
     id: time,
     event: eventName,
