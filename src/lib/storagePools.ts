@@ -181,17 +181,21 @@ export class StoragePool {
       }
       return false;
     }
-    async getAll<T>(): Promise<Array<T>> {
+    async getAll<T>(objSample: any = undefined): Promise<Array<T>> {
       const diff = Date.now() - this.duration;
       const items = await this.kv.items();
-      let _ret: Array<T> = [];
+      let _ret: Array<any> = [];
       items.map((e: any) => {
         if (Array.isArray(e.value)) {
           _ret.push(...e.value);
         }
       });
+      //export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
       _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(a) - this.getTimestamp(b));
+      if(typeof objSample === 'object') {
+        _ret = _ret.map((item) => utils.makeFake(item, objSample));
+      }
       return _ret as Array<T>;
     }
     async getById<T>(id: string): Promise<T | undefined> {

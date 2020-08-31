@@ -2,6 +2,7 @@
 import * as utils from '../lib/utils';
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
+import {StoragePool} from '../lib/storagePools'
 
 const MAX_LIFETIME = 336;
 const prefixKvMessages = 'Starboard_messages_';
@@ -10,6 +11,21 @@ const seperator = '|';
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
 const kv = new pylon.KVNamespace('starboard');
+
+export const statsKv = new StoragePool('starboardStats', 0, 'id');
+export class StarStats {
+  id: string;
+  given = 0;
+  received = 0;
+  async update() {
+    await statsKv.editPool(this.id, this);
+  }
+  constructor(id: string) {
+    this.id = id;
+    return this;
+  }
+}
+
 export class PublishData {
     channelId: string;
     messageId: string;
@@ -101,22 +117,37 @@ export class StarredMessage {
       delete this.publishData.lastUpdate;
     }
     private async awardStats() {
-      const stats = await getStats();
+      const stats = await statsKv.getAll<StarStats>(StarStats);
       const uniqueReactors = this.reactors.filter((e) => e !== this.author).length;
-      // const uniqueReactors = this.reactors.length;
       if (uniqueReactors === 0) {
         return;
       }
       let authorStats: StarStats | undefined = stats.find((e) => e.id === this.author);
       if (!authorStats) {
-        authorStats = utils.makeFake({ id: this.author, given: 0, received: 0 }, StarStats);
+        authorStats = new StarStats(this.author);
       }
-
-      const _Key = authorStats.getKey();
-      authorStats.received += uniqueReactors;
-      await authorStats.update(_Key);
-      // await utils.KVManager.set(authorStats.getKey(), 0);
-      /*
+      authorStats = utils.makeFake(authorStats, StarStats);
+      authorStats.received+=uniqueReactors;
+      await authorStats.update();
+       let nf = this.reactors.filter((reactor) => {
+         const _e = stats.find((st) => st.id === reactor);
+         return _e === undefined && reactor !== this.author;
+       });
+       console.log('not found:', nf);
+       await Promise.all(nf.map(async function(e) {
+         const obj = new StarStats(e);
+         obj.given+=1;
+        await statsKv.saveToPool(obj);
+       }));
+       if(nf.length !== this.reactors.length) {
+         let f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
+         console.log('found:', f);
+         await statsKv.editPools(f, function(vl: StarStats) {
+           vl.given+=1;
+           return vl;
+         })
+       }
+       /*
       for(var i = 0; i < this.reactors.length; i++) {
         //if(this.reactors[i] === this.author) continue;
         let _f = stats.find((e) => e.id === this.reactors[i]);
@@ -219,21 +250,7 @@ export class StarredMessage {
     }
 }
 
-export class StarStats {
-  id: string;
-  given = 0;
-  received = 0;
-  async update(oldKey) {
-    if (oldKey === this.getKey()) {
-      return;
-    }
-    await utils.KVManager.delete(oldKey);
-    await utils.KVManager.set(this.getKey(), 0);
-  }
-  getKey() {
-    return `${prefixKvMessagesStats}${this.id}${seperator}${this.given}${seperator}${this.received}`;
-  }
-}
+
 async function checkKey(key: string) {
   let val: any = await utils.KVManager.get(key);
   if (val) {
