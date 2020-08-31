@@ -646,5 +646,66 @@ export function InitializeCommands() {
     },
   );
 
+  cmdGroup.on(
+    { name: 'roles', filters: c2.getFilters('admin.roles', Ranks.Moderator) },
+    (ctx) => ({query: ctx.textOptional()}),
+    async (msg, {query}) => {
+        if(query === null) {
+          query = '';
+        }
+        query = query.toLowerCase();
+        const guild = await msg.getGuild();
+        let roles = (await guild.getRoles()).reverse();
+        if(query.length > 0) {
+          roles = roles.filter((rl) => rl.name.toLowerCase().includes(query) || rl.id.includes(query) || rl.name.toLowerCase() === query
+          )
+        }
+        roles = roles.filter((role) => role.id !== guild.id);
+        if(roles.length === 0) {
+          await msg.reply({content: 'No roles found'});
+          return;
+        }
+        const authRoles = config.levels.roles;
+        let dt = [];
+        let currKey = 0;
+        roles.forEach((role) => {
+          /*if(passedRls >= 20) {
+            currKey +=1;
+            passedRls = 0;
+          }*/
+          let len = Array.isArray(dt[currKey]) ? dt[currKey].reduce((a,b )=>a+b.length,0): 0;
+          if(Array.isArray(dt[currKey])) {
+            len+=10+(dt[currKey].length*2);
+          }
+          let props = [];
+          if(typeof authRoles[role.id] === 'number' && authRoles[role.id] > 0) {
+            props.push('Lvl ' + authRoles[role.id]);
+          }
+          if(role.mentionable === true) {
+            props.push('[M]');
+          }
+          if(role.hoist === true) {
+            props.push('[H]');
+          }
+          //dt[currKey].push([props.join(', '), role.id, role.name]);
+          let prp = props.length > 0 ? props.join(', ') : '';
+          const thisTxt = `[${role.id}]${prp !== '' ? ` | <${prp}>` : ''} | ${utils.escapeString(role.name)}`;
+          
+          if((len + thisTxt.length) > 1950) {
+            currKey +=1;
+          }
+          if(!Array.isArray(dt[currKey])) {
+            dt[currKey] = ["ID | <Properties> | Name", ""];
+          }
+          dt[currKey].push(thisTxt);
+        });
+        for(var i = 0; i < dt.length; i+=1) {
+          const it = dt[i];
+          await msg.reply({allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\``});
+          //await msg.reply({allowedMentions: {}, content: utils.genTable(it)})
+        }
+        
+              });
+
   return cmdGroup;
 }
