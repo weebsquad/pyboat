@@ -86,7 +86,7 @@ export class StoragePool {
       }));
     }
     async saveToPool(newObj: any) {
-      const thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
+      let _thisLen;
       const items = await this.kv.items();
       const ex = (await this.getAll()).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
       if (typeof ex !== 'undefined') {
@@ -105,7 +105,10 @@ export class StoragePool {
             return false;
           }
         } else {
-          const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + thisLen;
+          if(typeof _thisLen !== 'number') {
+            _thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
+          }
+          const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + _thisLen;
           if (len < constants.MAX_KV_SIZE) {
             saveTo = item.key;
             return false;

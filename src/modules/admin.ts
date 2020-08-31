@@ -15,9 +15,9 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
 const TRACKING_KEYS_LIMIT = 150;
-const ENTRIES_PER_POOL = 37; // approximate maximum
+const ENTRIES_PER_POOL = 60; // approximate maximum
 
-export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
+export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefined, undefined, TRACKING_KEYS_LIMIT);
 
 enum ActionType {
     'CLEAN'
@@ -27,14 +27,14 @@ class TrackedMessage {
     id: string;
     channelId: string;
     bot: boolean;
-    ts: number;
+    // ts: number;
     // type: discord.Message.Type;
     // flags: discord.Message.Flags;
     constructor(message: discord.Message.AnyMessage) {
       this.authorId = message.author.id;
       this.channelId = message.channelId;
       this.id = message.id;
-      this.ts = utils.decomposeSnowflake(this.id).timestamp;
+      //this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.bot = message.author.bot;
       if (message.webhookId !== null) {
         this.bot = true;
@@ -317,7 +317,10 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
       delete query[k];
     }
   }
-  let msgs = (await adminPool.getByQuery<TrackedMessage>(query)).filter((item) => item.ts < diff);
+  let msgs = (await adminPool.getByQuery<TrackedMessage>(query)).filter((item) => {
+    const ts = typeof item['ts'] === 'number' ? item['ts'] : utils.decomposeSnowflake(item.id).timestamp;
+    return ts < diff}
+    );
   if (msgs.length === 0) {
     return 0;
   }

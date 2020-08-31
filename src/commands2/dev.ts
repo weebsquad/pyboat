@@ -259,9 +259,11 @@ export function InitializeCommands() {
     sub.raw(
       'tracking', async (m) => {
         const now = Date.now();
-        const res = await new pylon.KVNamespace('admin').list();
+        const res = await new pylon.KVNamespace('admin').items();
         const poolsL = await admin.adminPool.getAll();
-        await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)`);
+        let txt = '';
+        res.map((item: any) => txt+=`\n[${item.key}] => ${item.value.length}`);
+        await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
       },
     );
     sub.raw(
