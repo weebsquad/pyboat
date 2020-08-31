@@ -105,7 +105,7 @@ export class StoragePool {
             return false;
           }
         } else {
-          if(typeof _thisLen !== 'number') {
+          if (typeof _thisLen !== 'number') {
             _thisLen = new TextEncoder().encode(JSON.stringify(newObj)).byteLength;
           }
           const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + _thisLen;

@@ -262,7 +262,9 @@ export function InitializeCommands() {
         const res = await new pylon.KVNamespace('admin').items();
         const poolsL = await admin.adminPool.getAll();
         let txt = '';
-        res.map((item: any) => txt+=`\n[${item.key}] => ${item.value.length}`);
+        res.map((item: any) => {
+          txt += `\n[${item.key}] => ${item.value.length}`;
+        });
         await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
       },
     );

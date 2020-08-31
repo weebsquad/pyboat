@@ -6,6 +6,9 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
   console.log('Running update!');
 
   await pylon.requestCpuBurst(async () => {
+    if (newVersion === '1.5.2') {
+      await new pylon.KVNamespace('admin').clear();
+    }
     if (newVersion === '1.5.1') {
       await KVManager.clear();
     }
