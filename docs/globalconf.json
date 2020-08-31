@@ -17,7 +17,7 @@
 			"footerAvatar": "",
 			"webhookUrl": "",
 			"showEventName": true,
-			"showTimestamps": true,
+			"showTimestamps": false,
 			"scopes": {
 				"include": [
 					"DEBUG"
