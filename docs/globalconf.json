@@ -24,8 +24,7 @@
 				],
 				"exclude": [
 					"DEBUG.CRON_RAN",
-					"DEBUG.RAW_EVENT",
-					"DEBUG.BOT_STARTED"
+					"DEBUG.RAW_EVENT"
 				]
 			}
 		}
