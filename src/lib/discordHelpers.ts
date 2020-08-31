@@ -76,22 +76,27 @@ export class FakeConsole {
 }
 
 export function genTable(data: string[][]) {
-let longest = new Array(data[0].length).fill(0);
-for (const row of data) {
-  for (let i = 0; i < row.length; i++)
-    if (row[i].length > longest[i]) longest[i] = row[i].length;
-}
-
-let msg = '';
-for (const row of data) {
-  for (let i = 0; i < row.length; i++) {
-    msg += ' ' + row[i] + ' '.repeat(longest[i] - row[i].length) + ' ';
-    if (i < row.length - 1) msg += '|';
+  const longest = new Array(data[0].length).fill(0);
+  for (const row of data) {
+    for (let i = 0; i < row.length; i++) {
+      if (row[i].length > longest[i]) {
+        longest[i] = row[i].length;
+      }
+    }
   }
-  msg += '\n';
-}
 
-return `\`\`\`\n${msg}\`\`\``;
+  let msg = '';
+  for (const row of data) {
+    for (let i = 0; i < row.length; i++) {
+      msg += ` ${row[i]}${' '.repeat(longest[i] - row[i].length)} `;
+      if (i < row.length - 1) {
+        msg += '|';
+      }
+    }
+    msg += '\n';
+  }
+
+  return `\`\`\`\n${msg}\`\`\``;
 }
 
 export function getPermsBitfieldArray(bitf: number) {
