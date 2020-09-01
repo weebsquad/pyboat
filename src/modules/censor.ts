@@ -7,7 +7,7 @@ import * as infractions from './infractions';
 import { Permissions } from '../lib/utils';
 
 const kvPool = new pylon.KVNamespace('censor');
-
+const EXTRA_ASCII_WHITELIST = ['€', '£', '»','«', '´', '¨', 'º', 'ª', 'ç'];
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
@@ -320,13 +320,17 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
       if (newlines > charCfg.newLines) {
         toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
       }
-    }/*
-    if (typeof charCfg.noAscii === 'boolean' && charCfg.noAscii === true) {
-      const asciiremoved = txt.replace(AsciiRegex, '');
-      if (asciiremoved !== txt) {
-        toRet.chars.push('Illegal ASCII');
+    }
+    
+    if (typeof charCfg.nonAscii === 'boolean' && charCfg.nonAscii === true) {
+      let asciiremoved = txt.match(AsciiRegex);
+      if (Array.isArray(asciiremoved)) {
+        asciiremoved = asciiremoved.filter((char) => !EXTRA_ASCII_WHITELIST.includes(char));
       }
-    } */
+      if (Array.isArray(asciiremoved) && asciiremoved.length > 0) {
+        toRet.chars.push(`Illegal ASCII: ${asciiremoved.join(', ')}`);
+      }
+    }
   }
   return toRet;
 }

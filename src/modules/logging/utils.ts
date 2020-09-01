@@ -283,14 +283,14 @@ export function getActorTag(user: discord.User | discord.GuildMember) {
   } else {
     nick = user.username;
   }
-  
+
   const map = new Map([
     ['_TAG_', utils.escapeString(user.getTag())],
     ['_USERNAME_', utils.escapeString(user.username)],
     ['_DISCRIMINATOR_', user.discriminator],
     ['_ID_', user.id],
     ['_MENTION_', user.toMention()],
-    ['_NICK_', utils.escapeString(nick)]
+    ['_NICK_', utils.escapeString(nick)],
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
