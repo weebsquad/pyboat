@@ -410,7 +410,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   }
   return 'check';
 }
-const toRemove = ['\u0000','\u0001'];
+const toRemove = ['\u0000', '\u0001'];
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
   if (typeof config === 'undefined') {
     await InitializeConfig();
@@ -424,7 +424,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       if (!data.ok) {
         await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
       }
-      //data = await data.arrayBuffer();
+      // data = await data.arrayBuffer();
       data = await data.text();
 
       try {
@@ -432,13 +432,12 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
-      //data = ab2str(data);
+      // data = ab2str(data);
       // data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
 
       let split: Array<string> = data.split('');
       split = split.filter((val) => typeof val === 'string' && !toRemove.includes(val));
 
-      
       for (let i = 0; i < split.length; i += 1) {
         if (split[i] !== '{') {
           split.splice(i, 1);
@@ -446,7 +445,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
           break;
         }
       }
-      for (let i = split.length-1; i > 0; i -= 1) {
+      for (let i = split.length - 1; i > 0; i -= 1) {
         if (split[i] !== '}') {
           split.splice(i, 1);
         } else {
