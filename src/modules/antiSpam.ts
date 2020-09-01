@@ -4,7 +4,7 @@
 import { ConfigError, guildId, config } from '../config';
 import * as utils from '../lib/utils';
 import * as infractions from './infractions';
-import { AsciiRegex, UrlRegex } from '../constants/discord';
+import { AsciiRegex, UrlRegex, emojiv2 } from '../constants/discord';
 import * as antiping from './antiPing';
 import * as constants from '../constants/constants';
 import { logCustom } from './logging/events/custom';
@@ -50,9 +50,14 @@ class MessageEntry {
         this.links = links.length;
       }
       let emj = 0;
-      const normalEmoji1 = message.content.match(new RegExp('[\uD83C-\uDBFF\uDC00-\uDFFF]+', 'giu'));
+      /* const normalEmoji1 = message.content.match(new RegExp('[\uD83C-\uDBFF\uDC00-\uDFFF]+', 'giu'));
       if (Array.isArray(normalEmoji1)) {
         emj += normalEmoji1.length;
+      } */
+
+      const emojiCheck = message.content.match(new RegExp(emojiv2, 'g'));
+      if (Array.isArray(emojiCheck)) {
+        emj += emojiCheck.length;
       }
       const customEmoji = message.content.match(constants.EmojiRegex);
       if (Array.isArray(customEmoji)) {

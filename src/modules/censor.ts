@@ -7,7 +7,7 @@ import * as infractions from './infractions';
 import { Permissions } from '../lib/utils';
 
 const kvPool = new pylon.KVNamespace('censor');
-const EXTRA_ASCII_WHITELIST = ['€', '£', '»','«', '´', '¨', 'º', 'ª', 'ç'];
+const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
@@ -321,7 +321,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
         toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
       }
     }
-    
+
     if (typeof charCfg.nonAscii === 'boolean' && charCfg.nonAscii === true) {
       let asciiremoved = txt.match(AsciiRegex);
       if (Array.isArray(asciiremoved)) {
@@ -638,12 +638,12 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
   if (me === null) {
     return;
   }
+  if (!me.can(discord.Permissions.MANAGE_NICKNAMES)) {
+    return;
+  }
   const myHighest = await utils.getMemberHighestRole(me);
   const memberHighest = await utils.getMemberHighestRole(member);
   if (myHighest.position <= memberHighest.position) {
-    return;
-  }
-  if (!me.can(discord.Permissions.MANAGE_NICKNAMES)) {
     return;
   }
   const visibleName = typeof member.nick === 'string' && member.nick.length > 0 ? member.nick : member.user.username;
