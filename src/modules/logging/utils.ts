@@ -101,10 +101,10 @@ export function getChannelEmoji(ch: discord.GuildChannel) {
 export function getMemberTag(member: discord.GuildMember) {
   const nick = member.nick ?? member.user.username;
   const map = new Map([
-    ['_TAG_', member.user.getTag()],
-    ['_USERNAME_', member.user.username],
+    ['_TAG_', utils.escapeString(member.user.getTag())],
+    ['_USERNAME_', utils.escapeString(member.user.username)],
     ['_DISCRIMINATOR_', member.user.discriminator],
-    ['_NICKNAME_', nick],
+    ['_NICKNAME_', utils.escapeString(nick)],
     ['_ID_', member.user.id],
     ['_MENTION_', member.toMention()],
   ]);
@@ -120,11 +120,11 @@ export function getUserTag(user: discord.User | discord.GuildMember) {
     user = user.user;
   }
   const map = new Map([
-    ['_TAG_', user.getTag()],
-    ['_USERNAME_', user.username],
+    ['_TAG_', utils.escapeString(user.getTag())],
+    ['_USERNAME_', utils.escapeString(user.username)],
     ['_DISCRIMINATOR_', user.discriminator],
     ['_ID_', user.id],
-    ['_NICKNAME_', user.username],
+    ['_NICKNAME_', utils.escapeString(user.username)],
     ['_MENTION_', user.toMention()],
   ]);
   let tg = conf.config.modules.logging.userTag;
@@ -276,15 +276,21 @@ export async function parseMessageContent(
   return cont;
 }
 export function getActorTag(user: discord.User | discord.GuildMember) {
+  let nick: string;
   if (user instanceof discord.GuildMember) {
+    nick = user.nick ?? user.user.username;
     user = user.user;
+  } else {
+    nick = user.username;
   }
+  
   const map = new Map([
-    ['_TAG_', user.getTag()],
-    ['_USERNAME_', user.username],
+    ['_TAG_', utils.escapeString(user.getTag())],
+    ['_USERNAME_', utils.escapeString(user.username)],
     ['_DISCRIMINATOR_', user.discriminator],
     ['_ID_', user.id],
     ['_MENTION_', user.toMention()],
+    ['_NICK_', utils.escapeString(nick)]
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
