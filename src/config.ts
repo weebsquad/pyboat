@@ -424,14 +424,15 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       if (!data.ok) {
         await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
       }
-      // data = await data.arrayBuffer();
-      data = await data.text();
 
       try {
         await message.delete();
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
+      // data = await data.arrayBuffer();
+      data = await data.text();
+
       // data = ab2str(data);
       // data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
 
@@ -445,6 +446,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
           break;
         }
       }
+
       for (let i = split.length - 1; i > 0; i -= 1) {
         if (split[i] !== '}') {
           split.splice(i, 1);
