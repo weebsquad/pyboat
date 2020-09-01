@@ -28,7 +28,6 @@ export const globalConfig = <any>{
   ranks: Ranks,
   Ranks, // lol
   version: '1.5.3',
-  asciiWhitelist: ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç', '\t', '\n'],
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
@@ -355,7 +354,7 @@ export async function InitializeConfig(bypass = false) {
 }
 
 function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 function str2ab(str) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
@@ -411,6 +410,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   }
   return 'check';
 }
+const toRemove = ['\u0000','\u0001'];
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
   if (typeof config === 'undefined') {
     await InitializeConfig();
@@ -424,18 +424,21 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       if (!data.ok) {
         await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
       }
-      data = await data.arrayBuffer();
-      // data = await data.
+      //data = await data.arrayBuffer();
+      data = await data.text();
 
       try {
         await message.delete();
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
-      data = ab2str(data);
+      //data = ab2str(data);
       // data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
 
       let split: Array<string> = data.split('');
+      split = split.filter((val) => typeof val === 'string' && !toRemove.includes(val));
+
+      
       for (let i = 0; i < split.length; i += 1) {
         if (split[i] !== '{') {
           split.splice(i, 1);
@@ -443,7 +446,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
           break;
         }
       }
-      for (let i = split.length - 1; i > 0; i -= 1) {
+      for (let i = split.length-1; i > 0; i -= 1) {
         if (split[i] !== '}') {
           split.splice(i, 1);
         } else {
@@ -451,6 +454,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         }
       }
       split = split.filter((val) => typeof val === 'string' && val.length > 0);
+      // console.log(split);
       data = split.join('');
 
       // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
