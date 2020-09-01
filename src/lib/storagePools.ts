@@ -85,6 +85,7 @@ export class StoragePool {
         }
       }));
     }
+
     async saveToPool(newObj: any) {
       let _thisLen;
       const items = await this.kv.items();

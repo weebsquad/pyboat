@@ -1,5 +1,5 @@
 import { config, guildId, ConfigError } from '../config';
-import { UrlRegex, InviteRegex, ZalgoRegex, AsciiRegex } from '../constants/constants';
+import { UrlRegex, InviteRegex, ZalgoRegex, AsciiRegex, emojiv2 } from '../constants/constants';
 import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/main';
@@ -324,8 +324,12 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
 
     if (typeof charCfg.nonAscii === 'boolean' && charCfg.nonAscii === true) {
       let asciiremoved = txt.match(AsciiRegex);
+      const emj = txt.match(emojiv2);
       if (Array.isArray(asciiremoved)) {
         asciiremoved = asciiremoved.filter((char) => !EXTRA_ASCII_WHITELIST.includes(char));
+        if (Array.isArray(emj)) {
+          asciiremoved = asciiremoved.filter((char) => !emj.includes(char));
+        }
       }
       if (Array.isArray(asciiremoved) && asciiremoved.length > 0) {
         toRet.chars.push(`Illegal ASCII: ${asciiremoved.join(', ')}`);

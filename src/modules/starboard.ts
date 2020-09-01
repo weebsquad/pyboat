@@ -141,23 +141,30 @@ export class StarredMessage {
         const _e = stats.find((st) => st.id === reactor);
         return _e === undefined && reactor !== this.author;
       });
-      if (nf.length > 0) {
-        await Promise.all(nf.map(async (e) => {
-          const obj = new StarStats(e);
-          obj.given = 1;
-          // TESTING
-          // obj.received += Math.ceil(Math.random()*10);
-          await statsKv.saveToPool(obj);
-        }));
-      }
-      if (nf.length !== this.reactors.length) {
-        const f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
-        if (f.length > 0) {
-          await statsKv.editPools(f, (vl: StarStats) => {
-            vl.given += 1;
-            return vl;
-          });
+      async function reactorStats() {
+        if (nf.length > 0) {
+          await Promise.all(nf.map(async (e) => {
+            const obj = new StarStats(e);
+            obj.given = 1;
+            await statsKv.saveToPool(obj);
+          }));
         }
+        if (nf.length !== this.reactors.length) {
+          const f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
+          if (f.length > 0) {
+            await statsKv.editPools(f, (vl: StarStats) => {
+              vl.given += 1;
+              return vl;
+            });
+          }
+        }
+      }
+      if (this.reactors.length > 10) {
+        await pylon.requestCpuBurst(async () => {
+          await reactorStats();
+        });
+      } else {
+        await reactorStats();
       }
       /*
       for(var i = 0; i < this.reactors.length; i++) {

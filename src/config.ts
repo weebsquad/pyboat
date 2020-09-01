@@ -28,6 +28,7 @@ export const globalConfig = <any>{
   ranks: Ranks,
   Ranks, // lol
   version: '1.5.3',
+  asciiWhitelist: ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç', '\t', '\n'],
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
@@ -354,7 +355,7 @@ export async function InitializeConfig(bypass = false) {
 }
 
 function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 function str2ab(str) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
@@ -411,6 +412,9 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   return 'check';
 }
 discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMessage) => {
+  if (typeof config === 'undefined') {
+    await InitializeConfig();
+  }
   const isCfg = isMessageConfigUpdate(message);
   if (isCfg === 'update') {
     try {
@@ -430,7 +434,8 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       }
       data = ab2str(data);
       // data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
-      const split: Array<string> = data.split('');
+
+      let split: Array<string> = data.split('');
       for (let i = 0; i < split.length; i += 1) {
         if (split[i] !== '{') {
           split.splice(i, 1);
@@ -438,8 +443,17 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
           break;
         }
       }
+      for (let i = split.length - 1; i > 0; i -= 1) {
+        if (split[i] !== '}') {
+          split.splice(i, 1);
+        } else {
+          break;
+        }
+      }
+      split = split.filter((val) => typeof val === 'string' && val.length > 0);
       data = split.join('');
-      // await message.reply(`\`\`\`json\n${data}\n\`\`\``);
+
+      // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       data = JSON.parse(data);
       if (typeof data.guildId !== 'string' || data.guildId !== guildId) {
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
@@ -469,7 +483,8 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     const items = await configKv.items();
     let cfg: any;
     if (items.length > 0) {
-      cfg = JSON.parse(items.map((item) => item.value).join(''));
+      cfg = items.map((item: any) => item.value).join('').split('');
+      cfg = JSON.parse(cfg.join(''));
     }
     if (typeof guildConfigs[guildId] !== 'undefined') {
       cfg = guildConfigs[guildId];
