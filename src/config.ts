@@ -27,7 +27,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.5.2',
+  version: '1.5.3',
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
@@ -366,7 +366,7 @@ function str2ab(str) {
 }
 
 export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
-  if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+  if (typeof globalConfig === 'object' && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
     return false;
   }
   if (!(msg instanceof discord.GuildMemberMessage)) {
@@ -399,7 +399,7 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   if (!(msg.member instanceof discord.GuildMember)) {
     return false;
   }
-  if (!msg.member.can(discord.Permissions.ADMINISTRATOR) && !globalConfig.admins.includes(msg.author.id)) {
+  if (!msg.member.can(discord.Permissions.ADMINISTRATOR) && (typeof globalConfig !== 'object' || !Array.isArray(globalConfig.admins) || !globalConfig.admins.includes(msg.author.id))) {
     return false;
   }
   if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
@@ -415,14 +415,29 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
   if (isCfg === 'update') {
     try {
       // let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
-      let data: any = await fetch(message.attachments[0].url);
+      let data: any;
+      data = await fetch(message.attachments[0].url);
+      if (!data.ok) {
+        await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
+      }
+      data = await data.arrayBuffer();
+      // data = await data.
+
       try {
         await message.delete();
       } catch (e) {
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
-      data = await data.arrayBuffer();
       data = ab2str(data);
+      //data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
+      let split: Array<string> = data.split('');
+      for(var i = 0; i < split.length; i+=1) {
+        if(split[i] !== '{') {split.splice(i, 1);} else {
+          break;
+        }
+      }
+      data = split.join('');
+      //await message.reply(`\`\`\`json\n${data}\n\`\`\``);
       data = JSON.parse(data);
       if (typeof data.guildId !== 'string' || data.guildId !== guildId) {
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
@@ -471,13 +486,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } */
     const cfgToRet = JSON.stringify(cfg, null, 2);
     const returnedMsg = await message.reply({
-      content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 14 seconds*`,
+      content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 15 seconds*`,
       attachments: [{
         name: 'config.json',
         data: str2ab(cfgToRet),
       }],
     });
-    await sleep(14000);
+    await sleep(15000);
     await returnedMsg.delete();
   } else if (isCfg === 'delete') {
     try {

@@ -16,8 +16,9 @@ export class StarStats {
   id: string;
   given = 0;
   received = 0;
+  posts = 0;
   async update() {
-    await statsKv.editPool(this.id, this);
+    await statsKv.editPool(this.id, { id: this.id, given: this.received, received: this.received, posts: this.posts });
   }
   constructor(id: string) {
     this.id = id;
@@ -116,7 +117,10 @@ export class StarredMessage {
       delete this.publishData.lastUpdate;
     }
     private async awardStats() {
-      const stats = await statsKv.getAll<StarStats>(StarStats);
+      const stats = await statsKv.getAll<StarStats>();
+      for (let i = 0; i < 15; i++) {
+        this.reactors.push(utils.composeSnowflake());
+      }
       const uniqueReactors = this.reactors.filter((e) => e !== this.author).length;
       if (uniqueReactors === 0) {
         return;
@@ -124,25 +128,34 @@ export class StarredMessage {
       let authorStats: StarStats | undefined = stats.find((e) => e.id === this.author);
       if (!authorStats) {
         authorStats = new StarStats(this.author);
+        authorStats.received += uniqueReactors;
+        authorStats.posts += 1;
+        await statsKv.saveToPool(authorStats);
+      } else {
+        authorStats = utils.makeFake(authorStats, StarStats);
+        authorStats.received += uniqueReactors;
+        authorStats.posts += 1;
+        await authorStats.update();
       }
-      authorStats = utils.makeFake(authorStats, StarStats);
-      authorStats.received += uniqueReactors;
-      await authorStats.update();
       const nf = this.reactors.filter((reactor) => {
         const _e = stats.find((st) => st.id === reactor);
         return _e === undefined && reactor !== this.author;
       });
-      await Promise.all(nf.map(async (e) => {
-        const obj = new StarStats(e);
-        obj.given += 1;
-        await statsKv.saveToPool(obj);
-      }));
+      if (nf.length > 0) {
+        await Promise.all(nf.map(async (e) => {
+          const obj = new StarStats(e);
+          obj.given += 1;
+          await statsKv.saveToPool(obj);
+        }));
+      }
       if (nf.length !== this.reactors.length) {
         const f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
-        await statsKv.editPools(f, (vl: StarStats) => {
-          vl.given += 1;
-          return vl;
-        });
+        if (f.length > 0) {
+          await statsKv.editPools(f, (vl: StarStats) => {
+            vl.given += 1;
+            return vl;
+          });
+        }
       }
       /*
       for(var i = 0; i < this.reactors.length; i++) {
@@ -227,7 +240,7 @@ export class StarredMessage {
       }
       if (this.publishData.messageId && this.publishData.lastUpdate) {
         const diff = Date.now() - this.publishData.lastUpdate;
-        if (diff >= 2000) {
+        if (diff >= 1500) {
           const upd = await this.needsUpdate();
           if (upd === true) {
             // update the board msg contents
@@ -235,9 +248,9 @@ export class StarredMessage {
             return chang;
           }
         } else {
-          setTimeout(async function () {
-            await checkKey(`${prefixKvMessages}${this.publishData.channelId}_${this.id}`);
-          }, 100 + Math.min(200, (2000 - diff)));
+          await sleep(100 + Math.min(200, (2000 - diff)));
+
+          await checkKey(`${prefixKvMessages}${this.publishData.channelId}_${this.id}`);
         }
       }
       return false;
@@ -763,6 +776,68 @@ export function InitializeCommands() {
 
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
   cmdGroup.subcommand('stars', (subCommandGroup) => {
+    subCommandGroup.on(
+      { name: 'stats', filters: c2.getFilters('starboard.stars.stats', Ranks.Authorized) },
+      (ctx) => ({ user: ctx.userOptional() }),
+      async (msg, { user }) => {
+        const emb = new discord.Embed();
+        if (user === null) {
+          // leaderboard
+          let stats = await statsKv.getAll<StarStats>();
+          /* if(stats.length < 5) {
+            await msg.reply(`${discord.decor.Emojis.X} ${msg.author.toMention()} not enough users to display a leaderboard!`);
+            return;
+          } */
+          console.log(stats.length);
+          stats = stats.sort((a, b) => b.received - a.received);
+          const top10 = stats.slice(Math.max(stats.length - 10, 0));
+          console.log('top10', top10);
+          const theirRank = stats.findIndex((it) => it.id === msg.author.id);
+          const txt = [];
+          const usrs: Array<discord.User> = [];
+          await Promise.all(top10.map(async (vl) => {
+            const _thisusr = await discord.getUser(vl.id);
+            if (_thisusr !== null) {
+              usrs.push(_thisusr);
+            }
+          }));
+          console.log(usrs);
+          for (let i = 0; i < top10.length; i++) {
+            const st = top10[i];
+            const me = st.id === msg.author.id;
+            let pos = '';
+            let tag = st.id;
+            const _u = usrs.find((u) => u.id === st.id);
+            if (_u) {
+              tag = utils.escapeString(_u.getTag());
+            }
+            if (i === 0) {
+              pos = discord.decor.Emojis.FIRST_PLACE_MEDAL;
+            } else if (i === 1) {
+              pos = discord.decor.Emojis.SECOND_PLACE_MEDAL;
+            } else if (i === 3) {
+              pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
+            } else {
+              pos = `\`${i.toString()}\``;
+            }
+            txt.push(`${pos} ${tag} - ${st.received} stars`);
+          }
+          console.log('txt', txt);
+          emb.setDescription(txt.join('\n'));
+        } else {
+          const stats = await statsKv.getById<StarStats>(user.id);
+          if (typeof stats === 'undefined') {
+            await msg.reply(`${discord.decor.Emojis.X} ${msg.author.toMention()} no stats found for ${user.getTag()}`);
+            return;
+          }
+          emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
+          emb.setColor(0xe1eb34);
+          emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
+        }
+
+        await msg.reply({ content: '', allowedMentions: {}, embed: emb });
+      },
+    );
     subCommandGroup.on(
       { name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user() }),

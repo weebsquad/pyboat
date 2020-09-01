@@ -6,6 +6,9 @@ export function getUserAuth(mem: discord.GuildMember | string) {
   const id = typeof mem === 'string' ? mem : mem.user.id;
   let highest = 0;
   let lowest = 0;
+  if (typeof config.levels !== 'object') {
+    return 0;
+  }
   const usrLevel = config.levels.users[id];
   if (typeof usrLevel === 'number' && usrLevel > highest) {
     highest = usrLevel;

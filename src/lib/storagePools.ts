@@ -177,7 +177,7 @@ export class StoragePool {
         await Promise.all(transactPools.map(async (item) => {
           await this.kv.transact(item.key, (prev: any) => {
             let dt: Array<any> = JSON.parse(JSON.stringify(prev));
-            dt = dt.filter((val) => val !== null && typeof val === 'object' && typeof val !== 'undefined').map((val) => callback(val)).filter((val) => val !== null && typeof val === 'object' && typeof val !== 'undefined');
+            dt = dt.filter((val) => val !== null && typeof val === 'object' && typeof val !== 'undefined').map((val) => (!ids.includes(val[this.uniqueId]) ? val : callback(val))).filter((val) => val !== null && typeof val === 'object' && typeof val !== 'undefined');
             return dt;
           });
         }));
@@ -197,9 +197,9 @@ export class StoragePool {
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
       _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(a) - this.getTimestamp(b));
-      /*if (typeof objSample === 'object') {
+      /* if (typeof objSample === 'object') {
         _ret = _ret.map((item) => utils.makeFake(item, objSample));
-      }*/
+      } */
       return _ret as Array<T>;
     }
     async getById<T>(id: string): Promise<T | undefined> {

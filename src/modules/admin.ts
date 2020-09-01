@@ -664,7 +664,6 @@ export function InitializeCommands() {
         await msg.reply({ content: 'No roles found' });
         return;
       }
-      const authRoles = config.levels.roles;
       const dt = [];
       let currKey = 0;
       roles.forEach((role) => {
@@ -677,8 +676,8 @@ export function InitializeCommands() {
           len += 10 + (dt[currKey].length * 2);
         }
         const props = [];
-        if (typeof authRoles[role.id] === 'number' && authRoles[role.id] > 0) {
-          props.push(`Lvl ${authRoles[role.id]}`);
+        if (typeof config.levels === 'object' && typeof config.levels.roles === 'object' && typeof config.levels.roles[role.id] === 'number' && config.levels.roles[role.id] > 0) {
+          props.push(`Lvl ${config.levels.roles[role.id]}`);
         }
         if (role.mentionable === true) {
           props.push('[M]');
