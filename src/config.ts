@@ -429,15 +429,17 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
       data = ab2str(data);
-      //data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
-      let split: Array<string> = data.split('');
-      for(var i = 0; i < split.length; i+=1) {
-        if(split[i] !== '{') {split.splice(i, 1);} else {
+      // data = new TextDecoder("utf8", {ignoreBOM: true}).decode(data);
+      const split: Array<string> = data.split('');
+      for (let i = 0; i < split.length; i += 1) {
+        if (split[i] !== '{') {
+          split.splice(i, 1);
+        } else {
           break;
         }
       }
       data = split.join('');
-      //await message.reply(`\`\`\`json\n${data}\n\`\`\``);
+      // await message.reply(`\`\`\`json\n${data}\n\`\`\``);
       data = JSON.parse(data);
       if (typeof data.guildId !== 'string' || data.guildId !== guildId) {
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);

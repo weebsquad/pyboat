@@ -118,9 +118,9 @@ export class StarredMessage {
     }
     private async awardStats() {
       const stats = await statsKv.getAll<StarStats>();
-      for (let i = 0; i < 15; i++) {
+      /* for (let i = 0; i < 15; i++) {
         this.reactors.push(utils.composeSnowflake());
-      }
+      } */
       const uniqueReactors = this.reactors.filter((e) => e !== this.author).length;
       if (uniqueReactors === 0) {
         return;
@@ -144,7 +144,9 @@ export class StarredMessage {
       if (nf.length > 0) {
         await Promise.all(nf.map(async (e) => {
           const obj = new StarStats(e);
-          obj.given += 1;
+          obj.given = 1;
+          // TESTING
+          // obj.received += Math.ceil(Math.random()*10);
           await statsKv.saveToPool(obj);
         }));
       }
@@ -784,14 +786,9 @@ export function InitializeCommands() {
         if (user === null) {
           // leaderboard
           let stats = await statsKv.getAll<StarStats>();
-          /* if(stats.length < 5) {
-            await msg.reply(`${discord.decor.Emojis.X} ${msg.author.toMention()} not enough users to display a leaderboard!`);
-            return;
-          } */
           console.log(stats.length);
           stats = stats.sort((a, b) => b.received - a.received);
-          const top10 = stats.slice(Math.max(stats.length - 10, 0));
-          console.log('top10', top10);
+          const top10 = stats.slice(0, Math.min(stats.length, 10));
           const theirRank = stats.findIndex((it) => it.id === msg.author.id);
           const txt = [];
           const usrs: Array<discord.User> = [];
@@ -811,19 +808,30 @@ export function InitializeCommands() {
             if (_u) {
               tag = utils.escapeString(_u.getTag());
             }
+            if (me === true) {
+              tag = `**${tag}**`;
+            }
             if (i === 0) {
               pos = discord.decor.Emojis.FIRST_PLACE_MEDAL;
             } else if (i === 1) {
               pos = discord.decor.Emojis.SECOND_PLACE_MEDAL;
-            } else if (i === 3) {
+            } else if (i === 2) {
               pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
             } else {
               pos = `\`${i.toString()}\``;
             }
             txt.push(`${pos} ${tag} - ${st.received} stars`);
           }
-          console.log('txt', txt);
-          emb.setDescription(txt.join('\n'));
+          const isTop = top10.find((st) => st.id === msg.author.id);
+          if (!isTop) {
+            const ind = stats.findIndex((st) => st.id === msg.author.id);
+            if (ind > -1) {
+              txt.push('...', `\`${ind + 1}\` - ${utils.escapeString(msg.author.getTag())}`);
+            }
+          }
+          const allStars = stats.reduce((a, b) => a + b.received, 0);
+
+          emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
         } else {
           const stats = await statsKv.getById<StarStats>(user.id);
           if (typeof stats === 'undefined') {
