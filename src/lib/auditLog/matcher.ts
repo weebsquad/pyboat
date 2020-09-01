@@ -347,7 +347,7 @@ export async function getAuditLogData(
   let limit = new Date(ts - logEntryLimiter).getTime(); // Limit on how long ago audit log entries can be
   const diffSince = new Date().getTime() - ts;
   const limitQuant = Math.max(8, Math.ceil(logsPerSecond * (diffSince / 1000)));
-  const opts = { limit: limitQuant };
+  const opts: discord.Guild.IIterAuditLogsOptions = { limit: limitQuant };
   let actionsForThis = def.auditLogEntries;
   if (!Array.isArray(actionsForThis)) {
     actionsForThis = [actionsForThis];
@@ -374,6 +374,10 @@ export async function getAuditLogData(
   const diffw = new Date().getTime() - ts;
   if (minwait > 0 && diffw < minwait) {
     await sleep(Math.max(50, minwait - diffw));
+  }
+  if (actionsForThis.length === 1) {
+    // eslint-disable-next-line
+    opts.actionType = actionsForThis[0];
   }
   let tmpstore;
   for await (const item of guild.iterAuditLogs(opts)) {
