@@ -320,13 +320,13 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
       if (newlines > charCfg.newLines) {
         toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
       }
-    }
+    }/*
     if (typeof charCfg.noAscii === 'boolean' && charCfg.noAscii === true) {
       const asciiremoved = txt.replace(AsciiRegex, '');
       if (asciiremoved !== txt) {
         toRet.chars.push('Illegal ASCII');
       }
-    }
+    } */
   }
   return toRet;
 }
