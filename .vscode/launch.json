@@ -5,10 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm test",
             "name": "Test All",
             "request": "launch",
-            "type": "pwa-node-terminal"
+            "runtimeArgs": [
+                "run-script",
+                "testlint"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
         },
         {
             "name": "Build",

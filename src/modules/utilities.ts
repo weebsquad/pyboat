@@ -907,7 +907,7 @@ export function InitializeCommands() {
             discord.decor.Emojis.WHITE_CHECK_MARK
           } ( ${widgetChannel} )`
           : '';
-        const features = guild.features.length > 0 ? guild.features.map((feat) => {return feat.split(' ').map((sp) => `${sp.substr(0,1).toUpperCase()}${sp.substr(1).toLowerCase()}`).join(' ')}).join(', ') : 'None';
+        const features = guild.features.length > 0 ? guild.features.map((feat) => feat.split(' ').map((sp) => `${sp.substr(0, 1).toUpperCase()}${sp.substr(1).toLowerCase()}`).join(' ')).join(', ') : 'None';
 
         desc += `  **❯ **Information
 <:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
