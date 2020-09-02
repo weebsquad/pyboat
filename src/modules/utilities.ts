@@ -6,7 +6,7 @@ import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
-import { getMemberTag } from './logging/utils';
+import { getMemberTag, getUserTag } from './logging/utils';
 import { KVManager } from '../lib/utils';
 import { getInfractionBy } from './infractions';
 import { saveMessage } from './admin';
@@ -356,16 +356,18 @@ export async function OnGuildMemberAdd(
   }
 }
 
-export async function handleReactRoles(idts: string, reaction: discord.Event.IMessageReactionAdd | discord.Event.IMessageReactionRemove) {
+const cooldowns = {};
+export async function handleReactRoles(idts: string, reaction: discord.Event.IMessageReactionAdd | discord.Event.IMessageReactionRemove, add:boolean) {
   if (!reaction.guildId || !reaction.member || typeof config.modules !== 'object' || typeof config.modules.utilities !== 'object' || typeof config.modules.utilities.reactroles !== 'object' || config.modules.utilities.reactroles.enabled !== true || !Array.isArray(config.modules.utilities.reactroles.definitions)) {
     return;
   }
   const defs = config.modules.utilities.reactroles.definitions;
   const { member } = reaction;
-  if(member.user.bot === true) return;
+  if (member.user.bot === true) {
+    return;
+  }
   const message = reaction.messageId;
   const { emoji } = reaction;
-  console.log(emoji);
   const found = defs.find((def) => {
     if (typeof def.message !== 'string' || typeof def.role !== 'string' || typeof def.emoji !== 'string' || typeof def.type !== 'string') {
       return false;
@@ -385,12 +387,19 @@ export async function handleReactRoles(idts: string, reaction: discord.Event.IMe
   if (!found) {
     return;
   }
-  console.log('found!');
+
+  const type = found.type.toLowerCase();
+  if (type === 'remove' && add === false) {
+    return;
+  } if (type === 'once' && add === false) {
+    return;
+  }
+
   const channel = await discord.getChannel(reaction.channelId);
   if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
     return;
   }
-  console.log('valid channel');
+
   let msg: discord.Message;
   try {
     msg = await channel.getMessage(reaction.messageId);
@@ -400,19 +409,7 @@ export async function handleReactRoles(idts: string, reaction: discord.Event.IMe
   if (msg === null) {
     return;
   }
-  console.log('got msg!');
-  /*
-  let emojiThis: any = msg.reactions.find((react) => {
-    if(utils.isNumber(found.emoji)) {
-      return typeof react.emoji.id === 'string' && found.emoji === react.emoji.id;
-    } else {
-      return typeof react.emoji.name === 'string' && react.emoji.name === found.emoji;
-    }
-  })
-  if(!emojiThis) return;
-  emojiThis = emojiThis.emoji;
 
-  console.log('found the emoji'); */
   const hasMyEmoji = msg.reactions.find((react) => {
     if (react.me === false) {
       return false;
@@ -422,13 +419,53 @@ export async function handleReactRoles(idts: string, reaction: discord.Event.IMe
     }
     return emoji.name === react.emoji.name;
   });
-  console.log('hasMyEmoji', hasMyEmoji);
+  if (typeof hasMyEmoji !== 'undefined' && add === true && (type === 'once' || type === 'remove')) {
+    try {
+      msg.deleteReaction(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`, reaction.userId);
+    } catch (e) {}
+  }
+  if (typeof cooldowns[reaction.userId] === 'number') {
+    const diff = Date.now() - cooldowns[reaction.userId];
+    if (diff < 500) {
+      return;
+    }
+  }
+  cooldowns[reaction.userId] = Date.now();
 
   if (!hasMyEmoji) {
-    console.log('doesnt have my emoji :( adding');
     const emjMention = found.emoji;
     // await msg.deleteAllReactionsForEmoji(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
     await msg.addReaction(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
+    return;
+  }
+  const guild = await discord.getGuild();
+  const memNew = await guild.getMember(reaction.userId);
+  if (memNew === null) {
+    return;
+  }
+  let typeRole: undefined | boolean;
+  if (type === 'once' && !memNew.roles.includes(found.role)) {
+    await memNew.addRole(found.role);
+    typeRole = true;
+  } else if (type === 'remove' && memNew.roles.includes(found.role)) {
+    await memNew.removeRole(found.role);
+    typeRole = false;
+  } else if (type === 'toggle') {
+    if (memNew.roles.includes(found.role) && add === false) {
+      await memNew.removeRole(found.role);
+      typeRole = false;
+    } else if (!memNew.roles.includes(found.role) && add === true) {
+      await memNew.addRole(found.role);
+      typeRole = true;
+    }
+  }
+  if (typeof typeRole === 'boolean') {
+    let logType = 'ROLE_ADDED';
+    if (typeRole === false) {
+      logType = 'ROLE_REMOVED';
+    }
+    const placeholders = new Map([['_USERTAG_', getMemberTag(memNew)], ['_USER_ID_', reaction.userId], ['_CHANNEL_ID_', reaction.channelId], ['_MESSAGE_ID_', reaction.messageId], ['_EMOJI_', reaction.emoji.toMention()], ['_ROLE_ID_', found.role]]);
+    logCustom('REACTROLES', logType, placeholders, idts);
   }
 }
 /* REACT ROLES */
@@ -437,11 +474,11 @@ export async function OnMessageReactionAdd(
   gid: string,
   reaction: discord.Event.IMessageReactionAdd,
 ) {
-  await handleReactRoles(id, reaction);
+  await handleReactRoles(id, reaction, true);
 }
 
 export async function OnMessageReactionRemove(id: string, gid: string, reaction: discord.Event.IMessageReactionRemove) {
-  await handleReactRoles(id, reaction);
+  await handleReactRoles(id, reaction, false);
 }
 /* SNIPE */
 const snipekvs = new pylon.KVNamespace('snipe');

@@ -164,8 +164,8 @@ const defaultConfig = { // for non-defined configs!
         definitions: [{
           message: '750736042918674532',
           role: '747413038168277043',
-          emoji: '431233233485692929',
-          type: 'toggle',
+          emoji: '\uD83D\uDD25',
+          type: 'once',
         }],
       },
     },
@@ -473,13 +473,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       data = split.join('');
 
       // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
-      data = JSON.parse(data);
-      if (typeof data.guildId !== 'string' || data.guildId !== guildId) {
+      const check = JSON.parse(data);
+      if (typeof check.guildId !== 'string' || check.guildId !== guildId) {
         await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
         return;
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
-      data = JSON.stringify(data);
+      // data = JSON.stringify(data);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
       const parts = data.match(/.{1,6500}/g);

@@ -25,6 +25,10 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     CRON_RAN: `${discord.decor.Emojis.WATCH} Cron task \`_CRON_NAME_\` executed.`,
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} global-blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },
+  '|REACTROLES': {
+    ROLE_ADDED: `${discord.decor.Emojis.SHIELD} _USERTAG_ reacted with _EMOJI_ to a message in <#_CHANNEL_ID_> **[**\`_MESSAGE_ID_\`**]** to get role <@&_ROLE_ID_>`,
+    ROLE_REMOVED: `${discord.decor.Emojis.SHIELD} _USERTAG_ reacted with _EMOJI_ to a message in <#_CHANNEL_ID_> **[**\`_MESSAGE_ID_\`**]** to remove role <@&_ROLE_ID_>`,
+  },
   '|PERSIST': {
     SAVED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data saved.`,
     RESTORED: `${discord.decor.Emojis.FLOPPY_DISK} _USERTAG_ backup data restored.`,

@@ -798,7 +798,7 @@ export function InitializeCommands() {
             let stats = await statsKv.getAll<StarStats>();
             stats = stats.sort((a, b) => b.received - a.received);
             const top10 = stats.slice(0, Math.min(stats.length, 10));
-            const theirRank = stats.findIndex((it) => it.id === msg.author.id);
+            // const theirRank = stats.findIndex((it) => it.id === msg.author.id);
             const txt = [];
             const usrs: Array<discord.User> = [];
             await Promise.all(top10.map(async (vl) => {
@@ -826,7 +826,7 @@ export function InitializeCommands() {
               } else if (i === 2) {
                 pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
               } else {
-                pos = `\`${i.toString()}\``;
+                pos = `\` ${i.toString()} \``;
               }
               txt.push(`${pos} ${tag} - ${st.received} stars`);
             }
