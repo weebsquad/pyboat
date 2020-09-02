@@ -154,6 +154,11 @@ const defaultConfig = { // for non-defined configs!
         },
         saveOnBan: false,
       },
+      autoroles: {
+        enabled: false,
+        human: [],
+        bot: [],
+      },
     },
     /* roleManagement: { // for group srv only
       enabled: false,

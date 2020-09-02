@@ -310,6 +310,9 @@ export async function AL_OnGuildMemberRemove(
   member: discord.Event.IGuildMemberRemove,
   oldMember: discord.GuildMember,
 ) {
+  if (utils.isBlacklisted(member.user)) {
+    return;
+  }
   if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
     return;
   }
@@ -328,10 +331,29 @@ export async function OnGuildMemberAdd(
   guildId: string,
   member: discord.GuildMember,
 ) {
-  if (!config.modules.utilities.persist || typeof config.modules.utilities.persist !== 'object' || config.modules.utilities.persist.enabled !== true) {
+  if (utils.isBlacklisted(member)) {
     return;
   }
-  restorePersistData(member);
+  if (config.modules.utilities.persist && typeof config.modules.utilities.persist === 'object' && config.modules.utilities.persist.enabled === true) {
+    await restorePersistData(member);
+  }
+  if (config.modules.utilities.autoroles && typeof config.modules.utilities.autoroles === 'object' && config.modules.utilities.autoroles.enabled === true) {
+    const guild = await member.getGuild();
+    const mem = await guild.getMember(member.user.id);
+    if (mem !== null) {
+      if (Array.isArray(config.modules.utilities.autoroles.human) && member.user.bot === false) {
+        const newr = mem.roles.concat(config.modules.utilities.autoroles.human);
+        if (newr.length !== mem.roles.length) {
+          await mem.edit({ roles: newr });
+        }
+      } else if (Array.isArray(config.modules.utilities.autoroles.bot) && member.user.bot === true) {
+        const newr = mem.roles.concat(config.modules.utilities.autoroles.bot);
+        if (newr.length !== mem.roles.length) {
+          await mem.edit({ roles: newr });
+        }
+      }
+    }
+  }
 }
 
 /* SNIPE */
@@ -361,9 +383,6 @@ export async function AL_OnMessageDelete(
   if (utils.isBlacklisted(msg.member)) {
     return;
   }
-  /* if (!utils.canMemberRun(Ranks.Guest, msg.member)) {
-    return;
-  } */
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
   if (diff >= config.modules.utilities.snipe.delay) {
