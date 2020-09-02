@@ -471,6 +471,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       split = split.filter((val) => typeof val === 'string' && val.length > 0);
       // console.log(split);
       data = split.join('');
+      //data = data.split('\n').join('').split('\t').join('').split('\r').join('');
 
       // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
@@ -482,7 +483,8 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       // data = JSON.stringify(data);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
-      const parts = data.match(/.{1,6500}/g);
+      const parts = data.match(/[\S\s]{1,7000}/g);
+      // console.log(parts, parts.length);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
         await configKv.put(i.toString(), parts[i]);
@@ -502,8 +504,8 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     const items = await configKv.items();
     let cfg: any;
     if (items.length > 0) {
-      cfg = items.map((item: any) => item.value).join('').split('');
-      cfg = JSON.parse(cfg.join(''));
+      cfg = items.map((item: any) => item.value).join('');
+      // cfg = JSON.parse(cfg.join(''));
     }
     if (typeof guildConfigs[guildId] !== 'undefined') {
       cfg = guildConfigs[guildId];
@@ -512,15 +514,15 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     if (!cfg) {
       cfg = defaultConfig;
     }
-    cfg = JSON.parse(JSON.stringify(cfg));
-    if (typeof cfg.guildId !== 'string' || cfg.guildId !== guildId) {
+    // cfg = JSON.parse(JSON.stringify(cfg));
+    if (typeof cfg === 'object' && (typeof cfg.guildId !== 'string' || cfg.guildId !== guildId)) {
       cfg.guildId = guildId;
     }
     /* if (cfg.modules && cfg.modules.logging) {
       cfg.modules.logging.messages = undefined;
       cfg.modules.logging.messagesAuditLogs = undefined;
     } */
-    const cfgToRet = JSON.stringify(cfg, null, 2);
+    const cfgToRet = typeof cfg !== 'string' ? JSON.stringify(cfg, null, 2) : cfg;
     const returnedMsg = await message.reply({
       content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 15 seconds*`,
       attachments: [{
