@@ -115,6 +115,7 @@ export class StoragePool {
           const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + _thisLen;
           if (len < constants.MAX_KV_SIZE) {
             saveTo = item.key;
+            lenOg = item.value.length;
             return false;
           }
         }
