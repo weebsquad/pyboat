@@ -471,7 +471,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       split = split.filter((val) => typeof val === 'string' && val.length > 0);
       // console.log(split);
       data = split.join('');
-      //data = data.split('\n').join('').split('\t').join('').split('\r').join('');
+      // data = data.split('\n').join('').split('\t').join('').split('\r').join('');
 
       // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
