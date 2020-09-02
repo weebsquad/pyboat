@@ -99,6 +99,9 @@ export function getChannelEmoji(ch: discord.GuildChannel) {
 }
 
 export function getMemberTag(member: discord.GuildMember) {
+  if (member === null || typeof member !== 'object') {
+    return member;
+  }
   const nick = member.nick ?? member.user.username;
   const map = new Map([
     ['_TAG_', utils.escapeString(member.user.getTag())],
@@ -116,6 +119,9 @@ export function getMemberTag(member: discord.GuildMember) {
 }
 
 export function getUserTag(user: discord.User | discord.GuildMember) {
+  if (user === null || typeof user !== 'object') {
+    return user;
+  }
   if (user instanceof discord.GuildMember) {
     user = user.user;
   }
@@ -276,6 +282,9 @@ export async function parseMessageContent(
   return cont;
 }
 export function getActorTag(user: discord.User | discord.GuildMember) {
+  if (user === null || typeof user !== 'object') {
+    return user;
+  }
   let nick: string;
   if (user instanceof discord.GuildMember) {
     nick = user.nick ?? user.user.username;
@@ -290,7 +299,7 @@ export function getActorTag(user: discord.User | discord.GuildMember) {
     ['_DISCRIMINATOR_', user.discriminator],
     ['_ID_', user.id],
     ['_MENTION_', user.toMention()],
-    ['_NICK_', utils.escapeString(nick)],
+    ['_NICKNAME_', utils.escapeString(nick)],
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
