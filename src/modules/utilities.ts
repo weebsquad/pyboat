@@ -356,6 +356,93 @@ export async function OnGuildMemberAdd(
   }
 }
 
+export async function handleReactRoles(idts: string, reaction: discord.Event.IMessageReactionAdd | discord.Event.IMessageReactionRemove) {
+  if (!reaction.guildId || !reaction.member || typeof config.modules !== 'object' || typeof config.modules.utilities !== 'object' || typeof config.modules.utilities.reactroles !== 'object' || config.modules.utilities.reactroles.enabled !== true || !Array.isArray(config.modules.utilities.reactroles.definitions)) {
+    return;
+  }
+  const defs = config.modules.utilities.reactroles.definitions;
+  const { member } = reaction;
+  if(member.user.bot === true) return;
+  const message = reaction.messageId;
+  const { emoji } = reaction;
+  console.log(emoji);
+  const found = defs.find((def) => {
+    if (typeof def.message !== 'string' || typeof def.role !== 'string' || typeof def.emoji !== 'string' || typeof def.type !== 'string') {
+      return false;
+    }
+    const type = def.type.toLowerCase();
+    if (type !== 'once' && type !== 'toggle' && type !== 'remove') {
+      return false;
+    }
+    if (def.message !== message) {
+      return false;
+    }
+    if (utils.isNumber(def.emoji)) {
+      return typeof emoji.id === 'string' && def.emoji === emoji.id;
+    }
+    return typeof emoji.name === 'string' && emoji.name === def.emoji;
+  });
+  if (!found) {
+    return;
+  }
+  console.log('found!');
+  const channel = await discord.getChannel(reaction.channelId);
+  if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
+    return;
+  }
+  console.log('valid channel');
+  let msg: discord.Message;
+  try {
+    msg = await channel.getMessage(reaction.messageId);
+  } catch (e) {
+    return;
+  }
+  if (msg === null) {
+    return;
+  }
+  console.log('got msg!');
+  /*
+  let emojiThis: any = msg.reactions.find((react) => {
+    if(utils.isNumber(found.emoji)) {
+      return typeof react.emoji.id === 'string' && found.emoji === react.emoji.id;
+    } else {
+      return typeof react.emoji.name === 'string' && react.emoji.name === found.emoji;
+    }
+  })
+  if(!emojiThis) return;
+  emojiThis = emojiThis.emoji;
+
+  console.log('found the emoji'); */
+  const hasMyEmoji = msg.reactions.find((react) => {
+    if (react.me === false) {
+      return false;
+    }
+    if (emoji.type === discord.Emoji.Type.GUILD) {
+      return emoji.id === react.emoji.id;
+    }
+    return emoji.name === react.emoji.name;
+  });
+  console.log('hasMyEmoji', hasMyEmoji);
+
+  if (!hasMyEmoji) {
+    console.log('doesnt have my emoji :( adding');
+    const emjMention = found.emoji;
+    // await msg.deleteAllReactionsForEmoji(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
+    await msg.addReaction(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
+  }
+}
+/* REACT ROLES */
+export async function OnMessageReactionAdd(
+  id: string,
+  gid: string,
+  reaction: discord.Event.IMessageReactionAdd,
+) {
+  await handleReactRoles(id, reaction);
+}
+
+export async function OnMessageReactionRemove(id: string, gid: string, reaction: discord.Event.IMessageReactionRemove) {
+  await handleReactRoles(id, reaction);
+}
 /* SNIPE */
 const snipekvs = new pylon.KVNamespace('snipe');
 export async function AL_OnMessageDelete(

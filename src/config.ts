@@ -159,6 +159,15 @@ const defaultConfig = { // for non-defined configs!
         human: [],
         bot: [],
       },
+      reactroles: {
+        enabled: true,
+        definitions: [{
+          message: '750736042918674532',
+          role: '747413038168277043',
+          emoji: '431233233485692929',
+          type: 'toggle',
+        }],
+      },
     },
     /* roleManagement: { // for group srv only
       enabled: false,
