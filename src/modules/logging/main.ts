@@ -824,9 +824,7 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     messages = combineMessages(messages);
     await sendInLogChannel(thisGuildId, messages);
   } catch (e) {
-    if (utils.isDebug()) {
-      console.error(e);
-    }
+    await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
       ['ERROR', `Error at logging.handleMultiEvents\n${e.stack}`],
     ]));
@@ -924,9 +922,7 @@ export async function handleEvent(
 
     await sendInLogChannel(guildId, messages);
   } catch (e) {
-    if (utils.isDebug(true)) {
-      console.error(e);
-    }
+    await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
       ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
     ]),

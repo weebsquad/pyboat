@@ -1,5 +1,6 @@
 import { globalConfig, Ranks, guildId } from '../config';
 import * as c2 from '../lib/commands2';
+import { adminPool, saveMessage } from '../modules/admin';
 
 // const { config } = conf;
 const ADMIN_ROLE = '567988684193005568';
@@ -65,7 +66,7 @@ export function InitializeCommands() {
   });
 
   cmdGroupAdmin.raw('invite', async (message) => {
-    await message.reply(async () => {
+    const res: any = await message.reply(async () => {
       const chan = await discord.getGuildTextChannel(GENERAL_CHANNEL);
       if (chan === null) {
         return 'Invalid channel configured';
@@ -77,6 +78,7 @@ export function InitializeCommands() {
       });
       return `Generated an invite to ${chan.toMention()} with 1 use and 1 day age: \n${inv.getUrl()}`;
     });
+    saveMessage(res);
   });
   return [cmdGroupAdmin, cmdGroupOp];
 }

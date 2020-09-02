@@ -103,9 +103,9 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     await ExecuteModules(event, ts, null, ...args);
   } catch (e) {
     const err: Error = e;
-    if (conf.guildId === conf.globalConfig.masterGuild) {
-      console.error(e);
-    }
+
+    await utils.logError(e);
+
     logDebug(
       'BOT_ERROR',
       new Map<string, any>([
@@ -132,7 +132,7 @@ export async function getEventAuditLogData(
       try {
         auditLogData = await getAuditLogData(event, tm, args);
       } catch (e) {
-        // console.error(e);
+        await utils.logError(e);
         auditLogData = getAuditLogErrorJson(
           'Routing errored whilst pulling audit logs',
         );

@@ -82,9 +82,7 @@ export async function OnMessageCreate(
     } else {
       // original cmd errored!
       const _e:Error = cmdExec;
-      if (guildId === conf.globalConfig.masterGuild) {
-        console.error(_e);
-      }
+      await utils.logError(_e);
 
       logDebug(
         'BOT_ERROR',

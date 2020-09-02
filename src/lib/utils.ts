@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { config } from '../config';
+import { config, globalConfig } from '../config';
 import * as constants from '../constants/constants';
 
 export * from './metalApi';
@@ -142,6 +142,11 @@ export function escapeString(string) {
     string = string.split(vl).join('');
   });
   return string;
+}
+
+export async function logError(...args: any) {
+  if(typeof globalConfig !== 'object' || typeof globalConfig.showErrors !== 'boolean' || globalConfig.showErrors !== true) return;
+  console.error(...args);
 }
 export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
 

@@ -8,6 +8,7 @@ import { check } from './disabled/onJoin';
 import { chEmbed } from './logging/classes';
 import { getUserAuth } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
+import { saveMessage } from './admin';
 
 const keyPrefix = 'Infraction_';
 const indexSep = '|';
@@ -179,7 +180,7 @@ export async function every5Min() {
       await Promise.all(promises2);
     }
   } catch (e) {
-    console.error(e);
+    await utils.logError(e);
   }
 }
 export async function clearInfractions() {
@@ -380,6 +381,9 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
         }
         replyMsg = await ogMsg.reply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
           allowedMentions: {} });
+        if (expiry === 0) {
+          saveMessage(replyMsg);
+        }
       } catch (e) {
         replyMsg = undefined;
       }
@@ -907,7 +911,8 @@ export function InitializeCommands() {
       ids = [...new Set(ids)]; // remove duplicates
       const reason = reas.join(' ');
       if (ids.length < 2) {
-        await msg.reply('Not enough ids specified!');
+        const res: any = await msg.reply('Not enough ids specified!');
+        saveMessage(res);
         return;
       }
       const objs = [];
@@ -1045,7 +1050,8 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        saveMessage(res);
       },
     );
     subCommandGroup.raw(
@@ -1064,7 +1070,8 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1081,7 +1088,8 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          saveMessage(res);
           return;
         }
         const inf = infs[0];
@@ -1089,7 +1097,8 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1098,11 +1107,13 @@ export function InitializeCommands() {
       async (msg, { id, duration }) => {
         const dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          await msg.reply(`${discord.decor.Emojis.X}Tempban duration malformed (try 1h30m format)`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}Tempban duration malformed (try 1h30m format)`);
+          saveMessage(res);
           return;
         }
         if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-          await msg.reply(`${discord.decor.Emojis.X}Tempban duration must be between a minute and a year`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}Tempban duration must be between a minute and a year`);
+          saveMessage(res);
           return;
         }
         let infs;
@@ -1115,23 +1126,27 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          saveMessage(res);
           return;
         }
         const inf: Infraction = infs[0];
         if (!inf.active) {
-          await msg.reply(`${discord.decor.Emojis.X}This infraction is not active.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}This infraction is not active.`);
+          saveMessage(res);
           return;
         }
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          saveMessage(res);
           return;
         }
         const expiresAt = utils.composeSnowflake(inf.ts + dur);
         const oldK = inf.getKey();
         inf.expiresAt = expiresAt;
         await inf.updateStorage(oldK, inf.getKey());
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
+        saveMessage(res);
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_', msg.author);
@@ -1156,19 +1171,22 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          saveMessage(res);
           return;
         }
         const inf: Infraction = infs[0];
 
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          saveMessage(res);
           return;
         }
         const oldK = inf.getKey();
         inf.reason = reason;
         await inf.updateStorage(oldK, inf.getKey());
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
+        saveMessage(res);
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_ID_', msg.author.id);
@@ -1194,16 +1212,19 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          saveMessage(res);
           return;
         }
         const inf = infs[0];
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          saveMessage(res);
           return;
         }
         await utils.KVManager.delete(inf.getKey());
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
+        saveMessage(res);
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_', msg.author);
@@ -1219,7 +1240,8 @@ export function InitializeCommands() {
       async (msg, { user }) => {
         const infs = (await getInfractionBy({ memberId: user.id }));
         if (infs.length === 0) {
-          await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given user`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given user`);
+          saveMessage(res);
           return;
         }
         let count = 0;
@@ -1230,7 +1252,8 @@ export function InitializeCommands() {
             count++;
           }
         });
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1239,7 +1262,8 @@ export function InitializeCommands() {
       async (msg, { actor }) => {
         const infs = (await getInfractionBy({ actorId: actor.id }));
         if (infs.length === 0) {
-          await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given actor`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given actor`);
+          saveMessage(res);
           return;
         }
         let count = 0;
@@ -1250,7 +1274,8 @@ export function InitializeCommands() {
             count++;
           }
         });
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        saveMessage(res);
       },
     );
     subCommandGroup.raw(
@@ -1258,7 +1283,8 @@ export function InitializeCommands() {
       async (msg) => {
         const infs = (await getInfractionBy(null));
         if (infs.length === 0) {
-          await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions`);
+          saveMessage(res);
           return;
         }
         let count = 0;
@@ -1269,7 +1295,8 @@ export function InitializeCommands() {
             count++;
           }
         });
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        saveMessage(res);
       },
     );
     subCommandGroup.subcommand('search', (subCommandGroup2) => {
@@ -1295,7 +1322,8 @@ export function InitializeCommands() {
           emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
           emb.setTimestamp(new Date().toISOString());
 
-          await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          saveMessage(res);
         },
       );
       subCommandGroup2.raw(
@@ -1319,7 +1347,8 @@ export function InitializeCommands() {
           emb.setAuthor({ name: 'SYSTEM' });
           emb.setTimestamp(new Date().toISOString());
 
-          await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          saveMessage(res);
         },
       );
       subCommandGroup2.on(
@@ -1344,7 +1373,8 @@ export function InitializeCommands() {
           emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
           emb.setTimestamp(new Date().toISOString());
 
-          await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          saveMessage(res);
         },
       );
       subCommandGroup2.on(
@@ -1368,7 +1398,8 @@ export function InitializeCommands() {
           emb.setDescription(txt);
           emb.setTimestamp(new Date().toISOString());
 
-          await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          saveMessage(res);
         },
       );
     });

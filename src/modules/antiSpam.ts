@@ -295,7 +295,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                 // todo update for new perms
                 await defRole.edit({ permissions: Number(thisPerms.bitfield) });
               } catch (e) {
-                console.error(e);
+                await utils.logError(e);
               }
               break;
             }

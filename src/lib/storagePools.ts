@@ -64,7 +64,7 @@ export class StoragePool {
         const { key } = item;
         const toRemove = vl.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
         if (toRemove.length > 0) {
-          console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
+          // console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
           let vlCheckEmpty: undefined | Array<any>;
           await this.kv.transact(key, (prev: any) => {
             const newDt = prev.filter((e: any) => e !== null && !toRemove.includes(e[this.uniqueId]));
@@ -87,6 +87,7 @@ export class StoragePool {
     }
 
     async saveToPool(newObj: any) {
+      // check same len
       let _thisLen;
       const items = await this.kv.items();
       const ex = (await this.getAll(items)).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
@@ -95,6 +96,7 @@ export class StoragePool {
         return _res;
       }
       let saveTo;
+      let lenOg;
       const res = items.every((item: any) => {
         if (!Array.isArray(item.value)) {
           return true;
@@ -103,6 +105,7 @@ export class StoragePool {
         if (typeof this.maxObjects === 'number' && this.maxObjects > 0) {
           if (_entries.length < this.maxObjects) {
             saveTo = item.key;
+            lenOg = item.value.length;
             return false;
           }
         } else {
@@ -122,14 +125,25 @@ export class StoragePool {
         return true;
       }
       if (res === false && typeof saveTo === 'string') {
-        for (let i = 0; i < 2; i += 1) {
-          try {
-            await this.kv.transact(saveTo, (prev: any) => prev.concat(newObj));
+        let failed = false;
+
+        try {
+          await this.kv.transact(saveTo, (prev: any) => {
+            if (prev.length !== lenOg) {
+              failed = true;
+              return prev;
+            }
+            return prev.concat(newObj);
+          });
+          if (!failed) {
             return true;
-          } catch (e) {
           }
+          const newres = await this.saveToPool(newObj);
+          return newres;
+        } catch (e) {
+          const newres = await this.saveToPool(newObj);
+          return newres;
         }
-        return false;
       }
 
       return false;
@@ -207,17 +221,20 @@ export class StoragePool {
       const _f: any = (await this.getAll()).find((e) => e !== null && e[this.uniqueId] === id);
       return _f as T;
     }
-    async getByQuery<T>(query: any): Promise<Array<T>> {
+    async getByQuery<T>(query: any, OR = false): Promise<Array<T>> {
       const toRet = (await this.getAll()).filter((item) => {
         for (const key in query) {
           if (typeof query[key] === 'undefined') {
             continue;
           }
-          if (query[key] === item[key]) {
+          if (OR === true && query[key] === item[key]) {
             return true;
           }
+          if (query[key] !== item[key]) {
+            return false;
+          }
         }
-        return false;
+        return true;
       });
       return toRet as Array<T>;
     }

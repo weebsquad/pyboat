@@ -9,6 +9,7 @@ import * as censor from '../modules/censor';
 import * as antiPing from '../modules/antiPing';
 import { InitializedPools } from './storagePools';
 import * as routing from './eventHandler/routing';
+import { logError } from './utils';
 
 const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
@@ -33,7 +34,7 @@ const _cr: {[key: string]: any} = {
         }, 300);
       } catch (e) {
         if (e.message !== '') {
-          console.error(e);
+          await logError(e);
         }
       }
       console.log(`Took ${Date.now() - dt}ms to run cron`);

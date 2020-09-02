@@ -9,6 +9,7 @@ import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/utils';
 import { KVManager } from '../lib/utils';
 import { getInfractionBy } from './infractions';
+import { saveMessage } from './admin';
 
 const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
 
@@ -390,7 +391,7 @@ export function InitializeCommands() {
   if (config.modules.utilities.snipe.enabled === true) {
     cmdGroup.raw(
       { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
-        await msg.reply(async () => {
+        const res: any = await msg.reply(async () => {
           let _sn: any = await snipekvs.get(msg.channelId);
           if (typeof _sn === 'string') {
             _sn = JSON.parse(_sn);
@@ -430,6 +431,7 @@ export function InitializeCommands() {
             allowedMentions: {},
           };
         });
+        saveMessage(res);
       },
     );
   }
@@ -441,18 +443,20 @@ export function InitializeCommands() {
         { name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
         (ctx) => ({ member: ctx.guildMember() }),
         async (msg, { member }) => {
-          const ret = await restorePersistData(member);
-          if (ret === true) {
-            await msg.reply({
-              allowedMentions: {},
-              content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
-            });
-          } else {
-            await msg.reply({
+          const res: any = await msg.reply(async () => {
+            const ret = await restorePersistData(member);
+            if (ret === true) {
+              return {
+                allowedMentions: {},
+                content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+              };
+            }
+            return {
               allowedMentions: {},
               content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
-            });
-          }
+            };
+          });
+          saveMessage(res);
         },
       );
       subCommandGroup.on(
@@ -460,41 +464,46 @@ export function InitializeCommands() {
         (ctx) => ({ member: ctx.guildMember() }),
         async (msg, { member }) => {
           const ret = await savePersistData(member);
-          await msg.reply({
+          const res: any = await msg.reply({
             allowedMentions: {},
             content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
           });
+          saveMessage(res);
         },
       );
       subCommandGroup.on(
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
         (ctx) => ({ usr: ctx.user() }),
         async (msg, { usr }) => {
-          const thisObj = await persistPool.getById<MemberPersist>(usr.id);
-          if (!thisObj) {
-            await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
-            return;
-          }
-          let rls = 'None';
-          if (thisObj.roles.length > 0) {
-            const rlsfo = thisObj.roles.map((rl) => `<@&${rl}>`).join(', ');
-            rls = rlsfo;
-          }
-          const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thisObj.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thisObj.nick === null || typeof thisObj.nick !== 'string' ? 'None' : `\`${utils.escapeString(thisObj.nick)}\``}${Array.isArray(thisObj.channels) ? `\n**Channel Overwrites**: ${thisObj.channels.length}` : ''}`;
-          await msg.reply({ content: txt, allowedMentions: {} });
+          const res: any = await msg.reply(async () => {
+            const thisObj = await persistPool.getById<MemberPersist>(usr.id);
+            if (!thisObj) {
+              return { content: `${discord.decor.Emojis.X} no backup found for this member` };
+            }
+            let rls = 'None';
+            if (thisObj.roles.length > 0) {
+              const rlsfo = thisObj.roles.map((rl) => `<@&${rl}>`).join(', ');
+              rls = rlsfo;
+            }
+            const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thisObj.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thisObj.nick === null || typeof thisObj.nick !== 'string' ? 'None' : `\`${utils.escapeString(thisObj.nick)}\``}${Array.isArray(thisObj.channels) ? `\n**Channel Overwrites**: ${thisObj.channels.length}` : ''}`;
+            return { content: txt, allowedMentions: {} };
+          });
+          saveMessage(res);
         },
       );
       subCommandGroup.on(
         { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
         (ctx) => ({ usr: ctx.user() }),
         async (msg, { usr }) => {
-          const thiskv = await persistPool.getById<MemberPersist>(usr.id);
-          if (!thiskv) {
-            await msg.reply(`${discord.decor.Emojis.X} no backup found for this member`);
-            return;
-          }
-          await persistPool.editPool(usr.id, undefined);
-          await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`);
+          const res: any = await msg.reply(async () => {
+            const thiskv = await persistPool.getById<MemberPersist>(usr.id);
+            if (!thiskv) {
+              return `${discord.decor.Emojis.X} no backup found for this member`;
+            }
+            await persistPool.editPool(usr.id, undefined);
+            return `${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`;
+          });
+          saveMessage(res);
         },
       );
     });
@@ -508,15 +517,16 @@ export function InitializeCommands() {
       const now = new Date();
       const baseId = snowflakee;
       const normalTs = utils.getSnowflakeDate(baseId);
-      await msg.reply(
+      const res: any = await msg.reply(
         `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
       );
+      saveMessage(res);
     },
   );
 
   cmdGroup.raw(
     { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('http://aws.random.cat/meow')).json();
         const catpic = await (await fetch(file.file)).arrayBuffer();
         const ext = file.file.split('.')[file.file.split('.').length - 1];
@@ -528,11 +538,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://random.dog/woof.json')).json();
         const pic = await (await fetch(file.url)).arrayBuffer();
         const ext = file.url.split('.')[file.url.split('.').length - 1];
@@ -545,11 +556,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'doge', filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
         const pic = await (await fetch(file.message)).arrayBuffer();
         const ext = file.message.split('.')[file.message.split('.').length - 1];
@@ -562,12 +574,13 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
 
   cmdGroup.raw(
     { name: 'fox', filters: c2.getFilters('utilities.fox', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://randomfox.ca/floof/')).json();
         const pic = await (await fetch(file.image)).arrayBuffer();
         const ext = file.image.split('.')[file.image.split('.').length - 1];
@@ -580,11 +593,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'pikachu', filters: c2.getFilters('utilities.pikachu', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -597,11 +611,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'koala', filters: c2.getFilters('utilities.koala', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -614,11 +629,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'pat', filters: c2.getFilters('utilities.pat', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -631,11 +647,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'hug', filters: c2.getFilters('utilities.hug', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -648,11 +665,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.birb', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -665,11 +683,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.panda', Ranks.Guest) }, async (msg) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -682,11 +701,12 @@ export function InitializeCommands() {
           }],
         };
       });
+      saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) }, async (message) => {
-      await message.reply(async () => {
+      const res: any = await message.reply(async () => {
         const embed = new discord.Embed();
         const guild = await message.getGuild();
         if (guild === null) {
@@ -944,6 +964,7 @@ export function InitializeCommands() {
         // await editer.edit({ content: '', embed });
         return { content: '', embed, allowedMentions: {} };
       });
+      saveMessage(res);
     },
   );
 
@@ -951,7 +972,7 @@ export function InitializeCommands() {
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
     (ctx) => ({ user: ctx.userOptional() }),
     async (msg, { user }) => {
-      await msg.reply(async () => {
+      const res: any = await msg.reply(async () => {
         if (user === null) {
           user = msg.author;
         }
@@ -1099,6 +1120,7 @@ export function InitializeCommands() {
         emb.setDescription(desc);
         return { content: '', embed: emb, allowedMentions: {} };
       });
+      saveMessage(res);
       // await loadingMsg.edit({ content: '', embed: emb });
     },
   );

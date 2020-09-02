@@ -1,4 +1,5 @@
 import { config } from '../config';
+import * as utils from './utils';
 // const key = config.global.googleApi.key;
 const endpointTranslate = 'https://translation.googleapis.com/language/translate/v2';
 const endpointDetect = 'https://translation.googleapis.com/language/translate/v2/detect';
@@ -29,15 +30,15 @@ export async function translate(query: string, target: string) {
   });
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
-    console.error(request.error);
-    throw new Error();
+    // console.error(request.error);
+    throw new Error(request.error);
   }
   if (
     !Array.isArray(request.data.translations)
     || request.data.translations.length !== 1
   ) {
-    console.error(request);
-    throw new Error();
+    // console.error(request);
+    throw new Error(request);
   }
   return request.data.translations[0];
 }
@@ -55,11 +56,13 @@ export async function detectLanguage(query: string) {
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
     // console.error(request.error);
-    throw new Error(request.error);
+    await utils.logError(request);
+    throw new Error();
   }
   if (!Array.isArray(request.data.detections) || request.data.detections < 1) {
     // console.error(request);
-    throw new Error(request.error);
+    await utils.logError(request);
+    throw new Error();
   }
   return request.data.detections[0];
 }

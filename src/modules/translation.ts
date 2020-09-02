@@ -2,6 +2,7 @@ import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as utils from '../lib/utils';
 import {messageJump} from '../modules/logging/messages';
+import { saveMessage } from './admin';
 
 const kv = new pylon.KVNamespace('translation');
 
@@ -243,25 +244,28 @@ export async function OnMessageReactionAdd(
       return e.language === 'en' && e.confidence >= 0.9;
     });
     if (typeof foundEn === 'undefined') {
-      await channel.sendMessage(
+      const res: any = await channel.sendMessage(
         reaction.member.toMention() +
           ' , only english messages can be pirate-spoken <:pirate:713103123912065024>'
       );
+      saveMessage(res);
       return false;
     }
     const pirateey = await pirateSpeak(message.content);
     if (typeof pirateey !== 'string') {
-      await channel.sendMessage(
+      const res: any = await channel.sendMessage(
         reaction.member.toMention() +
           ' , pirate api decided to fail for whatever reason <:pirate:713103123912065024>'
       );
+      saveMessage(res);
       return false;
     }
     if (pirateey.toLowerCase() === message.content.toLowerCase()) {
-      await channel.sendMessage(
+      const res: any = await channel.sendMessage(
         reaction.member.toMention() +
           " <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
       );
+      saveMessage(res);
       return false;
     }
     await translationEmbed(
@@ -290,9 +294,10 @@ export async function OnMessageReactionAdd(
     ll === lang.name ||
     message.content.toLowerCase() === translation.translatedText.toLowerCase()
   ) {
-    await channel.sendMessage(
+    const res: any = await channel.sendMessage(
       reaction.member.toMention() + " , I couldn't translate that! :("
     );
+    saveMessage(res);
     if (
       memBot !== null &&
       channel.canMember(memBot, discord.Permissions.MANAGE_MESSAGES)

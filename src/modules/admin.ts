@@ -44,7 +44,10 @@ class TrackedMessage {
       return this;
     }
 }
-
+export async function saveMessage(msg: discord.GuildMemberMessage) {
+  const _res = await adminPool.saveToPool(new TrackedMessage(msg));
+  return _res;
+}
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   if (targetId === discord.getBotId()) {
@@ -160,7 +163,8 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES) && seconds > 0) {
     const txt = `**This channel has been set to ${seconds}s slowmode** by ${placeholders.get('_ACTORTAG_')}${reason.length > 0 ? ` with reason** \`${utils.escapeString(reason)}\`` : ''}`;
-    channel.sendMessage({ allowedMentions: {}, content: txt });
+    const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
+    saveMessage(res);
   }
   return true;
 }
@@ -518,7 +522,7 @@ export function InitializeCommands() {
       },
     );
     subCommandGroup.on(
-      { name: 'all', filters: c2.getFilters('admin.clean.all', Ranks.Moderator) },
+      { name: 'all', filters: c2.getFilters('admin.clean.all', Ranks.Administrator) },
       (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
       async (msg, { count }) => {
         // const msgs = await getMessagesBy({authorId: user.id});
@@ -661,7 +665,8 @@ export function InitializeCommands() {
       }
       roles = roles.filter((role) => role.id !== guild.id);
       if (roles.length === 0) {
-        await msg.reply({ content: 'No roles found' });
+        const res: any = await msg.reply({ content: 'No roles found' });
+        saveMessage(res);
         return;
       }
       const dt = [];
@@ -699,8 +704,8 @@ export function InitializeCommands() {
       });
       for (let i = 0; i < dt.length; i += 1) {
         const it = dt[i];
-        await msg.reply({ allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\`` });
-        // await msg.reply({allowedMentions: {}, content: utils.genTable(it)})
+        const res: any = await msg.reply({ allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\`` });
+        saveMessage(res);
       }
     },
   );

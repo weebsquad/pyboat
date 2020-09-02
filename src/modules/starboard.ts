@@ -3,6 +3,7 @@ import * as utils from '../lib/utils';
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
+import { saveMessage } from './admin';
 
 const MAX_LIFETIME = 336;
 const prefixKvMessages = 'Starboard_messages_';
@@ -99,7 +100,8 @@ export class StarredMessage {
           newEmbed.setDescription(cont);
         }
 
-        const newmsg = await channel.sendMessage({ embed: newEmbed, allowedMentions: {}, content: `${this.emojiMention} ${this.getReactorCount()} - <#${ogMsg.channelId}>` });
+        const newmsg: any = await channel.sendMessage({ embed: newEmbed, allowedMentions: {}, content: `${this.emojiMention} ${this.getReactorCount()} - <#${ogMsg.channelId}>` });
+        saveMessage(newmsg);
         this.publishData.messageId = newmsg.id;
         this.publishData.lastUpdate = Date.now();
       } catch (e) {}
@@ -789,128 +791,137 @@ export function InitializeCommands() {
       { name: 'stats', filters: c2.getFilters('starboard.stars.stats', Ranks.Authorized) },
       (ctx) => ({ user: ctx.userOptional() }),
       async (msg, { user }) => {
-        const emb = new discord.Embed();
-        if (user === null) {
+        const res: any = await msg.reply(async () => {
+          const emb = new discord.Embed();
+          if (user === null) {
           // leaderboard
-          let stats = await statsKv.getAll<StarStats>();
-          console.log(stats.length);
-          stats = stats.sort((a, b) => b.received - a.received);
-          const top10 = stats.slice(0, Math.min(stats.length, 10));
-          const theirRank = stats.findIndex((it) => it.id === msg.author.id);
-          const txt = [];
-          const usrs: Array<discord.User> = [];
-          await Promise.all(top10.map(async (vl) => {
-            const _thisusr = await discord.getUser(vl.id);
-            if (_thisusr !== null) {
-              usrs.push(_thisusr);
+            let stats = await statsKv.getAll<StarStats>();
+            stats = stats.sort((a, b) => b.received - a.received);
+            const top10 = stats.slice(0, Math.min(stats.length, 10));
+            const theirRank = stats.findIndex((it) => it.id === msg.author.id);
+            const txt = [];
+            const usrs: Array<discord.User> = [];
+            await Promise.all(top10.map(async (vl) => {
+              const _thisusr = await discord.getUser(vl.id);
+              if (_thisusr !== null) {
+                usrs.push(_thisusr);
+              }
+            }));
+            for (let i = 0; i < top10.length; i++) {
+              const st = top10[i];
+              const me = st.id === msg.author.id;
+              let pos = '';
+              let tag = st.id;
+              const _u = usrs.find((u) => u.id === st.id);
+              if (_u) {
+                tag = utils.escapeString(_u.getTag());
+              }
+              if (me === true) {
+                tag = `**${tag}**`;
+              }
+              if (i === 0) {
+                pos = discord.decor.Emojis.FIRST_PLACE_MEDAL;
+              } else if (i === 1) {
+                pos = discord.decor.Emojis.SECOND_PLACE_MEDAL;
+              } else if (i === 2) {
+                pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
+              } else {
+                pos = `\`${i.toString()}\``;
+              }
+              txt.push(`${pos} ${tag} - ${st.received} stars`);
             }
-          }));
-          console.log(usrs);
-          for (let i = 0; i < top10.length; i++) {
-            const st = top10[i];
-            const me = st.id === msg.author.id;
-            let pos = '';
-            let tag = st.id;
-            const _u = usrs.find((u) => u.id === st.id);
-            if (_u) {
-              tag = utils.escapeString(_u.getTag());
+            const isTop = top10.find((st) => st.id === msg.author.id);
+            if (!isTop) {
+              const ind = stats.findIndex((st) => st.id === msg.author.id);
+              if (ind > -1) {
+                txt.push('...', `\`${ind + 1}\` - ${utils.escapeString(msg.author.getTag())}`);
+              }
             }
-            if (me === true) {
-              tag = `**${tag}**`;
-            }
-            if (i === 0) {
-              pos = discord.decor.Emojis.FIRST_PLACE_MEDAL;
-            } else if (i === 1) {
-              pos = discord.decor.Emojis.SECOND_PLACE_MEDAL;
-            } else if (i === 2) {
-              pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
-            } else {
-              pos = `\`${i.toString()}\``;
-            }
-            txt.push(`${pos} ${tag} - ${st.received} stars`);
-          }
-          const isTop = top10.find((st) => st.id === msg.author.id);
-          if (!isTop) {
-            const ind = stats.findIndex((st) => st.id === msg.author.id);
-            if (ind > -1) {
-              txt.push('...', `\`${ind + 1}\` - ${utils.escapeString(msg.author.getTag())}`);
-            }
-          }
-          const allStars = stats.reduce((a, b) => a + b.received, 0);
+            const allStars = stats.reduce((a, b) => a + b.received, 0);
 
-          emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
-        } else {
-          const stats = await statsKv.getById<StarStats>(user.id);
-          if (typeof stats === 'undefined') {
-            await msg.reply(`${discord.decor.Emojis.X} ${msg.author.toMention()} no stats found for ${user.getTag()}`);
-            return;
+            emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
+          } else {
+            const stats = await statsKv.getById<StarStats>(user.id);
+            if (typeof stats === 'undefined') {
+              return { content: `${discord.decor.Emojis.X} ${msg.author.toMention()} no stats found for ${user.getTag()}` };
+            }
+            emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
+            emb.setColor(0xe1eb34);
+            emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
           }
-          emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
-          emb.setColor(0xe1eb34);
-          emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
-        }
 
-        await msg.reply({ content: '', allowedMentions: {}, embed: emb });
+          return { content: '', allowedMentions: {}, embed: emb };
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
-        const isb = await isBlocked(user.id);
-        if (isb === true) {
-          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`);
-          return;
-        }
-        let blocks = await kv.get('blocks');
-        if (!Array.isArray(blocks)) {
-          blocks = [];
-        }
-        blocks.push(user.id);
-        await kv.put('blocks', blocks);
-        await msg.reply(`${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`);
+        const res: any = await msg.reply(async () => {
+          const isb = await isBlocked(user.id);
+          if (isb === true) {
+            return `${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`;
+          }
+          let blocks = await kv.get('blocks');
+          if (!Array.isArray(blocks)) {
+            blocks = [];
+          }
+          blocks.push(user.id);
+          await kv.put('blocks', blocks);
+          return `${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
-        const isb = await isBlocked(user.id);
-        if (isb === false) {
-          await msg.reply(`${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`);
-          return;
-        }
-        let blocks = await kv.get('blocks');
-        if (!Array.isArray(blocks)) {
-          blocks = [];
-        }
-        blocks.splice(blocks.indexOf(user.id), 1);
-        await kv.put('blocks', blocks);
-        await msg.reply(`${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`);
+        const res: any = await msg.reply(async () => {
+          const isb = await isBlocked(user.id);
+          if (isb === false) {
+            return `${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`;
+            return;
+          }
+          let blocks = await kv.get('blocks');
+          if (!Array.isArray(blocks)) {
+            blocks = [];
+          }
+          blocks.splice(blocks.indexOf(user.id), 1);
+          await kv.put('blocks', blocks);
+          return `${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.raw(
       { name: 'lock', filters: c2.getFilters('starboard.stars.lock', Ranks.Administrator) },
       async (msg) => {
-        const lock: any = await kv.get('lock');
-        if (lock === true) {
-          await msg.reply(`${msg.author.toMention()}, the starboard is already locked.`);
-          return;
-        }
-        await kv.put('lock', true);
-        await msg.reply(`${msg.author.toMention()}, locked the starboard!`);
+        const res: any = await msg.reply(async () => {
+          const lock: any = await kv.get('lock');
+          if (lock === true) {
+            return `${msg.author.toMention()}, the starboard is already locked.`;
+          }
+          await kv.put('lock', true);
+          return `${msg.author.toMention()}, locked the starboard!`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.raw(
       { name: 'unlock', filters: c2.getFilters('starboard.stars.unlock', Ranks.Administrator) },
       async (msg) => {
-        const lock: any = await kv.get('lock');
-        if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
-          await msg.reply(`${msg.author.toMention()}, the starboard is not locked.`);
-          return;
-        }
-        await kv.put('lock', false);
-        await msg.reply(`${msg.author.toMention()}, unlocked the starboard!`);
+        const res: any = await msg.reply(async () => {
+          const lock: any = await kv.get('lock');
+          if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
+            return `${msg.author.toMention()}, the starboard is not locked.`;
+          }
+          await kv.put('lock', false);
+          return `${msg.author.toMention()}, unlocked the starboard!`;
+        });
+        saveMessage(res);
       },
     );
   });

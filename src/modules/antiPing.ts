@@ -6,6 +6,7 @@ import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 import * as inf from './infractions';
+import { saveMessage } from './admin';
 
 export const kv = new pylon.KVNamespace('antiPing');
 
@@ -403,7 +404,8 @@ export async function OnMessageCreate(
   const msgtorep = `${message.author.toMention()} ${msg}\n${muteText}\n${
     config.modules.antiPing.actualCaughtMessage
   }`;
-  const msgReply = await message.reply(msgtorep);
+  const msgReply: any = await message.reply(msgtorep);
+  saveMessage(msgReply);
   if (typeof config.modules.antiPing.instaDeletePings === 'boolean' && config.modules.antiPing.instaDeletePings === true) {
     try {
       await message.delete();

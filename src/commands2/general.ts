@@ -4,6 +4,8 @@ import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
+import * as admin from '../modules/admin';
+import { SaveData } from '../modules/disabled/cur';
 
 const { config, Ranks } = conf;
 const F = discord.command.filters;
@@ -27,19 +29,22 @@ export function InitializeCommands() {
       newemb.setColor(0xFF0000);
       const myavatar = await discord.getBotUser();
       newemb.setThumbnail({ url: myavatar.getAvatarUrl() });
-      await msg.reply({ allowedMentions: {}, content: '', embed: newemb });
+      const res: any = await msg.reply({ allowedMentions: {}, content: '', embed: newemb });
+      admin.saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'docs', filters: c2.getFilters('commands.docs', Ranks.Guest) }, async (msg) => {
-      await msg.reply({ allowedMentions: {}, content: '<https://docs.pyboat.i0.tf/>' });
+      const res: any = await msg.reply({ allowedMentions: {}, content: '<https://docs.pyboat.i0.tf/>' });
+      admin.saveMessage(res);
     },
   );
 
   cmdGroup.raw(
     { name: 'mylevel', filters: c2.getFilters('commands.mylevel', Ranks.Guest) },
     async (msg) => {
-      await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+      const res: any = await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+      admin.saveMessage(res);
     },
   );
 
@@ -47,9 +52,10 @@ export function InitializeCommands() {
     { name: 'ping', filters: c2.getFilters('commands.ping', Ranks.Guest) }, async (msg) => {
       const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
       const msgd = new Date();
-      const edmsg = await msg.reply('<a:loading:735794724480483409>');
+      const edmsg: any = await msg.reply('<a:loading:735794724480483409>');
       const td = new Date().getTime() - msgd.getTime();
       await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+      admin.saveMessage(edmsg);
     },
   );
 
