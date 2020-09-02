@@ -1,4 +1,4 @@
-import { globalConfig, InitializeConfig } from '../config';
+import { globalConfig, InitializeConfig, config } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as routing from '../lib/eventHandler/routing';
@@ -256,6 +256,23 @@ export function InitializeCommands() {
       'clearinfs', async (m) => {
         await infractions.clearInfractions();
         await m.reply('Done');
+      },
+    );
+    sub.raw(
+      'modules', async (m) => {
+        const mods = [];
+        for (const key in config.modules) {
+          if (typeof config.modules[key] === 'object' && typeof config.modules[key].enabled === 'boolean') {
+            if (config.modules[key].enabled === true) {
+              mods.push(key);
+            }
+          }
+        }
+        if (mods.length === 0) {
+          await m.reply('No modules enabled!');
+        } else {
+          await m.reply(`Modules enabled:\n\`${mods.join(', ')}\``);
+        }
       },
     );
     sub.raw(
