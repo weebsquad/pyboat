@@ -41,44 +41,41 @@ export function InitializeCommands() {
     'override',
     (ctx) => ({ txt: ctx.textOptional() }),
     async (msg, { txt }) => {
-      const hasActiveOv = await utils.isGAOverride(msg.author.id);
-      if (typeof (txt) === 'string' && txt.length > 0) {
-        if (hasActiveOv) {
-          if (['disable', 'delete', 'remove'].includes(txt.toLowerCase())) {
-            const rtv = await utils.deleteGaOverride(msg.author.id);
-            if (rtv !== true) {
-              await msg.reply(`Error while deleting override: ${rtv}`);
-            } else {
-              await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} Override disabled!`);
+      const res: any = await msg.reply(async () => {
+        const hasActiveOv = await utils.isGAOverride(msg.author.id);
+        if (typeof (txt) === 'string' && txt.length > 0) {
+          if (hasActiveOv) {
+            if (['disable', 'delete', 'remove'].includes(txt.toLowerCase())) {
+              const rtv = await utils.deleteGaOverride(msg.author.id);
+              if (rtv !== true) {
+                return `Error while deleting override: ${rtv}`;
+              }
+              return `${discord.decor.Emojis.WHITE_CHECK_MARK} Override disabled!`;
             }
-            return;
-          }
-        } else {
-          const msd = utils.timeArgumentToMs(txt);
-          if (msd !== 0) {
-            if (msd < 60 * 1000 || msd > 7 * 24 * 60 * 60 * 1000) {
-              await msg.reply('time to override must be at least 1 minute and at most 7 days');
-              return;
-            }
-            const retv = await utils.insertGaOverride(msg.author.id, msd);
-            if (retv !== true) {
-              await msg.reply(`Error while adding override: ${retv}`);
-            } else {
-              await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} Override added!`);
-              return;
+          } else {
+            const msd = utils.timeArgumentToMs(txt);
+            if (msd !== 0) {
+              if (msd < 60 * 1000 || msd > 7 * 24 * 60 * 60 * 1000) {
+                return 'time to override must be at least 1 minute and at most 7 days';
+              }
+              const retv = await utils.insertGaOverride(msg.author.id, msd);
+              if (retv !== true) {
+                return `Error while adding override: ${retv}`;
+              }
+              return `${discord.decor.Emojis.WHITE_CHECK_MARK} Override added!`;
             }
           }
         }
-      }
-      if (globalConfig.masterGuild === msg.guildId) {
-        await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} You have an override active in this guild permanently due to it being the control guild.`);
-        return;
-      }
-      const tmleft = hasActiveOv === true ? await utils.getOverrideTimeLeft(msg.author.id) : 0;
-      const parsedTimeLeft = utils.getLongAgoFormat(tmleft, 2, false, 'second');
-      let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires in ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
-      txtR += hasActiveOv === true ? `\nTo revoke this override, please run the command \`${globalConfig.devPrefix}override disable\`` : `\nTo active an override, please run the command \`${globalConfig.devPrefix}override <time>\``;
-      await msg.reply(txtR);
+        if (globalConfig.masterGuild === msg.guildId) {
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} You have an override active in this guild permanently due to it being the control guild.`;
+        }
+        const tmleft = hasActiveOv === true ? await utils.getOverrideTimeLeft(msg.author.id) : 0;
+        const parsedTimeLeft = utils.getLongAgoFormat(tmleft, 2, false, 'second');
+        let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires in ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
+        txtR += hasActiveOv === true ? `\nTo revoke this override, please run the command \`${globalConfig.devPrefix}override disable\`` : `\nTo active an override, please run the command \`${globalConfig.devPrefix}override <time>\``;
+        return txtR;
+      });
+      admin.saveMessage(res);
     },
   );
 
@@ -125,14 +122,16 @@ export function InitializeCommands() {
         // deaf: false
         channelId: null,
       });
-      await msg.reply('done');
+      const res: any = await msg.reply('done');
+      admin.saveMessage(res);
     },
   );
   cmdGroup.raw(
     'reload',
     async (msg) => {
       await InitializeConfig(true);
-      await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`);
+      const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`);
+      admin.saveMessage(res);
     },
   );
   cmdGroup.subcommand('test', (sub) => {
@@ -140,14 +139,16 @@ export function InitializeCommands() {
       'override',
       (ctx) => ({ level: ctx.number(), string: ctx.string() }),
       async (m, { string, level }) => {
-        const newlvl = c2.checkOverrides(level, string);
-        if (newlvl === level) {
-          await m.reply('Nothing changed.');
-        } else if (newlvl === -1) {
-          await m.reply(`\`${string}\` is disabled.`);
-        } else {
-          await m.reply({ content: `Overriden level of \`${string}\`**[**${level}**]** >> **${c2.checkOverrides(level, string)}**` });
-        }
+        const res: any = await m.reply(async () => {
+          const newlvl = c2.checkOverrides(level, string);
+          if (newlvl === level) {
+            return { content: 'Nothing changed.' };
+          } if (newlvl === -1) {
+            return { content: `\`${string}\` is disabled.` };
+          }
+          return { content: `Overriden level of \`${string}\`**[**${level}**]** >> **${c2.checkOverrides(level, string)}**` };
+        });
+        admin.saveMessage(res);
       },
     );
 
@@ -160,14 +161,16 @@ export function InitializeCommands() {
       'kvmkeys', async (m) => {
         const keys = await utils.KVManager.listKeys();
         console.log(keys);
-        await m.reply(`Found ${keys.length} keys!`);
+        const res: any = await m.reply(`Found ${keys.length} keys!`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'clearkvm', async (m) => {
         const dt = Date.now();
         await utils.KVManager.clear();
-        await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
@@ -176,7 +179,8 @@ export function InitializeCommands() {
         await Promise.all(pools.InitializedPools.map(async (pool) => {
           await pool.clean();
         }));
-        await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.on('getkvm',
@@ -185,7 +189,8 @@ export function InitializeCommands() {
              const dt = Date.now();
              const keys = await utils.KVManager.get(key);
              console.log(keys);
-             await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+             const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+             admin.saveMessage(res);
            });
     sub.raw(
       'embed', async (m) => {
@@ -199,7 +204,8 @@ export function InitializeCommands() {
         embed.setFooter({ text: txt });
         embed.setTimestamp(new Date().toISOString());
 
-        await m.reply({ embed });
+        const res: any = await m.reply({ embed });
+        admin.saveMessage(res);
       },
     );
     sub.raw(
@@ -219,7 +225,8 @@ export function InitializeCommands() {
       'clearsb', async (m) => {
         const now = Date.now();
         await starboard.clearData();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
 
@@ -227,87 +234,98 @@ export function InitializeCommands() {
       'clearcensor', async (m) => {
         const now = Date.now();
         await censor.clean();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'asclear', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('antiSpam').clear();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'asget', async (m) => {
         const now = Date.now();
-        const res = await antiSpam.pools.getAll();
-        await m.reply(`Done - ${res.length} - (Took ${Date.now() - now}ms)`);
+        const res1 = await antiSpam.pools.getAll();
+        const res: any = await m.reply(`Done - ${res1.length} - (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'getinfs', async (m) => {
         const now = Date.now();
         const infs = await infractions.getInfractions();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
         console.log(infs);
       },
     );
     sub.raw(
       'clearinfs', async (m) => {
         await infractions.clearInfractions();
-        await m.reply('Done');
+        const res: any = await m.reply('Done');
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'modules', async (m) => {
-        const mods = [];
-        for (const key in config.modules) {
-          if (typeof config.modules[key] === 'object' && typeof config.modules[key].enabled === 'boolean') {
-            if (config.modules[key].enabled === true) {
-              mods.push(key);
+        const res: any = await m.reply(async () => {
+          const mods = [];
+          for (const key in config.modules) {
+            if (typeof config.modules[key] === 'object' && typeof config.modules[key].enabled === 'boolean') {
+              if (config.modules[key].enabled === true) {
+                mods.push(key);
+              }
             }
           }
-        }
-        if (mods.length === 0) {
-          await m.reply('No modules enabled!');
-        } else {
-          await m.reply(`Modules enabled:\n\`${mods.join(', ')}\``);
-        }
+          if (mods.length === 0) {
+            return 'No modules enabled!';
+          }
+          return `Modules enabled:\n\`${mods.join(', ')}\``;
+        });
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'tracking', async (m) => {
         const now = Date.now();
-        const res = await new pylon.KVNamespace('admin').items();
+        const res1 = await new pylon.KVNamespace('admin').items();
         const poolsL = await admin.adminPool.getAll();
         let txt = '';
         let c = 0;
-        res.map((item: any) => {
+        res1.map((item: any) => {
           c++;
           txt += `\n${c} => ${item.value.length}`;
         });
-        await m.reply(`Done - **${res.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
+        const res: any = await m.reply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'ratelimit', async (m) => {
         const now = Date.now();
-        const res = ratelimit.poolGlob;
-        await m.reply(`Done - **${res.length} item(s)** - (Took ${Date.now() - now}ms)`);
+        const res1 = ratelimit.poolGlob;
+        const res: any = await m.reply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'queue', async (m) => {
         const now = Date.now();
-        const res = queue.queue;
-        await m.reply(`Done - **${res.length} item(s)** - (Took ${Date.now() - now}ms)`);
+        const res1 = queue.queue;
+        const res: any = await m.reply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
       'cleartracking', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('admin').clear();
-        await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        admin.saveMessage(res);
       },
     );
     sub.raw(
@@ -317,7 +335,8 @@ export function InitializeCommands() {
           return;
         }
         await ch.voiceConnect();
-        await m.reply('done');
+        const res: any = await m.reply('done');
+        admin.saveMessage(res);
       },
     );
     sub.raw(
@@ -331,9 +350,10 @@ export function InitializeCommands() {
             delete mp[k];
           }
         }
-        await m.reply(
+        const res: any = await m.reply(
           `Test: \`${permsVal}n\`\n\`\`\`json\n${JSON.stringify(mp)}\n\`\`\``,
         );
+        admin.saveMessage(res);
       },
     );
   });
@@ -344,7 +364,8 @@ export function InitializeCommands() {
     async (msg, { kvep }) => {
       const kve = new pylon.KVNamespace(kvep);
       await kve.clear();
-      await msg.reply('done');
+      const res: any = await msg.reply('done');
+      admin.saveMessage(res);
     },
   );
 
@@ -354,7 +375,8 @@ export function InitializeCommands() {
     async (msg, { kvep }) => {
       const kve = new pylon.KVNamespace(kvep);
       const items = await kve.items();
-      await msg.reply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
+      const res: any = await msg.reply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
+      admin.saveMessage(res);
     },
   );
 
@@ -364,7 +386,8 @@ export function InitializeCommands() {
     async (msg, { emj }) => {
       const guild = await msg.getGuild();
       const emoji = await guild.getEmoji(emj);
-      await msg.reply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
+      const res: any = await msg.reply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
+      admin.saveMessage(res);
     },
   );
   return [cmdGroup, cmdGroupOverrides];
