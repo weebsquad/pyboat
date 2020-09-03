@@ -113,7 +113,7 @@ export function getMemberTag(member: discord.GuildMember) {
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
-    tg = utils.escapeString(tg.split(key).join(value));
+    tg = tg.split(key).join(value);
   }
   return tg;
 }
@@ -135,7 +135,7 @@ export function getUserTag(user: discord.User | discord.GuildMember) {
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
-    tg = utils.escapeString(tg.split(key).join(value));
+    tg = tg.split(key).join(value);
   }
   return tg;
 }
@@ -303,7 +303,7 @@ export function getActorTag(user: discord.User | discord.GuildMember) {
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
-    tg = utils.escapeString(tg.split(key).join(value));
+    tg = tg.split(key).join(value);
   }
   return tg;
 }
