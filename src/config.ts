@@ -212,6 +212,11 @@ const defaultConfig = { // for non-defined configs!
       categories: {},
       levels: {},
     },
+    tags: {
+      enabled: false,
+      maxLength: 200,
+      levelEditOthers: 50,
+    },
     admin: {
       enabled: false,
       persist: {

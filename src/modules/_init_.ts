@@ -10,6 +10,7 @@ import * as starboard from './starboard';
 import * as censor from './censor';
 import * as antiSpam from './antiSpam';
 import * as admin from './admin';
+import * as tags from './tags';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   logging,
@@ -22,6 +23,7 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   infractions,
   utilities,
   starboard,
+  tags,
   translation,
   commands,
 };

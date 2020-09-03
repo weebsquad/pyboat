@@ -43,6 +43,9 @@ export class StoragePool {
       }
       return utils.decomposeSnowflake(obj[this.uniqueId]).timestamp;
     }
+    async clear() {
+      await this.kv.clear();
+    }
     async clean() {
       if (typeof this.duration !== 'number' || this.duration === 0) {
         return;
@@ -149,6 +152,28 @@ export class StoragePool {
 
       return false;
     }
+    async editTransact(id: string, callback: Function) {
+      const items = await this.kv.items();
+      const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
+      if (res) {
+        try {
+          await this.kv.transact(res.key, (prev: any) => {
+            const newData = JSON.parse(JSON.stringify(prev));
+            const _ind = newData.findIndex((e: any) => e !== null && e[this.uniqueId] === id);
+            if (_ind !== -1) {
+              newData[_ind] = callback(newData[_ind]);
+            }
+            return newData;
+          });
+          return true;
+        } catch (e) {
+        }
+
+        return false;
+      }
+
+      return false;
+    }
     async editPool(id: string, newObj: any) {
       const items = await this.kv.items();
       const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
@@ -212,7 +237,9 @@ export class StoragePool {
       });
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(a) - this.getTimestamp(b));
+      if (typeof this.timestampProperty === 'string') {
+        _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(a) - this.getTimestamp(b));
+      }
       /* if (typeof objSample === 'object') {
         _ret = _ret.map((item) => utils.makeFake(item, objSample));
       } */
