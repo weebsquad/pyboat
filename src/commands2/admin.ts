@@ -1,13 +1,13 @@
 import { globalConfig, Ranks, guildId } from '../config';
 import * as c2 from '../lib/commands2';
-import { adminPool, saveMessage } from '../modules/admin';
+import { saveMessage } from '../modules/admin';
 
 // const { config } = conf;
 const ADMIN_ROLE = '567988684193005568';
 const OP_ROLE = '565325264981327873';
 
 const GENERAL_CHANNEL = '565325743278653461';
-export function InitializeCommands() {
+export function InitializeCommands(): Array<discord.command.CommandGroup> | boolean {
   if (guildId !== '565323632751149103') {
     return false;
   }

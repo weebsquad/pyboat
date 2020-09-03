@@ -1,9 +1,6 @@
 import { globalConfig, InitializeConfig, config } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
-import * as routing from '../lib/eventHandler/routing';
-import * as loggingEvents from '../modules/logging/tracking';
-import { logDebug } from '../modules/logging/events/custom';
 import * as infractions from '../modules/infractions';
 import * as utilities from '../modules/utilities';
 import * as starboard from '../modules/starboard';
@@ -141,9 +138,9 @@ export function InitializeCommands() {
       async (m, { string, level }) => {
         const res: any = await m.reply(async () => {
           const newlvl = c2.checkOverrides(level, string);
-          if (newlvl === level) {
+          if (newlvl.level === level) {
             return { content: 'Nothing changed.' };
-          } if (newlvl === -1) {
+          } if (newlvl.level === -1) {
             return { content: `\`${string}\` is disabled.` };
           }
           return { content: `Overriden level of \`${string}\`**[**${level}**]** >> **${c2.checkOverrides(level, string)}**` };

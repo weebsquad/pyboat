@@ -35,8 +35,16 @@ export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMe
   const _ret = await utils.isGAOverride(message.author.id);
   return _ret;
 }
-
+class CmdOverride {
+  level: number;
+  disabled = false;
+  channelsWhitelist: Array<string> | undefined = undefined;
+  channelsBlacklist: Array<string> | undefined = undefined;
+  rolesWhitelist: Array<string> | undefined = undefined;
+  rolesBlacklist: Array<string> | undefined = undefined;
+}
 export function checkOverrides(level: number, ovtext: string) {
+  const retVal = new CmdOverride();
   let disabled = false;
   ovtext = ovtext.toLowerCase();
   let cmdName; let modName; let
@@ -55,66 +63,50 @@ export function checkOverrides(level: number, ovtext: string) {
   } else {
     modName = ovtext;
   }
-  const ovMod = config.modules.commands.overrides[`module.${modName}`];
-  const ovCmd = cmdName !== undefined ? config.modules.commands.overrides[`command.${cmdName}`] : undefined;
-  const ovGroup = groupName !== undefined ? config.modules.commands.overrides[`group.${groupName}`] : undefined;
-  if (ovMod) {
-    if (typeof (ovMod.disabled) === 'boolean') {
-      disabled = ovMod.disabled;
+
+  const checkStrings = [`module.${modName}`, `group.${groupName}`, `command.${cmdName}`];
+  for (let i = 0; i < checkStrings.length; i++) {
+    const obj = config.modules.commands.overrides[checkStrings[i]];
+    if (typeof obj !== 'object') {
+      continue;
     }
-    if (typeof (ovMod.level) === 'number') {
-      level = ovMod.level;
+    if (typeof (obj.disabled) === 'boolean') {
+      disabled = obj.disabled;
+    }
+    if (typeof (obj.level) === 'number') {
+      level = obj.level;
+    }
+    if (Array.isArray(obj.channelsWhitelist)) {
+      retVal.channelsWhitelist = obj.channelsWhitelist;
+    }
+    if (Array.isArray(obj.channelsBlacklist)) {
+      retVal.channelsBlacklist = obj.channelsBlacklist;
+    }
+    if (Array.isArray(obj.rolesWhitelist)) {
+      retVal.rolesWhitelist = obj.rolesWhitelist;
+    }
+    if (Array.isArray(obj.rolesBlacklist)) {
+      retVal.rolesBlacklist = obj.rolesBlacklist;
     }
   }
-  if (ovGroup) {
-    if (typeof (ovGroup.disabled) === 'boolean') {
-      disabled = ovGroup.disabled;
-    }
-    if (typeof (ovGroup.level) === 'number') {
-      level = ovGroup.level;
-    }
-  }
-  if (ovCmd) {
-    if (typeof (ovCmd.disabled) === 'boolean') {
-      disabled = ovCmd.disabled;
-    }
-    if (typeof (ovCmd.level) === 'number') {
-      level = ovCmd.level;
-    }
-  }
+
   if (level < 0) {
     level = 0;
   }
   if (disabled) {
-    level = -1;
+    retVal.disabled = true;
   }
-  return level;
+  retVal.level = level;
+  return retVal;
 }
 
 export function getFilters(overrideableInfo: string | null, level: number, owner = false, ga = false): discord.command.filters.ICommandFilter | Array<discord.command.filters.ICommandFilter> {
   const _checks = new Array<discord.command.filters.ICommandFilter>();
   const F = discord.command.filters;
 
-  /*
-  let anyNonSilent = false;
-  args.forEach((level: any) => {
-    const fnName = fnCheck.name;
-    const msgRet = filterReturnMessages[fnName];
-    let filter = F.custom(async (msg) => {
-      const val = await fnCheck(msg); return val;
-    }, msgRet);
-    // if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
-    if ((fnName === 'filterOverridingGlobalAdmin' || fnName === 'filterGlobalAdmin') || (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true)) {
-      filter = F.silent(filter);
-    } else {
-      anyNonSilent = true;
-    }
-    _checks.push(filter);
-  }); */
-
   if (ga === true) {
     return F.silent(F.custom(async (msg) => {
-      const val = await filterGlobalAdmin(msg); return val;
+      const val = filterGlobalAdmin(msg); return val;
     }));
   }
   if (owner === true) {
@@ -124,15 +116,64 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       return ownr || ov;
     }, 'Must be the server owner');
   } else {
-    if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1) {
-      level = checkOverrides(level, overrideableInfo);
+    let ov: undefined | CmdOverride;
+    if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1 && typeof config.modules.commands.overrides === 'object') {
+      ov = checkOverrides(level, overrideableInfo);
+      level = ov.level;
     }
+    const txtErr = [];
+    if (level > 0) {
+      txtErr.push(`Must be bot level ${level}`);
+    }
+    if (Array.isArray(ov.rolesWhitelist)) {
+      let rls = ov.rolesWhitelist;
+      if (Array.isArray(ov.rolesBlacklist)) {
+        rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
+      }
+      txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
+    } else if (Array.isArray(ov.rolesBlacklist)) {
+      txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
+    }
+    if (Array.isArray(ov.channelsWhitelist)) {
+      let chs = ov.channelsWhitelist;
+      if (Array.isArray(ov.channelsBlacklist)) {
+        chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
+      }
+      txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
+    } else if (Array.isArray(ov.channelsBlacklist)) {
+      txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
+    }
+
     let _f = F.custom(async (msg) => {
       const ownr = await filterActualOwner(msg);
       const val = await filterLevel(msg, level);
-      return ownr || val;
-    }, `Must be bot level ${level}`);
-    if (level < 0) {
+      if (ownr) {
+        return true;
+      }
+      if (!ov) {
+        return val;
+      }
+      if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(msg.channelId)) {
+        return false;
+      }
+      if (Array.isArray(ov.channelsWhitelist) && !ov.channelsWhitelist.includes(msg.channelId)) {
+        return false;
+      }
+      if (Array.isArray(ov.rolesBlacklist)) {
+        const matches = msg.member.roles.find((rlid) => ov.rolesBlacklist.includes(rlid));
+        if (typeof matches !== 'undefined') {
+          return false;
+        }
+      }
+      if (Array.isArray(ov.rolesWhitelist)) {
+        const matches = msg.member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
+        if (typeof matches === 'undefined') {
+          return false;
+        }
+      }
+      return val;
+    }, txtErr.join('\n'));
+    if (ov && ov.disabled === true) {
       _f = F.custom(async (msg) => false, 'this command is disabled');
     }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {

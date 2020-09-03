@@ -54,25 +54,15 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     return false;
   }
   if (actor === null) {
-    if (target instanceof discord.User) {
-      return true;
-    }
-    let isTargetOverride = false;
-    if (utils.isGlobalAdmin(target.user.id)) {
-      isTargetOverride = await utils.isGAOverride(target.user.id);
-      return !isTargetOverride;
-    }
-    return true;
+    return !utils.isGlobalAdmin(targetId);
   }
   const isGA = utils.isGlobalAdmin(actor.user.id);
   let isOverride = false;
   if (isGA) {
     isOverride = await utils.isGAOverride(actor.user.id);
   }
-  let isTargetOverride = false;
-  if (utils.isGlobalAdmin(targetId)) {
-    isTargetOverride = await utils.isGAOverride(targetId);
-  }
+
+  const isTargetAdmin = utils.isGlobalAdmin(targetId);
 
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
@@ -118,9 +108,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       }
     }
   }
-  if (isTargetOverride === true && !isOverride && actor.user.id !== targetId) {
+  if (isTargetAdmin === true && !isOverride && actor.user.id !== targetId) {
     if (!isGuildOwner) {
-      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable, please have the server owner perform it.';
+      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable to this user, please have the server owner perform it.';
     }
   }
   return true;
