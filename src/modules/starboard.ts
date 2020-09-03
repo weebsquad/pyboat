@@ -143,7 +143,7 @@ export class StarredMessage {
         const _e = stats.find((st) => st.id === reactor);
         return _e === undefined && reactor !== this.author;
       });
-      async function reactorStats() {
+      async function reactorStats(t: StarredMessage) {
         if (nf.length > 0) {
           await Promise.all(nf.map(async (e) => {
             const obj = new StarStats(e);
@@ -151,8 +151,8 @@ export class StarredMessage {
             await statsKv.saveToPool(obj);
           }));
         }
-        if (nf.length !== this.reactors.length) {
-          const f = this.reactors.filter((e) => !nf.includes(e) && e !== this.author);
+        if (nf.length !== t.reactors.length) {
+          const f = t.reactors.filter((e) => !nf.includes(e) && e !== t.author);
           if (f.length > 0) {
             await statsKv.editPools(f, (vl: StarStats) => {
               vl.given += 1;
@@ -163,10 +163,10 @@ export class StarredMessage {
       }
       if (this.reactors.length > 10) {
         await pylon.requestCpuBurst(async () => {
-          await reactorStats();
+          await reactorStats(this);
         });
       } else {
-        await reactorStats();
+        await reactorStats(this);
       }
       /*
       for(var i = 0; i < this.reactors.length; i++) {
@@ -222,11 +222,13 @@ export class StarredMessage {
         this.publishData.lastUpdate = Date.now();
       } catch (e) {}
     }
-    async deleted() {
-      await this.awardStats();
+    async deleted(isLog = false) {
+      await this.finalize();
       if (this.publishData.messageId) {
         const boardCfg = getBoardCfg(this.publishData.channelId);
         if (typeof boardCfg.clearOnDelete === 'boolean' && boardCfg.clearOnDelete === true) {
+          await this.unpublish();
+        } else if (isLog === true && typeof boardCfg.clearOnModDelete === 'boolean' && boardCfg.clearOnModDelete === true) {
           await this.unpublish();
         } else {
           await this.update(true);
@@ -317,7 +319,7 @@ export async function periodicClear() {
   await Promise.all(keys.map(async (e) => {
     const boardId = e.substr(prefixKvMessages.length).split(seperator)[0];
     const cfg = getBoardCfg(boardId);
-    const lifetime = typeof cfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, cfg.messageLifetime) : MAX_LIFETIME;
+    const lifetime = typeof cfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, Math.max(1, cfg.messageLifetime)) : MAX_LIFETIME;
     if (typeof cfg === 'object') {
       const messageId = e.substr(prefixKvMessages.length).split(seperator)[1];
       const ts = utils.decomposeSnowflake(messageId).timestamp;
@@ -375,9 +377,10 @@ export async function OnMessageCreate(
     return false;
   }
 }
-export async function OnMessageDelete(
+export async function AL_OnMessageDelete(
   id: string,
   gid: string,
+  log: any,
   messageDelete: discord.Event.IMessageDelete,
 ) {
   const isLocked = await kv.get('lock');
@@ -390,13 +393,14 @@ export async function OnMessageDelete(
     if (msgData) {
       await utils.KVManager.delete(keys);
       msgData = utils.makeFake(msgData, StarredMessage);
-      await msgData.deleted();
+      await msgData.deleted(log instanceof discord.AuditLogEntry);
     }
   }
 }
-export async function OnMessageDeleteBulk(
+export async function AL_OnMessageDeleteBulk(
   id: string,
   gid: string,
+  log: any,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
   const isLocked = await kv.get('lock');
@@ -410,7 +414,7 @@ export async function OnMessageDeleteBulk(
       if (msgData) {
         await utils.KVManager.delete(key);
         msgData = utils.makeFake(msgData, StarredMessage);
-        await msgData.deleted();
+        await msgData.deleted(log instanceof discord.AuditLogEntry);
       }
     }));
   }
