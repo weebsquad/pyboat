@@ -47,9 +47,16 @@ export async function checkReminders() {
       }
       const chan = await discord.getChannel(remi.channelId);
       if (!chan || chan === null || (!(chan instanceof discord.GuildTextChannel) && !(chan instanceof discord.GuildNewsChannel))) {
+        // todo: dm the user instead
         return;
       }
-      await chan.sendMessage(`${member.toMention()} you asked me at ${new Date(utils.decomposeSnowflake(remi.id).timestamp).toLocaleDateString()} to remind you of:\n${remi.content}`);
+      const ts = utils.decomposeSnowflake(remi.id).timestamp;
+      const dt = new Date(ts);
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'De',
+      ];
+      const timestamptext = `${(`0${dt.getDate()}`).substr(-2)}-${monthNames[dt.getMonth()]}-${dt.getFullYear().toString().substr(-2)} @ ${(`0${dt.getHours()}`).substr(-2)}:${(`0${dt.getMinutes()}`).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}`;
+      await chan.sendMessage(`Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\``);
       await reminders.editPool(remi.id, null);
     }
   }));
@@ -71,6 +78,9 @@ export async function addReminder(msg, when, text) {
     }
     text = utils.escapeString(text);
     text = text.split('\n').join(' ').split('\t').join(' ');
+    if (text.length > 1000) {
+      return 'Reminder is too large!';
+    }
     await reminders.saveToPool(new Reminder(Date.now() + dur, msg.author.id, msg.channelId, text));
     return `${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`;
   });
@@ -233,16 +243,18 @@ export function InitializeCommands() {
     (ctx) => ({ user: ctx.userOptional() }),
     async (msg, { user }) => {
       const res: any = await msg.reply(async () => {
-      if(user === null) user = msg.author;
-      const emb = new discord.Embed;
-      emb.setAuthor({iconUrl: user.getAvatarUrl(), name: user.getTag()});
-      emb.setDescription(`Avatar of ${user.getTag()}: \n<${user.getAvatarUrl()}>`);
-      emb.setFooter({text: `Requested by ${msg.author.getTag()} (${msg.author.id})`});
-      emb.setTimestamp(new Date().toISOString());
-      emb.setImage({url: user.getAvatarUrl()});
-      return {embed:emb};
+        if (user === null) {
+          user = msg.author;
+        }
+        const emb = new discord.Embed();
+        emb.setAuthor({ iconUrl: user.getAvatarUrl(), name: user.getTag() });
+        emb.setDescription(`Avatar of ${user.getTag()}: \n<${user.getAvatarUrl()}>`);
+        emb.setFooter({ text: `Requested by ${msg.author.getTag()} (${msg.author.id})` });
+        emb.setTimestamp(new Date().toISOString());
+        emb.setImage({ url: user.getAvatarUrl() });
+        return { embed: emb };
       });
-       
+
       saveMessage(res);
     },
   );
