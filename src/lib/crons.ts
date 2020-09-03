@@ -7,6 +7,7 @@ import { cleanPool } from '../modules/translation';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiPing from '../modules/antiPing';
+import * as utilities from '../modules/utilities';
 import { InitializedPools } from './storagePools';
 import * as routing from './eventHandler/routing';
 import { logError } from './utils';
@@ -23,6 +24,7 @@ const _cr: {[key: string]: any} = {
               await pool.clean();
             }));
           }
+
           await ratelimit.clean();
           await cleanPool();
           queue.cleanQueue();
@@ -30,6 +32,7 @@ const _cr: {[key: string]: any} = {
           await starboard.periodicClear();
           await censor.clean();
           await antiPing.periodicDataClear();
+          await utilities.checkReminders();
           throw new Error('');
         }, 300);
       } catch (e) {

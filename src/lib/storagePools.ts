@@ -13,7 +13,7 @@ export class StoragePool {
     timestampProperty: string | undefined = undefined; // timestamp prop on the objects for calcs
     maxObjects: number | undefined = undefined; // max objects per array instead of byte calcs
     reduceAt: number | undefined = undefined; // what key count to start reducing duration at
-    constructor(name: string, itemDuration: number, uniqueIdProperty: string, timestampProperty: string | undefined = undefined, maxObjects: number | undefined = undefined, reduceAt: number | undefined = undefined) {
+    constructor(name: string, itemDuration = 0, uniqueIdProperty: string, timestampProperty: string | undefined = undefined, maxObjects: number | undefined = undefined, reduceAt: number | undefined = undefined) {
       this.kvName = name;
       this.kv = new pylon.KVNamespace(name);
       this.duration = itemDuration;
@@ -235,6 +235,9 @@ export class StoragePool {
           _ret.push(...e.value);
         }
       });
+      if (_ret.length === 0) {
+        return _ret as Array<T>;
+      }
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
       if (typeof this.timestampProperty === 'string') {

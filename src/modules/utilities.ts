@@ -7,10 +7,88 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
-import { KVManager } from '../lib/utils';
+import { KVManager, StoragePool } from '../lib/utils';
 import { getInfractionBy } from './infractions';
 import { saveMessage } from './admin';
 
+class Reminder {
+  id: string;
+  expires: number;
+  authorId: string;
+  channelId: string;
+  content: string;
+  constructor(exp: number, author: string, channelId: string, content: string) {
+    this.expires = exp;
+    this.id = utils.composeSnowflake();
+    this.authorId = author;
+    this.channelId = channelId;
+    this.content = content;
+  }
+}
+
+const reminders = new StoragePool('reminders', 0, 'id');
+
+export async function checkReminders() {
+  const rem = await reminders.getAll<Reminder>();
+  if (rem.length === 0) {
+    return;
+  }
+  await Promise.all(rem.map(async (remi) => {
+    const diff = Date.now() - remi.expires;
+    if (diff >= 0) {
+      // expired
+      const guild = await discord.getGuild();
+      if (guild === null) {
+        return;
+      }
+      const member = await guild.getMember(remi.authorId);
+      if (member === null) {
+        return;
+      }
+      const chan = await discord.getChannel(remi.channelId);
+      if (!chan || chan === null || (!(chan instanceof discord.GuildTextChannel) && !(chan instanceof discord.GuildNewsChannel))) {
+        return;
+      }
+      await chan.sendMessage(`${member.toMention()} you asked me at ${new Date(utils.decomposeSnowflake(remi.id).timestamp).toLocaleDateString()} to remind you of:\n${remi.content}`);
+      await reminders.editPool(remi.id, null);
+    }
+  }));
+}
+
+export async function addReminder(msg, when, text) {
+  const res: any = await msg.reply(async () => {
+    const dur = utils.timeArgumentToMs(when);
+    if (dur === 0) {
+      return `${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`;
+    }
+    if (dur < 2000 || dur > 32 * 24 * 60 * 60 * 1000) {
+      return `${discord.decor.Emojis.X} Time must be between 2 minutes and a month`;
+    }
+    const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+    const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
+    if (bythem.length >= 10) {
+      return `${discord.decor.Emojis.X} You already have 10 active reminders, you may not define any more!`;
+    }
+    text = utils.escapeString(text);
+    text = text.split('\n').join(' ').split('\t').join(' ');
+    await reminders.saveToPool(new Reminder(Date.now() + dur, msg.author.id, msg.channelId, text));
+    return `${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`;
+  });
+  saveMessage(res);
+}
+
+export async function clearReminders(msg) {
+  const res: any = await msg.reply(async () => {
+    const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
+    if (bythem.length === 0) {
+      return `${discord.decor.Emojis.X} You don't have any active reminders!`;
+    }
+    const ids = bythem.map((val) => val.id);
+    await reminders.editPools(ids, (val) => null);
+    return `${discord.decor.Emojis.WHITE_CHECK_MARK} cleared ${ids.length} reminders!`;
+  });
+  saveMessage(res);
+}
 /* SNIPE */
 const snipekvs = new pylon.KVNamespace('snipe');
 export async function AL_OnMessageDelete(
@@ -150,8 +228,74 @@ export function InitializeCommands() {
     },
   );
 
+  cmdGroup.on(
+    { name: 'avatar', filters: c2.getFilters('utilities.avatar', Ranks.Guest) },
+    (ctx) => ({ user: ctx.userOptional() }),
+    async (msg, { user }) => {
+      const res: any = await msg.reply(async () => {
+      if(user === null) user = msg.author;
+      const emb = new discord.Embed;
+      emb.setAuthor({iconUrl: user.getAvatarUrl(), name: user.getTag()});
+      emb.setDescription(`Avatar of ${user.getTag()}: \n<${user.getAvatarUrl()}>`);
+      emb.setFooter({text: `Requested by ${msg.author.getTag()} (${msg.author.id})`});
+      emb.setTimestamp(new Date().toISOString());
+      emb.setImage({url: user.getAvatarUrl()});
+      return {embed:emb};
+      });
+       
+      saveMessage(res);
+    },
+  );
+
+  // reminder
+  cmdGroup.subcommand('remind', (subCommandGroup) => {
+    subCommandGroup.default(
+      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
+      async (msg, { when, text }) => {
+        await addReminder(msg, when, text);
+      }, { filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+    );
+
+    subCommandGroup.on(
+      { name: 'add', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
+      async (msg, { when, text }) => {
+        await addReminder(msg, when, text);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'clear', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      async (msg) => {
+        await clearReminders(msg);
+      },
+    );
+  });
+  cmdGroup.subcommand('r', (subCommandGroup) => {
+    subCommandGroup.default(
+      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
+      async (msg, { when, text }) => {
+        await addReminder(msg, when, text);
+      }, { filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+    );
+
+    subCommandGroup.on(
+      { name: 'add', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
+      async (msg, { when, text }) => {
+        await addReminder(msg, when, text);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'clear', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      async (msg) => {
+        await clearReminders(msg);
+      },
+    );
+  });
+
   cmdGroup.raw(
-    { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) }, async (msg) => {
+    { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) },
+    async (msg) => {
       const res: any = await msg.reply(async () => {
         const file = await (await fetch('http://aws.random.cat/meow')).json();
         const catpic = await (await fetch(file.file)).arrayBuffer();
@@ -186,7 +330,7 @@ export function InitializeCommands() {
     },
   );
   cmdGroup.raw(
-    { name: 'doge', filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
+    { name: 'doge', aliases: ['shibe'], filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
       const res: any = await msg.reply(async () => {
         const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
         const pic = await (await fetch(file.message)).arrayBuffer();
