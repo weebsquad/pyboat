@@ -109,7 +109,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     MEMBER_JOIN: `${discord.decor.Emojis.INBOX_TRAY} _USERTAG_ joined the server (account created _ACCOUNT_AGE_ ago)`,
   },
   'GUILD_MEMBER_REMOVE': {
-    MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ left the server`,
+    MEMBER_LEFT: `${discord.decor.Emojis.OUTBOX_TRAY} _USERTAG_ left the server, they were here for _RESIDENCE_DURATION_`,
   },
   'GUILD_BAN_ADD': {
     MEMBER_BANNED: `${discord.decor.Emojis.HAMMER} _USERTAG_ was banned from the server`,

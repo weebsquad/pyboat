@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
+import { getLongAgoFormat, decomposeSnowflake } from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -34,12 +35,17 @@ export const messages = {
   memberLeft(
     log: discord.AuditLogEntry,
     member: discord.Event.IGuildMemberRemove,
+    oldMember: discord.GuildMember,
   ) {
     const mp = new Map();
     mp.set('_TYPE_', 'MEMBER_LEFT');
     mp.set('_USER_ID_', member.user.id);
     mp.set('_USERTAG_', getUserTag(member.user));
     mp.set('_USER_', member.user);
+    mp.set('_RESIDENCE_DURATION_', '?');
+    if (oldMember instanceof discord.GuildMember) {
+      mp.set('_RESIDENCE_DURATION_', getLongAgoFormat(new Date(oldMember.joinedAt).getTime(), 2, true));
+    }
     return mp;
   },
   memberKicked(
@@ -60,6 +66,7 @@ export async function AL_OnGuildMemberRemove(
   guildId: string,
   log: any,
   member: discord.Event.IGuildMemberRemove,
+  oldMember: discord.GuildMember,
 ) {
   await handleEvent(
     id,
@@ -67,5 +74,6 @@ export async function AL_OnGuildMemberRemove(
     discord.Event.GUILD_MEMBER_REMOVE,
     log,
     member,
+    oldMember,
   );
 }
