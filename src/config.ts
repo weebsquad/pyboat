@@ -477,11 +477,12 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
       // data = JSON.stringify(data);
       // dat = encodeURI(dat);
-      // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
-      const parts = data.match(/[\S\s]{1,6500}/g);
-      // console.log(parts, parts.length);
+      // const len = new TextEncoder().encode(data).byteLength;
+      const parts = data.match(/[\S\s]{1,5800}/g);
+
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
+        // console.log(parts[i].length)
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
