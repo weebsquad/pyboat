@@ -492,11 +492,12 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
-    console.log('received config check');
+    // console.log('received config check');
     try {
       await message.delete();
     } catch (e) {
     }
+    let isDefaultConfig = false;
     const items = await configKv.items();
     let cfg: any;
     if (items.length > 0) {
@@ -509,6 +510,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
 
     if (!cfg) {
       cfg = defaultConfig;
+      isDefaultConfig = true;
     }
     // cfg = JSON.parse(JSON.stringify(cfg));
     if (typeof cfg === 'object' && (typeof cfg.guildId !== 'string' || cfg.guildId !== guildId)) {
@@ -520,7 +522,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } */
     const cfgToRet = typeof cfg !== 'string' ? JSON.stringify(cfg, null, 2) : cfg;
     const returnedMsg = await message.reply({
-      content: `${message.author.toMention()} here you go!\n\n*This message will self-destruct in 15 seconds*`,
+      content: `${message.author.toMention()} here you go!\n${isDefaultConfig === true ? '\n**WARNING**: This is the default config, you did not have a config previously saved!\n**It is HIGHLY RECOMMENDED to start from a empty config instead!**\n' : ''}\n*This message will self-destruct in 15 seconds*`,
       attachments: [{
         name: 'config.json',
         data: str2ab(cfgToRet),
