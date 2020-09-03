@@ -6,7 +6,7 @@ import * as constants from '../constants/constants';
 import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
-import { getActorTag, getUserTag } from './logging/main';
+import { getActorTag, getUserTag, getMemberTag } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
@@ -16,6 +16,12 @@ const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
 const TRACKING_KEYS_LIMIT = 150;
 const ENTRIES_PER_POOL = 73; // approximate maximum
+
+// persist
+
+const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
+const persistPrefix = 'Persist_';
+const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
 
 export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefined, ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
@@ -435,6 +441,483 @@ export async function OnMessageDeleteBulk(
   });
 }
 
+/* ROLE PERSIST */
+
+interface ChannelPersist extends discord.Channel.IPermissionOverwrite {
+  channelId: string;
+}
+class MemberPersist {
+  ts: number;
+  memberId: string;
+  roles: Array<string> | undefined;
+  nick: string | undefined;
+  level: number | undefined;
+  channels: Array<ChannelPersist> | undefined;
+  constructor(member: string, roles: Array<string> | undefined, nick: string | undefined | null, level: number | undefined, channels: Array<ChannelPersist> | undefined) {
+    this.ts = Date.now();
+    this.memberId = member;
+    this.roles = roles;
+    if (typeof nick === 'string' && nick.length > 0) {
+      this.nick = nick;
+    }
+    if (typeof level === 'number' && level > 0) {
+      this.level = level;
+    }
+    if (channels.length > 0) {
+      this.channels = channels;
+    }
+    return this;
+  }
+}
+
+export async function getStoredUserOverwrites(userId: string) {
+  const ows = await utils.KVManager.get(`${persistPrefix}channels`);
+  const res: Array<ChannelPersist> = [];
+  if (ows && ows !== null && typeof ows === 'object') {
+    for (const channelId in ows) {
+      const overwrites = ows[channelId].filter((ow) => ow.id === userId).map((ow) => {
+        ow.channelId = channelId;
+        return ow;
+      });
+      if (overwrites.length > 0) {
+        res.push(...overwrites);
+      }
+    }
+  }
+  return res;
+}
+export async function storeChannelData() {
+  const guild = await discord.getGuild();
+  const channels = await guild.getChannels();
+  const userOverrides: any = {};
+  await Promise.all(channels.map(async (ch) => {
+    const _dt = [];
+    let isSync = false;
+    if (ch.parentId && ch.parentId !== null) {
+      const parent = await discord.getGuildCategory(ch.parentId);
+      if (parent && parent !== null) {
+        let anyDiff = false;
+        const parentOws = parent.permissionOverwrites;
+        const childOws = ch.permissionOverwrites;
+        childOws.forEach((ow) => {
+          const _f = parentOws.find((e) => e.id === ow.id && e.type === ow.type && e.allow === ow.allow && e.deny === ow.deny);
+          if (!_f) {
+            anyDiff = true;
+          }
+        });
+        if (!anyDiff) {
+          isSync = true;
+        }
+      }
+    }
+    if (isSync) {
+      return;
+    }
+    const usrs = ch.permissionOverwrites.filter((ov) => ov.type === discord.Channel.PermissionOverwriteType.MEMBER);
+    if (usrs.length > 0) {
+      usrs.forEach((ov) => {
+        const newobj: any = { id: ov.id };
+        if (ov.allow !== 0) {
+          newobj.allow = ov.allow;
+        }
+        if (ov.deny !== 0) {
+          newobj.deny = ov.deny;
+        }
+        _dt.push(newobj);
+      });
+    }
+    if (_dt.length > 0) {
+      userOverrides[ch.id] = _dt;
+    }
+  }));
+  if (Object.keys(userOverrides).length > 0) {
+    await utils.KVManager.set(`${persistPrefix}channels`, userOverrides);
+  }
+}
+function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
+  let lvl = utils.getUserAuth(member);
+  if (typeof levelForce !== 'undefined') {
+    lvl = levelForce;
+  }
+  let lowestConf = 1000;
+  for (const key in config.modules.admin.persist.levels) {
+    const thislvl = parseInt(key, 10);
+    if (thislvl >= lvl && thislvl < lowestConf) {
+      lowestConf = thislvl;
+    }
+  }
+  const toret = config.modules.admin.persist.levels[lowestConf.toString()];
+  if (typeof toret === 'undefined') {
+    if (typeof config.modules.admin.persist.levels[lowestConf] !== 'undefined') {
+      return config.modules.admin.persist.levels[lowestConf];
+    }
+    return null;
+  }
+  return toret;
+}
+async function savePersistData(member: discord.GuildMember): Promise<boolean> {
+  if (!config.modules.admin.persist || config.modules.admin.persist.enabled !== true) {
+    return false;
+  }
+  let rls = member.roles.filter((a) => true);
+  if (typeof config.modules.admin.autoroles === 'object') {
+    if (member.user.bot === true && Array.isArray(config.modules.admin.autoroles.bot)) {
+      rls = rls.filter((rl) => !config.modules.admin.autoroles.bot.includes(rl));
+    } else if (member.user.bot === false && Array.isArray(config.modules.admin.autoroles.human)) {
+      rls = rls.filter((rl) => !config.modules.admin.autoroles.human.includes(rl));
+    }
+  }
+
+  const channels = await getStoredUserOverwrites(member.user.id);
+  if (rls.length === 0 && member.nick === null && channels.length === 0) {
+    return false;
+  }
+  const newObj = new MemberPersist(member.user.id, member.roles, member.nick, utils.getUserAuth(member), channels);
+  await persistPool.saveToPool(newObj);
+  logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
+  return true;
+}
+
+async function restorePersistData(member: discord.GuildMember) {
+  if (!config.modules.admin.persist || config.modules.admin.persist.enabled !== true) {
+    return false;
+  }
+  const dt = await persistPool.getById<MemberPersist>(member.user.id);
+  if (!dt) {
+    return false;
+  }
+
+  const lvl = typeof dt.level === 'number' ? dt.level : 0;
+  const thisconf = getPersistConf(member, lvl);
+  if (thisconf === null) {
+    return false;
+  }
+  const guild = await member.getGuild();
+  const me = await guild.getMember(discord.getBotId());
+  const myrl = await utils.getMemberHighestRole(me);
+  const theirrl = await utils.getMemberHighestRole(member);
+  const rl = (await guild.getRoles()).filter((e) => dt.roles.includes(e.id) && e.position < myrl.position && !e.managed && e.id !== e.guildId).map((e) => e.id).filter((e) => {
+    if (Array.isArray(thisconf.roleIncludes) && thisconf.roleIncludes.length > 0 && !thisconf.roleIncludes.includes(e)) {
+      return false;
+    }
+    if (Array.isArray(thisconf.roleExcludes)) {
+      return !thisconf.roleExcludes.includes(e);
+    }
+    return true;
+  });
+  member.roles.forEach((e) => {
+    if (!rl.includes(e) && e !== guild.id) {
+      rl.push(e);
+    }
+  });
+  const objEdit: any = {};
+  if (thisconf.roles === true && rl.length > 0) {
+    objEdit.roles = rl;
+  }
+  if (thisconf.nick === true && (theirrl === null || myrl.position > theirrl.position)) {
+    objEdit.nick = dt.nick;
+  }
+  await member.edit(objEdit);
+  const chans = dt.channels;
+  const allChannels = await guild.getChannels();
+  if (chans && Array.isArray(chans) && thisconf.channels === true) {
+    await Promise.all(chans.map(async (chan) => {
+      const channel = allChannels.find((e) => e.id === chan.channelId);
+      if (!channel || channel === null) {
+        return;
+      }
+      const _f = channel.permissionOverwrites.find((e) => e.id === chan.id);
+      if (_f) {
+        return;
+      }
+
+      const thisOw: discord.Channel.IPermissionOverwrite = {
+        id: chan.id,
+        allow: chan.allow ?? 0,
+        deny: chan.deny ?? 0,
+        type: discord.Channel.PermissionOverwriteType.MEMBER,
+      };
+      const ows = [].concat(channel.permissionOverwrites).concat(thisOw);
+      if (channel.type === discord.Channel.Type.GUILD_CATEGORY) {
+        const childrenSynced = allChannels.filter((cht) => {
+          if (cht.parentId !== channel.id) {
+            return false;
+          }
+          let anyDiff = false;
+          for (let i = 0; i < cht.permissionOverwrites.length; i++) {
+            const chow = cht.permissionOverwrites[i];
+            const _ex = channel.permissionOverwrites.find((e2) => e2.id === chow.id && e2.allow === chow.allow && e2.deny === chow.deny && e2.type === chow.type);
+            if (!_ex) {
+              anyDiff = true;
+              break;
+            }
+          }
+          return !anyDiff;
+        });
+        await Promise.all(childrenSynced.map(async (ch) => {
+          await ch.edit({ permissionOverwrites: ows });
+        }));
+      }
+      await channel.edit({ permissionOverwrites: ows });
+    }));
+  }
+
+  await persistPool.editPool(member.user.id, undefined);
+  logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
+  return true;
+}
+export async function OnChannelCreate(
+  id: string,
+  gid: string,
+  channel: discord.GuildChannel,
+) {
+  if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
+    return;
+  }
+  await storeChannelData();
+}
+export async function OnChannelDelete(
+  id: string,
+  gid: string,
+  channel: discord.GuildChannel,
+) {
+  if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
+    return;
+  }
+  await storeChannelData();
+}
+export async function OnChannelUpdate(
+  id: string,
+  gid: string,
+  channel: discord.GuildChannel,
+  oldChannel: discord.GuildChannel,
+) {
+  if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
+    return;
+  }
+  const permschange = false;
+  let hasChange = channel.permissionOverwrites.every((ow) => {
+    const _f = oldChannel.permissionOverwrites.find((ow2) => ow2.id === ow.id);
+    if (!_f) {
+      return false;
+    }
+    if (_f.allow !== ow.allow || _f.deny !== ow.deny) {
+      return false;
+    }
+    return true;
+  });
+  if (!hasChange) {
+    await storeChannelData();
+    return;
+  }
+  hasChange = oldChannel.permissionOverwrites.every((ow) => {
+    const _f = channel.permissionOverwrites.find((ow2) => ow2.id === ow.id);
+    if (!_f) {
+      return false;
+    }
+    if (_f.allow !== ow.allow || _f.deny !== ow.deny) {
+      return false;
+    }
+    return true;
+  });
+  if (!hasChange) {
+    await storeChannelData();
+  }
+}
+
+export async function OnGuildBanAdd(
+  id: string,
+  gid: string,
+  ban: discord.GuildBan,
+) {
+  if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
+    return;
+  }
+  try {
+    if (config.modules.admin.persist.saveOnBan !== true) {
+      persistPool.editPool(ban.user.id, undefined);
+    }
+  } catch (e) {}
+}
+
+export async function AL_OnGuildMemberRemove(
+  id: string,
+  gid: string,
+  log: any,
+  member: discord.Event.IGuildMemberRemove,
+  oldMember: discord.GuildMember,
+) {
+  if (utils.isBlacklisted(member.user)) {
+    return;
+  }
+  if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
+    return;
+  }
+  if (config.modules.admin.persist.saveOnBan !== true) {
+    if (log instanceof discord.AuditLogEntry) {
+      if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD) {
+        return;
+      }
+    }
+  }
+  savePersistData(oldMember);
+}
+
+export async function OnGuildMemberAdd(
+  id: string,
+  gid: string,
+  member: discord.GuildMember,
+) {
+  if (utils.isBlacklisted(member)) {
+    return;
+  }
+  if (config.modules.admin.persist && typeof config.modules.admin.persist === 'object' && config.modules.admin.persist.enabled === true) {
+    await restorePersistData(member);
+  }
+  if (config.modules.admin.autoroles && typeof config.modules.admin.autoroles === 'object' && config.modules.admin.autoroles.enabled === true) {
+    const guild = await member.getGuild();
+    const mem = await guild.getMember(member.user.id);
+    if (mem !== null) {
+      if (Array.isArray(config.modules.admin.autoroles.human) && member.user.bot === false) {
+        const newr = mem.roles.concat(config.modules.admin.autoroles.human);
+        if (newr.length !== mem.roles.length) {
+          await mem.edit({ roles: newr });
+        }
+      } else if (Array.isArray(config.modules.admin.autoroles.bot) && member.user.bot === true) {
+        const newr = mem.roles.concat(config.modules.admin.autoroles.bot);
+        if (newr.length !== mem.roles.length) {
+          await mem.edit({ roles: newr });
+        }
+      }
+    }
+  }
+}
+
+/* REACT ROLES */
+const cooldowns = {};
+export async function handleReactRoles(idts: string, reaction: discord.Event.IMessageReactionAdd | discord.Event.IMessageReactionRemove, add:boolean) {
+  if (!reaction.guildId || !reaction.member || typeof config.modules !== 'object' || typeof config.modules.admin !== 'object' || typeof config.modules.admin.reactroles !== 'object' || config.modules.admin.reactroles.enabled !== true || !Array.isArray(config.modules.admin.reactroles.definitions)) {
+    return;
+  }
+  const defs = config.modules.admin.reactroles.definitions;
+  const { member } = reaction;
+  if (member.user.bot === true) {
+    return;
+  }
+  const message = reaction.messageId;
+  const { emoji } = reaction;
+  const found = defs.find((def) => {
+    if (typeof def.message !== 'string' || typeof def.role !== 'string' || typeof def.emoji !== 'string' || typeof def.type !== 'string') {
+      return false;
+    }
+    const type = def.type.toLowerCase();
+    if (type !== 'once' && type !== 'toggle' && type !== 'remove') {
+      return false;
+    }
+    if (def.message !== message) {
+      return false;
+    }
+    if (utils.isNumber(def.emoji)) {
+      return typeof emoji.id === 'string' && def.emoji === emoji.id;
+    }
+    return typeof emoji.name === 'string' && emoji.name === def.emoji;
+  });
+  if (!found) {
+    return;
+  }
+
+  const type = found.type.toLowerCase();
+  if (type === 'remove' && add === false) {
+    return;
+  } if (type === 'once' && add === false) {
+    return;
+  }
+
+  const channel = await discord.getChannel(reaction.channelId);
+  if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
+    return;
+  }
+
+  let msg: discord.Message;
+  try {
+    msg = await channel.getMessage(reaction.messageId);
+  } catch (e) {
+    return;
+  }
+  if (msg === null) {
+    return;
+  }
+
+  const hasMyEmoji = msg.reactions.find((react) => {
+    if (react.me === false) {
+      return false;
+    }
+    if (emoji.type === discord.Emoji.Type.GUILD) {
+      return emoji.id === react.emoji.id;
+    }
+    return emoji.name === react.emoji.name;
+  });
+  if (typeof hasMyEmoji !== 'undefined' && add === true && (type === 'once' || type === 'remove')) {
+    try {
+      msg.deleteReaction(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`, reaction.userId);
+    } catch (e) {}
+  }
+  if (typeof cooldowns[reaction.userId] === 'number') {
+    const diff = Date.now() - cooldowns[reaction.userId];
+    if (diff < 500) {
+      return;
+    }
+  }
+  cooldowns[reaction.userId] = Date.now();
+
+  if (!hasMyEmoji) {
+    const emjMention = found.emoji;
+    // await msg.deleteAllReactionsForEmoji(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
+    await msg.addReaction(emoji.type === discord.Emoji.Type.GUILD ? `${emoji.name}:${emoji.id}` : `${emoji.name}`);
+    return;
+  }
+  const guild = await discord.getGuild();
+  const memNew = await guild.getMember(reaction.userId);
+  if (memNew === null) {
+    return;
+  }
+  let typeRole: undefined | boolean;
+  if (type === 'once' && !memNew.roles.includes(found.role)) {
+    await memNew.addRole(found.role);
+    typeRole = true;
+  } else if (type === 'remove' && memNew.roles.includes(found.role)) {
+    await memNew.removeRole(found.role);
+    typeRole = false;
+  } else if (type === 'toggle') {
+    if (memNew.roles.includes(found.role) && add === false) {
+      await memNew.removeRole(found.role);
+      typeRole = false;
+    } else if (!memNew.roles.includes(found.role) && add === true) {
+      await memNew.addRole(found.role);
+      typeRole = true;
+    }
+  }
+  if (typeof typeRole === 'boolean') {
+    let logType = 'ROLE_ADDED';
+    if (typeRole === false) {
+      logType = 'ROLE_REMOVED';
+    }
+    const placeholders = new Map([['_USERTAG_', getMemberTag(memNew)], ['_USER_ID_', reaction.userId], ['_CHANNEL_ID_', reaction.channelId], ['_MESSAGE_ID_', reaction.messageId], ['_EMOJI_', reaction.emoji.toMention()], ['_ROLE_ID_', found.role]]);
+    logCustom('REACTROLES', logType, placeholders, idts);
+  }
+}
+export async function OnMessageReactionAdd(
+  id: string,
+  gid: string,
+  reaction: discord.Event.IMessageReactionAdd,
+) {
+  await handleReactRoles(id, reaction, true);
+}
+
+export async function OnMessageReactionRemove(id: string, gid: string, reaction: discord.Event.IMessageReactionRemove) {
+  await handleReactRoles(id, reaction, false);
+}
+
 export function InitializeCommands() {
   const _groupOptions = {
     description: 'Admin Commands',
@@ -699,6 +1182,87 @@ export function InitializeCommands() {
       }
     },
   );
+
+  // BACKUP
+  if (config.modules.admin.persist.enabled === true) {
+    cmdGroup.subcommand('backup', (subCommandGroup) => {
+      subCommandGroup.on(
+        { name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
+        (ctx) => ({ member: ctx.guildMember() }),
+        async (msg, { member }) => {
+          const res: any = await msg.reply(async () => {
+            const ret = await restorePersistData(member);
+            if (ret === true) {
+              return {
+                allowedMentions: {},
+                content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+              };
+            }
+            return {
+              allowedMentions: {},
+              content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
+            };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
+        (ctx) => ({ member: ctx.guildMember() }),
+        async (msg, { member }) => {
+          const res: any = await msg.reply(async () => {
+            const ret = await savePersistData(member);
+            if (ret === true) {
+              return {
+                allowedMentions: {},
+                content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
+              };
+            }
+            return {
+              allowedMentions: {},
+              content: `${discord.decor.Emojis.X} Failed to save data for ${member.toMention()} , (do they have any data to save?)`,
+            };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
+        (ctx) => ({ usr: ctx.user() }),
+        async (msg, { usr }) => {
+          const res: any = await msg.reply(async () => {
+            const thisObj = await persistPool.getById<MemberPersist>(usr.id);
+            if (!thisObj) {
+              return { content: `${discord.decor.Emojis.X} no backup found for this member` };
+            }
+            let rls = 'None';
+            if (thisObj.roles.length > 0) {
+              const rlsfo = thisObj.roles.map((rl) => `<@&${rl}>`).join(', ');
+              rls = rlsfo;
+            }
+            const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thisObj.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thisObj.nick === null || typeof thisObj.nick !== 'string' ? 'None' : `\`${utils.escapeString(thisObj.nick)}\``}${Array.isArray(thisObj.channels) ? `\n**Channel Overwrites**: ${thisObj.channels.length}` : ''}`;
+            return { content: txt, allowedMentions: {} };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
+        (ctx) => ({ usr: ctx.user() }),
+        async (msg, { usr }) => {
+          const res: any = await msg.reply(async () => {
+            const thiskv = await persistPool.getById<MemberPersist>(usr.id);
+            if (!thiskv) {
+              return `${discord.decor.Emojis.X} no backup found for this member`;
+            }
+            await persistPool.editPool(usr.id, undefined);
+            return `${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`;
+          });
+          saveMessage(res);
+        },
+      );
+    });
+  }
 
   return cmdGroup;
 }

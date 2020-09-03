@@ -127,47 +127,6 @@ const defaultConfig = { // for non-defined configs!
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
       },
-      persist: {
-        enabled: true,
-        // configs based on the level of the members (before leaving)
-        levels: {
-          // config applied to anyone from level 101 to 1000
-          /* 1000: {
-            roles: true,
-            nick: true,
-            mute: true,
-            deaf: true,
-            channels: true,
-            roleIncludes: [],
-            roleExcludes: [],
-          }, */
-          // config applied to anyone from level 0 to 100
-          /* 100: {
-            roles: true,
-            nick: true,
-            mute: true,
-            deaf: true,
-            channels: true,
-            roleIncludes: [],
-            roleExcludes: [],
-          }, */
-        },
-        saveOnBan: false,
-      },
-      autoroles: {
-        enabled: false,
-        human: [],
-        bot: [],
-      },
-      reactroles: {
-        enabled: true,
-        definitions: [{
-          message: '750736042918674532',
-          role: '747413038168277043',
-          emoji: '\uD83D\uDD25',
-          type: 'once',
-        }],
-      },
     },
     /* roleManagement: { // for group srv only
       enabled: false,
@@ -255,6 +214,42 @@ const defaultConfig = { // for non-defined configs!
     },
     admin: {
       enabled: false,
+      persist: {
+        enabled: false,
+        // configs based on the level of the members (before leaving)
+        levels: {
+          // config applied to anyone from level 101 to 1000
+          /* 1000: {
+            roles: true,
+            nick: true,
+            mute: true,
+            deaf: true,
+            channels: true,
+            roleIncludes: [],
+            roleExcludes: [],
+          }, */
+          // config applied to anyone from level 0 to 100
+          /* 100: {
+            roles: true,
+            nick: true,
+            mute: true,
+            deaf: true,
+            channels: true,
+            roleIncludes: [],
+            roleExcludes: [],
+          }, */
+        },
+        saveOnBan: true,
+      },
+      autoroles: {
+        enabled: false,
+        human: [],
+        bot: [],
+      },
+      reactroles: {
+        enabled: false,
+        definitions: [],
+      },
     },
   },
 };
