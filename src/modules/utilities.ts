@@ -832,9 +832,9 @@ export function InitializeCommands() {
             emb.setColor(embColor);
           }
         }
-        if (emb.color === 0) {
-          const clr = parseInt((Math.random() * 0xFFFFFF << 0).toString(16), 16);
-          emb.setColor(clr);
+        if (emb.color === null) {
+          const clr = (Math.random() * 0xFFFFFF << 0).toString(16);
+          emb.setColor(parseInt(clr, 16));
         }
         try {
           const flagsUsr = await utils.getUser(user.id, true);
