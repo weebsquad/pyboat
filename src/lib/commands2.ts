@@ -125,23 +125,25 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
     if (level > 0) {
       txtErr.push(`Must be bot level ${level}`);
     }
-    if (Array.isArray(ov.rolesWhitelist)) {
-      let rls = ov.rolesWhitelist;
-      if (Array.isArray(ov.rolesBlacklist)) {
-        rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
+    if (typeof ov === 'object') {
+      if (Array.isArray(ov.rolesWhitelist)) {
+        let rls = ov.rolesWhitelist;
+        if (Array.isArray(ov.rolesBlacklist)) {
+          rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
+        }
+        txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
+      } else if (Array.isArray(ov.rolesBlacklist)) {
+        txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
       }
-      txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
-    } else if (Array.isArray(ov.rolesBlacklist)) {
-      txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
-    }
-    if (Array.isArray(ov.channelsWhitelist)) {
-      let chs = ov.channelsWhitelist;
-      if (Array.isArray(ov.channelsBlacklist)) {
-        chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
+      if (Array.isArray(ov.channelsWhitelist)) {
+        let chs = ov.channelsWhitelist;
+        if (Array.isArray(ov.channelsBlacklist)) {
+          chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
+        }
+        txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
+      } else if (Array.isArray(ov.channelsBlacklist)) {
+        txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
       }
-      txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
-    } else if (Array.isArray(ov.channelsBlacklist)) {
-      txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
     }
 
     let _f = F.custom(async (msg) => {
