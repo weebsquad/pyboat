@@ -760,6 +760,9 @@ export function InitializeCommands() {
         }
         const emb = new discord.Embed();
         emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
+        if (typeof user.avatar === 'string') {
+          emb.setThumbnail({ url: user.getAvatarUrl() });
+        }
         let desc = `**❯ ${user.bot === false ? 'User' : 'Bot'} Information**
         <:rich_presence:735781410509684786> 󠇰**ID**: \`${user.id}\`
         ${discord.decor.Emojis.LINK} **Profile**: ${user.toMention()}`;
@@ -804,22 +807,34 @@ export function InitializeCommands() {
             return `${emj}${pres.name.length > 0 ? ` \`${pres.name}\`` : ''}`;
           });
           let emjStatus = '';
+          let embColor;
           if (presence.status === 'online') {
             emjStatus = '<:status_online:735780704167919636>';
+            embColor = 0x25c059;
           }
           if (presence.status === 'dnd') {
             emjStatus = '<:status_busy:735780703983239168>';
+            embColor = 0xb34754;
           }
           if (presence.status === 'idle') {
             emjStatus = '<:status_away:735780703710478407>';
+            embColor = 0xe4bf3d;
           }
           if (presence.status === 'offline') {
             emjStatus = '<:status_offline:735780703802753076>';
+            embColor = 0x36393f;
           }
           desc += `\n ${emjStatus} **Status**: ${presence.status.substr(0, 1).toUpperCase()}${presence.status.substr(1).toLowerCase()}`;
           if (statuses.length > 0) {
             desc += `\n  ${statuses.join('\n  ')}󠇰`;
           }
+          if (embColor) {
+            emb.setColor(embColor);
+          }
+        }
+        if (emb.color === 0) {
+          const clr = parseInt((Math.random() * 0xFFFFFF << 0).toString(16), 16);
+          emb.setColor(clr);
         }
         try {
           const flagsUsr = await utils.getUser(user.id, true);
