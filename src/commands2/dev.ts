@@ -2,7 +2,6 @@ import { globalConfig, InitializeConfig, config } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as infractions from '../modules/infractions';
-import * as utilities from '../modules/utilities';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam';
@@ -207,13 +206,13 @@ export function InitializeCommands() {
     );
     sub.raw(
       'channelow', async (m) => {
-        await utilities.storeChannelData();
+        await admin.storeChannelData();
       },
     );
     sub.raw(
       'mychannelow', async (m) => {
-        await utilities.storeChannelData();
-        const res = await utilities.getStoredUserOverwrites(m.author.id);
+        await admin.storeChannelData();
+        const res = await admin.getStoredUserOverwrites(m.author.id);
         console.log(res);
       },
     );
