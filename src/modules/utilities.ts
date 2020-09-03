@@ -56,7 +56,7 @@ export async function checkReminders() {
         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'De',
       ];
       const timestamptext = `${(`0${dt.getDate()}`).substr(-2)}-${monthNames[dt.getMonth()]}-${dt.getFullYear().toString().substr(-2)} @ ${(`0${dt.getHours()}`).substr(-2)}:${(`0${dt.getMinutes()}`).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}`;
-      await chan.sendMessage(`Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\``);
+      await chan.sendMessage({ allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\`` });
       await reminders.editPool(remi.id, null);
     }
   }));
