@@ -398,7 +398,6 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
               }
             }
             if (del === true && !_deletedOg) {
-              console.log('deleting 2');
               await ogMsg.delete();
             }
           }
@@ -1112,12 +1111,12 @@ export function InitializeCommands() {
       async (msg, { id, duration }) => {
         const dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}Tempban duration malformed (try 1h30m format)`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} duration malformed (try 1h30m format)`);
           saveMessage(res);
           return;
         }
         if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}Tempban duration must be between a minute and a year`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} duration must be between a minute and a year`);
           saveMessage(res);
           return;
         }
@@ -1131,18 +1130,18 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
           saveMessage(res);
           return;
         }
         const inf: Infraction = infs[0];
         if (!inf.active) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}This infraction is not active.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} This infraction is not active.`);
           saveMessage(res);
           return;
         }
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
           saveMessage(res);
           return;
         }
@@ -1176,14 +1175,14 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
           saveMessage(res);
           return;
         }
         const inf: Infraction = infs[0];
 
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
           saveMessage(res);
           return;
         }
@@ -1204,6 +1203,47 @@ export function InitializeCommands() {
       },
     );
     subCommandGroup.on(
+      { name: 'actor', filters: c2.getFilters('infractions.inf.actor', Ranks.Moderator) },
+      (ctx) => ({ id: ctx.string(), actor: ctx.user() }),
+      async (msg, { id, actor }) => {
+        let infs;
+        if (id.toLowerCase() === 'ml') {
+          infs = (await getInfractionBy({ actorId: msg.author.id }));
+          if (infs.length > 0) {
+            infs = [infs[infs.length - 1]];
+          }
+        } else {
+          infs = (await getInfractionBy({ id }));
+        }
+        if (infs.length !== 1) {
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
+          saveMessage(res);
+          return;
+        }
+        const inf: Infraction = infs[0];
+
+        if (typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
+          saveMessage(res);
+          return;
+        }
+        const oldK = inf.getKey();
+        inf.actorId = actor.id;
+        await inf.updateStorage(oldK, inf.getKey());
+        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
+        saveMessage(res);
+        const extras = new Map<string, any>();
+        extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+        extras.set('_ACTOR_ID_', msg.author.id);
+        extras.set('_ACTOR_', msg.author);
+        extras.set('_USER_ID_', msg.author.id);
+        extras.set('_INFRACTION_ID_', inf.id);
+        extras.set('_TYPE_', 'actor');
+        extras.set('_NEW_VALUE_', actor.toMention());
+        logCustom('INFRACTIONS', 'EDITED', extras);
+      },
+    );
+    subCommandGroup.on(
       { name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
@@ -1217,13 +1257,13 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
           saveMessage(res);
           return;
         }
         const inf = infs[0];
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}You cannot edit other people's infractions.`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
           saveMessage(res);
           return;
         }
@@ -1245,7 +1285,7 @@ export function InitializeCommands() {
       async (msg, { user }) => {
         const infs = (await getInfractionBy({ memberId: user.id }));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given user`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions for the given user`);
           saveMessage(res);
           return;
         }
@@ -1267,7 +1307,7 @@ export function InitializeCommands() {
       async (msg, { actor }) => {
         const infs = (await getInfractionBy({ actorId: actor.id }));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions for the given actor`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions for the given actor`);
           saveMessage(res);
           return;
         }
@@ -1288,7 +1328,7 @@ export function InitializeCommands() {
       async (msg) => {
         const infs = (await getInfractionBy(null));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}Could not find any infractions`);
+          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions`);
           saveMessage(res);
           return;
         }
