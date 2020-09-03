@@ -823,16 +823,18 @@ export function InitializeCommands() {
         }
         try {
           const flagsUsr = await utils.getUser(user.id, true);
-          if(typeof flagsUsr === 'object' && typeof flagsUsr.public_flags === 'number') {
+          if (typeof flagsUsr === 'object' && typeof flagsUsr.public_flags === 'number') {
             let badges = [];
             const flags = new utils.UserFlags(flagsUsr.public_flags).serialize();
-            for(const key in flags) {
-              if(flags[key] === true) badges.push(key);
+            for (const key in flags) {
+              if (flags[key] === true) {
+                badges.push(key);
+              }
             }
-            if(badges.length > 0) {
+            if (badges.length > 0) {
               desc += '\n\n**❯ Discord Badges**';
               badges = badges.map((val) => {
-                switch(val) {
+                switch (val) {
                   case 'STAFF':
                     return '<:discordstaff:751155123648069743> Discord Staff';
                   case 'PARTNER':
@@ -863,10 +865,12 @@ export function InitializeCommands() {
                     return val;
                 }
               }).filter((val) => val !== '').map((val) => `**${val}**`);
-              desc += '\n ' + badges.join('\n ');
+              desc += `\n ${badges.join('\n ')}`;
             }
           }
-        } catch(e){console.error(e);}
+        } catch (e) {
+          console.error(e);
+        }
         // actual server stuff
         const isAdmin = utils.isGlobalAdmin(user.id);
         if (typeof globalConfig.badges === 'object') {

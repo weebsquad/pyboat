@@ -174,7 +174,6 @@ export const PermissionFlags: {[key: string]: any} = {
       test37: BigInt(BigInt(1) << BigInt(37)) */
 };
 
-
 export const UserFlags: {[key: string]: number} = {
   STAFF: 1 << 0,
   PARTNER: 1 << 1,
@@ -188,5 +187,5 @@ export const UserFlags: {[key: string]: number} = {
   SYSTEM: 1 << 12,
   BUG_HUNTER_GOLDEN: 1 << 14,
   VERIFIED_BOT: 1 << 16,
-  VERIFIED_BOT_DEVELOPER: 1 << 17
+  VERIFIED_BOT_DEVELOPER: 1 << 17,
 };

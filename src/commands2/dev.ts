@@ -165,7 +165,7 @@ export function InitializeCommands() {
       'user', async (m) => {
         const resUsr = await utils.getUser(m.author.id, true);
         const flags = new utils.UserFlags(resUsr.public_flags);
-        const res: any = await m.reply('```json\n' + JSON.stringify(flags.serialize(), null, 2) + '\n```');
+        const res: any = await m.reply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
         admin.saveMessage(res);
       },
     );

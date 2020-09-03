@@ -146,7 +146,6 @@ export class Permissions extends BitField {
   }
 }
 
-
 export class UserFlags extends BitField {
   FLAGS: any = constants.UserFlags;
   ALL: any = Object.values(this.FLAGS).reduce((all: any, p: any) => {
@@ -157,10 +156,10 @@ export class UserFlags extends BitField {
   }, 0);
   DEFAULT = 0;
   any(permission: any) {
-    return super.any(permission)
+    return super.any(permission);
   }
 
   has(permission: any) {
-    return super.has(permission)
+    return super.has(permission);
   }
 }

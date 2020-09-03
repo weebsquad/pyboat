@@ -215,10 +215,12 @@ export async function getMemberHighestRole(member: discord.GuildMember): Promise
   return rl[0];
 }
 
-export async function getUser(userId: string, forceFetch: boolean = false) {
+export async function getUser(userId: string, forceFetch = false) {
   let userData;
   try {
-    if(!forceFetch) userData = await discord.getUser(userId);
+    if (!forceFetch) {
+      userData = await discord.getUser(userId);
+    }
   } catch (e) {}
   if (typeof userData !== 'undefined') {
     return userData;
