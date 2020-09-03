@@ -652,6 +652,31 @@ export function InitializeCommands() {
     });
   }
 
+  // random
+  cmdGroup.subcommand('random', (subCommandGroup) => {
+    subCommandGroup.raw(
+      { name: 'coin', filters: c2.getFilters('utilities.random.coin', Ranks.Guest) },
+      async (msg) => {
+        await msg.reply(async () => {
+          const ret = utils.getRandomInt(1, 2);
+          return `The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`;
+        });
+      },
+    );
+    subCommandGroup.on(
+      { name: 'number', filters: c2.getFilters('utilities.random.number', Ranks.Guest) },
+      (ctx) => ({ minimum: ctx.integer({ maxValue: 1000000000, minValue: 0 }), maximum: ctx.integer({ maxValue: 1000000000, minValue: 1 }) }),
+      async (msg, { minimum, maximum }) => {
+        await msg.reply(async () => {
+          if (minimum >= maximum) {
+            return 'Error: Minimum value must be lower than the maximum value!';
+          }
+          const ret = utils.getRandomInt(minimum, maximum);
+          return `Result (\`${minimum}-${maximum}\`) - **${ret}** !`;
+        });
+      },
+    );
+  });
   // snowflake
   cmdGroup.on(
     { name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },

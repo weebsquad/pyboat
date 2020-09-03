@@ -203,6 +203,7 @@ export async function AL_OnGuildMemberUpdate(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
+  // console.log('on member update');
   await handleEvent(
     id,
     guildId,

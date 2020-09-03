@@ -148,6 +148,12 @@ export async function logError(...args: any) {
   if(typeof globalConfig !== 'object' || typeof globalConfig.showErrors !== 'boolean' || globalConfig.showErrors !== true) return;
   console.error(...args);
 }
+
+export function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive 
+}
 export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
 
 export function chunkArrayInGroups(arr, size) {
