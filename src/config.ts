@@ -478,7 +478,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       // data = JSON.stringify(data);
       // dat = encodeURI(dat);
       // const len = new TextEncoder().encode(JSON.stringify(dat)).byteLength;
-      const parts = data.match(/[\S\s]{1,7000}/g);
+      const parts = data.match(/[\S\s]{1,6500}/g);
       // console.log(parts, parts.length);
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
