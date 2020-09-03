@@ -610,6 +610,7 @@ async function restorePersistData(member: discord.GuildMember) {
       rl.push(e);
     }
   });
+  
   const objEdit: any = {};
   if (thisconf.roles === true && rl.length > 0) {
     objEdit.roles = rl;
@@ -617,6 +618,7 @@ async function restorePersistData(member: discord.GuildMember) {
   if (thisconf.nick === true && (theirrl === null || myrl.position > theirrl.position)) {
     objEdit.nick = dt.nick;
   }
+  console.log('rl', objEdit.roles);
   await member.edit(objEdit);
   const chans = dt.channels;
   const allChannels = await guild.getChannels();
@@ -771,20 +773,23 @@ export async function OnGuildMemberAdd(
   if (utils.isBlacklisted(member)) {
     return;
   }
+  
   if (config.modules.admin.persist && typeof config.modules.admin.persist === 'object' && config.modules.admin.persist.enabled === true) {
+    console.log('doing persist');
     await restorePersistData(member);
   }
   if (config.modules.admin.autoroles && typeof config.modules.admin.autoroles === 'object' && config.modules.admin.autoroles.enabled === true) {
+    console.log('doing AR');
     const guild = await member.getGuild();
     const mem = await guild.getMember(member.user.id);
     if (mem !== null) {
       if (Array.isArray(config.modules.admin.autoroles.human) && member.user.bot === false) {
-        const newr = mem.roles.concat(config.modules.admin.autoroles.human);
+        const newr = [...new Set(mem.roles.concat(config.modules.admin.autoroles.human))];
         if (newr.length !== mem.roles.length) {
           await mem.edit({ roles: newr });
         }
       } else if (Array.isArray(config.modules.admin.autoroles.bot) && member.user.bot === true) {
-        const newr = mem.roles.concat(config.modules.admin.autoroles.bot);
+        const newr = [...new Set(mem.roles.concat(config.modules.admin.autoroles.bot))];
         if (newr.length !== mem.roles.length) {
           await mem.edit({ roles: newr });
         }
