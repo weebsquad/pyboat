@@ -24,6 +24,7 @@ export const globalConfig = <any>{
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
+    botToken: 'NDA2ODg4NjExMTk2MzA1NDI4.WmzOjA._94Rd-hh4--LKBqfTPgELa5XZOo'
   },
   ranks: Ranks,
   Ranks, // lol

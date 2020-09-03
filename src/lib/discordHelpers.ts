@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prefer-destructuring */
 import * as conf from '../config';
-import { pad, swapKV } from './utils';
+import { pad, swapKV, logError } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
 // import { bigInt } from './bigint';
 import { Permissions } from './bitField';
@@ -215,16 +215,16 @@ export async function getMemberHighestRole(member: discord.GuildMember): Promise
   return rl[0];
 }
 
-export async function getUser(userId: string) {
+export async function getUser(userId: string, forceFetch: boolean = false) {
   let userData;
   try {
-    userData = await discord.getUser(userId);
+    if(!forceFetch) userData = await discord.getUser(userId);
   } catch (e) {}
   if (typeof userData !== 'undefined') {
     return userData;
   }
   const data = await metalApiRequest(
-    config.global.game.botToken,
+    conf.globalConfig.metalApi.botToken,
     `users/${userId}`,
     'GET',
     null,
@@ -239,7 +239,7 @@ export async function getUser(userId: string) {
     };
     return res;
   } catch (e) {
-
+    logError(e);
   }
 }
 
@@ -250,7 +250,7 @@ export async function getUserEntitlements(
   seperateBranches = false,
 ) {
   const res = await metalApiRequest(
-    config.global.game.botToken,
+    conf.globalConfig.metalApi.botToken,
     `applications/${appId}/entitlements?user_id=${userId}&sku_ids=${skuId}&with_payments=true`,
     'GET',
     null,

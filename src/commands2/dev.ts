@@ -162,6 +162,14 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
+      'user', async (m) => {
+        const resUsr = await utils.getUser(m.author.id, true);
+        const flags = new utils.UserFlags(resUsr.public_flags);
+        const res: any = await m.reply('```json\n' + JSON.stringify(flags.serialize(), null, 2) + '\n```');
+        admin.saveMessage(res);
+      },
+    );
+    sub.raw(
       'clearkvm', async (m) => {
         const dt = Date.now();
         await utils.KVManager.clear();
