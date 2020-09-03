@@ -944,7 +944,7 @@ export function InitializeCommands() {
           if (Number(perms.bitfield) > 0 && hasPerms.length > 0) {
             desc += `\n <:settings:735782884836638732> **Staff**: \`${hasPerms.join(', ')}\``;
           }
-          if (auth > 0) {
+          if (auth > 0 && !user.bot) {
             desc += `\n ${discord.decor.Emojis.CYCLONE} **Bot Level**: **${auth}**`;
           }
         }
