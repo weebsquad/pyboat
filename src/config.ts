@@ -115,6 +115,7 @@ const defaultConfig = { // for non-defined configs!
         reaction: true,
         message: true,
         expiry: 10,
+        deleteOriginal: false,
       },
     },
     utilities: {

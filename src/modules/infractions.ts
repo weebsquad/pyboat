@@ -348,7 +348,10 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
   if (config.modules.infractions && config.modules.infractions.confirmation) {
     const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
     const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) && typeof txt === 'string' && txt.length > 0 ? config.modules.infractions.confirmation.message : false;
-    const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(10, config.modules.infractions.confirmation.expiry) : 0;
+    const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(12, Math.max(3, config.modules.infractions.confirmation.expiry)) : 0;
+    const del = typeof config.modules.infractions.confirmation.deleteOriginal === 'boolean' ? config.modules.infractions.confirmation.deleteOriginal : false;
+
+    const _deletedOg = false;
     if (react === true) {
       try {
         if (result === true) {
@@ -358,6 +361,13 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
         }
       } catch (e) {}
     }
+    /* if (del === true && !_deletedOg && chan.canMember(me, discord.Permissions.MANAGE_MESSAGES) && expiry === 0) {
+      try {
+        _deletedOg = true;
+        console.log('deleting 1');
+        await ogMsg.delete();
+      } catch (e) {}
+    } */
     let replyMsg;
     if (msg === true) {
       try {
@@ -381,9 +391,15 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
       const _theMsg = replyMsg;
       setTimeout(async () => {
         try {
-          if (react === true && chan.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-            if (result === true || result === false) {
-              await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
+          if (chan.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+            if (react === true && !del) {
+              if (result === true || result === false) {
+                await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
+              }
+            }
+            if (del === true && !_deletedOg) {
+              console.log('deleting 2');
+              await ogMsg.delete();
             }
           }
           if (msg === true && _theMsg instanceof discord.Message) {
