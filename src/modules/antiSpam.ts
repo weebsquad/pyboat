@@ -259,7 +259,6 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         let logAct = false;
         if (action === 'LOCK_GUILD') {
           const res = await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
-          console.log('lock res', res);
           if (res === true) {
             logAct = true;
           }
@@ -268,6 +267,15 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         if (logAct === true) {
           if (VALID_ACTIONS_GLOBAL.includes(action)) {
             logCustom('ANTISPAM', 'ANTIRAID', new Map([['_ACTION_', action], ['_FLAGS_', flagged.join(', ')]]));
+            if(typeof config.modules.antiSpam.antiRaidPingRole === 'string' && config.modules.antiSpam.antiRaidPingRole.length > 6 && typeof config.modules.antiSpam.antiRaidPingChannel === 'string' && config.modules.antiSpam.antiRaidPingChannel.length > 6) {
+              const roleId = config.modules.antiSpam.antiRaidPingRole;
+              const channelID = config.modules.antiSpam.antiRaidPingChannel;
+              const role = await guild.getRole(roleId);
+              const channel = await guild.getChannel(channelID)
+              if(role instanceof discord.Role && (channel instanceof discord.GuildTextChannel || channel instanceof discord.GuildNewsChannel)) {
+                await channel.sendMessage({content: `Hey ${role.toMention()} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **${action}** action, but you might want to take care of the offending users manually.`, allowedMentions: {roles: [role.id]}});
+              }
+            }
           }
         }
         if (!noRun) {

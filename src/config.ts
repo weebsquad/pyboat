@@ -209,6 +209,8 @@ const defaultConfig = { // for non-defined configs!
     },
     antiSpam: {
       enabled: false,
+      antiRaidPingRole: "",
+      antiRaidPingChannel: "",
       antiRaid: {},
       channels: {},
       categories: {},
