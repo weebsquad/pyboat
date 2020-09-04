@@ -148,7 +148,7 @@ export async function parseMessageContent(
   let MAXLEN = 1400;
   const LEN_CODEBLOCKS = 400;
   const MAXNEWLINES = 25;
-  const MAXLENSINGLELINE = 120;
+  const MAXLENSINGLELINE = 200;
   if (update) {
     MAXLEN = Math.floor(MAXLEN / 2);
   }
