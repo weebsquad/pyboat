@@ -61,7 +61,8 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     LOCKED_GUILD: `${discord.decor.Emojis.LOCK} _ACTORTAG_ locked the server_DURATION__REASON_`,
     UNLOCKED_GUILD: `${discord.decor.Emojis.UNLOCK} _ACTORTAG_ unlocked the server_REASON_`,
     SLOWMODE: `${discord.decor.Emojis.SNAIL} _ACTORTAG_ set slowmode on <#_CHANNEL_ID_> to **_SECONDS_s**_DURATION__REASON_`,
-    TEMPROLE: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role _ROLE_MENTION_ to _USERTAG_ for _DURATION__REASON_`
+    TEMPROLE: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role _ROLE_MENTION_ to _USERTAG_ for _DURATION__REASON_`,
+    TEMPROLE_EXPIRED: `${discord.decor.Emojis.SHIELD} _USERTAG_'s temprole _ROLE_MENTION_ expired`,
   },
   '|ANTISPAM': {
     ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,

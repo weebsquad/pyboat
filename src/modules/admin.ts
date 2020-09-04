@@ -161,6 +161,7 @@ export class Action { // class action lawsuit lmao
             this.active = false;
           } else {
             await gm.removeRole(this.targetValue);
+            logCustom('ADMIN', 'TEMPROLE_EXPIRED', new Map([['_USERTAG_', getMemberTag(gm)], ['_ROLE_MENTION_', `<@&${this.targetValue}>`]]))
           }
         }
       
@@ -1398,7 +1399,8 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Added role to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+        const rlid = await getRoleIdByText(roleText);
+        await infractions.confirmResult(undefined, msg, true, `Added role <@&${rlid}> to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, 'Failed to add role');
       }
