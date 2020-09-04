@@ -65,6 +65,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     TEMPROLE_EXPIRED: `${discord.decor.Emojis.SHIELD} _USERTAG_'s temprole _ROLE_MENTION_ expired`,
     ROLE_ADDED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role _ROLE_MENTION_ to _USERTAG__REASON_`,
     ROLE_REMOVED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ removed role _ROLE_MENTION_ from _USERTAG__REASON_`,
+    NICKNAME: `${discord.decor.Emojis.RED_ENVELOPE} _ACTORTAG_ changed _USERTAG_'s nickname to \`_NEW_NICK_\``,
   },
   '|ANTISPAM': {
     ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,

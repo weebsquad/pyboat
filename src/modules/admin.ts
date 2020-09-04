@@ -33,7 +33,8 @@ enum ActionType {
     'LOCK_CHANNEL'= 'LOCK_CHANNEL',
     'SLOWMODE' = 'SLOWMODE',
     'TEMPROLE' = 'TEMPROLE',
-    'ROLE' = 'ROLE'
+    'ROLE' = 'ROLE',
+    'NICKNAME' = 'NICKNAME'
 }
 
 export class Action { // class action lawsuit lmao
@@ -333,11 +334,20 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
     return 'I can\'t manage roles';
   }
+  if (actionType === ActionType.NICKNAME && !me.can(discord.Permissions.MANAGE_NICKNAMES)) {
+    return 'I can\'t manage nicknames';
+  }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
+
+  if (target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
+    if (highestRoleTarget.position >= highestRoleMe.position) {
+      return 'I can\'t manage that target';
+    }
+  }
 
   if (extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE)) {
     if (extraTarget.position >= highestRoleMe.position) {
@@ -362,6 +372,8 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
         return 'You can\'t manage messages';
       } if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
+      } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
+        return 'You can\'t manage nicknames';
       }
     }
     if (actor.user.id === targetId) {
@@ -668,6 +680,43 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   }
   const type = state === true ? 'ROLE_ADDED' : 'ROLE_REMOVED';
   logCustom('ADMIN', type, placeholders);
+  return true;
+}
+
+export async function Nick(actor: discord.GuildMember | null, target: discord.GuildMember, newNick: string | null, reason = ''): Promise<string | boolean> {
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return false;
+  }
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  const canT = await canTarget(actor, target, undefined, undefined, ActionType.NICKNAME);
+  if (canT !== true) {
+    return canT;
+  }
+  if (target.nick === newNick) {
+    return 'The target already has this nickname!';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  await target.edit({ nick: newNick });
+
+  const placeholders = new Map([['_NEW_NICK_', newNick === null ? 'None' : utils.escapeString(newNick)], ['_USERTAG_', getMemberTag(target)], ['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+  }
+
+  logCustom('ADMIN', 'NICKNAME', placeholders);
   return true;
 }
 
@@ -1491,6 +1540,23 @@ export function InitializeCommands() {
       },
     );
   });
+
+  cmdGroup.on(
+    { name: 'nickname', aliases: ['nick'], filters: c2.getFilters('admin.nickname', Ranks.Moderator) },
+    (ctx) => ({ member: ctx.guildMember(), nickname: ctx.textOptional() }),
+    async (msg, { member, nickname }) => {
+      const res = await Nick(msg.member, member, nickname);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname)}\``);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to set nickname');
+      }
+    },
+  );
 
   cmdGroup.on(
     { name: 'temprole', filters: c2.getFilters('admin.temprole', Ranks.Administrator) },
