@@ -9,6 +9,7 @@ import * as admin from '../modules/admin';
 import * as pools from '../lib/storagePools';
 import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
+import * as crons from '../lib/crons';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -153,6 +154,7 @@ export function InitializeCommands() {
         throw new Error('testing pls ignore');
       },
     );
+
     sub.raw(
       'kvmkeys', async (m) => {
         const keys = await utils.KVManager.listKeys();
@@ -187,6 +189,14 @@ export function InitializeCommands() {
         admin.saveMessage(res);
       },
     );
+    sub.on('cron',
+           (ctx) => ({ key: ctx.string() }),
+           async (m, { key }) => {
+             const dt = Date.now();
+             await crons.onCron(key);
+             const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+             admin.saveMessage(res);
+           });
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
            async (m, { key }) => {

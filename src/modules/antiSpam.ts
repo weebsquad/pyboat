@@ -16,7 +16,6 @@ const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many spam violations';
-const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
 
 export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined);
 class MessageEntry {

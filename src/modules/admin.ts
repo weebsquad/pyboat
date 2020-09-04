@@ -25,8 +25,99 @@ const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId
 
 export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefined, ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
+const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
+const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
 enum ActionType {
-    'CLEAN'
+    'CLEAN',
+    'LOCK_GUILD',
+    'LOCK_CHANNEL',
+    'SLOWMODE',
+    'TEMPROLE'
+}
+
+export class Action { // class action lawsuit lmao
+  active: boolean;
+  expiresAt: string;
+  id: string;
+  // ts: number;
+  previous: number | undefined;
+  actorId: string | null;
+  targetId: string | undefined;
+  targetValue: string | number | undefined;
+  type: ActionType;
+  reason = '';
+  constructor(type: ActionType, actor: string | null, target: string | undefined, expires: string | undefined = '', reason = '') {
+    const id = utils.composeSnowflake();
+    this.id = id;
+    // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+    this.type = type;
+    this.actorId = actor;
+    this.targetId = target;
+    this.reason = reason;
+    if (typeof this.reason !== 'string') {
+      this.reason = '';
+    }
+    if (typeof expires === 'undefined' || expires === '') {
+      expires = id;
+    }
+    this.expiresAt = expires;
+    this.active = this.expiresAt !== this.id;
+    return this;
+  }
+  async updateStorage() {
+    await actionPool.editPool(this.id, this);
+  }
+  async checkActive() {
+    if (!this.active) {
+      return false;
+    }
+    const guild = await discord.getGuild(guildId);
+    if (this.type === ActionType.SLOWMODE) {
+      const channel = await guild.getChannel(this.targetId);
+      if (channel !== null && channel instanceof discord.GuildTextChannel) {
+        if (channel.rateLimitPerUser === this.previous) {
+          this.active = false;
+        }
+      } else {
+        this.active = false;
+      }
+    }
+    if (!this.active) {
+      await this.updateStorage();
+    }
+    // check states of things
+    return this.active;
+  }
+  async checkExpired() {
+    if (!this.active || !this.isExpired()) {
+      return;
+    }
+    const checkActive = await this.checkActive();
+    if (!checkActive) {
+      return;
+    }
+    const guild = await discord.getGuild(guildId);
+    if (this.type === ActionType.SLOWMODE) {
+      const channel = await guild.getChannel(this.targetId);
+      if (channel !== null && channel instanceof discord.GuildTextChannel) {
+        await channel.edit({ rateLimitPerUser: this.previous });
+        logCustom('ADMIN', 'SLOWMODE_EXPIRED', new Map([['_CHANNEL_ID_', channel.id]]));
+        this.active = false;
+      }
+    }
+    // remove states of things
+    if (!this.active) {
+      await this.updateStorage();
+    }
+  }
+  isExpired() {
+    if (this.id === this.expiresAt) {
+      return false;
+    }
+    const exp = utils.decomposeSnowflake(this.expiresAt).timestamp;
+    const diff = Date.now() - exp;
+    return diff > 0;
+  }
 }
 class TrackedMessage {
     authorId: string;
@@ -50,6 +141,68 @@ class TrackedMessage {
       return this;
     }
 }
+
+export async function every5Min() {
+  try {
+    const acts = (await actionPool.getByQuery<Action>({
+      active: true,
+    }));
+    const actives1: Array<any> = acts.map((act) => utils.makeFake(act, Action)).filter((act: Action) => act.active === true && act.isExpired());
+    const actives: Array<Action> = actives1;
+    if (actives.length > 0) {
+      console.log('found actives');
+      const promises2 = [];
+      for (let i = 0; i < actives.length; i += 1) {
+        const act = actives[i];
+        if (act.isExpired()) {
+          await sleep(200);
+          promises2.push(act.checkExpired());
+        }
+      }
+
+      await Promise.all(promises2);
+    }
+  } catch (e) {
+    await utils.logError(e);
+  }
+}
+
+export async function addAction(target: discord.Guild | discord.GuildChannel, actor: discord.GuildMember | discord.User | string | null, type: ActionType, expires: string | undefined = '', previousValue: any = undefined, targetValue: any = undefined, reason = '') {
+  if (expires === '' || expires === undefined) {
+    return;
+  }
+  if (actor === null) {
+    actor = 'SYSTEM';
+  }
+  const targetId = target.id;
+
+  if (typeof targetId === 'undefined') {
+    return false;
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  let actorId;
+  if (typeof actor === 'string') {
+    actorId = actor;
+  }
+  if (actor instanceof discord.User) {
+    actorId = actor.id;
+  }
+  if (actor instanceof discord.GuildMember) {
+    actorId = actor.user.id;
+  }
+  const newAct = new Action(type, actorId, targetId, expires, reason);
+  newAct.previous = previousValue;
+  newAct.targetValue = targetValue;
+  await actionPool.saveToPool(newAct);
+
+  return newAct;
+}
+
 export async function saveMessage(msg: discord.GuildMemberMessage) {
   const _res = await adminPool.saveToPool(new TrackedMessage(msg));
   return _res;
@@ -122,7 +275,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   return true;
 }
 
-export async function SlowmodeChannel(actor: discord.GuildMember | null, channel: discord.GuildChannel, seconds: number, reason = ''): Promise<string | boolean> {
+export async function SlowmodeChannel(actor: discord.GuildMember | null, channel: discord.GuildChannel, seconds: number, duration: number, reason = ''): Promise<string | boolean> {
   const guild = await channel.getGuild();
   if (guild === null) {
     return false;
@@ -140,25 +293,30 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   if (reason.length > 101) {
     reason = reason.substr(0, 100);
   }
+  if (actor !== null) {
+    reason = utils.escapeString(reason);
+  }
   if (!(channel instanceof discord.GuildTextChannel)) {
     return 'Invalid channel';
   }
   if (channel.rateLimitPerUser === seconds) {
     return 'Channel is already at this slowmode';
   }
-
+  const oldValue = channel.rateLimitPerUser;
   await channel.edit({ rateLimitPerUser: seconds });
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_SECONDS_', seconds.toString()], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
+  const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
+  await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, reason);
+  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_SECONDS_', seconds.toString()], ['_CHANNEL_ID_', channel.id], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
   if (actor !== null) {
     placeholders.set('_ACTORTAG_', getActorTag(actor));
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason ${reason}`);
+    placeholders.set('_REASON_', ` with reason \`${reason}\``);
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES) && seconds > 0) {
-    const txt = `**This channel has been set to ${seconds}s slowmode** by ${placeholders.get('_ACTORTAG_')}${reason.length > 0 ? ` with reason** \`${utils.escapeString(reason)}\`` : ''}`;
+    const txt = `**This channel has been set to ${seconds}s slowmode** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -1036,6 +1194,31 @@ export function InitializeCommands() {
       },
     );
   });
+  cmdGroup.subcommand('invites', (subCommandGroup) => {
+    subCommandGroup.on(
+      { name: 'prune', filters: c2.getFilters('admin.invites.prune', Ranks.Administrator) },
+      (ctx) => ({ uses: ctx.integerOptional({ minValue: 0 }) }),
+      async (msg, { uses }) => {
+        if (uses === null) {
+          uses = 0;
+        }
+        const guild = await msg.getGuild();
+        const invites = await guild.getInvites();
+        let cleared = 0;
+        await Promise.all(invites.map(async (invite) => {
+          if (invite.uses <= uses) {
+            await invite.delete();
+            cleared += 1;
+          }
+        }));
+        if (cleared === 0) {
+          await infractions.confirmResult(undefined, msg, false, 'No invites were pruned!');
+        } else {
+          await infractions.confirmResult(undefined, msg, true, `${cleared} total invites pruned!`);
+        }
+      },
+    );
+  });
 
   cmdGroup.on(
     { name: 'cease', filters: c2.getFilters('admin.cease', Ranks.Moderator) },
@@ -1077,18 +1260,29 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'slowmode', filters: c2.getFilters('admin.slowmode', Ranks.Moderator) },
-    (ctx) => ({ seconds: ctx.integerOptional({ default: 0, minValue: 0, maxValue: 21600 }), channel: ctx.guildChannelOptional() }),
-    async (msg, { seconds, channel }) => {
+    (ctx) => ({ seconds: ctx.integerOptional({ default: 0, minValue: 0, maxValue: 21600 }), duration: ctx.stringOptional(), channel: ctx.guildChannelOptional() }),
+    async (msg, { seconds, duration, channel }) => {
+      let dur = 0;
+      if (duration !== null) {
+        dur = utils.timeArgumentToMs(duration);
+        if (dur === 0) {
+          return 'duration malformed (try 1h30m format)';
+        }
+        if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+          return 'duration must be between a minute and a month';
+        }
+      }
       if (channel === null) {
         channel = await msg.getChannel();
       }
-      const res = await SlowmodeChannel(msg.member, channel, seconds);
+      const res = await SlowmodeChannel(msg.member, channel, seconds, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**`);
+        const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, 'second') : '';
+        await infractions.confirmResult(undefined, msg, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**${txtDur !== '' ? ` for ${txtDur}` : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, 'Failed to set slowmode');
       }

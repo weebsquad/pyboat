@@ -340,7 +340,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
   }
   logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
-export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined) {
+export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined, noDeleteOriginal = false) {
   if (!(me instanceof discord.GuildMember)) {
     me = await (await ogMsg.getGuild()).getMember(discord.getBotId());
   }
@@ -349,7 +349,7 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
     const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
     const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) && typeof txt === 'string' && txt.length > 0 ? config.modules.infractions.confirmation.message : false;
     const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(12, Math.max(3, config.modules.infractions.confirmation.expiry)) : 0;
-    const del = typeof config.modules.infractions.confirmation.deleteOriginal === 'boolean' ? config.modules.infractions.confirmation.deleteOriginal : false;
+    const del = typeof config.modules.infractions.confirmation.deleteOriginal === 'boolean' && !noDeleteOriginal ? config.modules.infractions.confirmation.deleteOriginal : false;
 
     const _deletedOg = false;
     if (react === true) {

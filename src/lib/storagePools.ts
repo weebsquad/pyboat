@@ -37,6 +37,8 @@ export class StoragePool {
     private getTimestamp(obj: any) {
       if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'number') {
         return obj[this.timestampProperty];
+      } if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'string') {
+        return utils.decomposeSnowflake(obj[this.timestampProperty]).timestamp;
       }
       if (typeof obj[this.uniqueId] !== 'string') {
         this.err('Can\'t parse timestamps on a non-string unique identifier');

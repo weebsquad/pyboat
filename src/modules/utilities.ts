@@ -884,7 +884,7 @@ export function InitializeCommands() {
             }
           }
         } catch (e) {
-          console.error(e);
+          utils.logError(e);
         }
         // actual server stuff
         const isAdmin = utils.isGlobalAdmin(user.id);

@@ -1,9 +1,9 @@
 import * as ratelimit from './eventHandler/ratelimit';
 import * as queue from './eventHandler/queue';
-import { logDebug } from '../modules/logging/events/custom';
 import * as conf from '../config';
-import { every5Min } from '../modules/infractions';
-import { cleanPool } from '../modules/translation';
+import * as infractions from '../modules/infractions';
+import * as translation from '../modules/translation';
+import * as admin from '../modules/admin';
 import * as starboard from '../modules/starboard';
 import * as censor from '../modules/censor';
 import * as antiPing from '../modules/antiPing';
@@ -19,20 +19,20 @@ const _cr: {[key: string]: any} = {
       const dt = Date.now();
       try {
         await pylon.requestCpuBurst(async () => {
+          await ratelimit.clean();
+          await translation.cleanPool();
+          queue.cleanQueue();
+          await admin.every5Min();
+          await infractions.every5Min();
+          await starboard.periodicClear();
+          await censor.clean();
+          await antiPing.periodicDataClear();
+          await utilities.checkReminders();
           if (InitializedPools.length > 0) {
             await Promise.all(InitializedPools.map(async (pool) => {
               await pool.clean();
             }));
           }
-
-          await ratelimit.clean();
-          await cleanPool();
-          queue.cleanQueue();
-          await every5Min();
-          await starboard.periodicClear();
-          await censor.clean();
-          await antiPing.periodicDataClear();
-          await utilities.checkReminders();
           throw new Error('');
         }, 300);
       } catch (e) {
@@ -46,7 +46,7 @@ const _cr: {[key: string]: any} = {
   },
 };
 
-async function onCron(name: string) {
+export async function onCron(name: string) {
   if (typeof conf.config === 'undefined') {
     const res = await conf.InitializeConfig();
     if (res === false || typeof conf.config === 'undefined') {

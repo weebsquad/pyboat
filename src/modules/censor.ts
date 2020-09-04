@@ -5,6 +5,7 @@ import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/main';
 import * as infractions from './infractions';
 import { Permissions } from '../lib/utils';
+import * as admin from './admin';
 
 const kvPool = new pylon.KVNamespace('censor');
 const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];
@@ -481,7 +482,7 @@ export async function processViolations(id: string, member: discord.GuildMember,
       await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
       break;
     case 'SLOWMODE':
-      await channel.edit({ rateLimitPerUser: actionValue });
+      await admin.SlowmodeChannel(null, channel, actionValue, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
       break;
     case 'MASSBAN':
 

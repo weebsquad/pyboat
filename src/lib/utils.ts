@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { config, globalConfig } from '../config';
+import { config, globalConfig, guildId } from '../config';
 import * as constants from '../constants/constants';
 
 export * from './metalApi';
@@ -145,7 +145,9 @@ export function escapeString(string) {
 }
 
 export async function logError(...args: any) {
+  if(guildId !== '307927177154789386') {
   if(typeof globalConfig !== 'object' || typeof globalConfig.showErrors !== 'boolean' || globalConfig.showErrors !== true) return;
+  }
   console.error(...args);
 }
 
