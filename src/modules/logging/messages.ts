@@ -63,6 +63,8 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     SLOWMODE: `${discord.decor.Emojis.SNAIL} _ACTORTAG_ set slowmode on <#_CHANNEL_ID_> to **_SECONDS_s**_DURATION__REASON_`,
     TEMPROLE: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role _ROLE_MENTION_ to _USERTAG_ for _DURATION__REASON_`,
     TEMPROLE_EXPIRED: `${discord.decor.Emojis.SHIELD} _USERTAG_'s temprole _ROLE_MENTION_ expired`,
+    ROLE_ADDED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ added role _ROLE_MENTION_ to _USERTAG__REASON_`,
+    ROLE_REMOVED: `${discord.decor.Emojis.SHIELD} _ACTORTAG_ removed role _ROLE_MENTION_ from _USERTAG__REASON_`,
   },
   '|ANTISPAM': {
     ANTIRAID: `${discord.decor.Emojis.EXCLAMATION} Message Anti Raid triggered with \`_FLAGS_\` and action \`_ACTION_\` was automatically performed`,

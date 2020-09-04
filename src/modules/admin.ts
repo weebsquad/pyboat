@@ -32,7 +32,8 @@ enum ActionType {
     'LOCK_GUILD'= 'LOCK_GUILD',
     'LOCK_CHANNEL'= 'LOCK_CHANNEL',
     'SLOWMODE' = 'SLOWMODE',
-    'TEMPROLE' = 'TEMPROLE'
+    'TEMPROLE' = 'TEMPROLE',
+    'ROLE' = 'ROLE'
 }
 
 export class Action { // class action lawsuit lmao
@@ -326,7 +327,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
     return 'I can\'t manage messages';
   }
-  if(actionType === ActionType.TEMPROLE && !me.can(discord.Permissions.MANAGE_ROLES)) {
+  if((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
     return 'I can\'t manage roles';
   }
 
@@ -335,7 +336,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
-  if(extraTarget instanceof discord.Role && actionType === ActionType.TEMPROLE && extraTarget.position >= highestRoleMe.position) {
+  if(extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE) && extraTarget.position >= highestRoleMe.position) {
     return 'I can\'t assign that role'
   }
   // check levels and discord perms
@@ -348,7 +349,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (requireExtraPerms === true) {
       if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
         return 'You can\'t manage messages';
-      } else if(actionType === ActionType.TEMPROLE && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+      } else if((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
       }
     }
@@ -595,6 +596,52 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
     placeholders.set('_REASON_', ` with reason \`${reason}\``);
   }
   logCustom('ADMIN', 'TEMPROLE', placeholders);
+  return true;
+}
+
+
+export async function Role(actor: discord.GuildMember | null, target: discord.GuildMember, roleTxt: string, state: boolean, reason = ''): Promise<string | boolean> {
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return false;
+  }
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  const rlId = await getRoleIdByText(roleTxt);
+  if(rlId === null) return 'Role ID/Name not found';
+  const role = await guild.getRole(rlId);
+  if(!(role instanceof discord.Role)) return `Role ID#(${rlId}) not found in the guild`
+  const canT = await canTarget(actor, target, undefined, role, ActionType.ROLE);
+  if(canT !== true) return canT;
+  if(target.roles.includes(role.id) && state === true) {
+    return 'Target already has this role';
+  } else if(!target.roles.includes(role.id) && !state) {
+    return 'Target does not have this role'
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+
+  if(state === true) {
+  await target.addRole(role.id);
+  } else {
+    await target.removeRole(role.id);
+  }
+  const placeholders = new Map([['_ROLE_MENTION_', role.toMention()], ['_USERTAG_', getMemberTag(target)],['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+  }
+  const type = state === true ? 'ROLE_ADD' : 'ROLE_REMOVE'
+  logCustom('ADMIN', type, placeholders);
   return true;
 }
 
@@ -1250,7 +1297,7 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand('clean', (subCommandGroup) => {
+  cmdGroup.subcommand({name: 'clean', filters: c2.getFilters('admin.clean', Ranks.Moderator)},(subCommandGroup) => {
     subCommandGroup.on(
       { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
@@ -1356,7 +1403,7 @@ export function InitializeCommands() {
       },
     );
   });
-  cmdGroup.subcommand('invites', (subCommandGroup) => {
+  cmdGroup.subcommand({name: 'invites', filters: c2.getFilters('admin.invites', Ranks.Administrator)}, (subCommandGroup) => {
     subCommandGroup.on(
       { name: 'prune', filters: c2.getFilters('admin.invites.prune', Ranks.Administrator) },
       (ctx) => ({ uses: ctx.integerOptional({ minValue: 0 }) }),
@@ -1381,6 +1428,43 @@ export function InitializeCommands() {
       },
     );
   });
+  cmdGroup.subcommand({name: 'role', filters: c2.getFilters('admin.role', Ranks.Administrator) }, (subCommandGroup) => {
+    subCommandGroup.on(
+    { name: 'add', aliases: ['give', 'grant'], filters: c2.getFilters('admin.role.add', Ranks.Administrator) },
+    (ctx) => ({ member: ctx.guildMember(), roleText:ctx.text()}),
+    async (msg, { member, roleText }) => {
+      const res = await Role(msg.member, member, roleText, true);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        const rlid = await getRoleIdByText(roleText);
+        await infractions.confirmResult(undefined, msg, true, `Added role <@&${rlid}> to ${member.toMention()}`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to add role');
+      }
+    },
+  );
+
+  subCommandGroup.on(
+    { name: 'remove', aliases: ['rm', 'take'], filters: c2.getFilters('admin.role.add', Ranks.Administrator) },
+    (ctx) => ({ member: ctx.guildMember(), roleText:ctx.text()}),
+    async (msg, { member, roleText }) => {
+      const res = await Role(msg.member, member, roleText, false);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        const rlid = await getRoleIdByText(roleText);
+        await infractions.confirmResult(undefined, msg, true, `Removed role <@&${rlid}> from ${member.toMention()}`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to remove role');
+      }
+    },
+  );
+  });
 
   cmdGroup.on(
     { name: 'temprole', filters: c2.getFilters('admin.temprole', Ranks.Administrator) },
@@ -1388,10 +1472,13 @@ export function InitializeCommands() {
     async (msg, { member, duration, roleText }) => {
         const dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          return 'duration malformed (try 1h30m format)';
+          const res: any = await msg.reply('duration malformed (try 1h30m format)');
+          saveMessage(res);
+          return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          return 'duration must be between a minute and a month';
+          const res: any = await msg.reply('duration must be between a minute and a month');
+          saveMessage(res);
         }
       
       const res = await TempRole(msg.member, member, roleText, dur);
@@ -1419,10 +1506,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          return 'duration malformed (try 1h30m format)';
+          const res: any = await msg.reply( 'duration malformed (try 1h30m format)');
+          saveMessage(res)
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          return 'duration must be between a minute and a month';
+          const res: any = await msg.reply( 'duration must be between a minute and a month');
+          saveMessage(res)
         }
       }
       const res = await LockChannel(msg.member, channel, true, dur);
@@ -1464,10 +1553,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          return 'duration malformed (try 1h30m format)';
+          const res: any = await msg.reply( 'duration malformed (try 1h30m format)');
+          saveMessage(res)
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          return 'duration must be between a minute and a month';
+          const res: any = await msg.reply( 'duration must be between a minute and a month');
+          saveMessage(res)
         }
       }
       if (channel === null) {
@@ -1494,10 +1585,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          return 'duration malformed (try 1h30m format)';
+          const res: any = await msg.reply( 'duration malformed (try 1h30m format)');
+          saveMessage(res);
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          return 'duration must be between a minute and a month';
+          const res: any = await msg.reply( 'duration must be between a minute and a month');
+          saveMessage(res);
         }
       }
       const res = await LockGuild(msg.member, true, dur);
@@ -1620,7 +1713,7 @@ export function InitializeCommands() {
 
   // BACKUP
   if (config.modules.admin.persist.enabled === true) {
-    cmdGroup.subcommand('backup', (subCommandGroup) => {
+    cmdGroup.subcommand({name: 'backup', filters: c2.getFilters('admin.backup', Ranks.Moderator) }, (subCommandGroup) => {
       subCommandGroup.on(
         { name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
         (ctx) => ({ member: ctx.guildMember() }),

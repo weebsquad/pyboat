@@ -1037,7 +1037,7 @@ export function InitializeCommands() {
       await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
-  cmdGroup.subcommand('inf', (subCommandGroup) => {
+  cmdGroup.subcommand({name: 'inf', filters: c2.getFilters('infractions.inf', Ranks.Moderator) }, (subCommandGroup) => {
     subCommandGroup.raw(
       { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
       async (msg) => {

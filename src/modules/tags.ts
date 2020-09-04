@@ -48,16 +48,16 @@ const blacklist = ['show', 'create', 'set', 'define', 'make', 'delete', 'del', '
 export function subTags(subCmdGroup: discord.command.CommandGroup) {
   subCmdGroup.default((ctx) => ({ tagName: ctx.text() }), async (msg, { tagName }) => {
     await showTag(msg, tagName);
-  }, { filters: c2.getFilters('tags.show', Ranks.Guest) });
+  }, { filters: c2.getFilters('tags.tags.show', Ranks.Guest) });
   subCmdGroup.on(
-    { name: 'show', filters: c2.getFilters('tags.show', Ranks.Guest) },
+    { name: 'show', filters: c2.getFilters('tags.tags.show', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.text() }),
     async (msg, { tagName }) => {
       await showTag(msg, tagName);
     },
   );
   subCmdGroup.on(
-    { name: 'create', aliases: ['set', 'define', 'make', 'edit'], filters: c2.getFilters('tags.create', Ranks.Guest) },
+    { name: 'create', aliases: ['set', 'define', 'make', 'edit'], filters: c2.getFilters('tags.tags.create', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string(), content: ctx.text() }),
     async (msg, { tagName, content }) => {
       const res: any = await msg.reply(async () => {
@@ -94,7 +94,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     },
   );
   subCmdGroup.on(
-    { name: 'delete', aliases: ['remove', 'rm', 'del'], filters: c2.getFilters('tags.remove', Ranks.Guest) },
+    { name: 'delete', aliases: ['remove', 'rm', 'del'], filters: c2.getFilters('tags.tags.delete', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
       const res: any = await msg.reply(async () => {
@@ -116,7 +116,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     },
   );
   subCmdGroup.on(
-    { name: 'info', aliases: ['inf'], filters: c2.getFilters('tags.info', Ranks.Guest) },
+    { name: 'info', aliases: ['inf'], filters: c2.getFilters('tags.tags.info', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
       const res: any = await msg.reply(async () => {
@@ -138,7 +138,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     },
   );
   subCmdGroup.raw(
-    { name: 'clearall', aliases: ['removeall'], filters: c2.getFilters('tags.removeall', Ranks.Administrator) },
+    { name: 'clearall', aliases: ['removeall'], filters: c2.getFilters('tags.tags.removeall', Ranks.Administrator) },
     async (msg) => {
       const res: any = await msg.reply(async () => {
         const removed = await pool.getAll<Tag>();
@@ -149,7 +149,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     },
   );
   subCmdGroup.raw(
-    { name: 'list', aliases: ['all'], filters: c2.getFilters('tags.all', Ranks.Authorized) },
+    { name: 'list', aliases: ['all'], filters: c2.getFilters('tags.tags.all', Ranks.Authorized) },
     async (msg) => {
       const res: any = await msg.reply(async () => {
         const ex = await pool.getAll<Tag>();
@@ -177,7 +177,7 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand({ name: 'tag' }, subTags);
-  cmdGroup.subcommand({ name: 'tags' }, subTags);
+  cmdGroup.subcommand({name: 'tag', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
+  cmdGroup.subcommand({name: 'tags', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
   return cmdGroup;
 }

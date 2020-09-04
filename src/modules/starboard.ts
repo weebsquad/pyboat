@@ -790,7 +790,7 @@ export function InitializeCommands() {
   );
 
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand('stars', (subCommandGroup) => {
+  cmdGroup.subcommand({name: 'stars', filters: c2.getFilters('starboard.stars', Ranks.Authorized) }, (subCommandGroup) => {
     subCommandGroup.on(
       { name: 'stats', filters: c2.getFilters('starboard.stars.stats', Ranks.Authorized) },
       (ctx) => ({ user: ctx.userOptional() }),
