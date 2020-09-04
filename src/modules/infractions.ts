@@ -158,7 +158,7 @@ export async function getInfractions() {
     };
     return utils.makeFake<Infraction>(newobj, Infraction);
   });
-  const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction).sort((a, b) => a.ts - b.ts);
+  const exist: Array<Infraction> = transf.filter((e) => e instanceof Infraction).sort((a, b) => b.ts - a.ts);
   return exist;
 }
 export async function every5Min() {
@@ -1042,7 +1042,7 @@ export function InitializeCommands() {
       { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
       async (msg) => {
         const infs = (await getInfractionBy(null));
-        const last10 = infs.slice(Math.max(infs.length - 10, 0));
+        const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
@@ -1062,7 +1062,7 @@ export function InitializeCommands() {
       { name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
       async (msg) => {
         const infs = (await getInfractionBy({ active: true }));
-        const last10 = infs.slice(Math.max(infs.length - 10, 0));
+        const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
@@ -1086,7 +1086,7 @@ export function InitializeCommands() {
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
           if (infs.length > 0) {
-            infs = [infs[infs.length - 1]];
+            infs = [infs[0]];
           }
         } else {
           infs = (await getInfractionBy({ id }));
@@ -1124,7 +1124,7 @@ export function InitializeCommands() {
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
           if (infs.length > 0) {
-            infs = [infs[infs.length - 1]];
+            infs = [infs[0]];
           }
         } else {
           infs = (await getInfractionBy({ id }));
@@ -1169,7 +1169,7 @@ export function InitializeCommands() {
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
           if (infs.length > 0) {
-            infs = [infs[infs.length - 1]];
+            infs = [infs[0]];
           }
         } else {
           infs = (await getInfractionBy({ id }));
@@ -1210,7 +1210,7 @@ export function InitializeCommands() {
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
           if (infs.length > 0) {
-            infs = [infs[infs.length - 1]];
+            infs = [infs[0]];
           }
         } else {
           infs = (await getInfractionBy({ id }));
@@ -1251,7 +1251,7 @@ export function InitializeCommands() {
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
           if (infs.length > 0) {
-            infs = [infs[infs.length - 1]];
+            infs = [infs[0]];
           }
         } else {
           infs = (await getInfractionBy({ id }));
@@ -1350,7 +1350,7 @@ export function InitializeCommands() {
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
           const infs = (await getInfractionBy({ actorId: actor.id }));
-          const last10 = infs.slice(Math.max(infs.length - 10, 0));
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
@@ -1375,7 +1375,7 @@ export function InitializeCommands() {
         { name: 'system', filters: c2.getFilters('infractions.inf search.system', Ranks.Moderator) },
         async (msg) => {
           const infs = (await getInfractionBy({ actorId: 'SYSTEM' }));
-          const last10 = infs.slice(Math.max(infs.length - 10, 0));
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
@@ -1401,7 +1401,7 @@ export function InitializeCommands() {
         (ctx) => ({ user: ctx.user() }),
         async (msg, { user }) => {
           const infs = await getInfractionBy({ memberId: user.id });
-          const last10 = infs.slice(Math.max(infs.length - 10, 0));
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
@@ -1427,7 +1427,7 @@ export function InitializeCommands() {
         (ctx) => ({ type: ctx.string() }),
         async (msg, { type }) => {
           const infs = await getInfractionBy({ type: type.toUpperCase() });
-          const last10 = infs.slice(Math.max(infs.length - 10, 0));
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
