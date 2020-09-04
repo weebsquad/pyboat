@@ -1037,27 +1037,29 @@ export function InitializeCommands() {
       await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
-  cmdGroup.subcommand({name: 'inf', filters: c2.getFilters('infractions.inf', Ranks.Moderator) }, (subCommandGroup) => {
+  cmdGroup.subcommand({ name: 'inf', filters: c2.getFilters('infractions.inf', Ranks.Moderator) }, (subCommandGroup) => {
     subCommandGroup.raw(
       { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
       async (msg) => {
         const res:any = await msg.reply(async () => {
-        const infs = (await getInfractionBy(null));
-        if(infs.length === 0) return {content:'There are no infractions'};
-        const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
-        last10.map((inf) => {
-          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+          const infs = (await getInfractionBy(null));
+          if (infs.length === 0) {
+            return { content: 'There are no infractions' };
+          }
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
+          let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+          last10.map((inf) => {
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+          });
+          const remaining = infs.length - last10.length;
+          if (remaining > 0) {
+            txt += `\n\n**...** and ${remaining} more infractions`;
+          }
+          const emb = new discord.Embed();
+          emb.setDescription(txt);
+          emb.setTimestamp(new Date().toISOString());
+          return { embed: emb, allowedMentions: {}, content: '' };
         });
-        const remaining = infs.length - last10.length;
-        if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
-        }
-        const emb = new discord.Embed();
-        emb.setDescription(txt);
-        emb.setTimestamp(new Date().toISOString());
-        return { embed: emb, allowedMentions: {}, content: '' };
-      });
         saveMessage(res);
       },
     );
@@ -1065,22 +1067,24 @@ export function InitializeCommands() {
       { name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
       async (msg) => {
         const res:any = await msg.reply(async () => {
-        const infs = (await getInfractionBy({ active: true }));
-        if(infs.length === 0) return {content:'There are no active infractions'};
-        const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
-        last10.map((inf) => {
-          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+          const infs = (await getInfractionBy({ active: true }));
+          if (infs.length === 0) {
+            return { content: 'There are no active infractions' };
+          }
+          const last10 = infs.slice(0, Math.min(infs.length, 10));
+          let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+          last10.map((inf) => {
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+          });
+          const remaining = infs.length - last10.length;
+          if (remaining > 0) {
+            txt += `\n\n**...** and ${remaining} more infractions`;
+          }
+          const emb = new discord.Embed();
+          emb.setDescription(txt);
+          emb.setTimestamp(new Date().toISOString());
+          return { embed: emb, allowedMentions: {}, content: '' };
         });
-        const remaining = infs.length - last10.length;
-        if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
-        }
-        const emb = new discord.Embed();
-        emb.setDescription(txt);
-        emb.setTimestamp(new Date().toISOString());
-        return { embed: emb, allowedMentions: {}, content: '' };
-      });
         saveMessage(res);
       },
     );
@@ -1089,25 +1093,25 @@ export function InitializeCommands() {
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
         const res:any = await msg.reply(async () => {
-        let infs;
-        if (id.toLowerCase() === 'ml') {
-          infs = (await getInfractionBy({ actorId: msg.author.id }));
-          if (infs.length > 0) {
-            infs = [infs[0]];
+          let infs;
+          if (id.toLowerCase() === 'ml') {
+            infs = (await getInfractionBy({ actorId: msg.author.id }));
+            if (infs.length > 0) {
+              infs = [infs[0]];
+            }
+          } else {
+            infs = (await getInfractionBy({ id }));
           }
-        } else {
-          infs = (await getInfractionBy({ id }));
-        }
-        if (infs.length !== 1) {
-          return {content:`${discord.decor.Emojis.X}No infraction found`}
-        }
-        const inf = infs[0];
-        const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason)}\`` : ''}`;
-        const emb = new discord.Embed();
-        emb.setDescription(txt);
-        emb.setTimestamp(new Date().toISOString());
-        return { embed: emb, allowedMentions: {}, content: '' };
-      });
+          if (infs.length !== 1) {
+            return { content: `${discord.decor.Emojis.X}No infraction found` };
+          }
+          const inf = infs[0];
+          const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason)}\`` : ''}`;
+          const emb = new discord.Embed();
+          emb.setDescription(txt);
+          emb.setTimestamp(new Date().toISOString());
+          return { embed: emb, allowedMentions: {}, content: '' };
+        });
         saveMessage(res);
       },
     );
@@ -1116,48 +1120,48 @@ export function InitializeCommands() {
       (ctx) => ({ id: ctx.string(), duration: ctx.string() }),
       async (msg, { id, duration }) => {
         const res:any = await msg.reply(async () => {
-        const dur = utils.timeArgumentToMs(duration);
-        if (dur === 0) {
-          return `${discord.decor.Emojis.X} duration malformed (try 1h30m format)`;
-        }
-        if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-          return `${discord.decor.Emojis.X} duration must be between a minute and a year`;
-        }
-        let infs;
-        if (id.toLowerCase() === 'ml') {
-          infs = (await getInfractionBy({ actorId: msg.author.id }));
-          if (infs.length > 0) {
-            infs = [infs[0]];
+          const dur = utils.timeArgumentToMs(duration);
+          if (dur === 0) {
+            return `${discord.decor.Emojis.X} duration malformed (try 1h30m format)`;
           }
-        } else {
-          infs = (await getInfractionBy({ id }));
-        }
-        if (infs.length !== 1) {
-          return `${discord.decor.Emojis.X} No infraction found`;
-        }
-        const inf: Infraction = infs[0];
-        if (!inf.active) {
-          return `${discord.decor.Emojis.X} This infraction is not active.`;
-        }
-        if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
-        }
-        const expiresAt = utils.composeSnowflake(inf.ts + dur);
-        const oldK = inf.getKey();
-        inf.expiresAt = expiresAt;
-        await inf.updateStorage(oldK, inf.getKey());
-        
-        const extras = new Map<string, any>();
-        extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-        extras.set('_ACTOR_', msg.author);
-        extras.set('_ACTOR_ID_', msg.author.id);
-        extras.set('_INFRACTION_ID_', inf.id);
-        extras.set('_TYPE_', 'duration');
-        extras.set('_NEW_VALUE_', utils.escapeString(duration));
-        logCustom('INFRACTIONS', 'EDITED', extras);
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`;
-      });
-      saveMessage(res);
+          if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
+            return `${discord.decor.Emojis.X} duration must be between a minute and a year`;
+          }
+          let infs;
+          if (id.toLowerCase() === 'ml') {
+            infs = (await getInfractionBy({ actorId: msg.author.id }));
+            if (infs.length > 0) {
+              infs = [infs[0]];
+            }
+          } else {
+            infs = (await getInfractionBy({ id }));
+          }
+          if (infs.length !== 1) {
+            return `${discord.decor.Emojis.X} No infraction found`;
+          }
+          const inf: Infraction = infs[0];
+          if (!inf.active) {
+            return `${discord.decor.Emojis.X} This infraction is not active.`;
+          }
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+          }
+          const expiresAt = utils.composeSnowflake(inf.ts + dur);
+          const oldK = inf.getKey();
+          inf.expiresAt = expiresAt;
+          await inf.updateStorage(oldK, inf.getKey());
+
+          const extras = new Map<string, any>();
+          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+          extras.set('_ACTOR_', msg.author);
+          extras.set('_ACTOR_ID_', msg.author.id);
+          extras.set('_INFRACTION_ID_', inf.id);
+          extras.set('_TYPE_', 'duration');
+          extras.set('_NEW_VALUE_', utils.escapeString(duration));
+          logCustom('INFRACTIONS', 'EDITED', extras);
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1165,38 +1169,38 @@ export function InitializeCommands() {
       (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
       async (msg, { id, reason }) => {
         const res:any = await msg.reply(async () => {
-        let infs;
-        if (id.toLowerCase() === 'ml') {
-          infs = (await getInfractionBy({ actorId: msg.author.id }));
-          if (infs.length > 0) {
-            infs = [infs[0]];
+          let infs;
+          if (id.toLowerCase() === 'ml') {
+            infs = (await getInfractionBy({ actorId: msg.author.id }));
+            if (infs.length > 0) {
+              infs = [infs[0]];
+            }
+          } else {
+            infs = (await getInfractionBy({ id }));
           }
-        } else {
-          infs = (await getInfractionBy({ id }));
-        }
-        if (infs.length !== 1) {
-          return `${discord.decor.Emojis.X} No infraction found`;
-        }
-        const inf: Infraction = infs[0];
+          if (infs.length !== 1) {
+            return `${discord.decor.Emojis.X} No infraction found`;
+          }
+          const inf: Infraction = infs[0];
 
-        if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
-        }
-        const oldK = inf.getKey();
-        inf.reason = reason;
-        await inf.updateStorage(oldK, inf.getKey());
-        const extras = new Map<string, any>();
-        extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-        extras.set('_ACTOR_ID_', msg.author.id);
-        extras.set('_ACTOR_', msg.author);
-        extras.set('_USER_ID_', msg.author.id);
-        extras.set('_INFRACTION_ID_', inf.id);
-        extras.set('_TYPE_', 'reason');
-        extras.set('_NEW_VALUE_', utils.escapeString(reason));
-        logCustom('INFRACTIONS', 'EDITED', extras);
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`;
-      });
-      saveMessage(res);
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+          }
+          const oldK = inf.getKey();
+          inf.reason = reason;
+          await inf.updateStorage(oldK, inf.getKey());
+          const extras = new Map<string, any>();
+          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+          extras.set('_ACTOR_ID_', msg.author.id);
+          extras.set('_ACTOR_', msg.author);
+          extras.set('_USER_ID_', msg.author.id);
+          extras.set('_INFRACTION_ID_', inf.id);
+          extras.set('_TYPE_', 'reason');
+          extras.set('_NEW_VALUE_', utils.escapeString(reason));
+          logCustom('INFRACTIONS', 'EDITED', extras);
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1204,39 +1208,39 @@ export function InitializeCommands() {
       (ctx) => ({ id: ctx.string(), actor: ctx.user() }),
       async (msg, { id, actor }) => {
         const res:any = await msg.reply(async () => {
-        let infs;
-        if (id.toLowerCase() === 'ml') {
-          infs = (await getInfractionBy({ actorId: msg.author.id }));
-          if (infs.length > 0) {
-            infs = [infs[0]];
+          let infs;
+          if (id.toLowerCase() === 'ml') {
+            infs = (await getInfractionBy({ actorId: msg.author.id }));
+            if (infs.length > 0) {
+              infs = [infs[0]];
+            }
+          } else {
+            infs = (await getInfractionBy({ id }));
           }
-        } else {
-          infs = (await getInfractionBy({ id }));
-        }
-        if (infs.length !== 1) {
-          return `${discord.decor.Emojis.X} No infraction found`;
-        }
-        const inf: Infraction = infs[0];
+          if (infs.length !== 1) {
+            return `${discord.decor.Emojis.X} No infraction found`;
+          }
+          const inf: Infraction = infs[0];
 
-        if (typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
-        }
-        const oldK = inf.getKey();
-        inf.actorId = actor.id;
-        await inf.updateStorage(oldK, inf.getKey());
-        
-        const extras = new Map<string, any>();
-        extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-        extras.set('_ACTOR_ID_', msg.author.id);
-        extras.set('_ACTOR_', msg.author);
-        extras.set('_USER_ID_', msg.author.id);
-        extras.set('_INFRACTION_ID_', inf.id);
-        extras.set('_TYPE_', 'actor');
-        extras.set('_NEW_VALUE_', actor.toMention());
-        logCustom('INFRACTIONS', 'EDITED', extras);
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`;
-      });
-      saveMessage(res);
+          if (typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+          }
+          const oldK = inf.getKey();
+          inf.actorId = actor.id;
+          await inf.updateStorage(oldK, inf.getKey());
+
+          const extras = new Map<string, any>();
+          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+          extras.set('_ACTOR_ID_', msg.author.id);
+          extras.set('_ACTOR_', msg.author);
+          extras.set('_USER_ID_', msg.author.id);
+          extras.set('_INFRACTION_ID_', inf.id);
+          extras.set('_TYPE_', 'actor');
+          extras.set('_NEW_VALUE_', actor.toMention());
+          logCustom('INFRACTIONS', 'EDITED', extras);
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1244,33 +1248,33 @@ export function InitializeCommands() {
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
         const res:any = await msg.reply(async () => {
-        let infs;
-        if (id.toLowerCase() === 'ml') {
-          infs = (await getInfractionBy({ actorId: msg.author.id }));
-          if (infs.length > 0) {
-            infs = [infs[0]];
+          let infs;
+          if (id.toLowerCase() === 'ml') {
+            infs = (await getInfractionBy({ actorId: msg.author.id }));
+            if (infs.length > 0) {
+              infs = [infs[0]];
+            }
+          } else {
+            infs = (await getInfractionBy({ id }));
           }
-        } else {
-          infs = (await getInfractionBy({ id }));
-        }
-        if (infs.length !== 1) {
-          return `${discord.decor.Emojis.X} No infraction found`;
-        }
-        const inf = infs[0];
-        if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
-        }
-        await utils.KVManager.delete(inf.getKey());
-        const extras = new Map<string, any>();
-        extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-        extras.set('_ACTOR_', msg.author);
-        extras.set('_ACTOR_ID_', msg.author.id);
-        extras.set('_USER_ID_', msg.author.id);
-        extras.set('_INFRACTION_ID_', inf.id);
-        logCustom('INFRACTIONS', 'DELETED', extras);
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`;
-      });
-      saveMessage(res);
+          if (infs.length !== 1) {
+            return `${discord.decor.Emojis.X} No infraction found`;
+          }
+          const inf = infs[0];
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+          }
+          await utils.KVManager.delete(inf.getKey());
+          const extras = new Map<string, any>();
+          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
+          extras.set('_ACTOR_', msg.author);
+          extras.set('_ACTOR_ID_', msg.author.id);
+          extras.set('_USER_ID_', msg.author.id);
+          extras.set('_INFRACTION_ID_', inf.id);
+          logCustom('INFRACTIONS', 'DELETED', extras);
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`;
+        });
+        saveMessage(res);
       },
     );
     subCommandGroup.on(
@@ -1278,20 +1282,20 @@ export function InitializeCommands() {
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
         const res:any = await msg.reply(async () => {
-        const infs = (await getInfractionBy({ memberId: user.id }));
-        if (infs.length === 0) {
-          return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
-        }
-        let count = 0;
-        await pylon.requestCpuBurst(async () => {
-          for (const key in infs) {
-            const inf = infs[key];
-            await utils.KVManager.delete(inf.getKey());
-            count++;
+          const infs = (await getInfractionBy({ memberId: user.id }));
+          if (infs.length === 0) {
+            return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
           }
+          let count = 0;
+          await pylon.requestCpuBurst(async () => {
+            for (const key in infs) {
+              const inf = infs[key];
+              await utils.KVManager.delete(inf.getKey());
+              count++;
+            }
+          });
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
         });
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
-      });
         saveMessage(res);
       },
     );
@@ -1300,20 +1304,20 @@ export function InitializeCommands() {
       (ctx) => ({ actor: ctx.user() }),
       async (msg, { actor }) => {
         const res:any = await msg.reply(async () => {
-        const infs = (await getInfractionBy({ actorId: actor.id }));
-        if (infs.length === 0) {
-          return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
-        }
-        let count = 0;
-        await pylon.requestCpuBurst(async () => {
-          for (const key in infs) {
-            const inf = infs[key];
-            await utils.KVManager.delete(inf.getKey());
-            count++;
+          const infs = (await getInfractionBy({ actorId: actor.id }));
+          if (infs.length === 0) {
+            return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
           }
+          let count = 0;
+          await pylon.requestCpuBurst(async () => {
+            for (const key in infs) {
+              const inf = infs[key];
+              await utils.KVManager.delete(inf.getKey());
+              count++;
+            }
+          });
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
         });
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
-      });
         saveMessage(res);
       },
     );
@@ -1321,20 +1325,20 @@ export function InitializeCommands() {
       { name: 'clearall', filters: c2.getFilters('infractions.inf.clearall', Ranks.Owner) },
       async (msg) => {
         const res:any = await msg.reply(async () => {
-        const infs = (await getInfractionBy(null));
-        if (infs.length === 0) {
-          return `${discord.decor.Emojis.X} Could not find any infractions`;
-        }
-        let count = 0;
-        await pylon.requestCpuBurst(async () => {
-          for (const key in infs) {
-            const inf = infs[key];
-            await utils.KVManager.delete(inf.getKey());
-            count++;
+          const infs = (await getInfractionBy(null));
+          if (infs.length === 0) {
+            return `${discord.decor.Emojis.X} Could not find any infractions`;
           }
+          let count = 0;
+          await pylon.requestCpuBurst(async () => {
+            for (const key in infs) {
+              const inf = infs[key];
+              await utils.KVManager.delete(inf.getKey());
+              count++;
+            }
+          });
+          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
         });
-        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
-      });
         saveMessage(res);
       },
     );
@@ -1344,27 +1348,29 @@ export function InitializeCommands() {
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
           const res:any = await msg.reply(async () => {
-          const infs = (await getInfractionBy({ actorId: actor.id }));
-          if(infs.length === 0) return {content:'There are no infractions by this actor'};
-          const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
-          last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
-          });
-          const remaining = infs.length - last10.length;
-          if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
-          }
-          const emb = new discord.Embed();
-          if (infs.length === 0) {
-            txt = `**No infractions found by **${actor.toMention()}`;
-          }
-          emb.setDescription(txt);
-          emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
-          emb.setTimestamp(new Date().toISOString());
+            const infs = (await getInfractionBy({ actorId: actor.id }));
+            if (infs.length === 0) {
+              return { content: 'There are no infractions by this actor' };
+            }
+            const last10 = infs.slice(0, Math.min(infs.length, 10));
+            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+            last10.map((inf) => {
+              txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+            });
+            const remaining = infs.length - last10.length;
+            if (remaining > 0) {
+              txt += `\n\n**...** and ${remaining} more infractions`;
+            }
+            const emb = new discord.Embed();
+            if (infs.length === 0) {
+              txt = `**No infractions found by **${actor.toMention()}`;
+            }
+            emb.setDescription(txt);
+            emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
+            emb.setTimestamp(new Date().toISOString());
 
-          return { embed: emb, allowedMentions: {}, content: '' };
-        });
+            return { embed: emb, allowedMentions: {}, content: '' };
+          });
           saveMessage(res);
         },
       );
@@ -1372,27 +1378,29 @@ export function InitializeCommands() {
         { name: 'system', filters: c2.getFilters('infractions.inf search.system', Ranks.Moderator) },
         async (msg) => {
           const res:any = await msg.reply(async () => {
-          const infs = (await getInfractionBy({ actorId: 'SYSTEM' }));
-          if(infs.length === 0) return {content:'There are no infractions by system'};
-          const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
-          last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
-          });
-          const remaining = infs.length - last10.length;
-          if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
-          }
-          const emb = new discord.Embed();
-          if (infs.length === 0) {
-            txt = '**No infractions found by **SYSTEM';
-          }
-          emb.setDescription(txt);
-          emb.setAuthor({ name: 'SYSTEM' });
-          emb.setTimestamp(new Date().toISOString());
+            const infs = (await getInfractionBy({ actorId: 'SYSTEM' }));
+            if (infs.length === 0) {
+              return { content: 'There are no infractions by system' };
+            }
+            const last10 = infs.slice(0, Math.min(infs.length, 10));
+            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
+            last10.map((inf) => {
+              txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+            });
+            const remaining = infs.length - last10.length;
+            if (remaining > 0) {
+              txt += `\n\n**...** and ${remaining} more infractions`;
+            }
+            const emb = new discord.Embed();
+            if (infs.length === 0) {
+              txt = '**No infractions found by **SYSTEM';
+            }
+            emb.setDescription(txt);
+            emb.setAuthor({ name: 'SYSTEM' });
+            emb.setTimestamp(new Date().toISOString());
 
-          return { embed: emb, allowedMentions: {}, content: '' };
-        });
+            return { embed: emb, allowedMentions: {}, content: '' };
+          });
           saveMessage(res);
         },
       );
@@ -1401,27 +1409,29 @@ export function InitializeCommands() {
         (ctx) => ({ user: ctx.user() }),
         async (msg, { user }) => {
           const res:any = await msg.reply(async () => {
-          const infs = await getInfractionBy({ memberId: user.id });
-          if(infs.length === 0) return {content:'There are no infractions applied to this user'};
-          const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
-          last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
-          });
-          const remaining = infs.length - last10.length;
-          if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
-          }
-          const emb = new discord.Embed();
-          if (infs.length === 0) {
-            txt = `**No infractions found from **${user.toMention()}`;
-          }
-          emb.setDescription(txt);
-          emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
-          emb.setTimestamp(new Date().toISOString());
+            const infs = await getInfractionBy({ memberId: user.id });
+            if (infs.length === 0) {
+              return { content: 'There are no infractions applied to this user' };
+            }
+            const last10 = infs.slice(0, Math.min(infs.length, 10));
+            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
+            last10.map((inf) => {
+              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+            });
+            const remaining = infs.length - last10.length;
+            if (remaining > 0) {
+              txt += `\n\n**...** and ${remaining} more infractions`;
+            }
+            const emb = new discord.Embed();
+            if (infs.length === 0) {
+              txt = `**No infractions found from **${user.toMention()}`;
+            }
+            emb.setDescription(txt);
+            emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
+            emb.setTimestamp(new Date().toISOString());
 
-          return { embed: emb, allowedMentions: {}, content: '' };
-        });
+            return { embed: emb, allowedMentions: {}, content: '' };
+          });
           saveMessage(res);
         },
       );
@@ -1430,26 +1440,28 @@ export function InitializeCommands() {
         (ctx) => ({ type: ctx.string() }),
         async (msg, { type }) => {
           const res:any = await msg.reply(async () => {
-          const infs = await getInfractionBy({ type: type.toUpperCase() });
-          if(infs.length === 0) return {content:'There are no infractions of this type'};
-          const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
-          last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
-          });
-          const remaining = infs.length - last10.length;
-          if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
-          }
-          const emb = new discord.Embed();
-          if (infs.length === 0) {
-            txt = `**No infractions found of type **${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}`;
-          }
-          emb.setDescription(txt);
-          emb.setTimestamp(new Date().toISOString());
+            const infs = await getInfractionBy({ type: type.toUpperCase() });
+            if (infs.length === 0) {
+              return { content: 'There are no infractions of this type' };
+            }
+            const last10 = infs.slice(0, Math.min(infs.length, 10));
+            let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
+            last10.map((inf) => {
+              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+            });
+            const remaining = infs.length - last10.length;
+            if (remaining > 0) {
+              txt += `\n\n**...** and ${remaining} more infractions`;
+            }
+            const emb = new discord.Embed();
+            if (infs.length === 0) {
+              txt = `**No infractions found of type **${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}`;
+            }
+            emb.setDescription(txt);
+            emb.setTimestamp(new Date().toISOString());
 
-          return { embed: emb, allowedMentions: {}, content: '' };
-        });
+            return { embed: emb, allowedMentions: {}, content: '' };
+          });
           saveMessage(res);
         },
       );

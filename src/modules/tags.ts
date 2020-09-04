@@ -177,7 +177,7 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand({name: 'tag', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
-  cmdGroup.subcommand({name: 'tags', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
+  cmdGroup.subcommand({ name: 'tag', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
+  cmdGroup.subcommand({ name: 'tags', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
   return cmdGroup;
 }

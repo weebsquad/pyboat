@@ -267,13 +267,13 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         if (logAct === true) {
           if (VALID_ACTIONS_GLOBAL.includes(action)) {
             logCustom('ANTISPAM', 'ANTIRAID', new Map([['_ACTION_', action], ['_FLAGS_', flagged.join(', ')]]));
-            if(typeof config.modules.antiSpam.antiRaidPingRole === 'string' && config.modules.antiSpam.antiRaidPingRole.length > 6 && typeof config.modules.antiSpam.antiRaidPingChannel === 'string' && config.modules.antiSpam.antiRaidPingChannel.length > 6) {
+            if (typeof config.modules.antiSpam.antiRaidPingRole === 'string' && config.modules.antiSpam.antiRaidPingRole.length > 6 && typeof config.modules.antiSpam.antiRaidPingChannel === 'string' && config.modules.antiSpam.antiRaidPingChannel.length > 6) {
               const roleId = config.modules.antiSpam.antiRaidPingRole;
               const channelID = config.modules.antiSpam.antiRaidPingChannel;
-              const role = await guild.getRole(roleId);
-              const channel = await guild.getChannel(channelID)
-              if(role instanceof discord.Role && (channel instanceof discord.GuildTextChannel || channel instanceof discord.GuildNewsChannel)) {
-                await channel.sendMessage({content: `Hey ${role.toMention()} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **${action}** action, but you might want to take care of the offending users manually.`, allowedMentions: {roles: [role.id]}});
+              const rolePing = await guild.getRole(roleId);
+              const channelPing = await guild.getChannel(channelID);
+              if (rolePing instanceof discord.Role && (channelPing instanceof discord.GuildTextChannel || channelPing instanceof discord.GuildNewsChannel)) {
+                await channelPing.sendMessage({ content: `Hey ${rolePing.toMention()} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **${action}** action, but you might want to take care of the offending users manually.`, allowedMentions: { roles: [rolePing.id] } });
               }
             }
           }
