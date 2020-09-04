@@ -645,7 +645,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (msgs.length === 0) {
     return 0;
   }
-  msgs = msgs.slice(Math.max(msgs.length - count, 0));
+  msgs = msgs.slice(0, Math.max(msgs.length, count));
   if (msgs.length === 0) {
     return 0;
   }
@@ -1599,6 +1599,8 @@ export function InitializeCommands() {
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} active actions**\n\n**ID** | **Actor** | **Target** | **Type** | **Reason**\n`;
         last10.map((inf) => {
+          let targMention;
+          // todo properly format this
           txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
