@@ -648,7 +648,7 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   if (reason.length > 0) {
     placeholders.set('_REASON_', ` with reason \`${reason}\``);
   }
-  const type = state === true ? 'ROLE_ADD' : 'ROLE_REMOVE'
+  const type = state === true ? 'ROLE_ADDED' : 'ROLE_REMOVED'
   logCustom('ADMIN', type, placeholders);
   return true;
 }
