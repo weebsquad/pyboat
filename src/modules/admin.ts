@@ -53,6 +53,9 @@ export class Action { // class action lawsuit lmao
     this.type = type;
     this.actorId = actor;
     this.targetId = target;
+    if (type === ActionType.LOCK_GUILD) {
+      this.targetId = undefined;
+    }
     this.reason = reason;
     if (typeof this.reason !== 'string') {
       this.reason = '';
@@ -81,19 +84,31 @@ export class Action { // class action lawsuit lmao
       } else {
         this.active = false;
       }
-    } else if(this.type === ActionType.LOCK_CHANNEL) {
+    } else if (this.type === ActionType.LOCK_CHANNEL) {
       const channel = await guild.getChannel(this.targetId);
       if (channel !== null && channel instanceof discord.GuildTextChannel) {
         const defaultOw = channel.permissionOverwrites.find((ow) => ow.id === guild.id);
         if (!defaultOw) {
           this.active = false;
         } else {
-        const perms = new utils.Permissions(defaultOw.deny);
-        if (!perms.has('SEND_MESSAGES')) {
-          this.active = false;
-        }}
+          const perms = new utils.Permissions(defaultOw.deny);
+          if (!perms.has('SEND_MESSAGES')) {
+            this.active = false;
+          }
+        }
       } else {
         this.active = false;
+      }
+    } else if (this.type === ActionType.LOCK_GUILD) {
+      const roleId = typeof config.modules.admin.defaultRole === 'string' && config.modules.admin.defaultRole.length > 6 ? config.modules.admin.defaultRole : guild.id;
+      const role = await guild.getRole(roleId);
+      if (!(role instanceof discord.Role)) {
+        this.active = false;
+      } else {
+        const perms = new utils.Permissions(role.permissions);
+        if (perms.has('SEND_MESSAGES')) {
+          this.active = false;
+        }
       }
     }
     if (!this.active) {
@@ -117,7 +132,7 @@ export class Action { // class action lawsuit lmao
         await SlowmodeChannel(null, channel, this.previous, undefined, 'Slowmode expired');
         this.active = false;
       }
-    } else if(this.type === ActionType.LOCK_CHANNEL) {
+    } else if (this.type === ActionType.LOCK_CHANNEL) {
       const channel = await guild.getChannel(this.targetId);
       if (channel !== null && channel instanceof discord.GuildTextChannel) {
         this.active = false;
@@ -125,6 +140,9 @@ export class Action { // class action lawsuit lmao
       } else {
         this.active = false;
       }
+    } else if (this.type === ActionType.LOCK_GUILD) {
+      this.active = false;
+      await LockGuild(null, false, 0, 'Guild lock expired');
     }
     // remove states of things
     if (!this.active) {
@@ -183,19 +201,31 @@ export async function every5Min() {
 
       await Promise.all(promises2);
     }
+    const actsClear = (await actionPool.getByQuery<Action>({
+      active: false,
+    }));
+    if (actsClear.length > 0) {
+      console.log(`Clearing ${actsClear.length} actions!`);
+      await actionPool.editPools(actsClear.map((val) => val.id), (val) => null);
+    }
   } catch (e) {
     await utils.logError(e);
   }
 }
 
-export async function addAction(target: discord.Guild | discord.GuildChannel, actor: discord.GuildMember | discord.User | string | null, type: ActionType, expires: string | undefined = '', previousValue: any = undefined, targetValue: any = undefined, reason = '') {
+export async function addAction(target: discord.Guild | discord.GuildChannel | discord.GuildMember, actor: discord.GuildMember | discord.User | string | null, type: ActionType, expires: string | undefined = '', previousValue: any = undefined, targetValue: any = undefined, reason = '') {
   if (expires === '' || expires === undefined) {
     return;
   }
   if (actor === null) {
     actor = 'SYSTEM';
   }
-  const targetId = target.id;
+  let targetId;
+  if (target instanceof discord.GuildMember) {
+    targetId = target.user.id;
+  } else {
+    targetId = target.id;
+  }
 
   if (typeof targetId === 'undefined') {
     return false;
@@ -326,7 +356,9 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   const oldValue = channel.rateLimitPerUser;
   await channel.edit({ rateLimitPerUser: seconds });
   const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
-  if(seconds > 0 && duration > 0) await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, undefined, reason);
+  if (seconds > 0 && duration > 0) {
+    await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, undefined, reason);
+  }
   const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_SECONDS_', seconds.toString()], ['_CHANNEL_ID_', channel.id], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
   if (actor !== null) {
     placeholders.set('_ACTORTAG_', getActorTag(actor));
@@ -337,7 +369,7 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode`: ' This channel has had slowmode disabled'}** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`;
+    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -386,14 +418,16 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     return ow;
   });
   const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
-  if(state === true && duration > 0) await addAction(channel, actor, ActionType.LOCK_CHANNEL, exp, undefined, undefined, reason);
+  if (state === true && duration > 0) {
+    await addAction(channel, actor, ActionType.LOCK_CHANNEL, exp, undefined, undefined, reason);
+  }
   await channel.edit({ permissionOverwrites: newOws });
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'] , ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
+  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
   let type = 'LOCKED_CHANNEL';
   if (state === false) {
     type = 'UNLOCKED_CHANNEL';
   }
-  
+
   if (actor !== null) {
     placeholders.set('_ACTORTAG_', getActorTag(actor));
     placeholders.set('_ACTOR_ID_', actor.user.id);
@@ -409,7 +443,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
   return true;
 }
 
-export async function LockGuild(actor: discord.GuildMember | null, state: boolean, reason = ''): Promise<string | boolean> {
+export async function LockGuild(actor: discord.GuildMember | null, state: boolean, duration: number, reason = ''): Promise<string | boolean> {
   const guild = await discord.getGuild(guildId);
   if (guild === null) {
     return false;
@@ -427,9 +461,16 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
   if (reason.length > 101) {
     reason = reason.substr(0, 100);
   }
-  const defaultRole = await guild.getRole(guild.id);
+  const roleId = typeof config.modules.admin.defaultRole === 'string' && config.modules.admin.defaultRole.length > 6 ? config.modules.admin.defaultRole : guild.id;
+  const defaultRole = await guild.getRole(roleId);
   if (!defaultRole) {
     return false;
+  }
+  if (defaultRole.id !== guild.id) {
+    const myHighest = await utils.getMemberHighestRole(me);
+    if (myHighest.position <= defaultRole.position) {
+      return `I can\'t edit the role ${defaultRole.toMention()} !`;
+    }
   }
   const perms = new utils.Permissions(defaultRole.permissions);
   if (!perms.has('SEND_MESSAGES') && state === true) {
@@ -442,8 +483,12 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
   } else {
     perms.add('SEND_MESSAGES');
   }
+  const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
+  if (state === true && duration > 0) {
+    await addAction(guild, actor, ActionType.LOCK_GUILD, exp, undefined, undefined, reason);
+  }
   await defaultRole.edit({ permissions: Number(perms.bitfield) });
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
   let type = 'LOCKED_GUILD';
   if (state === false) {
     type = 'UNLOCKED_GUILD';
@@ -1266,7 +1311,7 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, 'Locked channel');
+        await infractions.confirmResult(undefined, msg, true, `Locked channel${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, 'Failed to lock channel');
       }
@@ -1321,16 +1366,27 @@ export function InitializeCommands() {
       }
     },
   );
-  cmdGroup.raw(
+  cmdGroup.on(
     { name: 'lockdown', filters: c2.getFilters('admin.lockdown', Ranks.Moderator) },
-    async (msg) => {
-      const res = await LockGuild(msg.member, true);
+    (ctx) => ({ duration: ctx.stringOptional() }),
+    async (msg, { duration }) => {
+      let dur = 0;
+      if (duration !== null) {
+        dur = utils.timeArgumentToMs(duration);
+        if (dur === 0) {
+          return 'duration malformed (try 1h30m format)';
+        }
+        if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+          return 'duration must be between a minute and a month';
+        }
+      }
+      const res = await LockGuild(msg.member, true, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, 'Locked Guild');
+        await infractions.confirmResult(undefined, msg, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, 'Failed to lock guild');
       }
@@ -1339,7 +1395,7 @@ export function InitializeCommands() {
   cmdGroup.raw(
     { name: 'unlockdown', filters: c2.getFilters('admin.unlockdown', Ranks.Moderator) },
     async (msg) => {
-      const res = await LockGuild(msg.member, false);
+      const res = await LockGuild(msg.member, false, 0);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
         return;

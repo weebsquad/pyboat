@@ -10,7 +10,7 @@ import * as admin from './admin';
 const kvPool = new pylon.KVNamespace('censor');
 const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
-const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN'];
+const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN', 'LOCK_GUILD', 'LOCK_CHANNEL'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many censor violations';
 class PoolEntry {
@@ -111,7 +111,7 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
   const memberViolations = violations.filter((e) => e.member === member);
   if ((typeof conf.globalViolations === 'object' && typeof conf.globalViolations.trigger === 'string' && typeof conf.globalViolations.action === 'string' && conf.globalViolations.trigger.includes('/') && VALID_ACTIONS_GLOBAL.includes(conf.globalViolations.action.toUpperCase())) && (!noServerActions || conf.globalViolations.action.toUpperCase() === 'MASSBAN')) {
     const action = conf.globalViolations.action.toUpperCase();
-    if (['LOCK_CHANNEL', 'LOCK_GUILD'].includes(action) && typeof conf.globalViolations.actionDuration !== 'string') {
+    if (['LOCK_CHANNEL', 'LOCK_GUILD', 'SLOWMODE'].includes(action) && typeof conf.globalViolations.actionDuration !== 'string') {
       throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.actionDuration`, 'Incorrect formatting');
     }
     if (action === 'SLOWMODE' && typeof conf.globalViolations.actionValue !== 'number') {
@@ -431,27 +431,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
 export async function processViolations(id: string, member: discord.GuildMember, channel: discord.GuildTextChannel | undefined, conf: any) {
   await addViolation(id, conf._key, member.user.id);
   const guild = await member.getGuild();
-  let noActions = false;
-  if (channel) {
-    if (channel.rateLimitPerUser !== 0) {
-      noActions = true;
-    } else {
-      const defaultRole = await guild.getRole(guild.id);
-      const perms = new Permissions(defaultRole.permissions);
-      if (!perms.has('SEND_MESSAGES')) {
-        noActions = true;
-      } else {
-        const powDefault = channel.permissionOverwrites.find((e) => e.id === guild.id);
-        if (powDefault) {
-          const permsPow = new Permissions(powDefault.deny);
-          if (permsPow.has('SEND_MESSAGES')) {
-            noActions = true;
-          }
-        }
-      }
-    }
-  }
-  const isVio = await checkViolations(id, noActions, conf._key, member.user.id, conf);
+  const isVio = await checkViolations(id, false, conf._key, member.user.id, conf);
   if (isVio === false) {
     return;
   }
@@ -483,6 +463,12 @@ export async function processViolations(id: string, member: discord.GuildMember,
       break;
     case 'SLOWMODE':
       await admin.SlowmodeChannel(null, channel, actionValue, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      break;
+    case 'LOCK_CHANNEL':
+      await admin.LockChannel(null, channel, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      break;
+    case 'LOCK_GUILD':
+      await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
       break;
     case 'MASSBAN':
 

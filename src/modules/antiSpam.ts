@@ -9,6 +9,7 @@ import * as antiping from './antiPing';
 import * as constants from '../constants/constants';
 import { logCustom } from './logging/events/custom';
 import { getUserTag } from './logging/main';
+import * as admin from './admin';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 
@@ -255,17 +256,21 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
           throw new ConfigError(`config.modules.antiPing.${thisCfg._key}.actionDuration`, 'actionDuration malformed');
         }
         let noRun = false;
+        let logAct = false;
         if (action === 'LOCK_GUILD') {
-          const defRole = await guild.getRole(guild.id);
-          const perms = new utils.Permissions(defRole.permissions);
-          if (!perms.has('SEND_MESSAGES')) {
-            noRun = true;
+          const res = await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+          console.log('lock res', res);
+          if (res === true) {
+            logAct = true;
           }
+          noRun = true;
         }
-        if (!noRun) {
+        if (logAct === true) {
           if (VALID_ACTIONS_GLOBAL.includes(action)) {
             logCustom('ANTISPAM', 'ANTIRAID', new Map([['_ACTION_', action], ['_FLAGS_', flagged.join(', ')]]));
           }
+        }
+        if (!noRun) {
           switch (action) {
             case 'KICK':
               await infractions.Kick(member, null, ACTION_REASON);
@@ -284,18 +289,6 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
               break;
             case 'TEMPBAN': {
               await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
-              break;
-            }
-            case 'LOCK_GUILD': {
-              const defRole = await guild.getRole(guild.id);
-              const thisPerms = new utils.Permissions(defRole.permissions);
-              thisPerms.remove('SEND_MESSAGES');
-              try {
-                // todo update for new perms
-                await defRole.edit({ permissions: Number(thisPerms.bitfield) });
-              } catch (e) {
-                await utils.logError(e);
-              }
               break;
             }
             default:
@@ -439,7 +432,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
       }
     }
 
-    if (flaggedOnce) {
+    if (flaggedOnce && messageRemovedCount > 0) {
       if (!thisCfg._key.includes('antiRaid')) {
         logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
       } else {

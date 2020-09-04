@@ -221,6 +221,7 @@ const defaultConfig = { // for non-defined configs!
     },
     admin: {
       enabled: false,
+      defaultRole: '',
       persist: {
         enabled: false,
         // configs based on the level of the members (before leaving)
