@@ -336,8 +336,16 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
-  if(extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE) && extraTarget.position >= highestRoleMe.position) {
+  if(extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE)) {
+    if(extraTarget.position >= highestRoleMe.position) {
     return 'I can\'t assign that role'
+    }
+    if(actor !== null) {
+      const highestRoleActor = await utils.getMemberHighestRole(actor);
+      if(extraTarget.position >= highestRoleActor.position) {
+        return 'You can\'t assign that role because it is at or above your highest role'
+      }
+    }
   }
   // check levels and discord perms
   if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
