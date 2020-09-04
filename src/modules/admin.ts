@@ -492,7 +492,8 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
     const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason)}\`` : ''}`;
-    channel.sendMessage({ allowedMentions: {}, content: txt });
+    const res:any = await channel.sendMessage({ allowedMentions: {}, content: txt });
+    saveMessage(res);
   }
   return true;
 }
@@ -645,7 +646,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (msgs.length === 0) {
     return 0;
   }
-  msgs = msgs.slice(0, Math.max(msgs.length, count));
+  msgs = msgs.slice(0, Math.min(msgs.length, count));
   if (msgs.length === 0) {
     return 0;
   }
@@ -1596,7 +1597,7 @@ export function InitializeCommands() {
         if(id === null) {
         const infs = (await actionPool.getByQuery<Action>({ active: true }));
         if(infs.length === 0) return {content:'There are no active actions!'}
-        const last10 = infs.slice(0, Math.min(infs.length, 10));
+        const last10 = infs.slice(0, Math.max(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} active actions**\n\n**ID** | **Actor** | **Target** | **Type** | **Reason**\n`;
         last10.map((inf) => {
           let targMention;

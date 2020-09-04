@@ -242,7 +242,7 @@ export class StoragePool {
       }
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      if (typeof this.timestampProperty === 'string') {
+      if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
         _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
       }
       /* if (typeof objSample === 'object') {
