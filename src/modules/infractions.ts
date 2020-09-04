@@ -1041,7 +1041,9 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
       async (msg) => {
+        const res:any = await msg.reply(async () => {
         const infs = (await getInfractionBy(null));
+        if(infs.length === 0) return {content:'There are no infractions'};
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
         last10.map((inf) => {
@@ -1054,14 +1056,17 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        return { embed: emb, allowedMentions: {}, content: '' };
+      });
         saveMessage(res);
       },
     );
     subCommandGroup.raw(
       { name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
       async (msg) => {
+        const res:any = await msg.reply(async () => {
         const infs = (await getInfractionBy({ active: true }));
+        if(infs.length === 0) return {content:'There are no active infractions'};
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
         last10.map((inf) => {
@@ -1074,7 +1079,8 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        return { embed: emb, allowedMentions: {}, content: '' };
+      });
         saveMessage(res);
       },
     );
@@ -1082,6 +1088,7 @@ export function InitializeCommands() {
       { name: 'info', filters: c2.getFilters('infractions.inf.info', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
+        const res:any = await msg.reply(async () => {
         let infs;
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
@@ -1092,16 +1099,15 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X}No infraction found`);
-          saveMessage(res);
-          return;
+          return {content:`${discord.decor.Emojis.X}No infraction found`}
         }
         const inf = infs[0];
         const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason)}\`` : ''}`;
         const emb = new discord.Embed();
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
-        const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+        return { embed: emb, allowedMentions: {}, content: '' };
+      });
         saveMessage(res);
       },
     );
@@ -1109,16 +1115,13 @@ export function InitializeCommands() {
       { name: 'duration', filters: c2.getFilters('infractions.inf.duration', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), duration: ctx.string() }),
       async (msg, { id, duration }) => {
+        const res:any = await msg.reply(async () => {
         const dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} duration malformed (try 1h30m format)`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} duration malformed (try 1h30m format)`;
         }
         if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} duration must be between a minute and a year`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} duration must be between a minute and a year`;
         }
         let infs;
         if (id.toLowerCase() === 'ml') {
@@ -1130,27 +1133,20 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} No infraction found`;
         }
         const inf: Infraction = infs[0];
         if (!inf.active) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} This infraction is not active.`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} This infraction is not active.`;
         }
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
         }
         const expiresAt = utils.composeSnowflake(inf.ts + dur);
         const oldK = inf.getKey();
         inf.expiresAt = expiresAt;
         await inf.updateStorage(oldK, inf.getKey());
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
-        saveMessage(res);
+        
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_', msg.author);
@@ -1159,12 +1155,16 @@ export function InitializeCommands() {
         extras.set('_TYPE_', 'duration');
         extras.set('_NEW_VALUE_', utils.escapeString(duration));
         logCustom('INFRACTIONS', 'EDITED', extras);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`;
+      });
+      saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'reason', filters: c2.getFilters('infractions.inf.reason', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
       async (msg, { id, reason }) => {
+        const res:any = await msg.reply(async () => {
         let infs;
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
@@ -1175,22 +1175,16 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} No infraction found`;
         }
         const inf: Infraction = infs[0];
 
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
         }
         const oldK = inf.getKey();
         inf.reason = reason;
         await inf.updateStorage(oldK, inf.getKey());
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
-        saveMessage(res);
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_ID_', msg.author.id);
@@ -1200,12 +1194,16 @@ export function InitializeCommands() {
         extras.set('_TYPE_', 'reason');
         extras.set('_NEW_VALUE_', utils.escapeString(reason));
         logCustom('INFRACTIONS', 'EDITED', extras);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`;
+      });
+      saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'actor', filters: c2.getFilters('infractions.inf.actor', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), actor: ctx.user() }),
       async (msg, { id, actor }) => {
+        const res:any = await msg.reply(async () => {
         let infs;
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
@@ -1216,22 +1214,17 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} No infraction found`;
         }
         const inf: Infraction = infs[0];
 
         if (typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
         }
         const oldK = inf.getKey();
         inf.actorId = actor.id;
         await inf.updateStorage(oldK, inf.getKey());
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
-        saveMessage(res);
+        
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_ID_', msg.author.id);
@@ -1241,12 +1234,16 @@ export function InitializeCommands() {
         extras.set('_TYPE_', 'actor');
         extras.set('_NEW_VALUE_', actor.toMention());
         logCustom('INFRACTIONS', 'EDITED', extras);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`;
+      });
+      saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
+        const res:any = await msg.reply(async () => {
         let infs;
         if (id.toLowerCase() === 'ml') {
           infs = (await getInfractionBy({ actorId: msg.author.id }));
@@ -1257,19 +1254,13 @@ export function InitializeCommands() {
           infs = (await getInfractionBy({ id }));
         }
         if (infs.length !== 1) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} No infraction found`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} No infraction found`;
         }
         const inf = infs[0];
         if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
         }
         await utils.KVManager.delete(inf.getKey());
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
-        saveMessage(res);
         const extras = new Map<string, any>();
         extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
         extras.set('_ACTOR_', msg.author);
@@ -1277,17 +1268,19 @@ export function InitializeCommands() {
         extras.set('_USER_ID_', msg.author.id);
         extras.set('_INFRACTION_ID_', inf.id);
         logCustom('INFRACTIONS', 'DELETED', extras);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`;
+      });
+      saveMessage(res);
       },
     );
     subCommandGroup.on(
       { name: 'clearuser', filters: c2.getFilters('infractions.inf.clearuser', Ranks.Administrator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
+        const res:any = await msg.reply(async () => {
         const infs = (await getInfractionBy({ memberId: user.id }));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions for the given user`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
         }
         let count = 0;
         await pylon.requestCpuBurst(async () => {
@@ -1297,7 +1290,8 @@ export function InitializeCommands() {
             count++;
           }
         });
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
+      });
         saveMessage(res);
       },
     );
@@ -1305,11 +1299,10 @@ export function InitializeCommands() {
       { name: 'clearactor', filters: c2.getFilters('infractions.inf.clearactor', Ranks.Administrator) },
       (ctx) => ({ actor: ctx.user() }),
       async (msg, { actor }) => {
+        const res:any = await msg.reply(async () => {
         const infs = (await getInfractionBy({ actorId: actor.id }));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions for the given actor`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
         }
         let count = 0;
         await pylon.requestCpuBurst(async () => {
@@ -1319,18 +1312,18 @@ export function InitializeCommands() {
             count++;
           }
         });
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
+      });
         saveMessage(res);
       },
     );
     subCommandGroup.raw(
       { name: 'clearall', filters: c2.getFilters('infractions.inf.clearall', Ranks.Owner) },
       async (msg) => {
+        const res:any = await msg.reply(async () => {
         const infs = (await getInfractionBy(null));
         if (infs.length === 0) {
-          const res: any = await msg.reply(`${discord.decor.Emojis.X} Could not find any infractions`);
-          saveMessage(res);
-          return;
+          return `${discord.decor.Emojis.X} Could not find any infractions`;
         }
         let count = 0;
         await pylon.requestCpuBurst(async () => {
@@ -1340,7 +1333,8 @@ export function InitializeCommands() {
             count++;
           }
         });
-        const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`);
+        return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${count} infractions deleted !`;
+      });
         saveMessage(res);
       },
     );
@@ -1349,7 +1343,9 @@ export function InitializeCommands() {
         { name: 'actor', filters: c2.getFilters('infractions.inf search.actor', Ranks.Moderator) },
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
+          const res:any = await msg.reply(async () => {
           const infs = (await getInfractionBy({ actorId: actor.id }));
+          if(infs.length === 0) return {content:'There are no infractions by this actor'};
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
@@ -1367,14 +1363,17 @@ export function InitializeCommands() {
           emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
           emb.setTimestamp(new Date().toISOString());
 
-          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          return { embed: emb, allowedMentions: {}, content: '' };
+        });
           saveMessage(res);
         },
       );
       subCommandGroup2.raw(
         { name: 'system', filters: c2.getFilters('infractions.inf search.system', Ranks.Moderator) },
         async (msg) => {
+          const res:any = await msg.reply(async () => {
           const infs = (await getInfractionBy({ actorId: 'SYSTEM' }));
+          if(infs.length === 0) return {content:'There are no infractions by system'};
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
@@ -1392,7 +1391,8 @@ export function InitializeCommands() {
           emb.setAuthor({ name: 'SYSTEM' });
           emb.setTimestamp(new Date().toISOString());
 
-          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          return { embed: emb, allowedMentions: {}, content: '' };
+        });
           saveMessage(res);
         },
       );
@@ -1400,7 +1400,9 @@ export function InitializeCommands() {
         { name: 'user', filters: c2.getFilters('infractions.inf search.user', Ranks.Moderator) },
         (ctx) => ({ user: ctx.user() }),
         async (msg, { user }) => {
+          const res:any = await msg.reply(async () => {
           const infs = await getInfractionBy({ memberId: user.id });
+          if(infs.length === 0) return {content:'There are no infractions applied to this user'};
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
           last10.map((inf) => {
@@ -1418,7 +1420,8 @@ export function InitializeCommands() {
           emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
           emb.setTimestamp(new Date().toISOString());
 
-          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          return { embed: emb, allowedMentions: {}, content: '' };
+        });
           saveMessage(res);
         },
       );
@@ -1426,7 +1429,9 @@ export function InitializeCommands() {
         { name: 'type', filters: c2.getFilters('infractions.inf search.type', Ranks.Moderator) },
         (ctx) => ({ type: ctx.string() }),
         async (msg, { type }) => {
+          const res:any = await msg.reply(async () => {
           const infs = await getInfractionBy({ type: type.toUpperCase() });
+          if(infs.length === 0) return {content:'There are no infractions of this type'};
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
           last10.map((inf) => {
@@ -1443,7 +1448,8 @@ export function InitializeCommands() {
           emb.setDescription(txt);
           emb.setTimestamp(new Date().toISOString());
 
-          const res: any = await msg.reply({ embed: emb, allowedMentions: {}, content: '' });
+          return { embed: emb, allowedMentions: {}, content: '' };
+        });
           saveMessage(res);
         },
       );

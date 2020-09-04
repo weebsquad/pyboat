@@ -6,7 +6,7 @@ import * as constants from '../constants/constants';
 import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
-import { getActorTag, getUserTag, getMemberTag } from './logging/main';
+import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 
 const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
@@ -28,11 +28,11 @@ export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefin
 const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
 const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
 enum ActionType {
-    'CLEAN',
-    'LOCK_GUILD',
-    'LOCK_CHANNEL',
-    'SLOWMODE',
-    'TEMPROLE'
+    'CLEAN' = 'CLEAN',
+    'LOCK_GUILD'= 'LOCK_GUILD',
+    'LOCK_CHANNEL'= 'LOCK_CHANNEL',
+    'SLOWMODE' = 'SLOWMODE',
+    'TEMPROLE' = 'TEMPROLE'
 }
 
 export class Action { // class action lawsuit lmao
@@ -1586,6 +1586,34 @@ export function InitializeCommands() {
       }
     },
   );
+
+
+  cmdGroup.on(
+      { name: 'actions', filters: c2.getFilters('infractions.actions', Ranks.Moderator) },
+      (ctx) => ({ id: ctx.stringOptional() }),
+      async (msg, {id}) => {
+        const res: any = await msg.reply(async () => {
+        if(id === null) {
+        const infs = (await actionPool.getByQuery<Action>({ active: true }));
+        if(infs.length === 0) return {content:'There are no active actions!'}
+        const last10 = infs.slice(0, Math.min(infs.length, 10));
+        let txt = `**Displaying latest ${Math.min(last10.length, 10)} active actions**\n\n**ID** | **Actor** | **Target** | **Type** | **Reason**\n`;
+        last10.map((inf) => {
+          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+        });
+        const remaining = infs.length - last10.length;
+        if (remaining > 0) {
+          txt += `\n\n**...** and ${remaining} more actions`;
+        }
+        const emb = new discord.Embed();
+        emb.setDescription(txt);
+        emb.setTimestamp(new Date().toISOString());
+        return { embed: emb, allowedMentions: {}, content: '' };
+      }
+    });
+        saveMessage(res);
+      },
+    );
 
   // BACKUP
   if (config.modules.admin.persist.enabled === true) {
