@@ -83,11 +83,7 @@ export async function eventTracker(
   if (time instanceof Date) {
     time = time.getTime();
   }
-  await clean();
   if (globals) {
-    if (poolGlob.length >= 20) {
-      console.warn('Ratelimit pool leak?', poolGlob.length);
-    }
     poolGlob.push({
       id: time,
       event: eventName,
@@ -96,9 +92,6 @@ export async function eventTracker(
     return;
   }
   const pool = await getPool();
-  if (pool.length >= 20) {
-    console.warn('Ratelimit pool leak?', pool.length);
-  }
   pool.push({
     id: time,
     event: eventName,
