@@ -110,6 +110,15 @@ export class Action { // class action lawsuit lmao
           this.active = false;
         }
       }
+    } else if(this.type === ActionType.TEMPROLE) {
+      const gm = await guild.getMember(this.targetId);
+      if(gm === null) {
+        this.active = false;
+      } else {
+        if(typeof this.targetValue !== 'string' || !gm.roles.includes(this.targetValue)) {
+          this.active = false;
+        }
+      }
     }
     if (!this.active) {
       await this.updateStorage();
@@ -143,6 +152,18 @@ export class Action { // class action lawsuit lmao
     } else if (this.type === ActionType.LOCK_GUILD) {
       this.active = false;
       await LockGuild(null, false, 0, 'Guild lock expired');
+    } else if(this.type === ActionType.TEMPROLE) {
+        const gm = await guild.getMember(this.targetId);
+        if(gm === null) {
+          this.active = false;
+        } else {
+          if(typeof this.targetValue !== 'string' || !gm.roles.includes(this.targetValue)) {
+            this.active = false;
+          } else {
+            await gm.removeRole(this.targetValue);
+          }
+        }
+      
     }
     // remove states of things
     if (!this.active) {
@@ -258,7 +279,31 @@ export async function saveMessage(msg: discord.GuildMemberMessage) {
   const _res = await adminPool.saveToPool(new TrackedMessage(msg));
   return _res;
 }
-export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel, actionType: ActionType): Promise<boolean | string> {
+export async function getRoleIdByText(txt: string) {
+  txt = txt.toLowerCase();
+  // check full matches first in config
+  for(const key in config.modules.admin.roleAliases) {
+    const obj = config.modules.admin.roleAliases[key];
+    if(key === txt || obj.toLowerCase() === txt) return key;
+  }
+  // check partial matches now
+  for(const key in config.modules.admin.roleAliases) {
+    const obj = config.modules.admin.roleAliases[key];
+    if(obj.toLowerCase().includes(txt)) return key;
+  }
+  // check guild matches
+  const roles = await (await discord.getGuild(guildId)).getRoles();
+  // full match
+  for(const key in roles) {
+    if(roles[key].id === txt || roles[key].name.toLowerCase() === txt) return roles[key].id;
+  }
+  // partial
+  for(const key in roles) {
+    if(roles[key].name.toLowerCase().includes(txt)) return roles[key].id;
+  }
+  return null;
+}
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel | undefined, extraTarget: any = undefined, actionType: ActionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   if (targetId === discord.getBotId()) {
     return false;
@@ -280,12 +325,18 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
     return 'I can\'t manage messages';
   }
+  if(actionType === ActionType.TEMPROLE && !me.can(discord.Permissions.MANAGE_ROLES)) {
+    return 'I can\'t manage roles';
+  }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
+  if(extraTarget instanceof discord.Role && actionType === ActionType.TEMPROLE && extraTarget.position >= highestRoleMe.position) {
+    return 'I can\'t assign that role'
+  }
   // check levels and discord perms
   if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
     const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
@@ -296,6 +347,8 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (requireExtraPerms === true) {
       if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
         return 'You can\'t manage messages';
+      } else if(actionType === ActionType.TEMPROLE && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+        return 'You can\'t manage roles';
       }
     }
     if (actor.user.id === targetId) {
@@ -504,6 +557,45 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
   return true;
 }
 
+export async function TempRole(actor: discord.GuildMember | null, target: discord.GuildMember, roleTxt: string, duration: number, reason = ''): Promise<string | boolean> {
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return false;
+  }
+  if(duration === 0) return 'Invalid duration';
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  const rlId = await getRoleIdByText(roleTxt);
+  if(rlId === null) return 'Role ID/Name not found';
+  const role = await guild.getRole(rlId);
+  if(!(role instanceof discord.Role)) return `Role ID#(${rlId}) not found in the guild`
+  const canT = await canTarget(actor, target, undefined, role, ActionType.TEMPROLE);
+  if(canT !== true) return canT;
+  if(target.roles.includes(role.id)) return 'Target already has this role';
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+
+  const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
+  await addAction(target, actor, ActionType.TEMPROLE, exp, undefined, role.id, reason);
+  await target.addRole(role.id);
+  const placeholders = new Map([['_ROLE_MENTION_', role.toMention()], ['_USERTAG_', getMemberTag(target)],['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+  }
+  logCustom('ADMIN', 'TEMPROLE', placeholders);
+  return true;
+}
+
 let cleaning = false;
 export async function Clean(dtBegin: number, target: any, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, channelTarget: string | undefined = undefined, reason = '', bypassCleaning = false): Promise<string | boolean | number> {
   let memberId;
@@ -526,7 +618,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
     return false;
   }
   if (typeof memberId === 'string') {
-    const canT = await canTarget(actor, target, channel, ActionType.CLEAN);
+    const canT = await canTarget(actor, target, channel,undefined, ActionType.CLEAN);
     if (canT !== true) {
       return canT;
     }
@@ -1287,6 +1379,31 @@ export function InitializeCommands() {
       },
     );
   });
+
+  cmdGroup.on(
+    { name: 'temprole', filters: c2.getFilters('admin.temprole', Ranks.Administrator) },
+    (ctx) => ({ member: ctx.guildMember(), duration: ctx.string() , roleText:ctx.text()}),
+    async (msg, { member, duration, roleText }) => {
+        const dur = utils.timeArgumentToMs(duration);
+        if (dur === 0) {
+          return 'duration malformed (try 1h30m format)';
+        }
+        if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+          return 'duration must be between a minute and a month';
+        }
+      
+      const res = await TempRole(msg.member, member, roleText, dur);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, `Added role to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to add role');
+      }
+    },
+  );
 
   cmdGroup.on(
     { name: 'cease', filters: c2.getFilters('admin.cease', Ranks.Moderator) },
