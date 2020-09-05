@@ -188,17 +188,26 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
   // const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));
-  let pref = '!';
-  if (config.modules.commands !== undefined && typeof config.modules.commands.prefix === 'string') {
-    pref = config.modules.commands.prefix;
+  let firstPrefix = '!';
+  let additionals = [];
+  if (typeof config.modules.commands.prefix !== 'undefined') {
+    if (typeof config.modules.commands.prefix === 'string') {
+      firstPrefix = config.modules.commands.prefix;
+    } else if (Array.isArray(config.modules.commands.prefix) && config.modules.commands.prefix.length > 0) {
+      firstPrefix = config.modules.commands.prefix[0];
+      if (config.modules.commands.prefix.length > 1) {
+        additionals = config.modules.commands.prefix.slice(1);
+      }
+    }
   }
+
   const opts = {
     label: 'default',
     description: 'default',
-    defaultPrefix: config.modules.commands.prefix,
+    defaultPrefix: firstPrefix,
     register: <boolean>false,
-    mentionPrefix: config.modules.commands.allowMentionPrefix,
-    additionalPrefixes: [],
+    mentionPrefix: typeof config.modules.commands.allowMentionPrefix === 'boolean' ? config.modules.commands.allowMentionPrefix : false,
+    additionalPrefixes: additionals,
   };
   if (typeof curr === 'object') {
     for (const key in curr) {
