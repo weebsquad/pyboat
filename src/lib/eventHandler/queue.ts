@@ -23,7 +23,7 @@ export class QueuedEvent {
 
 const cpuTimePerEvent = 20; // to determine when to use burst :P
 const interval = 5000;
-const maxEventRuntime = 13000;
+
 export let queue = new Array<QueuedEvent>();
 // let timeout: any;
 // const kv = new pylon.KVNamespace('loggingQueue');
@@ -178,15 +178,18 @@ export function cleanQueue(q: Array<QueuedEvent> | undefined = undefined) {
   return q;
 }
 
-async function resetInterval() {
+async function resetInterval(retry = true) {
   const _r = checkLocks();
   if (_r === true) {
-    setTimeout(resolveQueue, Math.min(15000, interval));
-  }/* else {
+    setTimeout(resolveQueue, Math.ceil(interval / 2));
+  } else {
+    if (!retry) {
+      return;
+    }
     setTimeout(() => {
-      resetInterval();
+      resetInterval(false);
     }, _r);
-  } */
+  }
 }
 
 export async function addToQueue(eventName: string, ts: string, ...args: any) {
