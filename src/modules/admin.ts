@@ -211,12 +211,10 @@ export async function checkRoleAll() {
         tm = true;
         const toDiff = ((timer) - diff) + 100;
         setTimeout(checkRoleAll, toDiff);
-        console.log(`Set timeout of ${toDiff}`);
       }
       return;
     }
   }
-  const now = Date.now();
   lastCheckedRoleAll = Date.now();
   const guild = await discord.getGuild();
   const roles = await guild.getRoles();
@@ -275,7 +273,6 @@ export async function checkRoleAll() {
       const before = theirRoles.length;
       toAdd.forEach((rlAdd) => {
         if (!theirRoles.includes(rlAdd)) {
-          // console.log('Adding ', rlAdd, ' to ', member.user.getTag());
           theirRoles.push(rlAdd);
         }
       });
@@ -293,10 +290,8 @@ export async function checkRoleAll() {
     }
   }
   tm = false;
-  // console.log(`Done loop. Did ${did}/${LIMIT} and took ${Date.now()-now}ms`);
   if (did < LIMIT) {
     // we did all of the members!
-    console.log('DONE MASS ROLE!!!');
     const allRoles: Array<string> = toAdd.filter((val) => true);
     allRoles.push(...toRemove);
     await Promise.all(roleAll.map(async (item) => {
@@ -327,7 +322,6 @@ export async function every5Min() {
     const actives1: Array<any> = acts.map((act) => utils.makeFake(act, Action)).filter((act: Action) => act.active === true && act.isExpired());
     const actives: Array<Action> = actives1;
     if (actives.length > 0) {
-      console.log('found actives');
       const promises2 = [];
       for (let i = 0; i < actives.length; i += 1) {
         const act = actives[i];
@@ -343,7 +337,6 @@ export async function every5Min() {
       active: false,
     }));
     if (actsClear.length > 0) {
-      console.log(`Clearing ${actsClear.length} actions!`);
       await actionPool.editPools(actsClear.map((val) => val.id), (val) => null);
     }
   } catch (e) {
