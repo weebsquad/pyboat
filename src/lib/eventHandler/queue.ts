@@ -21,7 +21,7 @@ export class QueuedEvent {
   }
 }
 
-const cpuTimePerEvent = 17; // to determine when to use burst :P
+const cpuTimePerEvent = 20; // to determine when to use burst :P
 const interval = 5000;
 const maxEventRuntime = 13000;
 export let queue = new Array<QueuedEvent>();
@@ -56,7 +56,7 @@ export async function resolveQueue() {
     _lock = undefined;
     return false;
   }
-  const usedCpu = 30;
+  const usedCpu = 35;
   /* if (typeof (pylon.getCpuTime) === 'function') {
     usedCpu = (await pylon.getCpuTime());
   } */
