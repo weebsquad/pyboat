@@ -100,7 +100,7 @@ export async function sendInLogChannel(
   }
   const botAvatar = await discord.getBotUser();
   for (const [chId, opts] of messages) {
-    let webhookSends = 0;
+    let webhookSends = 1;
     const gconf = conf.config;
     const mp = gconf.modules.logging.logChannels;
     let chanCfg = mp[chId];
@@ -146,7 +146,7 @@ export async function sendInLogChannel(
           }
           if (webhookSends % 3 === 0 && webhookSends > 0) {
             await channel.sendMessage(opt);
-            webhookSends = 0;
+            webhookSends = 1;
           } else {
             await utils2.sendWebhookPostComplex(whUrl, {
               content: _cont,
