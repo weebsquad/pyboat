@@ -385,7 +385,16 @@ export async function addAction(target: discord.Guild | discord.GuildChannel | d
   return newAct;
 }
 
+function isThisEnabled() {
+  if (typeof config.modules !== 'object' || typeof config.modules.admin !== 'object' || typeof config.modules.admin.enabled !== 'boolean') {
+    return false;
+  }
+  return config.modules.admin.enabled;
+}
 export async function saveMessage(msg: discord.GuildMemberMessage) {
+  if (!isThisEnabled()) {
+    return false;
+  }
   const _res = await adminPool.saveToPool(new TrackedMessage(msg));
   return _res;
 }
