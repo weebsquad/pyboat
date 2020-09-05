@@ -136,7 +136,7 @@ export function convertEmoji(str) {
     String.fromCodePoint(Number.parseInt(hex, 16))
   );
 }
-const blacklist = ['`', '\t', '@everyone', '@here'];
+const blacklist = ['`', '\t', '@everyone', '@here', '||'];
 export function escapeString(string) {
   blacklist.forEach((vl) => {
     string = string.split(vl).join('');
