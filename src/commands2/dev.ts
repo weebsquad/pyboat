@@ -11,7 +11,7 @@ import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
 import { handleEvent } from '../modules/logging/main';
-import {AL_OnMessageDelete} from '../modules/logging/events/messageDelete';
+import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
@@ -231,10 +231,10 @@ export function InitializeCommands() {
     );
     sub.raw(
       'logqueue', async (m) => {
-        const ev = {channelId: m.channelId, guildId: m.guildId, id: m.id} as discord.Event.IMessageDelete;
+        const ev = { channelId: m.channelId, guildId: m.guildId, id: m.id } as discord.Event.IMessageDelete;
         const count = 50;
-        for(var i = 0; i<count; i++) {
-        AL_OnMessageDelete(utils.composeSnowflake(), m.guildId, {}, ev, m);
+        for (let i = 0; i < count; i++) {
+          AL_OnMessageDelete(utils.composeSnowflake(), m.guildId, {}, ev, m);
         }
         const res: any = await m.reply(`Done sending ${count} message delete logs`);
         admin.saveMessage(res);

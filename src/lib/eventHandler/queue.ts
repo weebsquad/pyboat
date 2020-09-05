@@ -44,7 +44,9 @@ export function checkLocks() {
   return true;
 }
 export async function resolveQueue() {
-  if(checkLocks() !== true) return false;
+  if (checkLocks() !== true) {
+    return false;
+  }
   _lock = new Date().getTime();
   queue = cleanQueue(queue);
   let procQueue = new Array<QueuedEvent>().concat(queue);
@@ -58,12 +60,12 @@ export async function resolveQueue() {
   /* if (typeof (pylon.getCpuTime) === 'function') {
     usedCpu = (await pylon.getCpuTime());
   } */
-  
+
   const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   console.log(`Executing event queue of ${procQueue.length} events (${neededCpuTime}ms needed cpu)`);
   const cpuT = usedCpu + neededCpuTime;
   try {
-    if(cpuT >= 3000) {
+    if (cpuT >= 3000) {
       const canFit = Math.min(
         procQueue.length - 1,
         Math.floor((3000 - usedCpu) / cpuTimePerEvent) - 1,
@@ -72,25 +74,25 @@ export async function resolveQueue() {
       if (canFit > 0) {
         const _alt = procQueue.slice(0, canFit);
         try {
-        await pylon.requestCpuBurst(async () => {
-
-        await routing.ExecuteQueuedEvents(_alt);
-        _alt.map((e) => {
-          const _f = queue.findIndex((e2) => e.id === e2.id);
-          const _f2 = procQueue.findIndex((e2) => e.id === e2.id);
-          if (_f !== -1) {
-            queue[_f] = e;
-          }
-          if (_f2 !== -1) {
-            procQueue[_f2] = e;
-          }
-          return e;
-        });
-      },3000)
-    } catch(e) {console.error(e)}
+          await pylon.requestCpuBurst(async () => {
+            await routing.ExecuteQueuedEvents(_alt);
+            _alt.map((e) => {
+              const _f = queue.findIndex((e2) => e.id === e2.id);
+              const _f2 = procQueue.findIndex((e2) => e.id === e2.id);
+              if (_f !== -1) {
+                queue[_f] = e;
+              }
+              if (_f2 !== -1) {
+                procQueue[_f2] = e;
+              }
+              return e;
+            });
+          }, 3000);
+        } catch (e) {
+          console.error(e);
+        }
       }
-    }
-    else if (cpuT >= 100) {
+    } else if (cpuT >= 100) {
       try {
         await pylon.requestCpuBurst(async () => {
           await routing.ExecuteQueuedEvents(procQueue);
@@ -101,7 +103,6 @@ export async function resolveQueue() {
           !(err instanceof pylon.CpuBurstRequestError)
           && typeof err.bucketRemainingMs !== 'number'
         ) {
-
           const canFit = Math.min(
             procQueue.length - 1,
             Math.floor((100 - usedCpu) / cpuTimePerEvent) - 1,
@@ -186,7 +187,7 @@ async function resetInterval() {
     setTimeout(() => {
       resetInterval();
     }, _r);
-  }*/
+  } */
 }
 
 export async function addToQueue(eventName: string, ts: string, ...args: any) {

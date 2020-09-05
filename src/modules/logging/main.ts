@@ -144,28 +144,18 @@ export async function sendInLogChannel(
           if (alwaysWh) {
             _cont = `__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
           }
-          if(opts.length > 10) {
-            if(webhookSends%3===0 && webhookSends > 0) {
-              await channel.sendMessage(opt);
-            } else {
-              await utils2.sendWebhookPostComplex(whUrl, {
-                content: _cont,
-                allowed_mentions: {},
-                avatar_url: botAvatar.getAvatarUrl(),
-                username: botAvatar.username,
-              });
-              webhookSends++;
-            }
+          if (webhookSends % 3 === 0 && webhookSends > 0) {
+            await channel.sendMessage(opt);
+            webhookSends = 0;
           } else {
-          await utils2.sendWebhookPostComplex(whUrl, {
-            content: _cont,
-            allowed_mentions: {},
-            avatar_url: botAvatar.getAvatarUrl(),
-            username: botAvatar.username,
-          });
-          webhookSends++;
-        }
-          
+            await utils2.sendWebhookPostComplex(whUrl, {
+              content: _cont,
+              allowed_mentions: {},
+              avatar_url: botAvatar.getAvatarUrl(),
+              username: botAvatar.username,
+            });
+            webhookSends += 1;
+          }
         }
       }
       if (embeds.length > 1 || alwaysWh) {
@@ -176,7 +166,7 @@ export async function sendInLogChannel(
             allowed_mentions: {}, // just in case
             username: botAvatar.username,
           });
-          webhookSends++;
+          webhookSends += 1;
         } else {
           const newE = new Array<any[]>();
           for (let i = 0; i < embeds.length; i += 1) {
@@ -702,9 +692,13 @@ export function combineMessages(
       continue;
     }
     opts.map((op) => {
-      if(!(op.embed instanceof discord.Embed) && (typeof op.content !== 'string' || op.content === '')) return;
+      if (!(op.embed instanceof discord.Embed) && (typeof op.content !== 'string' || op.content === '')) {
+        return;
+      }
       if (op.embed instanceof discord.Embed) {
-        if(typeof op.content === 'string') op.content = undefined;
+        if (typeof op.content === 'string') {
+          op.content = undefined;
+        }
         newarr.push(op);
       } else {
         contents += `${op.content}\n`;
@@ -738,7 +732,7 @@ export function combineMessages(
           accum.push(lines[i]);
         }
       }
-    } else if(contents.length > 0) {
+    } else if (contents.length > 0) {
       newarr.push({ content: contents, allowedMentions: {} });
     }
     if (newarr.length === 0) {
@@ -756,7 +750,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
     if (conf.config.modules.logging.enabled !== true) {
       return;
     }
-    let messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
+    const messages = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
     const tdiff = new Date().getTime();
 
     for (let i = 0; i < q.length; i += 1) {
@@ -844,8 +838,8 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     for (const [chId, opts] of messages) {
       queue.addToQueue(chId, opts);
     }
-    //messages = combineMessages(messages);
-    //await sendInLogChannel(messages);
+    // messages = combineMessages(messages);
+    // await sendInLogChannel(messages);
   } catch (e) {
     await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
@@ -937,15 +931,15 @@ export async function handleEvent(
 
     const chans = await parseChannelsData(obj);
     // console.log('handleevent.parseChannelData', chans);
-    let messages = await getMessages(guildId, chans, obj);
-    //console.log('handleevent.getMessages', messages);
+    const messages = await getMessages(guildId, chans, obj);
+    // console.log('handleevent.getMessages', messages);
     // add to queue
     for (const [chId, opts] of messages) {
       queue.addToQueue(chId, opts);
     }
-    //messages = combineMessages(messages);
+    // messages = combineMessages(messages);
 
-    //await sendInLogChannel(messages);
+    // await sendInLogChannel(messages);
   } catch (e) {
     await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
