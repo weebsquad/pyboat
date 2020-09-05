@@ -6,6 +6,7 @@ import * as utils2 from '../../lib/utils';
 import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { eventData } from './tracking';
 import { logDebug } from './events/custom';
+import * as queue from './queue';
 
 const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
@@ -88,8 +89,7 @@ export function getLogChannels(gid: string, event: string, type: string) {
   return arr;
 }
 
-async function sendInLogChannel(
-  gid: string,
+export async function sendInLogChannel(
   messages: Map<string, Array<discord.Message.OutgoingMessageOptions>>,
   alwaysWh = false,
   whUrlAlt: string | undefined = undefined,
@@ -100,6 +100,7 @@ async function sendInLogChannel(
   }
   const botAvatar = await discord.getBotUser();
   for (const [chId, opts] of messages) {
+    let webhookSends = 0;
     const gconf = conf.config;
     const mp = gconf.modules.logging.logChannels;
     let chanCfg = mp[chId];
@@ -143,12 +144,28 @@ async function sendInLogChannel(
           if (alwaysWh) {
             _cont = `__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
           }
+          if(opts.length > 10) {
+            if(webhookSends%3===0 && webhookSends > 0) {
+              await channel.sendMessage(opt);
+            } else {
+              await utils2.sendWebhookPostComplex(whUrl, {
+                content: _cont,
+                allowed_mentions: {},
+                avatar_url: botAvatar.getAvatarUrl(),
+                username: botAvatar.username,
+              });
+              webhookSends++;
+            }
+          } else {
           await utils2.sendWebhookPostComplex(whUrl, {
             content: _cont,
             allowed_mentions: {},
             avatar_url: botAvatar.getAvatarUrl(),
             username: botAvatar.username,
           });
+          webhookSends++;
+        }
+          
         }
       }
       if (embeds.length > 1 || alwaysWh) {
@@ -159,6 +176,7 @@ async function sendInLogChannel(
             allowed_mentions: {}, // just in case
             username: botAvatar.username,
           });
+          webhookSends++;
         } else {
           const newE = new Array<any[]>();
           for (let i = 0; i < embeds.length; i += 1) {
@@ -175,11 +193,11 @@ async function sendInLogChannel(
               allowed_mentions: {}, // just in case
               username: botAvatar.username,
             });
+            webhookSends++;
           }
         }
       } else {
-        channel.sendMessage({
-          content: '',
+        await channel.sendMessage({
           embed: embeds[0],
           allowedMentions: {},
         });
@@ -191,7 +209,7 @@ async function sendInLogChannel(
         if (opt.content === '' && !(opt.embed instanceof discord.Embed)) {
           continue;
         }
-        channel.sendMessage(opt);
+        await channel.sendMessage(opt);
       }
     }
   }
@@ -662,7 +680,6 @@ async function getMessages(
         const _chan = msgs.get(chId);
         if (_chan) {
           _chan.push({
-            content: '',
             embed: em,
             allowedMentions: {},
           });
@@ -674,7 +691,7 @@ async function getMessages(
   return msgs;
 }
 
-function combineMessages(
+export function combineMessages(
   msgs: Map<string, Array<discord.Message.OutgoingMessageOptions>>,
 ) {
   const n = msgs;
@@ -685,13 +702,15 @@ function combineMessages(
       continue;
     }
     opts.map((op) => {
+      if(!(op.embed instanceof discord.Embed) && (typeof op.content !== 'string' || op.content === '')) return;
       if (op.embed instanceof discord.Embed) {
+        if(typeof op.content === 'string') op.content = undefined;
         newarr.push(op);
       } else {
         contents += `${op.content}\n`;
       }
     });
-    if (contents.length >= 1990) {
+    if (contents !== '' && contents.length >= 1990) {
       const lines = contents.split('\n');
       // lines = lines.slice(0, lines.length - 1);
       let accum = [];
@@ -719,10 +738,10 @@ function combineMessages(
           accum.push(lines[i]);
         }
       }
-    } else {
+    } else if(contents.length > 0) {
       newarr.push({ content: contents, allowedMentions: {} });
     }
-    if (contents === '' || contents.length < 1) {
+    if (newarr.length === 0) {
       continue;
     }
     n.set(chId, newarr);
@@ -821,8 +840,12 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     // if (utils.isDebug()) {
     //   console.log('logging trigger multi', messages);
     // }
-    messages = combineMessages(messages);
-    await sendInLogChannel(thisGuildId, messages);
+    // add to queue!
+    for (const [chId, opts] of messages) {
+      queue.addToQueue(chId, opts);
+    }
+    //messages = combineMessages(messages);
+    //await sendInLogChannel(messages);
   } catch (e) {
     await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
@@ -907,7 +930,7 @@ export async function handleEvent(
       const chans = await parseChannelsData(obj);
       let messages = await getMessages(guildId, chans, obj);
       messages = combineMessages(messages);
-      await sendInLogChannel(guildId, messages, true, conf.globalConfig.masterWebhook);
+      await sendInLogChannel(messages, true, conf.globalConfig.masterWebhook);
       return;
     }
     // console.log('logging trigger', eventName, obj);
@@ -915,12 +938,14 @@ export async function handleEvent(
     const chans = await parseChannelsData(obj);
     // console.log('handleevent.parseChannelData', chans);
     let messages = await getMessages(guildId, chans, obj);
-    // console.log('handleevent.getMessages', messages);
+    //console.log('handleevent.getMessages', messages);
+    // add to queue
+    for (const [chId, opts] of messages) {
+      queue.addToQueue(chId, opts);
+    }
+    //messages = combineMessages(messages);
 
-    messages = combineMessages(messages);
-    // console.log('handleevent.combineMessages', messages);
-
-    await sendInLogChannel(guildId, messages);
+    //await sendInLogChannel(messages);
   } catch (e) {
     await utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
