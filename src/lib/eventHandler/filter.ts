@@ -18,7 +18,6 @@ const eventFilters = <any>{
       if (!(oldMember instanceof discord.GuildMember)) {
         return false;
       }
-      // console.log('checking GM filter', member, oldMember);
       // if (deepCompare(member, oldMember)) return true;
       for (const key in member) {
         if (key === 'roles' || key === 'user') {

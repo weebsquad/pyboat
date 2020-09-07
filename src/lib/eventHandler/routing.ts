@@ -528,9 +528,6 @@ export function isModuleEnabled(modName: string) {
   if (typeof cfgMod.enabled === 'boolean') {
     return cfgMod.enabled;
   }
-  if (typeof cfgMod.toggles === 'object' && typeof cfgMod.toggles.enabled === 'boolean') {
-    return cfgMod.toggles.enabled;
-  }
   return false;
 }
 

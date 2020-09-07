@@ -364,7 +364,6 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
     /* if (del === true && !_deletedOg && chan.canMember(me, discord.Permissions.MANAGE_MESSAGES) && expiry === 0) {
       try {
         _deletedOg = true;
-        console.log('deleting 1');
         await ogMsg.delete();
       } catch (e) {}
     } */

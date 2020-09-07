@@ -199,8 +199,123 @@ class TrackedMessage {
       return this;
     }
 }
+const roleAllKv = new pylon.KVNamespace('roleAll');
+const roleNukeKv = new pylon.KVNamespace('roleNuke');
+let lastCheckedRoleAll: number | undefined;
+let tm = true;
+const timer = 7 * 1000;
+export async function checkRoleAll() {
+  if (typeof lastCheckedRoleAll === 'number') {
+    const diff = Date.now() - lastCheckedRoleAll;
+    if (diff < timer) {
+      if (tm === false) {
+        tm = true;
+        const toDiff = ((timer) - diff) + 100;
+        setTimeout(checkRoleAll, toDiff);
+      }
+      return;
+    }
+  }
+  lastCheckedRoleAll = Date.now();
+  const guild = await discord.getGuild();
+  const roles = await guild.getRoles();
+  const roleAll = await roleAllKv.items();
+  const roleNuke = await roleNukeKv.items();
+  const toAdd: Array<string> = [];
+  const toRemove: Array<string> = [];
+  const me = await guild.getMember(discord.getBotId());
+  if (!me.can(discord.Permissions.MANAGE_ROLES)) {
+    return;
+  }
+  const myHighest = await utils.getMemberHighestRole(me);
+  await Promise.all(roleAll.map(async (item) => {
+    if (typeof item.value === 'string') {
+      const _f = roles.find((role) => role.id === item.value && role.position < myHighest.position);
+      if (!_f) {
+        await roleAllKv.delete(item.key);
+      } else {
+        toAdd.push(item.value);
+      }
+    }
+  }));
+  await Promise.all(roleNuke.map(async (item) => {
+    if (typeof item.value === 'string') {
+      const _f = roles.find((role) => role.id === item.value && role.position < myHighest.position);
+      if (!_f) {
+        await roleNukeKv.delete(item.key);
+      } else {
+        toRemove.push(item.value);
+      }
+    }
+  }));
+  if (toAdd.length === 0 && toRemove.length === 0) {
+    return;
+  }
+
+  let did = 0;
+  const LIMIT = 5;
+  for await (const member of guild.iterMembers()) {
+    lastCheckedRoleAll = Date.now();
+    if (member.user.id === me.user.id) {
+      continue;
+    } // ignore the bot, lol
+    if (did >= LIMIT) {
+      break;
+    }
+    let changes = false;
+    let theirRoles = member.roles.filter((val) => {
+      const inc = toRemove.includes(val);
+      if (inc) {
+        changes = true;
+      }
+      return !inc;
+    });
+    if (toAdd.length > 0) {
+      const before = theirRoles.length;
+      toAdd.forEach((rlAdd) => {
+        if (!theirRoles.includes(rlAdd)) {
+          theirRoles.push(rlAdd);
+        }
+      });
+      if (before !== theirRoles.length) {
+        changes = true;
+      }
+    }
+    if (changes === true) {
+      theirRoles = [...new Set(theirRoles)];
+      if (did === (LIMIT - 2)) {
+        tm = false;
+      }
+      await member.edit({ roles: theirRoles });
+      did++;
+    }
+  }
+  tm = false;
+  if (did < LIMIT) {
+    // we did all of the members!
+    const allRoles: Array<string> = toAdd.filter((val) => true);
+    allRoles.push(...toRemove);
+    await Promise.all(roleAll.map(async (item) => {
+      if (typeof item.value === 'string') {
+        const _f = allRoles.find((role) => role === item.value);
+        if (_f) {
+          await roleAllKv.delete(item.key);
+        }
+      }
+    }));
+    await Promise.all(roleNuke.map(async (item) => {
+      if (typeof item.value === 'string') {
+        const _f = allRoles.find((role) => role === item.value);
+        if (_f) {
+          await roleNukeKv.delete(item.key);
+        }
+      }
+    }));
+  }
+}
 
 export async function every5Min() {
+  checkRoleAll();
   try {
     const acts = (await actionPool.getByQuery<Action>({
       active: true,
@@ -208,7 +323,6 @@ export async function every5Min() {
     const actives1: Array<any> = acts.map((act) => utils.makeFake(act, Action)).filter((act: Action) => act.active === true && act.isExpired());
     const actives: Array<Action> = actives1;
     if (actives.length > 0) {
-      console.log('found actives');
       const promises2 = [];
       for (let i = 0; i < actives.length; i += 1) {
         const act = actives[i];
@@ -224,7 +338,6 @@ export async function every5Min() {
       active: false,
     }));
     if (actsClear.length > 0) {
-      console.log(`Clearing ${actsClear.length} actions!`);
       await actionPool.editPools(actsClear.map((val) => val.id), (val) => null);
     }
   } catch (e) {
@@ -273,11 +386,20 @@ export async function addAction(target: discord.Guild | discord.GuildChannel | d
   return newAct;
 }
 
+function isThisEnabled() {
+  if (typeof config.modules !== 'object' || typeof config.modules.admin !== 'object' || typeof config.modules.admin.enabled !== 'boolean') {
+    return false;
+  }
+  return config.modules.admin.enabled;
+}
 export async function saveMessage(msg: discord.GuildMemberMessage) {
+  if (!isThisEnabled()) {
+    return false;
+  }
   const _res = await adminPool.saveToPool(new TrackedMessage(msg));
   return _res;
 }
-export async function getRoleIdByText(txt: string) {
+export async function getRoleIdByText(txt: string): Promise<string | null> {
   txt = txt.toLowerCase();
   // check full matches first in config
   for (const key in config.modules.admin.roleAliases) {
@@ -1350,6 +1472,16 @@ export async function handleReactRoles(idts: string, reaction: discord.Event.IMe
     logCustom('REACTROLES', logType, placeholders, idts);
   }
 }
+
+export async function OnGuildMemberUpdate(
+  id: string,
+  gid: string,
+  member: discord.GuildMember,
+  oldMember: discord.GuildMember,
+) {
+  checkRoleAll();
+}
+
 export async function OnMessageReactionAdd(
   id: string,
   gid: string,
@@ -1537,6 +1669,95 @@ export function InitializeCommands() {
         } else {
           await infractions.confirmResult(undefined, msg, false, 'Failed to remove role');
         }
+      },
+    );
+    subCommandGroup.on(
+      { name: 'all', aliases: ['spray'], filters: c2.getFilters('admin.role.all', Ranks.Administrator) },
+      (ctx) => ({ role: ctx.text() }),
+      async (msg, { role }) => {
+        const rlid = await getRoleIdByText(role);
+        if (rlid === null) {
+          const res: any = await msg.reply('Role not found!');
+          saveMessage(res);
+          return;
+        }
+        const guild = await msg.getGuild();
+        const roles = await guild.getRoles();
+        const me = await guild.getMember(discord.getBotId());
+        if (me === null) {
+          const res: any = await msg.reply('Bot member not found!');
+          saveMessage(res);
+          return;
+        }
+        const thisRole = roles.find((val) => val.id === rlid);
+        if (!thisRole) {
+          const res: any = await msg.reply('Role not found!');
+          saveMessage(res);
+          return;
+        }
+        const myHighest = await utils.getMemberHighestRole(me);
+        if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
+          const res: any = await msg.reply('I can\'t manage that role!');
+          saveMessage(res);
+          return;
+        }
+        const itemsAll = await roleAllKv.items();
+        const itemsNuke = await roleNukeKv.items();
+        if (itemsAll.length > 0 || itemsNuke.length > 0) {
+          const res: any = await msg.reply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          saveMessage(res);
+          return;
+        }
+        await roleAllKv.put(utils.composeSnowflake(), thisRole.id);
+
+        checkRoleAll();
+        const res: any = await msg.reply({ content: `OK! I will slowly apply ${thisRole.toMention()} to every member of the server that doesn\'t already have it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        saveMessage(res);
+      },
+    );
+
+    subCommandGroup.on(
+      { name: 'nuke', aliases: ['removeall'], filters: c2.getFilters('admin.role.nuke', Ranks.Administrator) },
+      (ctx) => ({ role: ctx.text() }),
+      async (msg, { role }) => {
+        const rlid = await getRoleIdByText(role);
+        if (rlid === null) {
+          const res: any = await msg.reply('Role not found!');
+          saveMessage(res);
+          return;
+        }
+        const guild = await msg.getGuild();
+        const roles = await guild.getRoles();
+        const me = await guild.getMember(discord.getBotId());
+        if (me === null) {
+          const res: any = await msg.reply('Bot member not found!');
+          saveMessage(res);
+          return;
+        }
+        const thisRole = roles.find((val) => val.id === rlid);
+        if (!thisRole) {
+          const res: any = await msg.reply('Role not found!');
+          saveMessage(res);
+          return;
+        }
+        const myHighest = await utils.getMemberHighestRole(me);
+        if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
+          const res: any = await msg.reply('I can\'t manage that role!');
+          saveMessage(res);
+          return;
+        }
+        const itemsAll = await roleAllKv.items();
+        const itemsNuke = await roleNukeKv.items();
+        if (itemsAll.length > 0 || itemsNuke.length > 0) {
+          const res: any = await msg.reply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          saveMessage(res);
+          return;
+        }
+        await roleNukeKv.put(utils.composeSnowflake(), thisRole.id);
+
+        checkRoleAll();
+        const res: any = await msg.reply({ content: `OK! I will slowly remove ${thisRole.toMention()} from every member of the server that has it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        saveMessage(res);
       },
     );
   });
