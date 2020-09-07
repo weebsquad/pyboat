@@ -25,7 +25,7 @@ export function InitializeCommands() {
     { name: 'help', filters: c2.getFilters('commands.help', Ranks.Guest) }, async (msg) => {
       const newemb = new discord.Embed();
       newemb.setAuthor({ name: 'PyBoat' });
-      newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)');
+      newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/bxh4SAW)');
       newemb.setColor(0xFF0000);
       const myavatar = await discord.getBotUser();
       newemb.setThumbnail({ url: myavatar.getAvatarUrl() });
