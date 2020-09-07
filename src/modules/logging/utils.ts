@@ -17,10 +17,11 @@ export function isIgnoredChannel(channel: discord.GuildChannel | string) {
     channel = channel.id;
   }
   const { ignores } = conf.config.modules.logging;
-  if (!ignores) {
+  if (!ignores || typeof ignores !== 'object') {
     return false;
   }
-  let chans = typeof ignores === 'object' && Array.isArray(ignores.channels) ? [].concat(ignores.channels) : [];
+  let chans = Array.isArray(ignores.channels) ? [].concat(ignores.channels) : [];
+  // let parents = Array.isArray(ignores.categories) ? [].concat(ignores.parents) : [];
   if (ignores.logChannels === true) {
     const _lc: any = Array.from(Object.keys(conf.config.modules.logging.logChannels));
     chans = chans.concat(_lc);

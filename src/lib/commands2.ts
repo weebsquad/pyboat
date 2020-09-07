@@ -42,6 +42,7 @@ class CmdOverride {
   channelsBlacklist: Array<string> | undefined = undefined;
   rolesWhitelist: Array<string> | undefined = undefined;
   rolesBlacklist: Array<string> | undefined = undefined;
+  bypassLevel: number | undefined = undefined;
 }
 export function checkOverrides(level: number, ovtext: string) {
   const retVal = new CmdOverride();
@@ -87,6 +88,9 @@ export function checkOverrides(level: number, ovtext: string) {
     }
     if (Array.isArray(obj.rolesBlacklist)) {
       retVal.rolesBlacklist = obj.rolesBlacklist;
+    }
+    if (typeof obj.bypassLevel === 'number') {
+      retVal.bypassLevel = obj.bypassLevel;
     }
   }
 
@@ -148,12 +152,19 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
 
     let _f = F.custom(async (msg) => {
       const ownr = await filterActualOwner(msg);
-      const val = await filterLevel(msg, level);
-      if (ownr) {
+      const theirLevel = utils.getUserAuth(msg.member);
+      const val = theirLevel >= level;
+      const override = await utils.isGAOverride(msg.author.id);
+      if (ownr || override) {
         return true;
       }
       if (!ov) {
         return val;
+      }
+      if (typeof ov.bypassLevel === 'number') {
+        if (theirLevel >= ov.bypassLevel) {
+          return true;
+        }
       }
       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(msg.channelId)) {
         return false;
