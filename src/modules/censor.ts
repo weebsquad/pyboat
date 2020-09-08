@@ -276,9 +276,12 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     }
   }
   if (checkTokens === true) {
-    const blocks: any = txt.toLowerCase().match(new RegExp(thisCfg.tokens.filter((w) => typeof w === 'string' && w.length > 0).join('|'), 'gi'));
-    if (Array.isArray(blocks) && blocks.length > 0) {
-      toRet.tokens = blocks;
+    const checks = thisCfg.tokens.filter((w) => typeof w === 'string' && w.length > 0);
+    if (checks.length > 0) {
+      const blocks: any = txt.toLowerCase().match(new RegExp(checks.join('|'), 'gi'));
+      if (Array.isArray(blocks) && blocks.length > 0) {
+        toRet.tokens = blocks;
+      }
     }
   }
   if (checkCaps === true) {
