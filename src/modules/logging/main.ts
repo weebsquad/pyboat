@@ -707,7 +707,6 @@ export function combineMessages(
       // const lines = contents.split('\n');
       let lines: Array<string>;
       if (contents.includes('```')) {
-        console.log('has codeblocks and big len');
         let start: number | undefined;
         const newArr = [];
         const thisSplit = contents.split('\n');
@@ -723,8 +722,8 @@ export function combineMessages(
             if (typeof start === 'number' && i > start) {
               // we were parsing a codeblock!
               const slice = thisSplit.slice(start, i + 1);
-              console.log('slice = ', slice);
-              newArr.push(slice);
+              // console.log('slice = ', slice);
+              newArr.push(slice.join('\n'));
               start = undefined;
               continue;
             }
