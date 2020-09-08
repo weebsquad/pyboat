@@ -280,10 +280,10 @@ export const messages = {
         // everyone role
         objectPing = '@everyone';
       }
-      const permsAllowOld = oldV !== undefined ? new utils.Permissions(oldV.allow).serialize() : new utils.Permissions(0).serialize();
-      const permsDenyOld = oldV !== undefined ? new utils.Permissions(oldV.deny).serialize() : new utils.Permissions(0).serialize();
-      const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize() : new utils.Permissions(0).serialize();
-      const permsDenyNew = newV !== undefined ? new utils.Permissions(newV.deny).serialize() : new utils.Permissions(0).serialize();
+      const permsAllowOld = oldV !== undefined ? new utils.Permissions(oldV.allow).serialize(false) : new utils.Permissions(0).serialize();
+      const permsDenyOld = oldV !== undefined ? new utils.Permissions(oldV.deny).serialize(false) : new utils.Permissions(0).serialize();
+      const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize(false) : new utils.Permissions(0).serialize();
+      const permsDenyNew = newV !== undefined ? new utils.Permissions(newV.deny).serialize(false) : new utils.Permissions(0).serialize();
       if (!oldV && newV) { // Added!
         txt += `\nAdded ${newV.type} ${objectPing}`;
       } else if (oldV && !newV) {

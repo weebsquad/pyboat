@@ -144,6 +144,14 @@ export class Permissions extends BitField {
       || super.has(permission)
     );
   }
+
+  serialize(checkAdmin = true) {
+    const serialized = <any>{};
+    for (const [flag, bit] of Object.entries(this.FLAGS)) {
+      serialized[flag] = this.has(bit, checkAdmin);
+    }
+    return serialized;
+  }
 }
 
 export class UserFlags extends BitField {

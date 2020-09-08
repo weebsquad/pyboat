@@ -94,7 +94,7 @@ export class Action { // class action lawsuit lmao
           this.active = false;
         } else {
           const perms = new utils.Permissions(defaultOw.deny);
-          if (!perms.has('SEND_MESSAGES')) {
+          if (!perms.has('SEND_MESSAGES', false)) {
             this.active = false;
           }
         }
@@ -108,7 +108,7 @@ export class Action { // class action lawsuit lmao
         this.active = false;
       } else {
         const perms = new utils.Permissions(role.permissions);
-        if (perms.has('SEND_MESSAGES')) {
+        if (perms.has('SEND_MESSAGES', false)) {
           this.active = false;
         }
       }
@@ -611,9 +611,9 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     return false;
   }
   const perms = new utils.Permissions(defaultOw.deny);
-  if (perms.has('SEND_MESSAGES') && state === true) {
+  if (perms.has('SEND_MESSAGES', false) && state === true) {
     return 'Channel already locked';
-  } if (!perms.has('SEND_MESSAGES') && !state) {
+  } if (!perms.has('SEND_MESSAGES', false) && !state) {
     return 'Channel not locked';
   }
   const newOws = channel.permissionOverwrites.map((ow) => {
@@ -683,9 +683,9 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     }
   }
   const perms = new utils.Permissions(defaultRole.permissions);
-  if (!perms.has('SEND_MESSAGES') && state === true) {
+  if (!perms.has('SEND_MESSAGES', false) && state === true) {
     return 'Guild already locked';
-  } if (perms.has('SEND_MESSAGES') && !state) {
+  } if (perms.has('SEND_MESSAGES', false) && !state) {
     return 'Guild not locked';
   }
   if (state === true) {

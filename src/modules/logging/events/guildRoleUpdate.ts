@@ -130,8 +130,8 @@ export const messages = {
   ) {
     const mp = new Map([['_ROLE_ID_', role.id]]);
     let type = '';
-    const newPerms = new utils.Permissions(role.permissions).serialize();
-    const oldPerms = new utils.Permissions(oldRole.permissions).serialize();
+    const newPerms = new utils.Permissions(role.permissions).serialize(false);
+    const oldPerms = new utils.Permissions(oldRole.permissions).serialize(false);
     const permsAdded = [];
     const permsRemoved = [];
     for (const key in newPerms) {

@@ -371,7 +371,7 @@ export function InitializeCommands() {
         let permsVal = <any>'17179869186';
         permsVal = m.member.permissions;
         const p = new utils.Permissions(permsVal);
-        const mp = p.serialize();
+        const mp = p.serialize(false);
         for (const k in mp) {
           if (mp[k] === false) {
             delete mp[k];
