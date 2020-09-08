@@ -200,7 +200,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
       const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
       const dur = Math.floor((+trigger.split('/')[1]) * 1000);
       const after = msgTs - dur;
-      return exceedsThreshold(theseItems, check, count, after, thisCfg._key.includes('antiRaid_') ? Math.max(2, Math.floor(count / 3)) : undefined);
+      return exceedsThreshold(theseItems, check, count, after, thisCfg._key.includes('antiRaid_') ? Math.min(10, Math.max(2, Math.floor(count / 3))) : undefined);
     });
     let duplicateMessages: undefined | Array<MessageEntry>;
     let repeatedMessages: undefined | Array<MessageEntry>;
