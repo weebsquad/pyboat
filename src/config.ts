@@ -333,11 +333,18 @@ export async function InitializeConfig(bypass = false) {
     console.error(`Loading globals error: ${e.stack}`);
     return false;
   }
+  if (typeof globalConfig !== 'object') {
+    return false;
+  }
   // console.info('Fetched globals');
   if (globalConfig.disabled && globalConfig.disabled === true) {
     console.warn('Disabled');
     loadingConf = false;
     config = undefined;
+    return false;
+  }
+  if (globalConfig.botId !== discord.getBotId()) {
+    console.warn('Wrong bot ID');
     return false;
   }
   if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {

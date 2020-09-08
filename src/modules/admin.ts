@@ -482,7 +482,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     if (extraTarget.position >= highestRoleMe.position) {
       return 'I can\'t assign that role';
     }
-    if (actor !== null) {
+    if (actor !== null && !isOverride && !isGuildOwner) {
       const highestRoleActor = await utils.getMemberHighestRole(actor);
       if (extraTarget.position >= highestRoleActor.position) {
         return 'You can\'t assign that role because it is at or above your highest role';
