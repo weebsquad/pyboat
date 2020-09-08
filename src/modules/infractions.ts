@@ -255,21 +255,22 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
+  const amIOwner = guild.ownerId === me.user.id;
   if (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) {
-    if (!me.can(discord.Permissions.MANAGE_ROLES)) {
+    if (!me.can(discord.Permissions.MANAGE_ROLES) && !amIOwner) {
       return 'I can\'t manage roles';
     }
     const mtRole = await guild.getRole(config.modules.infractions.muteRole);
-    if (mtRole !== null && highestRoleMe.position <= mtRole.position) {
+    if (!amIOwner && mtRole !== null && highestRoleMe.position <= mtRole.position) {
       return 'I can\'t manage the mute role';
     }
   }
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
   if (actionType === InfractionType.KICK || actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) {
-    if (target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
+    if (!amIOwner && target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
-    if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
+    if (!amIOwner && highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
   }

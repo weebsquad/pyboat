@@ -456,14 +456,15 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
+  const amIOwner = guild.ownerId === me.user.id;
   // check bot can actually do it
-  if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+  if (!amIOwner && actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
     return 'I can\'t manage messages';
   }
-  if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
+  if (!amIOwner && (actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
     return 'I can\'t manage roles';
   }
-  if (actionType === ActionType.NICKNAME && !me.can(discord.Permissions.MANAGE_NICKNAMES)) {
+  if (!amIOwner && actionType === ActionType.NICKNAME && !me.can(discord.Permissions.MANAGE_NICKNAMES)) {
     return 'I can\'t manage nicknames';
   }
 
@@ -472,14 +473,14 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
-  if (target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
+  if (!amIOwner && target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
     if (highestRoleTarget.position >= highestRoleMe.position) {
       return 'I can\'t manage that target';
     }
   }
 
   if (extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE)) {
-    if (extraTarget.position >= highestRoleMe.position) {
+    if (!amIOwner && extraTarget.position >= highestRoleMe.position) {
       return 'I can\'t assign that role';
     }
     if (actor !== null && !isOverride && !isGuildOwner) {
