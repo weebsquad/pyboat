@@ -501,7 +501,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
         return 'You can\'t manage roles';
       } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
         return 'You can\'t manage nicknames';
-      } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.READ_MESSAGES)) {
+      } if (actionType === ActionType.CLEAN && (!channel.canMember(actor, discord.Permissions.READ_MESSAGES) || !channel.canMember(actor, discord.Permissions.SEND_MESSAGES))) {
         return 'You don\'t have access to that channel';
       } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
         return 'You can\'t manage messages in that channel';
