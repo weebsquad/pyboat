@@ -200,8 +200,8 @@ export const messages = {
     return new Map([
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
-      ['_NEW_TOPIC_', utils.escapeString(chan.topic !== null ? chan.topic : 'None')],
-      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic !== null ? oldChan.topic : 'None')],
+      ['_NEW_TOPIC_', utils.escapeString(chan.topic !== null && chan.topic !== undefined ? chan.topic : 'None')],
+      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic !== null && oldChan.topic !== undefined ? oldChan.topic : 'None')],
       ['_TYPE_', 'TOPIC_CHANGED'],
     ]);
   },
