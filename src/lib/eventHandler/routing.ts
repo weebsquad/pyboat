@@ -54,7 +54,6 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
       cachedConfig = conf.config;
     }
 
-    const tdiff = new Date(utils.decomposeSnowflake(ts).timestamp).getTime();
     if (!EventHasExecution(event)) {
       return;
     }

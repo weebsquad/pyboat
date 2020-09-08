@@ -40,7 +40,7 @@ const _cr: {[key: string]: any} = {
           await logError(e);
         }
       }
-      console.log(`Took ${Date.now() - dt}ms to run cron`);
+      // console.log(`Took ${Date.now() - dt}ms to run cron`);
     },
     started: false,
   },
