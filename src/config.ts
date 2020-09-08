@@ -330,10 +330,12 @@ export async function InitializeConfig(bypass = false) {
       globalConfig[k] = obj;
     }
   } catch (e) {
-    console.error(`Loading globals error: ${e.stack}`);
+    // console.error(`Loading globals error: ${e.stack}`);
+    console.warn('Loading globals error (1)');
     return false;
   }
   if (typeof globalConfig !== 'object') {
+    console.warn('Loading globals error (2)');
     return false;
   }
   // console.info('Fetched globals');
