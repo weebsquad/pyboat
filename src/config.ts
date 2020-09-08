@@ -28,7 +28,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.6.0',
+  version: '1.6.1',
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
