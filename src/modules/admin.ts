@@ -431,12 +431,19 @@ export async function getRoleIdByText(txt: string): Promise<string | null> {
   }
   return null;
 }
-export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel | undefined, extraTarget: any = undefined, actionType: ActionType): Promise<boolean | string> {
-  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User | null, channel: discord.GuildChannel | undefined, extraTarget: any = undefined, actionType: ActionType): Promise<boolean | string> {
+  let targetId;
+  if (target !== null) {
+    targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+  }
   if (targetId === discord.getBotId()) {
     return false;
   }
+
   if (actor === null) {
+    if (typeof targetId !== 'string') {
+      return true;
+    }
     return !utils.isGlobalAdmin(targetId);
   }
   const isGA = utils.isGlobalAdmin(actor.user.id);
@@ -445,7 +452,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     isOverride = await utils.isGAOverride(actor.user.id);
   }
 
-  const isTargetAdmin = utils.isGlobalAdmin(targetId);
+  const isTargetAdmin = typeof targetId === 'string' && utils.isGlobalAdmin(targetId);
 
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
@@ -865,12 +872,11 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (count === 0) {
     return false;
   }
-  if (typeof memberId === 'string' && channel instanceof discord.GuildChannel) {
-    const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
-    if (canT !== true) {
-      return canT;
-    }
+  const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
+  if (canT !== true) {
+    return canT;
   }
+
   if (cleaning === true && !bypassCleaning) {
     return 'Already running a clean operation, please try again later';
   }
