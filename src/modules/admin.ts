@@ -490,12 +490,14 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
 
     if (requireExtraPerms === true) {
-      if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
-        return 'You can\'t manage messages';
-      } if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+      if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
       } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
         return 'You can\'t manage nicknames';
+      } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.READ_MESSAGES)) {
+        return 'You don\'t have access to that channel';
+      } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+        return 'You can\'t manage messages in that channel';
       }
     }
     if (actor.user.id === targetId) {
@@ -863,7 +865,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (count === 0) {
     return false;
   }
-  if (typeof memberId === 'string') {
+  if (typeof memberId === 'string' && channel instanceof discord.GuildChannel) {
     const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
     if (canT !== true) {
       return canT;
