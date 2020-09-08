@@ -20,11 +20,11 @@ export enum Ranks {
     'Owner' = 200,
 }
 export const globalConfig = <any>{
-  masterWebhook: 'https://discord.com/api/webhooks/752534495370018897/-P0iF3go89V6mUB9WlJQPuHJNVq5e8c8WlHRqmJLH3x7By9wsb5revUbWOHQgJ3q2TxQ',
+  masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
-    botToken: 'NDA2ODg4NjExMTk2MzA1NDI4.WmzOjA._94Rd-hh4--LKBqfTPgELa5XZOo',
+    botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
   },
   ranks: Ranks,
   Ranks, // lol
