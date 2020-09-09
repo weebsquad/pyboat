@@ -211,6 +211,9 @@ export async function OnMessageDelete(
   if (config.modules.counting.channels.indexOf(messageDelete.channelId) === -1) {
     return;
   }
+  if (oldMessage === null) {
+    return;
+  }
   if (
     (oldMessage.author === null
       || oldMessage.member === null
