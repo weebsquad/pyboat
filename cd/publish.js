@@ -104,7 +104,6 @@ _dep.forEach((deployment_id) => {
     }),
   };
 
-  let runs = 0;
   // eslint-disable-next-line consistent-return
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
     try {
@@ -134,8 +133,7 @@ _dep.forEach((deployment_id) => {
         }
       }
     }).then(() => {
-      runs += 1;
-      if (runs === _dep.length) {
+      if (toPost.length === _dep.length) {
         sendWebhook(toPost.join('\n\n'));
       }
     })
