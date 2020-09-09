@@ -104,6 +104,7 @@ _dep.forEach((deployment_id) => {
     }),
   };
 
+  let runs = 0;
   // eslint-disable-next-line consistent-return
   fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
     try {
@@ -126,14 +127,15 @@ _dep.forEach((deployment_id) => {
       } else {
         console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
-          toPost.push(`✅ Published PyBoat to \`${obj.guild.name}\` (<@!${obj.bot_id}>) - rev #**${obj.revision}**\n**Guild ID**:**[**||\`${obj.guild.id}\`||**]**\n**Script ID**:**[**||\`${obj.script.id}\`||**]**\n**Deployment ID**:**[**||\`${deployment_id}\`||**]**`);
+          toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - Rev#**${obj.revision}**\n**GID**:[||\`${obj.guild.id}\`||]\n**SID**:[||\`${obj.script.id}\`||]\n**DID**:[||\`${deployment_id}\`||]**`);
         }
         if (isDebug && !isGh) {
           workbenchWs(obj.workbench_url);
         }
       }
     }).then(() => {
-      if (toPost.length === _dep.length) {
+      runs += 1;
+      if (runs === _dep.length) {
         sendWebhook(toPost.join('\n\n'));
       }
     })
