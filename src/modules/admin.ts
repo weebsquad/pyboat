@@ -436,7 +436,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (target !== null) {
     targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   }
-  if (targetId === discord.getBotId()) {
+  if (actor === null && targetId === discord.getBotId()) {
     return false;
   }
 
@@ -455,6 +455,10 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   const isTargetAdmin = typeof targetId === 'string' && utils.isGlobalAdmin(targetId);
 
   const guild = await actor.getGuild();
+  const isGuildOwner = guild.ownerId === actor.user.id;
+  if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
+    return 'You may not target me';
+  }
   const me = await guild.getMember(discord.getBotId());
   const amIOwner = guild.ownerId === me.user.id;
   // check bot can actually do it
@@ -469,7 +473,6 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
-  const isGuildOwner = guild.ownerId === actor.user.id;
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 

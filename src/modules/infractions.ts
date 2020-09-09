@@ -231,7 +231,7 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isTargetAdmin = utils.isGlobalAdmin(targetId);
-  if (targetId === discord.getBotId()) {
+  if (actor === null && targetId === discord.getBotId()) {
     return false;
   }
   if (actor === null) {
@@ -255,6 +255,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
+  if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
+    return 'You may not target me';
+  }
   const amIOwner = guild.ownerId === me.user.id;
   if (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) {
     if (!me.can(discord.Permissions.MANAGE_ROLES) && !amIOwner) {
@@ -271,6 +274,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       return `I can't ${actionType.toLowerCase()} this member`;
     }
     if (!amIOwner && highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
+      return `I can't ${actionType.toLowerCase()} this member`;
+    }
+    if (targetId === discord.getBotId()) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
   }
