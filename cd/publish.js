@@ -126,7 +126,7 @@ _dep.forEach((deployment_id) => {
       } else {
         console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
-          toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - Rev#**${obj.revision}**\n**GID**:[||\`${obj.guild.id}\`||]\n**SID**:[||\`${obj.script.id}\`||]\n**DID**:[||\`${deployment_id}\`||]**`);
+          toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - Rev#**${obj.revision}**\n**GID**:[||\`${obj.guild.id}\`||]\n**SID**:[||\`${obj.script.id}\`||]\n**DID**:[||\`${deployment_id}\`||]`);
         }
         if (isDebug && !isGh) {
           workbenchWs(obj.workbench_url);
