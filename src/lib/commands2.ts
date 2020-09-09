@@ -202,7 +202,8 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       _f = F.custom(async (msg) => {
         const ownr = await filterActualOwner(msg);
         const override = await filterOverridingGlobalAdmin(msg);
-        return ownr || override;
+        const theirLevel = utils.getUserAuth(msg.member);
+        return ownr || override || (typeof ov.bypassLevel === 'number' && theirLevel >= ov.bypassLevel);
       }, 'this command is disabled');
     }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
