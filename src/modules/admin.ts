@@ -14,8 +14,8 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
-const TRACKING_KEYS_LIMIT = 150;
-const ENTRIES_PER_POOL = 73; // approximate maximum
+const TRACKING_KEYS_LIMIT = 70;
+const ENTRIES_PER_POOL = undefined; // approximate maximum
 
 // persist
 
@@ -23,7 +23,7 @@ const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
 const persistPrefix = 'Persist_';
 const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
 
-export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefined, ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
+export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
 const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
 const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
@@ -41,7 +41,7 @@ export class Action { // class action lawsuit lmao
   active: boolean;
   expiresAt: string;
   id: string;
-  // ts: number;
+  ts: number;
   previous: number | undefined;
   actorId: string | null;
   targetId: string | undefined;
@@ -51,7 +51,7 @@ export class Action { // class action lawsuit lmao
   constructor(type: ActionType, actor: string | null, target: string | undefined, expires: string | undefined = '', reason = '') {
     const id = utils.composeSnowflake();
     this.id = id;
-    // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+    this.ts = utils.decomposeSnowflake(this.id).timestamp;
     this.type = type;
     this.actorId = actor;
     this.targetId = target;

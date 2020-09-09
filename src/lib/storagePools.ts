@@ -31,7 +31,7 @@ export class StoragePool {
       throw new TypeError(`[Storage Pool]: ${this.kvName}: ${txt}`);
     }
     async exists(id: string) {
-      const ex = (await this.getAll()).find((item) => item[this.uniqueId] === id);
+      const ex = (await this.getAll(undefined, false)).find((item) => item[this.uniqueId] === id);
       return ex !== undefined;
     }
     private getTimestamp(obj: any) {
@@ -40,10 +40,13 @@ export class StoragePool {
       } if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'string') {
         return utils.decomposeSnowflake(obj[this.timestampProperty]).timestamp;
       }
+      // console.log(obj, typeof obj[this.uniqueId]);
       if (typeof obj[this.uniqueId] !== 'string') {
         this.err('Can\'t parse timestamps on a non-string unique identifier');
+        return false;
       }
-      return utils.decomposeSnowflake(obj[this.uniqueId]).timestamp;
+      const id = obj[this.uniqueId];
+      return utils.decomposeSnowflake(id).timestamp;
     }
     async clear() {
       await this.kv.clear();
@@ -95,7 +98,7 @@ export class StoragePool {
       // check same len
       let _thisLen;
       const items = await this.kv.items();
-      const ex = (await this.getAll(items)).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
+      const ex = items.map((v) => v.value).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
       if (typeof ex !== 'undefined') {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
@@ -228,30 +231,42 @@ export class StoragePool {
       }
       return false;
     }
-    async getAll<T>(it: any = undefined): Promise<Array<T>> {
+    async getAll<T>(it: any = undefined, sort = true): Promise<Array<T>> {
+      let cpu;
+      cpu = await pylon.getCpuTime();
       const diff = Date.now() - this.duration;
-      const items = typeof it !== 'undefined' ? it : await this.kv.items();
-      let _ret: Array<any> = [];
-      items.map((e: any) => {
-        if (Array.isArray(e.value)) {
-          _ret.push(...e.value);
-        }
-      });
-      if (_ret.length === 0) {
-        return _ret as Array<T>;
+      let items: Array<any> = (Array.isArray(it) ? it : await this.kv.items());
+      if (items.length === 0) {
+        return [] as Array<T>;
       }
+      if (!Array.isArray(it)) {
+        items = items.map((v) => v.value).flat(1);
+      }
+      cpu = await pylon.getCpuTime();
+      // console.log(`Pulled: ${cpu} | ${items.length}`)
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
-      _ret = _ret.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
+      items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
+      cpu = await pylon.getCpuTime();
+      // console.log(`f1: ${cpu}`)
       if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
-        _ret = _ret.filter((item) => this.duration === 0 || this.getTimestamp(item) >= diff).sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
+        items = items.filter((item) => {
+          const ts = this.getTimestamp(item);
+          return this.duration === 0 || (typeof ts === 'number' && ts >= diff);
+        });
+        if (sort === true) {
+          items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
+        }
+        cpu = await pylon.getCpuTime();
+        // console.log(`f2: ${cpu}`)
       }
       /* if (typeof objSample === 'object') {
         _ret = _ret.map((item) => utils.makeFake(item, objSample));
       } */
-      return _ret as Array<T>;
+      const _new: any = items;
+      return _new as Array<T>;
     }
     async getById<T>(id: string): Promise<T | undefined> {
-      const _f: any = (await this.getAll()).find((e) => e !== null && e[this.uniqueId] === id);
+      const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && e[this.uniqueId] === id);
       return _f as T;
     }
     async getByQuery<T>(query: any, OR = false): Promise<Array<T>> {

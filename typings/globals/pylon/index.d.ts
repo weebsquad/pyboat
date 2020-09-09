@@ -155,7 +155,7 @@ declare class Response extends Body {
 }
 
 declare function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
-
+declare function getCpuTime(): Promise<number>
 /*
   blob
 */
@@ -787,4 +787,6 @@ declare module pylon {
     callback: () => Promise<T> | T,
     requestMs?: number
   ): Promise<ICpuBurstResult<T>>;
+
+  function getCpuTime(): Promise <number>
 }
