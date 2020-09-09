@@ -13,7 +13,6 @@ require('dotenv').config();
 let opts = {
   __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed)
 };
-if(process.env.GITHUB !== undefined) opts['await pylon.getCpuTime()'] = 'undefined';
 
 module.exports = () => ({
   input: './src/index.ts',

@@ -231,8 +231,6 @@ export class StoragePool {
       return false;
     }
     async getAll<T>(it: any = undefined, sort = true): Promise<Array<T>> {
-      let cpu;
-      cpu = await pylon.getCpuTime();
       const diff = Date.now() - this.duration;
       let items: Array<any> = (Array.isArray(it) ? it : await this.kv.items());
       if (items.length === 0) {
@@ -241,11 +239,9 @@ export class StoragePool {
       if (!Array.isArray(it)) {
         items = items.map((v) => v.value).flat(1);
       }
-      cpu = await pylon.getCpuTime();
       // console.log(`Pulled: ${cpu} | ${items.length}`)
       // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      cpu = await pylon.getCpuTime();
       // console.log(`f1: ${cpu}`)
       if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
         items = items.filter((item) => {
@@ -255,7 +251,6 @@ export class StoragePool {
         if (sort === true) {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
-        cpu = await pylon.getCpuTime();
         // console.log(`f2: ${cpu}`)
       }
       /* if (typeof objSample === 'object') {

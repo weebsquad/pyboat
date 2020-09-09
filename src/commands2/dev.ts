@@ -319,12 +319,9 @@ export function InitializeCommands() {
     sub.raw(
       'tracking', async (m) => {
         const now = Date.now();
-        let cpu;
-        cpu = await pylon.getCpuTime();
         const res1 = await new pylon.KVNamespace('admin').items();
         const poolsL = await admin.adminPool.getAll();
-        cpu = await pylon.getCpuTime();
-        console.log(`(4) CPU Time: ${cpu}ms, res length: ${res1.length}, pools length: ${poolsL.length}`);
+        console.log(`(4) res length: ${res1.length}, pools length: ${poolsL.length}`);
         let txt = '';
         let c = 0;
         res1.map((item: any) => {
