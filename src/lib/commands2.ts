@@ -32,7 +32,18 @@ export function filterGlobalAdmin(message: discord.GuildMemberMessage): boolean 
   return utils.isGlobalAdmin(message.author.id);
 }
 export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMessage): Promise<boolean> {
+  const isAdmin = filterGlobalAdmin(message);
+  if (!isAdmin) {
+    return false;
+  }
   const _ret = await utils.isGAOverride(message.author.id);
+  if (!_ret) {
+    if (typeof globalConfig.devPrefix === 'string' && message.content.length > globalConfig.devPrefix.length) {
+      if (message.content.substr(0, globalConfig.devPrefix.length) === globalConfig.devPrefix) {
+        return true;
+      }
+    }
+  }
   return _ret;
 }
 class CmdOverride {
@@ -154,10 +165,11 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       const ownr = await filterActualOwner(msg);
       const theirLevel = utils.getUserAuth(msg.member);
       const val = theirLevel >= level;
-      const override = await utils.isGAOverride(msg.author.id);
+      const override = await filterOverridingGlobalAdmin(msg);
       if (ownr || override) {
         return true;
       }
+
       if (!ov) {
         return val;
       }
