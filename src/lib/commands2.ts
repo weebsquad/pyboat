@@ -199,7 +199,11 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       return val;
     }, txtErr.join('\n'));
     if (ov && ov.disabled === true) {
-      _f = F.custom(async (msg) => false, 'this command is disabled');
+      _f = F.custom(async (msg) => {
+        const ownr = await filterActualOwner(msg);
+        const override = await filterOverridingGlobalAdmin(msg);
+        return ownr || override;
+      }, 'this command is disabled');
     }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
       _f = F.silent(_f);
