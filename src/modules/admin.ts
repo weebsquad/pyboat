@@ -477,7 +477,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
   if (!amIOwner && target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
-    if (highestRoleTarget.position >= highestRoleMe.position) {
+    if (target.user.id !== discord.getBotId() && highestRoleTarget.position >= highestRoleMe.position) {
       return 'I can\'t manage that target';
     }
   }
