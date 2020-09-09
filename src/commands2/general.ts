@@ -59,6 +59,29 @@ export function InitializeCommands() {
     },
   );
 
+  cmdGroup.on(
+    { name: 'nickme', filters: c2.getFilters('commands.nickme', Ranks.Owner) },
+    (ctx) => ({ nick: ctx.textOptional() }),
+    async (msg, { nick }) => {
+      const res:any = await msg.reply(async () => {
+        const guild = await msg.getGuild();
+        const me = await guild.getMember(discord.getBotId());
+        if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
+          return 'I don\'t have permissions to change my nickname!';
+        }
+        if (nick === me.nick) {
+          return 'I already have that nickname!';
+        }
+        if (nick === 'invisible') {
+          nick = ' ឵឵ ';
+        } // invis chars
+        await me.edit({ nick });
+        return 'Done!';
+      });
+      admin.saveMessage(res);
+    },
+  );
+
   /* export const rolelb = discord.command.rawHandler(
   async (message) => {
     await message.reply(async () => {
