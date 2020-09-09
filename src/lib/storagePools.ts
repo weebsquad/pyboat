@@ -63,7 +63,6 @@ export class StoragePool {
           const leftToMax = ASSUMED_MAX_KEYS - this.reduceAt;
           const toInc = this.duration / Math.max(1, leftToMax);
           const extra = Math.floor(toInc * (count - this.reduceAt));
-          // console.log(`Count: ${count},  reduceAt: ${this.reduceAt}, leftToMax: ${leftToMax} , toInc: ${toInc},,, extra: ${extra}/${this.duration}`);
           diff += extra;
         }
       }
