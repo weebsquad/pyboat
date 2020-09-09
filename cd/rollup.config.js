@@ -8,6 +8,12 @@ const { terser } = require('rollup-plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const ignore = require('rollup-plugin-ignore');
 const path = require('path');
+require('dotenv').config();
+
+let opts = {
+  __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed)
+};
+if(process.env.GITHUB !== undefined) opts['await pylon.getCpuTime()'] = 'undefined';
 
 module.exports = () => ({
   input: './src/index.ts',
@@ -21,17 +27,13 @@ module.exports = () => ({
   plugins: [
     ignore(['pylon-runtime.d.ts', 'pylon-runtime-discord.d.ts']),
     
-    replace({
-      __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
-    }),
+    replace(opts),
     
     nodeResolve({
       extensions: ['.ts'],
       rootDir: path.join(process.cwd(), '..')
     }),
-    typescript({
-        
-    }),
+    typescript(),
     terser(),
   ],
   onwarn(warning, warn) {
