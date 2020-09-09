@@ -146,8 +146,10 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
         if (Array.isArray(ov.rolesBlacklist)) {
           rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
         }
-        txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
-      } else if (Array.isArray(ov.rolesBlacklist)) {
+        if (rls.length > 0) {
+          txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
+        }
+      } else if (Array.isArray(ov.rolesBlacklist) && ov.rolesBlacklist.length > 0) {
         txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
       }
       if (Array.isArray(ov.channelsWhitelist)) {
@@ -155,8 +157,10 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
         if (Array.isArray(ov.channelsBlacklist)) {
           chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
         }
-        txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
-      } else if (Array.isArray(ov.channelsBlacklist)) {
+        if (chs.length > 0) {
+          txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
+        }
+      } else if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.length > 0) {
         txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
       }
     }
@@ -181,7 +185,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(msg.channelId)) {
         return false;
       }
-      if (Array.isArray(ov.channelsWhitelist) && !ov.channelsWhitelist.includes(msg.channelId)) {
+      if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(msg.channelId)) {
         return false;
       }
       if (Array.isArray(ov.rolesBlacklist)) {
@@ -190,7 +194,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
           return false;
         }
       }
-      if (Array.isArray(ov.rolesWhitelist)) {
+      if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
         const matches = msg.member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
         if (typeof matches === 'undefined') {
           return false;
