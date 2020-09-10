@@ -125,7 +125,7 @@ const defaultConfig = { // for non-defined configs!
       // this does not proc on auditlogged deletions! (So if you, a moderator)
       // Deletes someone else's message, people won't be able to snipe it.
       snipe: {
-        enabled: true,
+        enabled: false,
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
       },
