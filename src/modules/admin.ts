@@ -1046,7 +1046,6 @@ export async function AL_OnGuildRoleUpdate(
   if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color) {
     const kvc = await roleLockKv.get(role.id);
     if (typeof kvc !== 'boolean') {
-      console.log('really locked, restoring state');
       await role.edit({ permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined });
     }
   }
