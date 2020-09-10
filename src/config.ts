@@ -251,6 +251,9 @@ const defaultConfig = { // for non-defined configs!
         },
         saveOnBan: true,
       },
+      groupRoles: {
+        new: '743396813759053905',
+      },
       autoroles: {
         enabled: false,
         human: [],
