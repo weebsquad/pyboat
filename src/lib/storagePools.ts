@@ -97,7 +97,7 @@ export class StoragePool {
       // check same len
       let _thisLen;
       const items = await this.kv.items();
-      const ex = items.map((v) => v.value).flat(1).find((item) => item[this.uniqueId] === newObj[this.uniqueId]);
+      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && item[this.uniqueId] === newObj[this.uniqueId]);
       if (typeof ex !== 'undefined') {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
