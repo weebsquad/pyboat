@@ -129,6 +129,12 @@ const defaultConfig = { // for non-defined configs!
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
       },
+      customUserRoles: {
+        enabled: false,
+        clearOnKick: true,
+        clearOnBan: true,
+        clearOnLeave: true,
+      },
     },
     /* roleManagement: { // for group srv only
       enabled: false,

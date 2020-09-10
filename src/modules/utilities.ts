@@ -9,8 +9,13 @@ import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
 import { KVManager, StoragePool } from '../lib/utils';
 import { getInfractionBy } from './infractions';
-import { saveMessage } from './admin';
+import { saveMessage, getRoleIdByText } from './admin';
 
+class UserRole {
+  memberId: string;
+  roleId: string;
+}
+const customUserRoles = new StoragePool('customUserRoles', 0, 'memberId');
 class Reminder {
   id: string;
   expires: number;
@@ -136,6 +141,129 @@ export async function AL_OnMessageDelete(
   });
 }
 
+async function checkCustomRoleProperties() {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  const roles = await customUserRoles.getAll<UserRole>();
+  const guild = await discord.getGuild();
+  const guildRoles = await guild.getRoles();
+  const matchedRoles = guildRoles.filter((role) => roles.find((v) => v.roleId === role.id) !== undefined);
+  if (matchedRoles.length > 0) {
+    await Promise.all(matchedRoles.map(async (role) => {
+      if (role.mentionable === true || role.hoist === true || role.permissions !== 0) {
+        await role.edit({ mentionable: false, hoist: false, permissions: 0 });
+      }
+    }));
+  }
+}
+
+async function deleteCustomRoleOf(memberId: string) {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  const roles = await customUserRoles.getById<UserRole>(memberId);
+  const guild = await discord.getGuild();
+  const role = await guild.getRole(roles.roleId);
+  if (role !== null) {
+    await role.delete();
+  }
+}
+export async function checkAllCustomRoles() {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  const roles = await customUserRoles.getAll<UserRole>();
+  const guild = await discord.getGuild();
+  const guildRoles = await guild.getRoles();
+  const missing = roles.filter((role) => guildRoles.find((v) => v.id === role.roleId) === undefined);
+  if (missing.length > 0) {
+    await customUserRoles.editPools(missing.map((v) => v.memberId), (v) => null);
+  }
+}
+async function setUserRole(memberId: string, roleId: string) {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  const ur = new UserRole();
+  ur.memberId = memberId;
+  ur.roleId = roleId;
+  await customUserRoles.saveToPool(ur);
+}
+async function checkUserRoles(member: discord.GuildMember) {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  const roles = await customUserRoles.getById<UserRole>(member.user.id);
+  if (roles === undefined) {
+    return;
+  }
+  const guild = await discord.getGuild();
+  const gr = await guild.getRole(roles.roleId);
+  if (gr !== null && !member.roles.includes(gr.id)) {
+    await checkCustomRoleProperties();
+    try {
+      await member.addRole(gr.id);
+    } catch (e) {}
+  }
+}
+export async function OnGuildMemberAdd(
+  id: string,
+  gid: string,
+  member: discord.GuildMember,
+) {
+  await checkUserRoles(member);
+}
+
+export async function AL_OnGuildMemberRemove(
+  id: string,
+  gid: string,
+  log: any,
+  memberRemove: discord.Event.IGuildMemberRemove,
+) {
+  if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
+    return;
+  }
+  if (log instanceof discord.AuditLogEntry) {
+    if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_KICK && config.modules.utilities.customUserRoles.clearOnKick === true) {
+      await deleteCustomRoleOf(memberRemove.user.id);
+    } else if (log.actionType === discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD && config.modules.utilities.customUserRoles.clearOnBan === true) {
+      await deleteCustomRoleOf(memberRemove.user.id);
+    }
+  } else if (config.modules.utilities.customUserRoles.clearOnLeave === true) {
+    await deleteCustomRoleOf(memberRemove.user.id);
+  }
+}
+
+export async function OnGuildMemberUpdate(
+  id: string,
+  gid: string,
+  member: discord.GuildMember,
+  oldMember: discord.GuildMember,
+) {
+  await checkUserRoles(member);
+}
+export async function OnGuildRoleUpdate(
+  id: string,
+  gid: string,
+  role: discord.Role,
+  oldRole: discord.Role,
+) {
+  await checkCustomRoleProperties();
+  await checkAllCustomRoles();
+}
+export async function OnGuildRoleDelete(
+  id: string,
+  gid: string,
+  role: discord.Role,
+) {
+  const checkrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
+  if (checkrole instanceof UserRole) {
+    await customUserRoles.editPool(checkrole.memberId, null);
+  }
+  await checkAllCustomRoles();
+}
+
 export function InitializeCommands() {
   const F = discord.command.filters;
 
@@ -148,9 +276,146 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  if (typeof config.modules.utilities.customUserRoles === 'object' && config.modules.utilities.customUserRoles.enabled === true) {
+    // CUSTOM USER ROLES
+    cmdGroup.subcommand({ name: 'cur', filters: c2.getFilters('utilities.cur', Ranks.Guest) }, (subCommandGroup) => {
+      subCommandGroup.defaultRaw(
+        async (msg) => {
+          const res: any = await msg.reply(async () => {
+            const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
+            if (!checkrole) {
+              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+            }
+            const prefix = typeof config.modules.commands.prefix === 'string' ? config.modules.commands.prefix : config.modules.commands.prefix[0];
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type \`${prefix}cur name <name>\`\nTo set the color, type \`${prefix}cur color <color>\`` };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'name', filters: c2.getFilters('utilities.cur.name', Ranks.Guest) },
+        (ctx) => ({ name: ctx.text() }),
+        async (msg, { name }) => {
+          const res: any = await msg.reply(async () => {
+            const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
+            if (!checkrole) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+            }
+            if (name.length < 2 || name.length > 32) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} New name must be between 2 and 32 characters in size!` };
+            }
+            const guild = await msg.getGuild();
+            const role = await guild.getRole(checkrole.roleId);
+            await role.edit({ name });
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name)}\`` };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'color', filters: c2.getFilters('utilities.cur.color', Ranks.Guest) },
+        (ctx) => ({ color: ctx.textOptional() }),
+        async (msg, { color }) => {
+          const res: any = await msg.reply(async () => {
+            const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
+            if (!checkrole) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+            }
+            if (typeof color === 'string' && color.includes('#')) {
+              color = color.split('#').join('');
+            }
+            if (typeof color === 'string' && color.length !== 6) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Color must be formatted as a hex string! (for example \`#ff0000\`)` };
+            }
+            const guild = await msg.getGuild();
+            const role = await guild.getRole(checkrole.roleId);
+            await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` };
+          });
+          saveMessage(res);
+        },
+      );
 
+      subCommandGroup.on(
+        { name: 'set', filters: c2.getFilters('utilities.cur.set', Ranks.Administrator) },
+        (ctx) => ({ target: ctx.guildMember(), roleText: ctx.text() }),
+        async (msg, { target, roleText }) => {
+          const res: any = await msg.reply(async () => {
+            const rlid = await getRoleIdByText(roleText);
+            const guild = await msg.getGuild();
+            const role = await guild.getRole(rlid);
+            if (!(role instanceof discord.Role)) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Role not found` };
+            }
+            const kvc = await customUserRoles.exists(target.user.id);
+            if (kvc) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member already has a custom role!` };
+            }
+            const kvcrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
+            if (Array.isArray(kvcrole) && kvcrole.length > 0) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This role is already assigned to <@!${kvcrole[0].memberId}>` };
+            }
+            await setUserRole(target.user.id, role.id);
+            await checkCustomRoleProperties();
+            if (!target.roles.includes(role.id)) {
+              await target.addRole(role.id);
+            }
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Set ${target.toMention()}'s role to ${role.toMention()}` };
+          });
+          saveMessage(res);
+        },
+      );
+
+      subCommandGroup.on(
+        { name: 'clear', filters: c2.getFilters('utilities.cur.clear', Ranks.Administrator) },
+        (ctx) => ({ target: ctx.guildMember() }),
+        async (msg, { target }) => {
+          const res: any = await msg.reply(async () => {
+            const kvc = await customUserRoles.getById<UserRole>(target.user.id);
+            if (!kvc) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member has no custom role!` };
+            }
+            const rlid = kvc.roleId;
+            const guild = await msg.getGuild();
+            const role = await guild.getRole(rlid);
+            if (!(role instanceof discord.Role)) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Role not found` };
+            }
+            await customUserRoles.editPool(target.user.id, null);
+            if (target.roles.includes(role.id)) {
+              await target.removeRole(role.id);
+            }
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Cleared ${target.toMention()}'s custom role!` };
+          });
+          saveMessage(res);
+        },
+      );
+      subCommandGroup.on(
+        { name: 'delete', filters: c2.getFilters('utilities.cur.delete', Ranks.Administrator) },
+        (ctx) => ({ target: ctx.guildMember() }),
+        async (msg, { target }) => {
+          const res: any = await msg.reply(async () => {
+            const kvc = await customUserRoles.getById<UserRole>(target.user.id);
+            if (!kvc) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member has no custom role!` };
+            }
+            const rlid = kvc.roleId;
+            const guild = await msg.getGuild();
+            const role = await guild.getRole(rlid);
+            if (!(role instanceof discord.Role)) {
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Role not found` };
+            }
+
+            await deleteCustomRoleOf(target.user.id);
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Deleted ${target.toMention()}'s custom role!` };
+          });
+          saveMessage(res);
+        },
+      );
+    });
+  }
   // SNIPE COMMAND
-  if (config.modules.utilities.snipe.enabled === true) {
+  if (typeof config.modules.utilities.snipe === 'object' && config.modules.utilities.snipe.enabled === true) {
     cmdGroup.raw(
       { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
         const res: any = await msg.reply(async () => {
@@ -199,7 +464,7 @@ export function InitializeCommands() {
   }
 
   // random
-  cmdGroup.subcommand('random', (subCommandGroup) => {
+  cmdGroup.subcommand({ name: 'random', filters: c2.getFilters('utilities.random', Ranks.Guest) }, (subCommandGroup) => {
     subCommandGroup.raw(
       { name: 'coin', filters: c2.getFilters('utilities.random.coin', Ranks.Guest) },
       async (msg) => {
