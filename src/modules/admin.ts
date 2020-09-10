@@ -1043,10 +1043,16 @@ export async function AL_OnGuildRoleUpdate(
     nr.guildId = guildId;
     role = utils.makeFake(nr, discord.Role);
   }
-  if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color) {
+  if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color || role.mentionable !== oldRole.mentionable) {
     const kvc = await roleLockKv.get(role.id);
     if (typeof kvc !== 'boolean') {
-      await role.edit({ permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined });
+      await role.edit({
+        permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined,
+        hoist: role.hoist !== oldRole.hoist ? oldRole.hoist : undefined,
+        color: role.color !== oldRole.color ? oldRole.color : undefined,
+        name: role.name !== oldRole.name ? oldRole.name : undefined,
+        mentionable: role.mentionable !== oldRole.mentionable ? oldRole.mentionable : undefined,
+      });
     }
   }
 }
