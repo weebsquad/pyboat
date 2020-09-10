@@ -1018,6 +1018,40 @@ export async function OnMessageDeleteBulk(
   });
 }
 
+const roleLockKv = new pylon.KVNamespace('roleLock');
+export async function AL_OnGuildRoleUpdate(
+  id: string,
+  gid: string,
+  log: discord.AuditLogEntry.AnyAction,
+  role: discord.Role,
+  oldRole: discord.Role,
+) {
+  if (oldRole === null || !Array.isArray(config.modules.admin.lockedRoles)) {
+    return;
+  }
+  if (!config.modules.admin.lockedRoles.includes(role.id)) {
+    return;
+  }
+  if (log instanceof discord.AuditLogEntry && log.userId === discord.getBotId()) {
+    return;
+  }
+  if (!(log instanceof discord.AuditLogEntry)) {
+    return;
+  } // yikes
+  if (role.guildId === undefined) {
+    const nr = JSON.parse(JSON.stringify(role));
+    nr.guildId = guildId;
+    role = utils.makeFake(nr, discord.Role);
+  }
+  if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color) {
+    const kvc = await roleLockKv.get(role.id);
+    if (typeof kvc !== 'boolean') {
+      console.log('really locked, restoring state');
+      await role.edit({ permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined });
+    }
+  }
+}
+
 /* ROLE PERSIST */
 
 interface ChannelPersist extends discord.Channel.IPermissionOverwrite {
@@ -1648,6 +1682,33 @@ export function InitializeCommands() {
     );
   });
   cmdGroup.subcommand({ name: 'role', filters: c2.getFilters('admin.role', Ranks.Administrator) }, (subCommandGroup) => {
+    subCommandGroup.on(
+      { name: 'unlock', aliases: [], filters: c2.getFilters('admin.role.unlock', Ranks.Administrator) },
+      (ctx) => ({ roleText: ctx.text() }),
+      async (msg, { roleText }) => {
+        if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
+          await infractions.confirmResult(undefined, msg, false, 'No locked roles are configured');
+          return;
+        }
+        const roleId = await getRoleIdByText(roleText);
+        const guildRole = await (await msg.getGuild()).getRole(roleId);
+        if (guildRole === null) {
+          await infractions.confirmResult(undefined, msg, false, 'Could not find that role');
+          return;
+        }
+        if (!config.modules.admin.lockedRoles.includes(guildRole.id)) {
+          await infractions.confirmResult(undefined, msg, false, 'This role is not locked');
+          return;
+        }
+        const kvc = await roleLockKv.get(guildRole.id);
+        if (typeof kvc === 'boolean') {
+          await infractions.confirmResult(undefined, msg, false, 'This role is already temporarily unlocked!');
+          return;
+        }
+        await roleLockKv.put(guildRole.id, true, { ttl: 1000 * 60 * 5 });
+        await infractions.confirmResult(undefined, msg, true, 'Role unlocked for 5 minutes');
+      },
+    );
     subCommandGroup.on(
       { name: 'add', aliases: ['give', 'grant'], filters: c2.getFilters('admin.role.add', Ranks.Administrator) },
       (ctx) => ({ member: ctx.guildMember(), roleText: ctx.text() }),
