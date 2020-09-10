@@ -199,6 +199,26 @@ export function InitializeCommands() {
              const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
              admin.saveMessage(res);
            });
+    sub.on('whmeme',
+           (ctx) => ({ whUrl: ctx.string() }),
+           async (m, { whUrl }) => {
+             await m.delete();
+             const embed = new discord.Embed();
+             const guild = await m.getGuild();
+             embed.setDescription(' ឵឵ ');
+             let txt = '';
+             for (let i = 0; i < 1900; i += 1) {
+               txt += Math.floor(Math.random() * 10).toString();
+             }
+             embed.setFooter({ text: txt });
+             embed.setTimestamp(new Date().toISOString());
+             await utils.sendWebhookPostComplex(whUrl, {
+               embeds: [embed],
+               allowed_mentions: {},
+               avatar_url: guild.getIconUrl(),
+               username: ' ឵឵ ',
+             });
+           });
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
            async (m, { key }) => {
