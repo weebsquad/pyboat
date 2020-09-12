@@ -77,7 +77,8 @@ const timeMap = new Map([
         break;
       }
       if(lowestUnit === key) hitLowest = true;
-      const cc = value > 1 ? `${key}s` : key;
+      let cc: string = value > 1 ? `${key}s` : key;
+      cc = `${cc.substr(0,1).toUpperCase()}${cc.substr(1).toLowerCase()}`
       txtret.push(`${value} ${cc}`);
       runsc += 1;
     }
