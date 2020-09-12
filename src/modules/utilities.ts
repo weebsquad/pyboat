@@ -125,7 +125,7 @@ export async function AL_OnMessageDelete(
   ) {
     return;
   }
-  if (!config.modules.utilities || !config.modules.utilities.snipe || config.modules.utilities.snipe.enabled !== true) {
+  if (!config.modules.utilities || !config.modules.utilities.snipe || config.modules.utilities.snipe.enabled !== true || typeof config.modules.utilities.snipe.delay !== 'number') {
     return;
   }
   if (utils.isBlacklisted(msg.member)) {
@@ -133,11 +133,11 @@ export async function AL_OnMessageDelete(
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
-  if (diff >= config.modules.utilities.snipe.delay) {
+  if (diff >= config.modules.utilities.snipe.delay*1000) {
     return;
   }
   await snipekvs.put(msg.channelId, JSON.stringify(msg), {
-    ttl: config.modules.utilities.snipe.delay,
+    ttl: config.modules.utilities.snipe.delay*1000,
   });
 }
 
