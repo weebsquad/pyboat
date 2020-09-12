@@ -598,7 +598,7 @@ export function InitializeCommands() {
             emj = '<:news:735780703530385470> ';
           }
           if (k === 'category') {
-            emj = '<:rich_presence:735781410509684786> ';
+            emj = '<:category:754241739258069043> ';
           }
 
           if (obj > 0) {
