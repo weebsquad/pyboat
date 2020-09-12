@@ -768,7 +768,7 @@ export function InitializeCommands() {
         }
         embed.setAuthor({
           name: guild.name,
-          iconUrl: 'https://cdn.discordapp.com/emojis/735781410509684786.png?v=1',
+          iconUrl: guild.getIconUrl(),
         });
         const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
         const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
