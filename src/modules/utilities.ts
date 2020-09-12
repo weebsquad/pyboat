@@ -133,11 +133,11 @@ export async function AL_OnMessageDelete(
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
-  if (diff >= config.modules.utilities.snipe.delay*1000) {
+  if (diff >= config.modules.utilities.snipe.delay * 1000) {
     return;
   }
   await snipekvs.put(msg.channelId, JSON.stringify(msg), {
-    ttl: config.modules.utilities.snipe.delay*1000,
+    ttl: config.modules.utilities.snipe.delay * 1000,
   });
 }
 
