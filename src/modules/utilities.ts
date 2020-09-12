@@ -895,11 +895,11 @@ export function InitializeCommands() {
  <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
  if(me.can(discord.Permissions.BAN_MEMBERS)) {
    const bans = await guild.getBans();
-   desc += ` ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`
+   desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`
  }
  if(me.can(discord.Permissions.MANAGE_GUILD)) {
    const invites = await guild.getInvites();
-   desc += ` <:memberjoin:754249269665333268> **Invites**: ${invites.length}`
+   desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites.length}`
  }
  
         const memberCounts = {
