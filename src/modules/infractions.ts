@@ -231,7 +231,7 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isTargetAdmin = utils.isGlobalAdmin(targetId);
-  if (targetId === discord.getBotId()) {
+  if (actor === null && targetId === discord.getBotId()) {
     return false;
   }
   if (actor === null) {
@@ -255,21 +255,28 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
+  if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
+    return 'You may not target me';
+  }
+  const amIOwner = guild.ownerId === me.user.id;
   if (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) {
-    if (!me.can(discord.Permissions.MANAGE_ROLES)) {
+    if (!me.can(discord.Permissions.MANAGE_ROLES) && !amIOwner) {
       return 'I can\'t manage roles';
     }
     const mtRole = await guild.getRole(config.modules.infractions.muteRole);
-    if (mtRole !== null && highestRoleMe.position <= mtRole.position) {
+    if (!amIOwner && mtRole !== null && highestRoleMe.position <= mtRole.position) {
       return 'I can\'t manage the mute role';
     }
   }
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
   if (actionType === InfractionType.KICK || actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) {
-    if (target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
+    if (!amIOwner && target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
-    if (highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
+    if (!amIOwner && highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
+      return `I can't ${actionType.toLowerCase()} this member`;
+    }
+    if (targetId === discord.getBotId()) {
       return `I can't ${actionType.toLowerCase()} this member`;
     }
   }
@@ -348,7 +355,7 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
   if (config.modules.infractions && config.modules.infractions.confirmation) {
     const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
     const msg = typeof config.modules.infractions.confirmation.message === 'boolean' && chan.canMember(me, discord.Permissions.SEND_MESSAGES) && typeof txt === 'string' && txt.length > 0 ? config.modules.infractions.confirmation.message : false;
-    const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(12, Math.max(3, config.modules.infractions.confirmation.expiry)) : 0;
+    const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(12, Math.max(0, config.modules.infractions.confirmation.expiry)) : 0;
     const del = typeof config.modules.infractions.confirmation.deleteOriginal === 'boolean' && !noDeleteOriginal ? config.modules.infractions.confirmation.deleteOriginal : false;
 
     const _deletedOg = false;

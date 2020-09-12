@@ -14,7 +14,7 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
-const TRACKING_KEYS_LIMIT = 150;
+const TRACKING_KEYS_LIMIT = 70;
 const ENTRIES_PER_POOL = 73; // approximate maximum
 
 // persist
@@ -23,7 +23,7 @@ const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
 const persistPrefix = 'Persist_';
 const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
 
-export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', undefined, ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
+export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
 const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
 const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
@@ -33,14 +33,15 @@ enum ActionType {
     'LOCK_CHANNEL'= 'LOCK_CHANNEL',
     'SLOWMODE' = 'SLOWMODE',
     'TEMPROLE' = 'TEMPROLE',
-    'ROLE' = 'ROLE'
+    'ROLE' = 'ROLE',
+    'NICKNAME' = 'NICKNAME'
 }
 
 export class Action { // class action lawsuit lmao
   active: boolean;
   expiresAt: string;
   id: string;
-  // ts: number;
+  ts: number;
   previous: number | undefined;
   actorId: string | null;
   targetId: string | undefined;
@@ -50,7 +51,7 @@ export class Action { // class action lawsuit lmao
   constructor(type: ActionType, actor: string | null, target: string | undefined, expires: string | undefined = '', reason = '') {
     const id = utils.composeSnowflake();
     this.id = id;
-    // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+    this.ts = utils.decomposeSnowflake(this.id).timestamp;
     this.type = type;
     this.actorId = actor;
     this.targetId = target;
@@ -93,7 +94,7 @@ export class Action { // class action lawsuit lmao
           this.active = false;
         } else {
           const perms = new utils.Permissions(defaultOw.deny);
-          if (!perms.has('SEND_MESSAGES')) {
+          if (!perms.has('SEND_MESSAGES', false)) {
             this.active = false;
           }
         }
@@ -107,7 +108,7 @@ export class Action { // class action lawsuit lmao
         this.active = false;
       } else {
         const perms = new utils.Permissions(role.permissions);
-        if (perms.has('SEND_MESSAGES')) {
+        if (perms.has('SEND_MESSAGES', false)) {
           this.active = false;
         }
       }
@@ -430,12 +431,19 @@ export async function getRoleIdByText(txt: string): Promise<string | null> {
   }
   return null;
 }
-export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, channel: discord.GuildChannel | undefined, extraTarget: any = undefined, actionType: ActionType): Promise<boolean | string> {
-  const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
-  if (targetId === discord.getBotId()) {
+export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User | null, channel: discord.GuildChannel | undefined, extraTarget: any = undefined, actionType: ActionType): Promise<boolean | string> {
+  let targetId;
+  if (target !== null) {
+    targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
+  }
+  if (actor === null && targetId === discord.getBotId()) {
     return false;
   }
+
   if (actor === null) {
+    if (typeof targetId !== 'string') {
+      return true;
+    }
     return !utils.isGlobalAdmin(targetId);
   }
   const isGA = utils.isGlobalAdmin(actor.user.id);
@@ -444,28 +452,41 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     isOverride = await utils.isGAOverride(actor.user.id);
   }
 
-  const isTargetAdmin = utils.isGlobalAdmin(targetId);
+  const isTargetAdmin = typeof targetId === 'string' && utils.isGlobalAdmin(targetId);
 
   const guild = await actor.getGuild();
+  const isGuildOwner = guild.ownerId === actor.user.id;
+  if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
+    return 'You may not target me';
+  }
   const me = await guild.getMember(discord.getBotId());
+  const amIOwner = guild.ownerId === me.user.id;
   // check bot can actually do it
-  if (actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+  if (!amIOwner && actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
     return 'I can\'t manage messages';
   }
-  if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
+  if (!amIOwner && (actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
     return 'I can\'t manage roles';
+  }
+  if (!amIOwner && actionType === ActionType.NICKNAME && !me.can(discord.Permissions.MANAGE_NICKNAMES)) {
+    return 'I can\'t manage nicknames';
   }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
-  const isGuildOwner = guild.ownerId === actor.user.id;
 
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
 
+  if (!amIOwner && target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
+    if (target.user.id !== discord.getBotId() && highestRoleTarget.position >= highestRoleMe.position) {
+      return 'I can\'t manage that target';
+    }
+  }
+
   if (extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE)) {
-    if (extraTarget.position >= highestRoleMe.position) {
+    if (!amIOwner && extraTarget.position >= highestRoleMe.position) {
       return 'I can\'t assign that role';
     }
-    if (actor !== null) {
+    if (actor !== null && !isOverride && !isGuildOwner) {
       const highestRoleActor = await utils.getMemberHighestRole(actor);
       if (extraTarget.position >= highestRoleActor.position) {
         return 'You can\'t assign that role because it is at or above your highest role';
@@ -480,10 +501,14 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
 
     if (requireExtraPerms === true) {
-      if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
-        return 'You can\'t manage messages';
-      } if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+      if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return 'You can\'t manage roles';
+      } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
+        return 'You can\'t manage nicknames';
+      } if (actionType === ActionType.CLEAN && (!channel.canMember(actor, discord.Permissions.READ_MESSAGES) || !channel.canMember(actor, discord.Permissions.SEND_MESSAGES))) {
+        return 'You don\'t have access to that channel';
+      } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+        return 'You can\'t manage messages in that channel';
       }
     }
     if (actor.user.id === targetId) {
@@ -590,9 +615,9 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     return false;
   }
   const perms = new utils.Permissions(defaultOw.deny);
-  if (perms.has('SEND_MESSAGES') && state === true) {
+  if (perms.has('SEND_MESSAGES', false) && state === true) {
     return 'Channel already locked';
-  } if (!perms.has('SEND_MESSAGES') && !state) {
+  } if (!perms.has('SEND_MESSAGES', false) && !state) {
     return 'Channel not locked';
   }
   const newOws = channel.permissionOverwrites.map((ow) => {
@@ -662,9 +687,9 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     }
   }
   const perms = new utils.Permissions(defaultRole.permissions);
-  if (!perms.has('SEND_MESSAGES') && state === true) {
+  if (!perms.has('SEND_MESSAGES', false) && state === true) {
     return 'Guild already locked';
-  } if (perms.has('SEND_MESSAGES') && !state) {
+  } if (perms.has('SEND_MESSAGES', false) && !state) {
     return 'Guild not locked';
   }
   if (state === true) {
@@ -793,6 +818,43 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   return true;
 }
 
+export async function Nick(actor: discord.GuildMember | null, target: discord.GuildMember, newNick: string | null, reason = ''): Promise<string | boolean> {
+  const guild = await discord.getGuild(guildId);
+  if (guild === null) {
+    return false;
+  }
+  const me = await guild.getMember(discord.getBotId());
+  if (me === null) {
+    return;
+  }
+  const canT = await canTarget(actor, target, undefined, undefined, ActionType.NICKNAME);
+  if (canT !== true) {
+    return canT;
+  }
+  if (target.nick === newNick) {
+    return 'The target already has this nickname!';
+  }
+  if (typeof reason !== 'string') {
+    reason = '';
+  }
+  if (reason.length > 101) {
+    reason = reason.substr(0, 100);
+  }
+  await target.edit({ nick: newNick });
+
+  const placeholders = new Map([['_NEW_NICK_', newNick === null ? 'None' : utils.escapeString(newNick)], ['_USERTAG_', getMemberTag(target)], ['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  if (actor !== null) {
+    placeholders.set('_ACTORTAG_', getActorTag(actor));
+    placeholders.set('_ACTOR_ID_', actor.user.id);
+  }
+  if (reason.length > 0) {
+    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+  }
+
+  logCustom('ADMIN', 'NICKNAME', placeholders);
+  return true;
+}
+
 let cleaning = false;
 export async function Clean(dtBegin: number, target: any, actor: discord.GuildMember | null, channel: discord.GuildChannel, count: number, channelTarget: string | undefined = undefined, reason = '', bypassCleaning = false): Promise<string | boolean | number> {
   let memberId;
@@ -814,12 +876,11 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (count === 0) {
     return false;
   }
-  if (typeof memberId === 'string') {
-    const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
-    if (canT !== true) {
-      return canT;
-    }
+  const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
+  if (canT !== true) {
+    return canT;
   }
+
   if (cleaning === true && !bypassCleaning) {
     return 'Already running a clean operation, please try again later';
   }
@@ -955,6 +1016,45 @@ export async function OnMessageDeleteBulk(
     }
     return val;
   });
+}
+
+const roleLockKv = new pylon.KVNamespace('roleLock');
+export async function AL_OnGuildRoleUpdate(
+  id: string,
+  gid: string,
+  log: discord.AuditLogEntry.AnyAction,
+  role: discord.Role,
+  oldRole: discord.Role,
+) {
+  if (oldRole === null || !Array.isArray(config.modules.admin.lockedRoles)) {
+    return;
+  }
+  if (!config.modules.admin.lockedRoles.includes(role.id)) {
+    return;
+  }
+  if (log instanceof discord.AuditLogEntry && log.userId === discord.getBotId()) {
+    return;
+  }
+  if (!(log instanceof discord.AuditLogEntry)) {
+    return;
+  } // yikes
+  if (role.guildId === undefined) {
+    const nr = JSON.parse(JSON.stringify(role));
+    nr.guildId = guildId;
+    role = utils.makeFake(nr, discord.Role);
+  }
+  if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color || role.mentionable !== oldRole.mentionable) {
+    const kvc = await roleLockKv.get(role.id);
+    if (typeof kvc !== 'boolean') {
+      await role.edit({
+        permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined,
+        hoist: role.hoist !== oldRole.hoist ? oldRole.hoist : undefined,
+        color: role.color !== oldRole.color ? oldRole.color : undefined,
+        name: role.name !== oldRole.name ? oldRole.name : undefined,
+        mentionable: role.mentionable !== oldRole.mentionable ? oldRole.mentionable : undefined,
+      });
+    }
+  }
 }
 
 /* ROLE PERSIST */
@@ -1588,6 +1688,33 @@ export function InitializeCommands() {
   });
   cmdGroup.subcommand({ name: 'role', filters: c2.getFilters('admin.role', Ranks.Administrator) }, (subCommandGroup) => {
     subCommandGroup.on(
+      { name: 'unlock', aliases: [], filters: c2.getFilters('admin.role.unlock', Ranks.Administrator) },
+      (ctx) => ({ roleText: ctx.text() }),
+      async (msg, { roleText }) => {
+        if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
+          await infractions.confirmResult(undefined, msg, false, 'No locked roles are configured');
+          return;
+        }
+        const roleId = await getRoleIdByText(roleText);
+        const guildRole = await (await msg.getGuild()).getRole(roleId);
+        if (guildRole === null) {
+          await infractions.confirmResult(undefined, msg, false, 'Could not find that role');
+          return;
+        }
+        if (!config.modules.admin.lockedRoles.includes(guildRole.id)) {
+          await infractions.confirmResult(undefined, msg, false, 'This role is not locked');
+          return;
+        }
+        const kvc = await roleLockKv.get(guildRole.id);
+        if (typeof kvc === 'boolean') {
+          await infractions.confirmResult(undefined, msg, false, 'This role is already temporarily unlocked!');
+          return;
+        }
+        await roleLockKv.put(guildRole.id, true, { ttl: 1000 * 60 * 5 });
+        await infractions.confirmResult(undefined, msg, true, 'Role unlocked for 5 minutes');
+      },
+    );
+    subCommandGroup.on(
       { name: 'add', aliases: ['give', 'grant'], filters: c2.getFilters('admin.role.add', Ranks.Administrator) },
       (ctx) => ({ member: ctx.guildMember(), roleText: ctx.text() }),
       async (msg, { member, roleText }) => {
@@ -1712,6 +1839,91 @@ export function InitializeCommands() {
       },
     );
   });
+
+  cmdGroup.on(
+    { name: 'join', aliases: ['add'], filters: c2.getFilters('admin.join', Ranks.Guest) },
+    (ctx) => ({ roleName: ctx.text() }),
+    async (msg, { roleName }) => {
+      const res: any = await msg.reply(async () => {
+        if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+          return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
+        }
+        const thisRole = config.modules.admin.groupRoles[roleName.toLowerCase()];
+        if (!thisRole) {
+          return { content: `${discord.decor.Emojis.X} Role not found` };
+        }
+        if (typeof thisRole !== 'string' || thisRole.length < 5) {
+          return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+        }
+        const guildRole = await (await msg.getGuild()).getRole(thisRole);
+        if (guildRole === null) {
+          return { content: `${discord.decor.Emojis.X} Role not found` };
+        }
+        if (msg.member.roles.includes(guildRole.id)) {
+          return { content: `${discord.decor.Emojis.X} You already have this role!` };
+        }
+        let perms = new utils.Permissions(guildRole.permissions).serialize(true);
+        for (const key in perms) {
+          if (perms[key] === false) {
+            delete perms[key];
+          }
+        }
+        perms = Object.keys(perms);
+        const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
+        const noStaff = perms.every((p) => !staffPerms.includes(p));
+        if (!noStaff) {
+          return { content: `${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.` };
+        }
+        await msg.member.addRole(guildRole.id);
+        return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${guildRole.toMention()} role!` };
+      });
+      saveMessage(res);
+    },
+  );
+  cmdGroup.on(
+    { name: 'leave', aliases: ['remove'], filters: c2.getFilters('admin.leave', Ranks.Guest) },
+    (ctx) => ({ roleName: ctx.text() }),
+    async (msg, { roleName }) => {
+      const res: any = await msg.reply(async () => {
+        if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+          return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
+        }
+        const thisRole = config.modules.admin.groupRoles[roleName.toLowerCase()];
+        if (!thisRole) {
+          return { content: `${discord.decor.Emojis.X} Role not found` };
+        }
+        if (typeof thisRole !== 'string' || thisRole.length < 5) {
+          return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+        }
+        const guildRole = await (await msg.getGuild()).getRole(thisRole);
+        if (guildRole === null) {
+          return { content: `${discord.decor.Emojis.X} Role not found` };
+        }
+        if (!msg.member.roles.includes(guildRole.id)) {
+          return { content: `${discord.decor.Emojis.X} You do not have this role!` };
+        }
+        await msg.member.removeRole(guildRole.id);
+        return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${guildRole.toMention()} role from you!` };
+      });
+      saveMessage(res);
+    },
+  );
+  cmdGroup.on(
+    { name: 'nickname', aliases: ['nick'], filters: c2.getFilters('admin.nickname', Ranks.Moderator) },
+    (ctx) => ({ member: ctx.guildMember(), nickname: ctx.textOptional() }),
+    async (msg, { member, nickname }) => {
+      const res = await Nick(msg.member, member, nickname);
+      if (typeof res === 'string') {
+        await infractions.confirmResult(undefined, msg, false, res);
+        return;
+      }
+      if (res === true) {
+        await infractions.confirmResult(undefined, msg, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname)}\``);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'Failed to set nickname');
+      }
+    },
+  );
 
   cmdGroup.on(
     { name: 'temprole', filters: c2.getFilters('admin.temprole', Ranks.Administrator) },

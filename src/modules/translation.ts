@@ -3,6 +3,7 @@ import * as constants from '../constants/translation';
 import * as utils from '../lib/utils';
 import {messageJump} from '../modules/logging/messages';
 import { saveMessage } from './admin';
+import { config } from '../config';
 
 const kv = new pylon.KVNamespace('translation');
 
@@ -209,7 +210,12 @@ export async function OnMessageReactionAdd(
     return;
   }
   //if (!(message instanceof discord.GuildMemberMessage)) return;
-
+if(typeof config.modules.translation !== 'object' || typeof config.modules.translation.googleApi !== 'object' || typeof config.modules.translation.googleApi.key !== 'string' || config.modules.translation.googleApi.key.length < 5) return;
+// check level
+if(typeof config.modules.translation.level === 'number') {
+  const canR = await utils.canMemberRun(config.modules.translation.level, reaction.member);
+  if(!canR) return;
+}
   const pool = await kv.get('translatedMessages');
   const guild = await channel.getGuild();
   const memBot = await guild.getMember(discord.getBotId());

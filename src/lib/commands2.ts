@@ -32,7 +32,18 @@ export function filterGlobalAdmin(message: discord.GuildMemberMessage): boolean 
   return utils.isGlobalAdmin(message.author.id);
 }
 export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMessage): Promise<boolean> {
+  const isAdmin = filterGlobalAdmin(message);
+  if (!isAdmin) {
+    return false;
+  }
   const _ret = await utils.isGAOverride(message.author.id);
+  if (!_ret) {
+    if (typeof globalConfig.devPrefix === 'string' && message.content.length > globalConfig.devPrefix.length) {
+      if (message.content.substr(0, globalConfig.devPrefix.length) === globalConfig.devPrefix) {
+        return true;
+      }
+    }
+  }
   return _ret;
 }
 class CmdOverride {
@@ -42,6 +53,7 @@ class CmdOverride {
   channelsBlacklist: Array<string> | undefined = undefined;
   rolesWhitelist: Array<string> | undefined = undefined;
   rolesBlacklist: Array<string> | undefined = undefined;
+  bypassLevel: number | undefined = undefined;
 }
 export function checkOverrides(level: number, ovtext: string) {
   const retVal = new CmdOverride();
@@ -88,6 +100,9 @@ export function checkOverrides(level: number, ovtext: string) {
     if (Array.isArray(obj.rolesBlacklist)) {
       retVal.rolesBlacklist = obj.rolesBlacklist;
     }
+    if (typeof obj.bypassLevel === 'number') {
+      retVal.bypassLevel = obj.bypassLevel;
+    }
   }
 
   if (level < 0) {
@@ -131,8 +146,10 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
         if (Array.isArray(ov.rolesBlacklist)) {
           rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
         }
-        txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
-      } else if (Array.isArray(ov.rolesBlacklist)) {
+        if (rls.length > 0) {
+          txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
+        }
+      } else if (Array.isArray(ov.rolesBlacklist) && ov.rolesBlacklist.length > 0) {
         txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
       }
       if (Array.isArray(ov.channelsWhitelist)) {
@@ -140,25 +157,35 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
         if (Array.isArray(ov.channelsBlacklist)) {
           chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
         }
-        txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
-      } else if (Array.isArray(ov.channelsBlacklist)) {
+        if (chs.length > 0) {
+          txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
+        }
+      } else if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.length > 0) {
         txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
       }
     }
 
     let _f = F.custom(async (msg) => {
       const ownr = await filterActualOwner(msg);
-      const val = await filterLevel(msg, level);
-      if (ownr) {
+      const theirLevel = utils.getUserAuth(msg.member);
+      const val = theirLevel >= level;
+      const override = await filterOverridingGlobalAdmin(msg);
+      if (ownr || override) {
         return true;
       }
+
       if (!ov) {
         return val;
+      }
+      if (typeof ov.bypassLevel === 'number') {
+        if (theirLevel >= ov.bypassLevel) {
+          return true;
+        }
       }
       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(msg.channelId)) {
         return false;
       }
-      if (Array.isArray(ov.channelsWhitelist) && !ov.channelsWhitelist.includes(msg.channelId)) {
+      if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(msg.channelId)) {
         return false;
       }
       if (Array.isArray(ov.rolesBlacklist)) {
@@ -167,7 +194,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
           return false;
         }
       }
-      if (Array.isArray(ov.rolesWhitelist)) {
+      if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
         const matches = msg.member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
         if (typeof matches === 'undefined') {
           return false;
@@ -176,7 +203,12 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       return val;
     }, txtErr.join('\n'));
     if (ov && ov.disabled === true) {
-      _f = F.custom(async (msg) => false, 'this command is disabled');
+      _f = F.custom(async (msg) => {
+        const ownr = await filterActualOwner(msg);
+        const override = await filterOverridingGlobalAdmin(msg);
+        const theirLevel = utils.getUserAuth(msg.member);
+        return ownr || override || (typeof ov.bypassLevel === 'number' && theirLevel >= ov.bypassLevel);
+      }, 'this command is disabled');
     }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
       _f = F.silent(_f);

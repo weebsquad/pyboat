@@ -87,6 +87,7 @@ export function getKeys(
   if (feats) {
     keys.push('features');
   }
+
   return keys;
 }
 

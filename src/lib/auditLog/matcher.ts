@@ -186,6 +186,7 @@ export async function validateAuditEvent(
     if (!(def[key] instanceof Function)) {
       continue;
     }
+
     const objc = def[key](data);
     if (typeof objc === 'undefined') {
       return false;
@@ -194,7 +195,6 @@ export async function validateAuditEvent(
       return false;
     }
   }
-
   const valsCheck = ['newValue', 'oldValue'];
   for (const key in auditLogEntry.changes) {
     if (typeof auditLogEntry.changes[key] !== 'object') {

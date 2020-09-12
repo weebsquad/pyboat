@@ -25,7 +25,7 @@ export function InitializeCommands() {
     { name: 'help', filters: c2.getFilters('commands.help', Ranks.Guest) }, async (msg) => {
       const newemb = new discord.Embed();
       newemb.setAuthor({ name: 'PyBoat' });
-      newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)');
+      newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
       newemb.setColor(0xFF0000);
       const myavatar = await discord.getBotUser();
       newemb.setThumbnail({ url: myavatar.getAvatarUrl() });
@@ -56,6 +56,29 @@ export function InitializeCommands() {
       const td = new Date().getTime() - msgd.getTime();
       await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
       admin.saveMessage(edmsg);
+    },
+  );
+
+  cmdGroup.on(
+    { name: 'nickme', filters: c2.getFilters('commands.nickme', Ranks.Owner) },
+    (ctx) => ({ nick: ctx.textOptional() }),
+    async (msg, { nick }) => {
+      const res:any = await msg.reply(async () => {
+        const guild = await msg.getGuild();
+        const me = await guild.getMember(discord.getBotId());
+        if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
+          return 'I don\'t have permissions to change my nickname!';
+        }
+        if (nick === me.nick) {
+          return 'I already have that nickname!';
+        }
+        if (nick === 'invisible') {
+          nick = ' ឵឵ ';
+        } // invis chars
+        await me.edit({ nick });
+        return 'Done!';
+      });
+      admin.saveMessage(res);
     },
   );
 

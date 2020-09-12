@@ -89,7 +89,7 @@ export async function resolveQueue() {
             });
           }, 3000);
         } catch (e) {
-          console.error(e);
+          utils.logError(e);
         }
       }
     } else if (cpuT >= 100) {
@@ -98,7 +98,7 @@ export async function resolveQueue() {
           await routing.ExecuteQueuedEvents(procQueue);
         }, Math.max(200, cpuT));
       } catch (err) {
-        console.error(err);
+        utils.logError(err);
         if (
           !(err instanceof pylon.CpuBurstRequestError)
           && typeof err.bucketRemainingMs !== 'number'

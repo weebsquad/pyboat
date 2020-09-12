@@ -127,7 +127,7 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
     triggerCount = parseInt(triggerCount, 10);
     triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
     const individuals = [];
-    const indNeeded = Math.max(2, Math.floor(triggerCount / 3));
+    const indNeeded = Math.min(10, Math.max(2, Math.floor(triggerCount / 3)));
     const compare = now - (Math.floor(triggerSeconds * 1000));
     const matchesThis = violations.filter((e) => {
       if (!individuals.includes(e.member)) {
@@ -276,9 +276,12 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     }
   }
   if (checkTokens === true) {
-    const blocks: any = txt.toLowerCase().match(new RegExp(thisCfg.tokens.filter((w) => typeof w === 'string' && w.length > 0).join('|'), 'gi'));
-    if (Array.isArray(blocks) && blocks.length > 0) {
-      toRet.tokens = blocks;
+    const checks = thisCfg.tokens.filter((w) => typeof w === 'string' && w.length > 0);
+    if (checks.length > 0) {
+      const blocks: any = txt.toLowerCase().match(new RegExp(checks.join('|'), 'gi'));
+      if (Array.isArray(blocks) && blocks.length > 0) {
+        toRet.tokens = blocks;
+      }
     }
   }
   if (checkCaps === true) {

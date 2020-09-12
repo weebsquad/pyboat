@@ -20,15 +20,15 @@ export enum Ranks {
     'Owner' = 200,
 }
 export const globalConfig = <any>{
-  masterWebhook: 'https://discordapp.com/api/webhooks/741063306147790948/Ie6WWC5eGaq_uXGigpWR4ywPC8YnPAB4r1efBdHs-ZNeVux6Vr5dRc0rT3M7KAnhw4Wn',
+  masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
-    botToken: 'NDA2ODg4NjExMTk2MzA1NDI4.WmzOjA._94Rd-hh4--LKBqfTPgELa5XZOo',
+    botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.5.3',
+  version: '1.6.1',
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
@@ -125,9 +125,15 @@ const defaultConfig = { // for non-defined configs!
       // this does not proc on auditlogged deletions! (So if you, a moderator)
       // Deletes someone else's message, people won't be able to snipe it.
       snipe: {
-        enabled: true,
+        enabled: false,
         // delay for which messages will last after being deleted!
         delay: 2 * 60 * 1000,
+      },
+      customUserRoles: {
+        enabled: false,
+        clearOnKick: true,
+        clearOnBan: true,
+        clearOnLeave: true,
       },
     },
     /* roleManagement: { // for group srv only
@@ -251,6 +257,8 @@ const defaultConfig = { // for non-defined configs!
         },
         saveOnBan: true,
       },
+      groupRoles: {},
+      lockedRoles: [],
       autoroles: {
         enabled: false,
         human: [],
@@ -330,7 +338,12 @@ export async function InitializeConfig(bypass = false) {
       globalConfig[k] = obj;
     }
   } catch (e) {
-    console.error(`Loading globals error: ${e.stack}`);
+    // console.error(`Loading globals error: ${e.stack}`);
+    console.warn('Loading globals error (1)');
+    return false;
+  }
+  if (typeof globalConfig !== 'object') {
+    console.warn('Loading globals error (2)');
     return false;
   }
   // console.info('Fetched globals');
@@ -338,6 +351,10 @@ export async function InitializeConfig(bypass = false) {
     console.warn('Disabled');
     loadingConf = false;
     config = undefined;
+    return false;
+  }
+  if (globalConfig.botId !== discord.getBotId()) {
+    console.warn('Wrong bot ID');
     return false;
   }
   if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {

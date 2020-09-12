@@ -28,6 +28,7 @@ const _cr: {[key: string]: any} = {
           await censor.clean();
           await antiPing.periodicDataClear();
           await utilities.checkReminders();
+          await utilities.checkAllCustomRoles();
           if (InitializedPools.length > 0) {
             await Promise.all(InitializedPools.map(async (pool) => {
               await pool.clean();
@@ -40,7 +41,7 @@ const _cr: {[key: string]: any} = {
           await logError(e);
         }
       }
-      console.log(`Took ${Date.now() - dt}ms to run cron`);
+      // console.log(`Took ${Date.now() - dt}ms to run cron`);
     },
     started: false,
   },

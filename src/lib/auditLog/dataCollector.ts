@@ -311,7 +311,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
     },
   },
   GUILD_UPDATE: {
-    targetId: (dt: any) => dt[0].id,
+    // targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
     auditLogEntries: [
       discord.AuditLogEntry.ActionType.GUILD_UPDATE,

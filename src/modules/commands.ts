@@ -3,6 +3,7 @@ import * as conf from '../config';
 import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
+import { isIgnoredChannel, isIgnoredUser } from './logging/main';
 
 async function HandleDM(msg: discord.Message) {
   // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
@@ -60,18 +61,20 @@ export async function OnMessageCreate(
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
       if (!isDevCmd) {
-        logCustom(
-          'COMMANDS',
-          'COMMAND_USED',
-          new Map<string, any>([
-            ['_COMMAND_NAME_', utils.escapeString(msg.content)],
-            ['_AUTHOR_', msg.author],
-            ['_USER_', msg.author],
-            ['_USER_ID_', msg.author.id],
-            ['_MEMBER_', msg.member],
-            ['_CHANNEL_ID_', msg.channelId],
-          ]),
-        );
+        if (!isIgnoredChannel(msg.channelId) && !isIgnoredUser(msg.member)) {
+          logCustom(
+            'COMMANDS',
+            'COMMAND_USED',
+            new Map<string, any>([
+              ['_COMMAND_NAME_', utils.escapeString(msg.content)],
+              ['_AUTHOR_', msg.author],
+              ['_USER_', msg.author],
+              ['_USER_ID_', msg.author.id],
+              ['_MEMBER_', msg.member],
+              ['_CHANNEL_ID_', msg.channelId],
+            ]),
+          );
+        }
       }
 
       return false;

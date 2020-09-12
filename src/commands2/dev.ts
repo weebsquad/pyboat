@@ -199,6 +199,26 @@ export function InitializeCommands() {
              const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
              admin.saveMessage(res);
            });
+    sub.on('whmeme',
+           (ctx) => ({ whUrl: ctx.string() }),
+           async (m, { whUrl }) => {
+             await m.delete();
+             const embed = new discord.Embed();
+             const guild = await m.getGuild();
+             embed.setDescription(' ឵឵ ');
+             let txt = '';
+             for (let i = 0; i < 1900; i += 1) {
+               txt += Math.floor(Math.random() * 10).toString();
+             }
+             embed.setFooter({ text: txt });
+             embed.setTimestamp(new Date().toISOString());
+             await utils.sendWebhookPostComplex(whUrl, {
+               embeds: [embed],
+               allowed_mentions: {},
+               avatar_url: guild.getIconUrl(),
+               username: ' ឵឵ ',
+             });
+           });
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
            async (m, { key }) => {
@@ -321,6 +341,7 @@ export function InitializeCommands() {
         const now = Date.now();
         const res1 = await new pylon.KVNamespace('admin').items();
         const poolsL = await admin.adminPool.getAll();
+        console.log(`(4) res length: ${res1.length}, pools length: ${poolsL.length}`);
         let txt = '';
         let c = 0;
         res1.map((item: any) => {
@@ -371,7 +392,7 @@ export function InitializeCommands() {
         let permsVal = <any>'17179869186';
         permsVal = m.member.permissions;
         const p = new utils.Permissions(permsVal);
-        const mp = p.serialize();
+        const mp = p.serialize(false);
         for (const k in mp) {
           if (mp[k] === false) {
             delete mp[k];

@@ -295,7 +295,6 @@ async function parseChannelsData(
 }
 
 async function getMessages(
-  guildId: string,
   chans: Map<string, Array<Map<string, any>>>,
   ev: Event,
 ) {
@@ -705,7 +704,36 @@ export function combineMessages(
       }
     });
     if (contents !== '' && contents.length >= 1990) {
-      const lines = contents.split('\n');
+      // const lines = contents.split('\n');
+      let lines: Array<string>;
+      if (contents.includes('```')) {
+        let start: number | undefined;
+        const newArr = [];
+        const thisSplit = contents.split('\n');
+        for (let i = 0; i < thisSplit.length; i++) {
+          const thisLine = thisSplit[i];
+          if (!thisLine.includes('```')) {
+            // no codeblock
+            if (start === undefined) {
+              newArr.push(thisLine);
+            }
+          } else {
+            // found a codeblock
+            if (typeof start === 'number' && i > start) {
+              // we were parsing a codeblock!
+              const slice = thisSplit.slice(start, i + 1);
+              // console.log('slice = ', slice);
+              newArr.push(slice.join('\n'));
+              start = undefined;
+              continue;
+            }
+            start = i;
+          }
+        }
+        lines = newArr.filter(() => true); // new array instead of a reference
+      } else {
+        lines = contents.split('\n');
+      }
       // lines = lines.slice(0, lines.length - 1);
       let accum = [];
       for (let i = 0; i < lines.length; i += 1) {
@@ -807,7 +835,7 @@ export async function handleMultiEvents(q: Array<QueuedEvent>) {
 
       const chansTemp = await parseChannelsData(obj);
 
-      const messagesTemp = await getMessages(obj.guildId, chansTemp, obj);
+      const messagesTemp = await getMessages(chansTemp, obj);
 
       for (const [chid, opts] of messagesTemp) {
         if (!messages.has(chid)) {
@@ -922,7 +950,7 @@ export async function handleEvent(
     );
     if (isExt) {
       const chans = await parseChannelsData(obj);
-      let messages = await getMessages(guildId, chans, obj);
+      let messages = await getMessages(chans, obj);
       messages = combineMessages(messages);
       await sendInLogChannel(messages, true, conf.globalConfig.masterWebhook);
       return;
@@ -931,7 +959,7 @@ export async function handleEvent(
 
     const chans = await parseChannelsData(obj);
     // console.log('handleevent.parseChannelData', chans);
-    const messages = await getMessages(guildId, chans, obj);
+    const messages = await getMessages(chans, obj);
     // console.log('handleevent.getMessages', messages);
     // add to queue
     for (const [chId, opts] of messages) {
