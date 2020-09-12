@@ -756,9 +756,11 @@ export function InitializeCommands() {
       const res: any = await message.reply(async () => {
         const embed = new discord.Embed();
         const guild = await message.getGuild();
+        const me = await guild.getMember(discord.getBotId());
         if (guild === null) {
           throw new Error('guild not found');
         }
+        if(me === null) throw new Error('bot user not found');
 
         let icon = guild.getIconUrl();
         if (icon === null) {
@@ -891,6 +893,15 @@ export function InitializeCommands() {
 **❯ **Other Counts
  <:settings:735782884836638732> **Roles**: ${roles.length}
  <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
+ if(me.can(discord.Permissions.BAN_MEMBERS)) {
+   const bans = await guild.getBans();
+   desc += ` ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`
+ }
+ if(me.can(discord.Permissions.MANAGE_GUILD)) {
+   const invites = await guild.getInvites();
+   desc += ` <:memberjoin:754249269665333268> **Invites**: ${invites.length}`
+ }
+ 
         const memberCounts = {
           human: 0,
           bot: 0,
