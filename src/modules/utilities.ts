@@ -817,7 +817,7 @@ export function InitializeCommands() {
 <:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
   󠇰**Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**
 <:owner:735780703903547443>**Owner**: <@!${guild.ownerId}>
-<:voice:735780703928844319>**Voice Region**: \`${guild.region}\`
+<:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0,1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
   󠇰**Features**: \`${features}\`
   󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
@@ -851,22 +851,22 @@ export function InitializeCommands() {
           const obj = counts[k];
           let emj = '';
           if (k === 'text') {
-            emj = '<:channel:735780703983239218> ';
+            emj = '<:channel:735780703983239218>';
           }
           if (k === 'voice') {
-            emj = '<:voice:735780703928844319> ';
+            emj = '<:voice:735780703928844319>';
           }
           if (k === 'store') {
-            emj = '<:store:735780704130170880> ';
+            emj = '<:store:735780704130170880>';
           }
           if (k === 'news') {
-            emj = '<:news:735780703530385470> ';
+            emj = '<:news:735780703530385470>';
           }
           if (k === 'category') {
-            emj = '<:category:754241739258069043> ';
+            emj = '<:category:754241739258069043>';
           }
 
-          if (obj > 0) {
+          /*if (obj > 0) {
             chanStats.push(
               `\n ${
                 emj
@@ -877,9 +877,11 @@ export function InitializeCommands() {
                 obj
               }**`,
             );
-          }
+          }*/
+          if(obj > 0) chanStats.push(`${emj}: **${obj}**`)
         }
-        desc += `\n\n**❯ **Channels ⎯ ${channels.length}${chanStats.join('')}`;
+        desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
+
         const roles = await guild.getRoles();
         const emojis = await guild.getEmojis();
 
