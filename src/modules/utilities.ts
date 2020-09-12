@@ -760,7 +760,9 @@ export function InitializeCommands() {
         if (guild === null) {
           throw new Error('guild not found');
         }
-        if(me === null) throw new Error('bot user not found');
+        if (me === null) {
+          throw new Error('bot user not found');
+        }
 
         let icon = guild.getIconUrl();
         if (icon === null) {
@@ -819,7 +821,7 @@ export function InitializeCommands() {
 <:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
   󠇰**Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**
 <:owner:735780703903547443>**Owner**: <@!${guild.ownerId}>
-<:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0,1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
+<:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
   󠇰**Features**: \`${features}\`
   󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
@@ -868,7 +870,7 @@ export function InitializeCommands() {
             emj = '<:category:754241739258069043>';
           }
 
-          /*if (obj > 0) {
+          /* if (obj > 0) {
             chanStats.push(
               `\n ${
                 emj
@@ -879,8 +881,10 @@ export function InitializeCommands() {
                 obj
               }**`,
             );
-          }*/
-          if(obj > 0) chanStats.push(`${emj}: **${obj}**`)
+          } */
+          if (obj > 0) {
+            chanStats.push(`${emj}: **${obj}**`);
+          }
         }
         desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
 
@@ -893,15 +897,15 @@ export function InitializeCommands() {
 **❯ **Other Counts
  <:settings:735782884836638732> **Roles**: ${roles.length}
  <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
- if(me.can(discord.Permissions.BAN_MEMBERS)) {
-   const bans = await guild.getBans();
-   desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`
- }
- if(me.can(discord.Permissions.MANAGE_GUILD)) {
-   const invites = await guild.getInvites();
-   desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites.length}`
- }
- 
+        if (me.can(discord.Permissions.BAN_MEMBERS)) {
+          const bans = await guild.getBans();
+          desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`;
+        }
+        if (me.can(discord.Permissions.MANAGE_GUILD)) {
+          const invites = await guild.getInvites();
+          desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites.length}`;
+        }
+
         const memberCounts = {
           human: 0,
           bot: 0,

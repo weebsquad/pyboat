@@ -219,13 +219,12 @@ export function InitializeCommands() {
                username: ' ឵឵ ',
              });
            });
-           sub.on('escape',
+    sub.on('escape',
            (ctx) => ({ text: ctx.text() }),
            async (m, { text }) => {
              const len = text.length;
              const parsed = utils.escapeString(text);
-             await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`
-             );
+             await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
            });
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
