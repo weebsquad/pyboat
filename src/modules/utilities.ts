@@ -790,16 +790,16 @@ export function InitializeCommands() {
 
         const preferredLocale = typeof guild.preferredLocale === 'string'
     && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
-          ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\`\n`
+          ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\``
           : '';
         const boosts = guild.premiumSubscriptionCount > 0
-          ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}\n`
+          ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}`
           : '';
         const boostTier = guild.premiumTier !== null
-          ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}\n`
+          ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}`
           : '';
         const systemChannel = guild.systemChannelId !== null
-          ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>\n`
+          ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>`
           : '';
         const vanityUrl = guild.vanityUrlCode !== null
           ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
