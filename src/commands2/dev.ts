@@ -219,6 +219,13 @@ export function InitializeCommands() {
                username: ' ឵឵ ',
              });
            });
+           sub.on('encode',
+           (ctx) => ({ text: ctx.string() }),
+           async (m, { text }) => {
+             const len = text.length;
+             const parsed = utils.escapeString(text);
+             await m.reply(`Original (${len}) => ${text}\n\nParsed (${parsed.length}) => ${parsed}`);
+           });
     sub.on('getkvm',
            (ctx) => ({ key: ctx.string() }),
            async (m, { key }) => {
