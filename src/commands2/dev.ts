@@ -191,50 +191,81 @@ export function InitializeCommands() {
         admin.saveMessage(res);
       },
     );
-    sub.on('cron',
-           (ctx) => ({ key: ctx.string() }),
-           async (m, { key }) => {
-             const dt = Date.now();
-             await crons.onCron(key);
-             const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
-             admin.saveMessage(res);
-           });
-    sub.on('whmeme',
-           (ctx) => ({ whUrl: ctx.string() }),
-           async (m, { whUrl }) => {
-             await m.delete();
-             const embed = new discord.Embed();
-             const guild = await m.getGuild();
-             embed.setDescription(' ឵឵ ');
-             let txt = '';
-             for (let i = 0; i < 1900; i += 1) {
-               txt += Math.floor(Math.random() * 10).toString();
-             }
-             embed.setFooter({ text: txt });
-             embed.setTimestamp(new Date().toISOString());
-             await utils.sendWebhookPostComplex(whUrl, {
-               embeds: [embed],
-               allowed_mentions: {},
-               avatar_url: guild.getIconUrl(),
-               username: ' ឵឵ ',
-             });
-           });
-    sub.on('escape',
-           (ctx) => ({ text: ctx.text() }),
-           async (m, { text }) => {
-             const len = text.length;
-             const parsed = utils.escapeString(text);
-             await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
-           });
-    sub.on('getkvm',
-           (ctx) => ({ key: ctx.string() }),
-           async (m, { key }) => {
-             const dt = Date.now();
-             const keys = await utils.KVManager.get(key);
-             console.log(keys);
-             const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
-             admin.saveMessage(res);
-           });
+    sub.on(
+      'cron',
+      (ctx) => ({ key: ctx.string() }),
+      async (m, { key }) => {
+        const dt = Date.now();
+        await crons.onCron(key);
+        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        admin.saveMessage(res);
+      },
+    );
+    sub.on(
+      'whmeme',
+      (ctx) => ({ whUrl: ctx.string() }),
+      async (m, { whUrl }) => {
+        await m.delete();
+        const embed = new discord.Embed();
+        const guild = await m.getGuild();
+        embed.setDescription(' ឵឵ ');
+        let txt = '';
+        for (let i = 0; i < 1900; i += 1) {
+          txt += Math.floor(Math.random() * 10).toString();
+        }
+        embed.setFooter({ text: txt });
+        embed.setTimestamp(new Date().toISOString());
+        await utils.sendWebhookPostComplex(whUrl, {
+          embeds: [embed],
+          allowed_mentions: {},
+          avatar_url: guild.getIconUrl(),
+          username: ' ឵឵ ',
+        });
+      },
+    );
+    sub.on(
+      'escape',
+      (ctx) => ({ text: ctx.text() }),
+      async (m, { text }) => {
+        const len = text.length;
+        const parsed = utils.escapeString(text);
+        await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
+      },
+    );
+    sub.on(
+      'getkvm',
+      (ctx) => ({ key: ctx.string() }),
+      async (m, { key }) => {
+        const dt = Date.now();
+        const keys = await utils.KVManager.get(key);
+        console.log(keys);
+        const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+        admin.saveMessage(res);
+      },
+    );
+    sub.on(
+      'getpool',
+      (ctx) => ({ key: ctx.string() }),
+      async (m, { key }) => {
+        const dt = Date.now();
+        const pool = pools.InitializedPools.find((v) => v.kvName === key);
+        if (!pool) {
+          const res: any = await m.reply('Couldnt find that key');
+          admin.saveMessage(res);
+          return;
+        }
+        const items = await pool.getAll();
+        const json = `\`\`\`json\n${JSON.stringify(items)}\n\`\`\``;
+        if (json.length > 1990) {
+          console.log(items);
+          const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+          admin.saveMessage(res);
+          return;
+        }
+        const res: any = await m.reply(json);
+        admin.saveMessage(res);
+      },
+    );
     sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
