@@ -266,6 +266,22 @@ export function InitializeCommands() {
         admin.saveMessage(res);
       },
     );
+    sub.on(
+      'clearpool',
+      (ctx) => ({ key: ctx.string() }),
+      async (m, { key }) => {
+        const dt = Date.now();
+        const pool = pools.InitializedPools.find((v) => v.kvName === key);
+        if (!pool) {
+          const res: any = await m.reply('Couldnt find that key');
+          admin.saveMessage(res);
+          return;
+        }
+        await pool.clear();
+        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        admin.saveMessage(res);
+      },
+    );
     sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
