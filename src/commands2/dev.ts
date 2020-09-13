@@ -311,7 +311,7 @@ export function InitializeCommands() {
     sub.raw(
       'getinfs', async (m) => {
         const now = Date.now();
-        const infs = await infractions.getInfractions();
+        const infs = await infractions.infsPool.getAll();
         const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
         console.log(infs);

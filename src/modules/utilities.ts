@@ -8,7 +8,7 @@ import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
 import { KVManager, StoragePool } from '../lib/utils';
-import { getInfractionBy } from './infractions';
+import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
 
 class UserRole {
@@ -1208,8 +1208,8 @@ export function InitializeCommands() {
           if (member.roles.length > 0) {
             desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
           }
-          const infsGiven = await getInfractionBy({ actorId: user.id });
-          const infsReceived = await getInfractionBy({ memberId: user.id });
+          const infsGiven = await infsPool.getByQuery({ actorId: user.id });
+          const infsReceived = await infsPool.getByQuery({ memberId: user.id });
           if (infsGiven.length > 0 || infsReceived.length > 0) {
             desc += '\n\n**❯ Infractions**';
           }
