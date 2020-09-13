@@ -461,7 +461,7 @@ export async function OnMessageReactionAdd(
   if (isBoardMsg) {
     board = reaction.channelId;
     boardCfg = config.modules.starboard.channels[reaction.channelId];
-    if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
+    if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && message.embeds[0].footer !== null && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
       const foot = message.embeds[0].footer.text;
       if (!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
         const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
@@ -620,7 +620,7 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (isBoardMsg) {
     board = reaction.channelId;
     boardCfg = config.modules.starboard.channels[reaction.channelId];
-    if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
+    if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && message.embeds[0].footer !== null && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
       const foot = message.embeds[0].footer.text;
       if (!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
         const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
