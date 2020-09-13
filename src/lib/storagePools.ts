@@ -8,12 +8,14 @@ const ASSUMED_MAX_KEYS = 256;
 export class StoragePool {
     kvName: string;
     kv: pylon.KVNamespace;
+    local: Boolean; // whether this should be kv or local
+    localStore: Array<any> = [];
     duration: number; // duration for each entry
     uniqueId: string; // unique id prop on the objects
     timestampProperty: string | undefined = undefined; // timestamp prop on the objects for calcs
     maxObjects: number | undefined = undefined; // max objects per array instead of byte calcs
     reduceAt: number | undefined = undefined; // what key count to start reducing duration at
-    constructor(name: string, itemDuration = 0, uniqueIdProperty: string, timestampProperty: string | undefined = undefined, maxObjects: number | undefined = undefined, reduceAt: number | undefined = undefined) {
+    constructor(name: string, itemDuration = 0, uniqueIdProperty: string, timestampProperty: string | undefined = undefined, maxObjects: number | undefined = undefined, reduceAt: number | undefined = undefined, local = false) {
       this.kvName = name;
       this.kv = new pylon.KVNamespace(name);
       this.duration = itemDuration;
@@ -25,6 +27,7 @@ export class StoragePool {
       if (!_ex) {
         InitializedPools.push(this);
       }
+      this.local = local;
       return this;
     }
     private async err(txt: string) {
@@ -56,6 +59,16 @@ export class StoragePool {
         return;
       }
       let diff = Date.now() - this.duration;
+      if (this.local === true) {
+        const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
+        console.log('toremove locals:', toRemove);
+        if (toRemove.length > 0) {
+          const bef = this.localStore.length;
+          this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.uniqueId]));
+          console.log(`Diff: ${bef} - ${this.localStore.length} = ${bef - this.localStore.length} ------ (Supposed to clear ${toRemove.length})`);
+        }
+        return;
+      }
       const items = await this.kv.items();
       if (typeof this.reduceAt === 'number' && this.reduceAt > 0) {
         const count = items.length;
@@ -94,6 +107,15 @@ export class StoragePool {
     }
 
     async saveToPool(newObj: any) {
+      if (this.local === true) {
+        const ex = this.localStore.find((item) => item !== null && item[this.uniqueId] === newObj[this.uniqueId]);
+        if (typeof ex !== 'undefined') {
+          const _res = await this.editPool(newObj[this.uniqueId], newObj);
+          return _res;
+        }
+        this.localStore.push(newObj);
+        return;
+      }
       // check same len
       let _thisLen;
       const items = await this.kv.items();
@@ -232,17 +254,19 @@ export class StoragePool {
     }
     async getAll<T>(it: any = undefined, sort = true): Promise<Array<T>> {
       const diff = Date.now() - this.duration;
-      let items: Array<any> = (Array.isArray(it) ? it : await this.kv.items());
+      let items: Array<any>;
+      if (this.local === true) {
+        items = this.localStore;
+      } else {
+        items = (Array.isArray(it) ? it : await this.kv.items());
+      }
       if (items.length === 0) {
         return [] as Array<T>;
       }
-      if (!Array.isArray(it)) {
+      if (!Array.isArray(it) && !this.local) {
         items = items.map((v) => v.value).flat(1);
       }
-      // console.log(`Pulled: ${cpu} | ${items.length}`)
-      // export function makeFake<T>(data: object, type: { prototype: object }) { return Object.assign(Object.create(type.prototype), data) as T};
       items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      // console.log(`f1: ${cpu}`)
       if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
         items = items.filter((item) => {
           const ts = this.getTimestamp(item);
@@ -251,11 +275,7 @@ export class StoragePool {
         if (sort === true) {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
-        // console.log(`f2: ${cpu}`)
       }
-      /* if (typeof objSample === 'object') {
-        _ret = _ret.map((item) => utils.makeFake(item, objSample));
-      } */
       const _new: any = items;
       return _new as Array<T>;
     }
