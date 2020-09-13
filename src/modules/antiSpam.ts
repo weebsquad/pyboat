@@ -65,7 +65,6 @@ class MessageEntry {
       }
       if (emj > 0) {
         this.emoji = emj;
-        // console.log(`msg with ${emj} emoji`)
       }
       return this;
     }
