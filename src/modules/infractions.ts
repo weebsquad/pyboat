@@ -128,7 +128,7 @@ export async function every5Min() {
     const infs = (await infsPool.getByQuery<Infraction>({
       active: true,
     }));
-    const actives = infs.filter((inf) => inf.active === true && inf.isExpired());
+    const actives = infs.map((v) => utils.makeFake<Infraction>(v, Infraction)).filter((inf) => inf.active === true && inf.isExpired());
     if (actives.length > 0) {
       const promises2 = [];
       for (let i = 0; i < actives.length; i += 1) {
@@ -1407,7 +1407,7 @@ export async function AL_OnGuildMemberUpdate(
       if (query.length > 0) {
         const promises = [];
         query.forEach((inf) => {
-          inf = utils.makeFake(inf, Infraction);
+          inf = utils.makeFake<Infraction>(inf, Infraction);
           promises.push(inf.checkActive());
         });
         await Promise.all(promises);
@@ -1538,7 +1538,7 @@ export async function AL_OnGuildBanRemove(
   if (query.length > 0) {
     const promises = [];
     query.forEach((inf) => {
-      inf = utils.makeFake(inf, Infraction);
+      inf = utils.makeFake<Infraction>(inf, Infraction);
       promises.push(inf.checkActive());
     });
     await Promise.all(promises);
