@@ -59,7 +59,9 @@ export class StoragePool {
     }
     async clean() {
       if (typeof this.duration !== 'number' || this.duration === 0) {
-        if (this.local === true) return;
+        if (this.local === true) {
+          return;
+        }
         const items = await this.kv.items();
         await Promise.all(items.map(async (item: any) => {
           const vl: Array<any> = item.value;
@@ -209,6 +211,14 @@ export class StoragePool {
       return false;
     }
     async editTransact(id: string, callback: Function) {
+      if (this.local === true) {
+        const _f = this.localStore.findIndex((v) => v[this.uniqueId] === id);
+        if (_f !== -1) {
+          this.localStore[_f] = callback(this.localStore[_f]);
+          return true;
+        }
+        return false;
+      }
       const items = await this.kv.items();
       const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
       if (res) {
