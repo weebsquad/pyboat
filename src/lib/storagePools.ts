@@ -65,7 +65,7 @@ export class StoragePool {
         await Promise.all(items.map(async (item: any) => {
           const vl: Array<any> = item.value;
           const { key } = item;
-          const toRemove = vl.find((e) => e === null);
+          const toRemove = vl.find((e) => e === null || typeof e === 'undefined');
           if (toRemove !== undefined) {
             let vlCheckEmpty: undefined | Array<any>;
             await this.kv.transact(key, (prev: any) => {
@@ -134,7 +134,7 @@ export class StoragePool {
 
     async saveToPool(newObj: any) {
       if (this.local === true) {
-        const ex = this.localStore.find((item) => item !== null && item[this.uniqueId] === newObj[this.uniqueId]);
+        const ex = this.localStore.find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
         if (typeof ex !== 'undefined') {
           const _res = await this.editPool(newObj[this.uniqueId], newObj);
           return _res;
@@ -145,7 +145,7 @@ export class StoragePool {
       // check same len
       let _thisLen;
       const items = await this.kv.items();
-      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && item[this.uniqueId] === newObj[this.uniqueId]);
+      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
       if (typeof ex !== 'undefined') {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
@@ -206,7 +206,7 @@ export class StoragePool {
     }
     async editTransact(id: string, callback: Function) {
       if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v !== null && v[this.uniqueId] === id);
+        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
         if (_f !== -1) {
           const vl = callback(this.localStore[_f]);
           if (vl === null || typeof vl === 'undefined') {
@@ -219,12 +219,12 @@ export class StoragePool {
         return false;
       }
       const items = await this.kv.items();
-      const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
+      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
       if (res) {
         try {
           await this.kv.transact(res.key, (prev: any) => {
             const newData = JSON.parse(JSON.stringify(prev));
-            const _ind = newData.findIndex((e: any) => e !== null && e[this.uniqueId] === id);
+            const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
             if (_ind !== -1) {
               newData[_ind] = callback(newData[_ind]);
             }
@@ -241,7 +241,7 @@ export class StoragePool {
     }
     async editPool(id: string, newObj: any) {
       if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v !== null && v[this.uniqueId] === id);
+        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
         if (_f !== -1) {
           if (newObj === null || typeof newObj === 'undefined') {
             delete this.localStore[_f];
@@ -253,13 +253,13 @@ export class StoragePool {
         return false;
       }
       const items = await this.kv.items();
-      const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
+      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
       if (res) {
         for (let i = 0; i < 2; i += 1) {
           try {
             await this.kv.transact(res.key, (prev: any) => {
               const newData = JSON.parse(JSON.stringify(prev));
-              const _ind = newData.findIndex((e: any) => e !== null && e[this.uniqueId] === id);
+              const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
               if (_ind !== -1) {
                 if (typeof newObj === 'object' && newObj !== null) {
                   newData[_ind] = newObj;
@@ -295,7 +295,7 @@ export class StoragePool {
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
           const _val: Array<any> = item.value;
-          const hasAny = _val.find((entry) => entry !== null && ids.includes(entry[this.uniqueId]));
+          const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.uniqueId]));
           if (!hasAny) {
             return false;
           }
@@ -344,7 +344,7 @@ export class StoragePool {
       return _new as Array<T>;
     }
     async getById<T>(id: string): Promise<T | undefined> {
-      const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && e[this.uniqueId] === id);
+      const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
       return _f as T;
     }
     async getByQuery<T>(query: any, OR = false): Promise<Array<T>> {
