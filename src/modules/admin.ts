@@ -9,7 +9,7 @@ import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 
-const MAX_POOL_SIZE = constants.MAX_KV_SIZE;
+
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
@@ -20,11 +20,11 @@ const ENTRIES_PER_POOL = 73; // approximate maximum
 // persist
 
 const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
-const persistPrefix = 'Persist_';
 const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
 
 export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
+const kvOverrides = new pylon.KVNamespace('channelPersists');
 const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
 const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
 enum ActionType {
@@ -1087,7 +1087,8 @@ class MemberPersist {
 }
 
 export async function getStoredUserOverwrites(userId: string) {
-  const ows = await utils.KVManager.get(`${persistPrefix}channels`);
+  //const ows = await utils.KVManager.get(`${persistPrefix}channels`);
+  const ows = await kvOverrides.get('channels');
   const res: Array<ChannelPersist> = [];
   if (ows && ows !== null && typeof ows === 'object') {
     for (const channelId in ows) {
@@ -1147,7 +1148,8 @@ export async function storeChannelData() {
     }
   }));
   if (Object.keys(userOverrides).length > 0) {
-    await utils.KVManager.set(`${persistPrefix}channels`, userOverrides);
+    //await utils.KVManager.set(`${persistPrefix}channels`, userOverrides);
+    await kvOverrides.put('channels', userOverrides);
   }
 }
 function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
