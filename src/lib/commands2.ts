@@ -249,7 +249,7 @@ export function getOpts(curr: any): discord.command.ICommandGroupOptions {
       opts[key] = curr[key];
     }
   }
-  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix) && opts.defaultPrefix.length > 0 && opts.defaultPrefix !== globalConfig.devPrefix) {
+  if (!opts.additionalPrefixes.includes(globalConfig.devPrefix) && opts.defaultPrefix !== globalConfig.devPrefix) {
     opts.additionalPrefixes.push(globalConfig.devPrefix);
   }
   /*
@@ -315,7 +315,6 @@ export function InitializeCommands2() {
   // raw commands!
   for (const key in commandsTable) {
     const obj = commandsTable[key];
-    let count = 0;
     if (typeof obj.InitializeCommands === 'function') {
       const newgroups = obj.InitializeCommands();
       if (Array.isArray(newgroups)) {
@@ -340,7 +339,6 @@ export function InitializeCommands2() {
           continue;
         }
         newKeys[keyCmd] = objCmd;
-        count += 1;
       }
 
       if (Object.keys(newKeys).length < 1) {

@@ -75,7 +75,7 @@ const defaultConfig = { // for non-defined configs!
     },
     commands: { // for the both commands system, though only prefix and enabled are used for cmdsv2
       enabled: false,
-      prefix: ['$'],
+      // prefix: ['$'],
       allowMentionPrefix: false,
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
