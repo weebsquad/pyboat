@@ -59,6 +59,33 @@ export class StoragePool {
     }
     async clean() {
       if (typeof this.duration !== 'number' || this.duration === 0) {
+        if (this.local === true) return;
+        const items = await this.kv.items();
+        await Promise.all(items.map(async (item: any) => {
+          const vl: Array<any> = item.value;
+          const { key } = item;
+          const toRemove = vl.find((e) => e === null);
+          if (toRemove !== undefined) {
+            // console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
+            let vlCheckEmpty: undefined | Array<any>;
+            await this.kv.transact(key, (prev: any) => {
+              const newDt = prev.filter((e: any) => e !== null);
+              vlCheckEmpty = newDt;
+              return newDt;
+            });
+            if (Array.isArray(vlCheckEmpty) && vlCheckEmpty.length === 0) {
+              try {
+                await this.kv.delete(key, { prevValue: [] });
+              } catch (e) {
+              }
+            }
+          } else if (item.value.length === 0) {
+            try {
+              await this.kv.delete(key, { prevValue: [] });
+            } catch (e) {
+            }
+          }
+        }));
         return;
       }
       let diff = Date.now() - this.duration;
