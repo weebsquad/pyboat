@@ -18,7 +18,7 @@ const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many spam violations';
 
-export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined);
+export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
 class MessageEntry {
     authorId: string;
     id: string;
@@ -163,6 +163,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
   }
   const previous = await pools.getByQuery<MessageEntry>({ authorId: msg.author.id });
   const thisObj = previous.find((e) => e.id === msg.id);
+  console.log('previous len', previous.length);
   if (!thisObj || previous.length === 0) {
     return;
   }

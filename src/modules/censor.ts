@@ -7,13 +7,14 @@ import * as infractions from './infractions';
 import { Permissions } from '../lib/utils';
 import * as admin from './admin';
 
-const kvPool = new pylon.KVNamespace('censor');
 const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN', 'LOCK_GUILD', 'LOCK_CHANNEL'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many censor violations';
+const kvPool = new utils.StoragePool('censor', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
 class PoolEntry {
+  id: string;
   ts: number;
   key: string;
   member: string;
@@ -49,65 +50,15 @@ class CensorCheck {
       return this;
     }
 }
-async function getPool(userId: string) {
-  const pool: any = await kvPool.get(`pool_${userId}`);
-  if (typeof pool !== 'object') {
-    const ret: Array<PoolEntry> = [];
-    return ret;
-  }
-  const ret:Array<PoolEntry> = pool;
-  return ret;
-}
-async function savePool(userId: string, data: any[]) {
-  userId = userId.split('pool_').join('');
-  if (data.length === 0) {
-    await kvPool.delete(`pool_${userId}`);
-    return;
-  }
-  await kvPool.put(`pool_${userId}`, data, { ttl: MAX_POOL_ENTRY_LIFETIME });
-}
-export async function clean() {
-  const now = Date.now();
-  const poolItems = await kvPool.items();
-  await Promise.all(poolItems.map(async (poolItem: any) => {
-    const pool: any = poolItem.value;
-    if (!Array.isArray(pool)) {
-      return;
-    }
-    const p: Array<PoolEntry> = pool;
-    let edit = false;
-    const newP = p.filter((ele) => {
-      const diff = now - ele.ts;
-      if (diff < 0 || diff < MAX_POOL_ENTRY_LIFETIME) {
-        return true;
-      }
-      edit = true;
-      return false;
-    });
-    if (edit) {
-      await savePool(poolItem.key.split('pool_').join(''), newP);
-    }
-  }));
-}
-export async function getViolations(key: string, member: string | null) {
-  let pool: Array<PoolEntry>;
-  if (member === null) {
-    const grab: any = (await kvPool.items()).map((e: any) => e.value);
-    pool = [];
-    grab.forEach((e) => {
-      if (Array.isArray(e)) {
-        pool.push(...e);
-      }
-    });
-  } else {
-    pool = await getPool(member);
-  }
-  return pool;
+
+export async function getViolations(member: string | null) {
+  const vl = await kvPool.getByQuery<PoolEntry>({ member: member !== null ? member : undefined });
+  return vl;
 }
 export async function checkViolations(id: string, noServerActions: boolean, key: string, member: string, conf: any) {
   const now = Date.now();
   // const diff = now - timestamp;
-  const violations = await getViolations(key, null);
+  const violations = await getViolations(null);
   const memberViolations = violations.filter((e) => e.member === member);
   if ((typeof conf.globalViolations === 'object' && typeof conf.globalViolations.trigger === 'string' && typeof conf.globalViolations.action === 'string' && conf.globalViolations.trigger.includes('/') && VALID_ACTIONS_GLOBAL.includes(conf.globalViolations.action.toUpperCase())) && (!noServerActions || conf.globalViolations.action.toUpperCase() === 'MASSBAN')) {
     const action = conf.globalViolations.action.toUpperCase();
@@ -172,10 +123,7 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
 export async function addViolation(id: string, key: string, member: string) {
   const newVio = new PoolEntry(key, member);
   newVio.ts = utils.decomposeSnowflake(id).timestamp;
-  const pool = await getPool(member);
-  pool.push(newVio);
-  await savePool(member, pool);
-  return pool;
+  await kvPool.saveToPool(newVio);
 }
 export function getApplicableConfigs(member: discord.GuildMember, channel: discord.GuildChannel | undefined = undefined): Array<any> {
   const toret = [];

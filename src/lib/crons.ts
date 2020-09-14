@@ -25,7 +25,6 @@ const _cr: {[key: string]: any} = {
           await admin.every5Min();
           await infractions.every5Min();
           await starboard.periodicClear();
-          await censor.clean();
           await antiPing.periodicDataClear();
           await utilities.checkReminders();
           await utilities.checkAllCustomRoles();

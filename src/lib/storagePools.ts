@@ -46,7 +46,6 @@ export class StoragePool {
       } if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'string') {
         return utils.decomposeSnowflake(obj[this.timestampProperty]).timestamp;
       }
-      // console.log(obj, typeof obj[this.uniqueId]);
       if (typeof obj[this.uniqueId] !== 'string') {
         this.err('Can\'t parse timestamps on a non-string unique identifier');
         return false;
@@ -68,7 +67,6 @@ export class StoragePool {
           const { key } = item;
           const toRemove = vl.find((e) => e === null);
           if (toRemove !== undefined) {
-            // console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
             let vlCheckEmpty: undefined | Array<any>;
             await this.kv.transact(key, (prev: any) => {
               const newDt = prev.filter((e: any) => e !== null);
@@ -93,11 +91,8 @@ export class StoragePool {
       let diff = Date.now() - this.duration;
       if (this.local === true) {
         const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
-        console.log('toremove locals:', toRemove);
         if (toRemove.length > 0) {
-          const bef = this.localStore.length;
           this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.uniqueId]));
-          console.log(`Diff: ${bef} - ${this.localStore.length} = ${bef - this.localStore.length} ------ (Supposed to clear ${toRemove.length})`);
         }
         return;
       }
@@ -116,7 +111,6 @@ export class StoragePool {
         const { key } = item;
         const toRemove = vl.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
         if (toRemove.length > 0) {
-          // console.log(`${this.kvName}: Removing ${toRemove.length} items!`);
           let vlCheckEmpty: undefined | Array<any>;
           await this.kv.transact(key, (prev: any) => {
             const newDt = prev.filter((e: any) => e !== null && !toRemove.includes(e[this.uniqueId]));
@@ -212,9 +206,14 @@ export class StoragePool {
     }
     async editTransact(id: string, callback: Function) {
       if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v[this.uniqueId] === id);
+        const _f = this.localStore.findIndex((v) => v !== null && v[this.uniqueId] === id);
         if (_f !== -1) {
-          this.localStore[_f] = callback(this.localStore[_f]);
+          const vl = callback(this.localStore[_f]);
+          if (vl === null || typeof vl === 'undefined') {
+            delete this.localStore[_f];
+          } else {
+            this.localStore[_f] = vl;
+          }
           return true;
         }
         return false;
@@ -241,6 +240,18 @@ export class StoragePool {
       return false;
     }
     async editPool(id: string, newObj: any) {
+      if (this.local === true) {
+        const _f = this.localStore.findIndex((v) => v !== null && v[this.uniqueId] === id);
+        if (_f !== -1) {
+          if (newObj === null || typeof newObj === 'undefined') {
+            delete this.localStore[_f];
+          } else {
+            this.localStore[_f] = newObj;
+          }
+          return true;
+        }
+        return false;
+      }
       const items = await this.kv.items();
       const res = items.find((item: any) => item.value.find((e: any) => e !== null && e[this.uniqueId] === id) !== undefined);
       if (res) {
@@ -268,6 +279,18 @@ export class StoragePool {
       return false;
     }
     async editPools(ids: Array<string>, callback: Function) {
+      if (this.local === true) {
+        this.localStore = this.localStore.map((v) => {
+          if (v === null) {
+            return v;
+          }
+          if (!ids.includes(v[this.uniqueId])) {
+            return v;
+          }
+          return callback(v);
+        }).filter((v) => v !== null && typeof v === 'object' && typeof v !== 'undefined');
+        return false;
+      }
       const items = await this.kv.items();
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
@@ -316,6 +339,7 @@ export class StoragePool {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
       }
+
       const _new: any = items;
       return _new as Array<T>;
     }

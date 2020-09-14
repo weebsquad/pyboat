@@ -332,14 +332,6 @@ export function InitializeCommands() {
     );
 
     sub.raw(
-      'clearcensor', async (m) => {
-        const now = Date.now();
-        await censor.clean();
-        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
-        admin.saveMessage(res);
-      },
-    );
-    sub.raw(
       'asclear', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('antiSpam').clear();
