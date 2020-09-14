@@ -1202,11 +1202,12 @@ export function InitializeCommands() {
           if (infs.length !== 1) {
             return `${discord.decor.Emojis.X} No infraction found`;
           }
-          const inf = infs[0];
+          const inf: Infraction = infs[0];
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
-          await utils.KVManager.delete(inf.getKey());
+          //await utils.KVManager.delete(inf.getKey());
+          await infsPool.delete(inf.id);
           const extras = new Map<string, any>();
           extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
           extras.set('_ACTOR_', msg.author);
