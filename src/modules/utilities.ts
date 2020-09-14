@@ -7,7 +7,7 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
-import { KVManager, StoragePool } from '../lib/utils';
+import { StoragePool } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
 

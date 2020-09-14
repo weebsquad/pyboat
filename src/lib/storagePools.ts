@@ -37,6 +37,9 @@ export class StoragePool {
       const ex = (await this.getAll(undefined, false)).find((item) => item[this.uniqueId] === id);
       return ex !== undefined;
     }
+    async delete(id: string) {
+      await this.editPool(id, null);
+    }
     private getTimestamp(obj: any) {
       if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'number') {
         return obj[this.timestampProperty];

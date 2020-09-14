@@ -1206,7 +1206,6 @@ export function InitializeCommands() {
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
-          //await utils.KVManager.delete(inf.getKey());
           await infsPool.delete(inf.id);
           const extras = new Map<string, any>();
           extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
@@ -1408,6 +1407,7 @@ export async function AL_OnGuildMemberUpdate(
       if (query.length > 0) {
         const promises = [];
         query.forEach((inf) => {
+          inf = utils.makeFake(inf, Infraction);
           promises.push(inf.checkActive());
         });
         await Promise.all(promises);
@@ -1538,6 +1538,7 @@ export async function AL_OnGuildBanRemove(
   if (query.length > 0) {
     const promises = [];
     query.forEach((inf) => {
+      inf = utils.makeFake(inf, Infraction);
       promises.push(inf.checkActive());
     });
     await Promise.all(promises);

@@ -9,7 +9,6 @@ import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 
-
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
@@ -1087,7 +1086,6 @@ class MemberPersist {
 }
 
 export async function getStoredUserOverwrites(userId: string) {
-  //const ows = await utils.KVManager.get(`${persistPrefix}channels`);
   const ows = await kvOverrides.get('channels');
   const res: Array<ChannelPersist> = [];
   if (ows && ows !== null && typeof ows === 'object') {
@@ -1148,7 +1146,6 @@ export async function storeChannelData() {
     }
   }));
   if (Object.keys(userOverrides).length > 0) {
-    //await utils.KVManager.set(`${persistPrefix}channels`, userOverrides);
     await kvOverrides.put('channels', userOverrides);
   }
 }
