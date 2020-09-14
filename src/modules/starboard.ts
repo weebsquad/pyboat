@@ -6,12 +6,12 @@ import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
 
 const MAX_LIFETIME = 336;
-const prefixKvMessages = 'Starboard_messages_';
-const seperator = '|';
+
 const processing = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
 const kv = new pylon.KVNamespace('starboard');
 
+export const messagesKv = new StoragePool('starboardMessages', 0, 'id');
 export const statsKv = new StoragePool('starboardStats', 0, 'id');
 export class StarStats {
   id: string;
@@ -53,6 +53,9 @@ export class StarredMessage {
     }
     private getReactorCount() {
       return this.reactors.length;
+    }
+    private async updateStorage() {
+      await messagesKv.saveToPool(this);
     }
     private async publish() {
       const boardCfg = getBoardCfg(this.publishData.channelId);
@@ -104,6 +107,7 @@ export class StarredMessage {
         saveMessage(newmsg);
         this.publishData.messageId = newmsg.id;
         this.publishData.lastUpdate = Date.now();
+        await this.updateStorage();
       } catch (e) {}
     }
     private async unpublish() {
@@ -117,6 +121,7 @@ export class StarredMessage {
       } catch (e) {}
       delete this.publishData.messageId;
       delete this.publishData.lastUpdate;
+      await this.updateStorage();
     }
     private async awardStats() {
       const stats = await statsKv.getAll<StarStats>();
@@ -168,14 +173,6 @@ export class StarredMessage {
       } else {
         await reactorStats(this);
       }
-      /*
-      for(var i = 0; i < this.reactors.length; i++) {
-        //if(this.reactors[i] === this.author) continue;
-        let _f = stats.find((e) => e.id === this.reactors[i]);
-        if(!_f) _f = utils.makeFake({id: this.reactors[i], given:0, received: 0}, StarStats);
-        _f.given+=1;
-        await utils.KVManager.set(_f.getKey(), 0);
-      } */
     }
     private async needsUpdate() {
       const channel = await discord.getChannel(this.publishData.channelId);
@@ -220,6 +217,7 @@ export class StarredMessage {
         }
         await oldMsg.edit({ embed: emb, content: `${emjUse} ${this.getReactorCount()} - <#${this.channelId}>` });
         this.publishData.lastUpdate = Date.now();
+        await this.updateStorage();
       } catch (e) {}
     }
     async deleted(isLog = false) {
@@ -263,20 +261,16 @@ export class StarredMessage {
         } else {
           await sleep(100 + Math.min(200, (2000 - diff)));
 
-          await checkKey(`${prefixKvMessages}${this.publishData.channelId}_${this.id}`);
+          await checkId(this.id);
         }
       }
       return false;
     }
-    getKey() {
-      return `${prefixKvMessages}${this.publishData.channelId}${seperator}${this.id}`;
-    }
 }
 
-async function checkKey(key: string) {
-  let val: any = await utils.KVManager.get(key);
-  if (val) {
-    val = utils.makeFake(val, StarredMessage);
+async function checkId(key: string) {
+  const val: any = await messagesKv.getById<StarredMessage>(key);
+  if (val && val instanceof StarredMessage) {
     await val.check();
   }
 }
@@ -315,24 +309,19 @@ export async function periodicClear() {
   if (isLocked === true) {
     return;
   }
-  const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages);
+  const keys = await messagesKv.getAll<StarredMessage>();
   await Promise.all(keys.map(async (e) => {
-    const boardId = e.substr(prefixKvMessages.length).split(seperator)[0];
-    const cfg = getBoardCfg(boardId);
+    const cfg = getBoardCfg(e.publishData.channelId);
     const lifetime = typeof cfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, Math.max(1, cfg.messageLifetime)) : MAX_LIFETIME;
     if (typeof cfg === 'object') {
-      const messageId = e.substr(prefixKvMessages.length).split(seperator)[1];
+      const messageId = e.id;
       const ts = utils.decomposeSnowflake(messageId).timestamp;
       const diff = Date.now() - ts;
       if (diff > 1000 * 60 * 60) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         if (hours >= lifetime) {
-          let msgData: any = await utils.KVManager.get(e);
-          if (msgData) {
-            await utils.KVManager.delete(e);
-            msgData = utils.makeFake(msgData, StarredMessage);
-            await msgData.finalize();
-          }
+          await messagesKv.delete(e.id);
+          await e.finalize();
         }
       }
     }
@@ -340,10 +329,7 @@ export async function periodicClear() {
 }
 
 export async function clearData() {
-  const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages);
-  await Promise.all(keys.map(async (e) => {
-    await utils.KVManager.delete(e);
-  }));
+  await messagesKv.clear();
 }
 function getBoardCfg(channelId: string) {
   if (typeof (config.modules.starboard.channels) === 'object') {
@@ -387,14 +373,12 @@ export async function AL_OnMessageDelete(
   if (isLocked === true) {
     return;
   }
-  const keys = (await utils.KVManager.listKeys()).find((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages && e.substr(prefixKvMessages.length).split(seperator)[1] === messageDelete.id);
-  if (keys) {
-    let msgData: any = await utils.KVManager.get(keys);
-    if (msgData) {
-      await utils.KVManager.delete(keys);
-      msgData = utils.makeFake(msgData, StarredMessage);
-      await msgData.deleted(log instanceof discord.AuditLogEntry);
-    }
+
+  let msgData = await messagesKv.getById<StarredMessage>(messageDelete.id);
+  if (msgData) {
+    await messagesKv.delete(msgData.id);
+    msgData = utils.makeFake<StarredMessage>(msgData, StarredMessage);
+    await msgData.deleted(log instanceof discord.AuditLogEntry);
   }
 }
 export async function AL_OnMessageDeleteBulk(
@@ -407,15 +391,13 @@ export async function AL_OnMessageDeleteBulk(
   if (isLocked === true) {
     return;
   }
-  const keys = (await utils.KVManager.listKeys()).filter((e) => e.substr(0, prefixKvMessages.length) === prefixKvMessages && messages.ids.includes(e.substr(prefixKvMessages.length).split(seperator)[1]));
-  if (keys.length > 0) {
-    await Promise.all(keys.map(async (key) => {
-      let msgData: any = await utils.KVManager.get(key);
-      if (msgData) {
-        await utils.KVManager.delete(key);
-        msgData = utils.makeFake(msgData, StarredMessage);
-        await msgData.deleted(log instanceof discord.AuditLogEntry);
-      }
+  let msgData = await messagesKv.getAll<StarredMessage>();
+  msgData = msgData.filter((e) => messages.ids.includes(e.id));
+  if (msgData.length > 0) {
+    await messagesKv.editPools(msgData.map((v) => v.id), null);
+    await Promise.all(msgData.map(async (key) => {
+      key = utils.makeFake<StarredMessage>(key, StarredMessage);
+      await key.deleted(log instanceof discord.AuditLogEntry);
     }));
   }
 }
@@ -548,15 +530,13 @@ export async function OnMessageReactionAdd(
     processing.push(msgId);
   }
   let data: any;
-  const checkStorage: any = (await utils.KVManager.get(`${prefixKvMessages}${board}${seperator}${msgId}`));
+  const checkStorage: any = await messagesKv.getById<StarredMessage>(msgId);
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
     data = new StarredMessage(actualMsg.author.id, chanId, msgId, board, [], emoji.toMention());
   }
-  let changes = false;
   if (!data.reactors.includes(reaction.userId)) {
-    changes = true;
     data.reactors.push(reaction.userId);
   } else {
     if (processing.includes(msgId)) {
@@ -565,12 +545,6 @@ export async function OnMessageReactionAdd(
     return;
   }
   const check = await data.check();
-  if (check === true) {
-    changes = true;
-  }
-  if (changes === true) {
-    await utils.KVManager.set(data.getKey(), data);
-  }
   if (processing.includes(msgId)) {
     processing.splice(processing.indexOf(msgId), 1);
   }
@@ -690,15 +664,13 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     processing.push(msgId);
   }
   let data: any;
-  const checkStorage: any = (await utils.KVManager.get(`${prefixKvMessages}${board}${seperator}${msgId}`));
+  const checkStorage = await messagesKv.getById<StarredMessage>(msgId);
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
     return;
   }
-  let changes = false;
   if (data.reactors.includes(reaction.userId)) {
-    changes = true;
     data.reactors.splice(data.reactors.indexOf(reaction.userId), 1);
   } else {
     if (processing.includes(msgId)) {
@@ -707,12 +679,6 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     return;
   }
   const check = await data.check();
-  if (check === true) {
-    changes = true;
-  }
-  if (changes === true) {
-    await utils.KVManager.set(data.getKey(), data);
-  }
   if (processing.includes(msgId)) {
     processing.splice(processing.indexOf(msgId), 1);
   }
@@ -752,15 +718,13 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
     processing.push(reaction.messageId);
   }
   let data: any;
-  const checkStorage: any = (await utils.KVManager.get(`${prefixKvMessages}${board}_${reaction.messageId}`));
+  const checkStorage = await messagesKv.getById<StarredMessage>(reaction.messageId);
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
     return;
   }
-  let changes = false;
   if (data.reactors.length > 0) {
-    changes = true;
     data.reactors = [];
   } else {
     if (processing.includes(reaction.messageId)) {
@@ -769,12 +733,6 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
     return;
   }
   const check = await data.check();
-  if (check === true) {
-    changes = true;
-  }
-  if (changes === true) {
-    await utils.KVManager.set(`${prefixKvMessages}${board}_${reaction.messageId}`, data);
-  }
   if (processing.includes(reaction.messageId)) {
     processing.splice(processing.indexOf(reaction.messageId), 1);
   }
