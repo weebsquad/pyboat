@@ -77,7 +77,8 @@ const timeMap = new Map([
         break;
       }
       if(lowestUnit === key) hitLowest = true;
-      const cc = value > 1 ? `${key}s` : key;
+      let cc: string = value > 1 ? `${key}s` : key;
+      cc = `${cc.substr(0,1).toUpperCase()}${cc.substr(1).toLowerCase()}`
       txtret.push(`${value} ${cc}`);
       runsc += 1;
     }
@@ -136,11 +137,21 @@ export function convertEmoji(str) {
     String.fromCodePoint(Number.parseInt(hex, 16))
   );
 }
-const blacklist = ['`', '\t', '@everyone', '@here', '||'];
+const blacklist = ['\t', '\u200F', '\u008D', '\u202E'];
+const escapeList = ['*', '_', '||', '`', '@everyone', '@here']
 export function escapeString(string) {
   blacklist.forEach((vl) => {
     string = string.split(vl).join('');
   });
+  escapeList.forEach((char) => {
+    if(char === '@everyone' || char === '@here') {
+      const escape = `${char.substr(0,1)}\u200B${char.substr(1)}`;
+      string = string.split(char).join(escape);
+      return;
+    }
+    const escape = char.split('').map((v) => `\\${v}`).join('');
+    string = string.split(char).join(escape);
+  })
   return string;
 }
 

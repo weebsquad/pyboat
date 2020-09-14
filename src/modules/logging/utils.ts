@@ -94,7 +94,7 @@ export function getChannelEmoji(ch: discord.GuildChannel) {
     return '<:news:735780703530385470>';
   }
   if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) {
-    return '<:rich_presence:735781410509684786>';
+    return '<:category:754241739258069043>';
   }
   return '';
 }

@@ -8,7 +8,7 @@ import { config, globalConfig, Ranks } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
 import { KVManager, StoragePool } from '../lib/utils';
-import { getInfractionBy } from './infractions';
+import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
 
 class UserRole {
@@ -125,7 +125,7 @@ export async function AL_OnMessageDelete(
   ) {
     return;
   }
-  if (!config.modules.utilities || !config.modules.utilities.snipe || config.modules.utilities.snipe.enabled !== true) {
+  if (!config.modules.utilities || !config.modules.utilities.snipe || config.modules.utilities.snipe.enabled !== true || typeof config.modules.utilities.snipe.delay !== 'number') {
     return;
   }
   if (utils.isBlacklisted(msg.member)) {
@@ -133,11 +133,11 @@ export async function AL_OnMessageDelete(
   }
   const dt = utils.decomposeSnowflake(msg.id).timestamp;
   const diff = new Date().getTime() - dt;
-  if (diff >= config.modules.utilities.snipe.delay) {
+  if (diff >= config.modules.utilities.snipe.delay * 1000) {
     return;
   }
   await snipekvs.put(msg.channelId, JSON.stringify(msg), {
-    ttl: config.modules.utilities.snipe.delay,
+    ttl: config.modules.utilities.snipe.delay * 1000,
   });
 }
 
@@ -756,8 +756,12 @@ export function InitializeCommands() {
       const res: any = await message.reply(async () => {
         const embed = new discord.Embed();
         const guild = await message.getGuild();
+        const me = await guild.getMember(discord.getBotId());
         if (guild === null) {
           throw new Error('guild not found');
+        }
+        if (me === null) {
+          throw new Error('bot user not found');
         }
 
         let icon = guild.getIconUrl();
@@ -766,7 +770,7 @@ export function InitializeCommands() {
         }
         embed.setAuthor({
           name: guild.name,
-          iconUrl: 'https://cdn.discordapp.com/emojis/735781410509684786.png?v=1',
+          iconUrl: guild.getIconUrl(),
         });
         const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
         const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
@@ -786,16 +790,16 @@ export function InitializeCommands() {
 
         const preferredLocale = typeof guild.preferredLocale === 'string'
     && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
-          ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\`\n`
+          ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\``
           : '';
         const boosts = guild.premiumSubscriptionCount > 0
-          ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}\n`
+          ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}`
           : '';
         const boostTier = guild.premiumTier !== null
-          ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}\n`
+          ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}`
           : '';
         const systemChannel = guild.systemChannelId !== null
-          ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>\n`
+          ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>`
           : '';
         const vanityUrl = guild.vanityUrlCode !== null
           ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
@@ -817,7 +821,7 @@ export function InitializeCommands() {
 <:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
   󠇰**Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**
 <:owner:735780703903547443>**Owner**: <@!${guild.ownerId}>
-<:voice:735780703928844319>**Voice Region**: \`${guild.region}\`
+<:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
   󠇰**Features**: \`${features}\`
   󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
@@ -851,22 +855,22 @@ export function InitializeCommands() {
           const obj = counts[k];
           let emj = '';
           if (k === 'text') {
-            emj = '<:channel:735780703983239218> ';
+            emj = '<:channel:735780703983239218>';
           }
           if (k === 'voice') {
-            emj = '<:voice:735780703928844319> ';
+            emj = '<:voice:735780703928844319>';
           }
           if (k === 'store') {
-            emj = '<:store:735780704130170880> ';
+            emj = '<:store:735780704130170880>';
           }
           if (k === 'news') {
-            emj = '<:news:735780703530385470> ';
+            emj = '<:news:735780703530385470>';
           }
           if (k === 'category') {
-            emj = '<:rich_presence:735781410509684786> ';
+            emj = '<:category:754241739258069043>';
           }
 
-          if (obj > 0) {
+          /* if (obj > 0) {
             chanStats.push(
               `\n ${
                 emj
@@ -877,9 +881,13 @@ export function InitializeCommands() {
                 obj
               }**`,
             );
+          } */
+          if (obj > 0) {
+            chanStats.push(`${emj}: **${obj}**`);
           }
         }
-        desc += `\n\n**❯ **Channels ⎯ ${channels.length}${chanStats.join('')}`;
+        desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
+
         const roles = await guild.getRoles();
         const emojis = await guild.getEmojis();
 
@@ -889,6 +897,15 @@ export function InitializeCommands() {
 **❯ **Other Counts
  <:settings:735782884836638732> **Roles**: ${roles.length}
  <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
+        if (me.can(discord.Permissions.BAN_MEMBERS)) {
+          const bans = await guild.getBans();
+          desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`;
+        }
+        if (me.can(discord.Permissions.MANAGE_GUILD)) {
+          const invites = await guild.getInvites();
+          desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites.length}`;
+        }
+
         const memberCounts = {
           human: 0,
           bot: 0,
@@ -1191,8 +1208,8 @@ export function InitializeCommands() {
           if (member.roles.length > 0) {
             desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
           }
-          const infsGiven = await getInfractionBy({ actorId: user.id });
-          const infsReceived = await getInfractionBy({ memberId: user.id });
+          const infsGiven = await infsPool.getByQuery({ actorId: user.id });
+          const infsReceived = await infsPool.getByQuery({ memberId: user.id });
           if (infsGiven.length > 0 || infsReceived.length > 0) {
             desc += '\n\n**❯ Infractions**';
           }

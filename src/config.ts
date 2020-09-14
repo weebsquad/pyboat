@@ -28,7 +28,7 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.6.1',
+  version: '1.6.2',
 };
 export const guildId = discord.getGuildId();
 const defaultConfig = { // for non-defined configs!
@@ -127,7 +127,7 @@ const defaultConfig = { // for non-defined configs!
       snipe: {
         enabled: false,
         // delay for which messages will last after being deleted!
-        delay: 2 * 60 * 1000,
+        delay: 2 * 60,
       },
       customUserRoles: {
         enabled: false,
