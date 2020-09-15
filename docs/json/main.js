@@ -1,7 +1,72 @@
-'use strict';
-
+/* eslint-disable no-undef */
+/* eslint-disable strict */
 /* eslint-disable no-console */
 /* eslint-disable guard-for-in */
+
+const schema = {
+  title: 'PyBoat config',
+  type: 'object',
+  properties: {
+    levels: {
+      title: 'Levels',
+      type: 'object',
+      properties: {
+        roles: {
+          type: 'array',
+          format: 'table',
+          uniqueItems: 'true',
+          items: {
+            type: 'object',
+            title: 'Roles',
+            properties: {
+              id: {
+                title: 'Role ID',
+                type: 'string',
+                default: 'Role ID',
+                minLength: '16',
+                maxLength: '20',
+                pattern: '^[0-9]+$',
+              },
+              level: {
+                title: 'Bot Level',
+                type: 'integer',
+                minimum: 0,
+                maximum: 999,
+                default: 10,
+              },
+            },
+          },
+        },
+        users: {
+          type: 'array',
+          format: 'table',
+          uniqueItems: 'true',
+          items: {
+            type: 'object',
+            title: 'Users',
+            properties: {
+              id: {
+                title: 'User ID',
+                type: 'string',
+                default: 'User ID',
+                minLength: '16',
+                maxLength: '20',
+                pattern: '^[0-9]+$',
+              },
+              level: {
+                title: 'Bot Level',
+                type: 'integer',
+                minimum: -1,
+                maximum: 999,
+                default: 10,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 
 function toArray(dt) {
   const dtN = [];
@@ -16,7 +81,6 @@ function toArray(dt) {
 function parseData(dt, compose = true) {
   if (typeof dt.levels === 'object') {
     if (Array.isArray(dt.levels.roles) && compose) {
-      console.log('asd');
       dt.levels = Object.fromEntries(dt.levels.roles);
     } else if (typeof dt.levels.roles === 'object' && dt.levels.roles !== null && !compose) {
       dt.levels.roles = toArray(dt.levels.roles);
@@ -25,45 +89,42 @@ function parseData(dt, compose = true) {
   return dt;
 }
 
-fetch('./schema.json')
+let editor;
+function submit() {
+  const data = {};
+  data.levels = editor.getEditor('root.levels').getValue();
+  console.log('before', data);
+  console.log('after', parseData(data));
+}
+
+/* fetch('./schema.json')
   .then((response) => response.json())
-  .then((obj) => {
-    const defaultOptions = {
-      iconlib: 'spectre',
-      object_layout: 'table',
-      show_errors: 'always',
-      schema: obj,
-      theme: 'bootstrap4',
-      disable_properties: true,
-      disable_edit_json: false,
-      disable_array_reorder: true,
-      disable_array_delete_last_row: true,
-      disable_array_delete_all_rows: true,
-      prompt_before_delete: false,
-    };
+  .then((obj) => { */
+const defaultOptions = {
+  iconlib: 'spectre',
+  object_layout: 'table',
+  show_errors: 'always',
+  schema,
+  theme: 'bootstrap4',
+  disable_properties: true,
+  disable_edit_json: false,
+  disable_array_reorder: true,
+  disable_array_delete_last_row: true,
+  disable_array_delete_all_rows: true,
+  prompt_before_delete: false,
+};
 
-    const element = document.getElementById('editor_holder');
-    const editor = new JSONEditor(element, defaultOptions);
+const element = document.getElementById('editor_holder');
+editor = new JSONEditor(element, defaultOptions);
 
-    document.getElementById('submit').addEventListener('click', () => {
-      // Get the value from the editor
-      const elements = ['levels', 'guildId', 'modules'];
-      const dt = {};
-      elements.forEach((val) => {
-        const thisDt = editor.getEditor(`root.${val}`);
-        if (thisDt !== null && typeof thisDt !== 'undefined') {
-          const thisVal = thisDt.getValue();
-          console.log(thisVal);
-          dt[val] = thisVal;
-        }
-      });
-      console.log('before', dt);
-      console.log('after', parseData(dt));
-    });
+document.getElementById('submit').addEventListener('click', () => {
+  // Get the value from the editor
+  submit();
+});
 
-    editor.on('ready', () => {
-      // Now the api methods will be available
-      editor.validate();
-      console.log('ready');
-    });
-  });
+editor.on('ready', () => {
+  // Now the api methods will be available
+  editor.validate();
+  console.log('ready');
+});
+// });
