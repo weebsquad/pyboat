@@ -5,8 +5,8 @@
         "guildId": {
             "title": "Server ID",
             "type": "string",
-            "minLength": "16",
-            "maxLength": "20",
+            "minLength": 16,
+            "maxLength": 20,
             "pattern": "^[0-9]+$",
             "required": true
 
@@ -26,8 +26,8 @@
                             "__key": {
                                 "title": "Role ID",
                                 "type": "string",
-                                "minLength": "16",
-                                "maxLength": "20",
+                                "minLength": 16,
+                                "maxLength": 20,
                                 "pattern": "^[0-9]+$"
                             },
                             "level": {
@@ -50,8 +50,8 @@
                             "__key": {
                                 "title": "User ID",
                                 "type": "string",
-                                "minLength": "16",
-                                "maxLength": "20",
+                                "minLength": 16,
+                                "maxLength": 20,
                                 "pattern": "^[0-9]+$"
                             },
                             "level": {
@@ -174,6 +174,120 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "channels": {
+                            "title": "Channels",
+                            "type": "object",
+                            "properties": {
+                                "__key": {
+                                    "title": "Channel ID",
+                                    "description": "The channel to post starred messages on (for this configuration)",
+                                    "type": "string",
+                                    "minLength": 16,
+                                    "maxLength": 20,
+                                    "pattern": "^[0-9]+$"
+                                },
+                                "emoji": {
+                                    "title": "Emoji",
+                                    "description": "The emoji to trigger message starring on",
+                                    "type": "string",
+                                    "default": "⭐",
+                                    "minLength": 1,
+                                    "maxLength": 5
+                                },
+                                "maxEmoji": {
+                                    "title": "Max Emoji",
+                                    "description": "The emoji to visually display on the starboard channel when a message hits max stars",
+                                    "type": "string",
+                                    "default": "🌟",
+                                    "minLength": 1,
+                                    "maxLength": 5,
+                                    "required": false
+                                },
+                                "clearOnDelete": {
+                                    "title": "Clear On Delete",
+                                    "description": "Clears the starboard starred message if the original is deleted by the author",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "clearOnModDelete": {
+                                    "title": "Clear On Mod Delete",
+                                    "description": "Clears the starboard starred message if the original is deleted by another person",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "minReacts": {
+                                    "title": "Minimum Reacts",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 1000,
+                                    "description": "Minimum amount of reactions on a message for it to be published on the starboard channel",
+                                    "default": 5
+                                },
+                                "minReactsPin": {
+                                    "title": "Minimum Reacts to Pin",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5000,
+                                    "description": "Minimum amount of reactions on a message for it to be pinned on the starboard channel",
+                                    "default": 30
+                                },
+                                "maxReacts": {
+                                    "title": "Maximum Reactions",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5000,
+                                    "description": "Maximum amount of reactions for color calculation and Max Emoji usage (doesn't actually stop new reactions after this is hit)",
+                                    "default": 30
+                                },
+                                "messageLifetime": {
+                                    "title": "Message Lifetime",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 336,
+                                    "description": "How old a message can be, in hours, for it to be able to be starred",
+                                    "default": 24
+                                },
+                                "preventSelf": {
+                                    "title": "Prevent Self Reacts",
+                                    "description": "Prevents the message author from starring their own message",
+                                    "type": "boolean",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "sources": {
+                                    "title": "Sources",
+                                    "description": "Channel IDs in which to allow starred messages to originate from. If this is not set, any channel will be allowed.",
+                                    "required": false,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "Channel ID",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                },
+                                "ignores": {
+                                    "title": "Ignores",
+                                    "description": "Channel IDs in which to deny starred messages to originate from.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "Channel ID",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     }
                 },
@@ -281,6 +395,59 @@
                                     "default": 120,
                                     "minimum": 0,
                                     "maximum": 10000,
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "customUserRoles": {
+                            "title": "Custom User Roles",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "clearOnKick": {
+                                    "title": "Clear on Kick",
+                                    "description": "Whether to clear the member's custom role when they get kicked from the server",
+                                    "type": "boolean",
+                                    "default": true,
+                                    "format": "checkbox",
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                },
+                                "clearOnBan": {
+                                    "title": "Clear on Ban",
+                                    "description": "Whether to clear the member's custom role when they get banned from the server",
+                                    "type": "boolean",
+                                    "default": true,
+                                    "format": "checkbox",
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                },
+                                "clearOnLeave": {
+                                    "title": "Clear on Leave",
+                                    "description": "Whether to clear the member's custom role when they leave the server",
+                                    "type": "boolean",
+                                    "default": true,
+                                    "format": "checkbox",
                                     "options": {
                                         "dependencies": {
                                             "enabled": true

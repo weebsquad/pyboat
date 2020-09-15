@@ -57,8 +57,10 @@ fetch('./schema.json')
       disable_edit_json: true,
       disable_array_reorder: true,
       disable_array_delete_last_row: true,
-      disable_array_delete_all_rows: true,
+      disable_array_delete_all_rows: false,
       prompt_before_delete: false,
+      required_by_default: true,
+      show_opt_in: true,
     };
 
     const element = document.getElementById('editor_holder');
