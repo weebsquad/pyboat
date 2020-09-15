@@ -14,11 +14,16 @@
     
     </head>
     <body>
-            <h1>Editor</h1>
-            <p>Below is the editor generated from the JSON Schema.</p>
+            <h1>PyBoat configuration generator</h1>
+            <p>After configuring using the editor below, click "Copy to clipboard" to get your generated JSON!</p>
+            <label for="json_output">Your JSON:</label>
+            <textarea id="json_output" name="json_output" rows="2" cols="30" readonly></textarea>
+            <br><button onclick="copyJson()">Copy to clipboard</button>
+            <br><br>
             <div class='col-8 col-md-8 w-8/12'>
                 <div id='editor_holder'></div>
-                <button id='submit'>Submit (console.log)</button>
+                <!-- <button id='submit'>Submit (console.log)</button> -->
+                
             </div>
             <script src="./main.js"></script>
     </body>

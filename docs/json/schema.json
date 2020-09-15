@@ -2,6 +2,15 @@
     "title": "PyBoat config",
     "type": "object",
     "properties": {
+        "guildId": {
+            "title": "Server ID",
+            "type": "string",
+            "minLength": "16",
+            "maxLength": "20",
+            "pattern": "^[0-9]+$",
+            "required": true
+
+        },
         "levels": {
             "title": "Levels",
             "type": "object",
@@ -14,10 +23,9 @@
                         "type": "object",
                         "title": "Roles",
                         "properties": {
-                            "id": {
+                            "__key": {
                                 "title": "Role ID",
                                 "type": "string",
-                                "default": "Role ID",
                                 "minLength": "16",
                                 "maxLength": "20",
                                 "pattern": "^[0-9]+$"
@@ -26,8 +34,7 @@
                                 "title": "Bot Level",
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 999,
-                                "default": 10
+                                "maximum": 999
                             }
                         }
                     }
@@ -40,10 +47,9 @@
                         "type": "object",
                         "title": "Users",
                         "properties": {
-                            "id": {
+                            "__key": {
                                 "title": "User ID",
                                 "type": "string",
-                                "default": "User ID",
                                 "minLength": "16",
                                 "maxLength": "20",
                                 "pattern": "^[0-9]+$"
@@ -52,8 +58,186 @@
                                 "title": "Bot Level",
                                 "type": "integer",
                                 "minimum": -1,
-                                "maximum": 999,
-                                "default": 10
+                                "maximum": 999
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "modules": {
+            "title": "Modules",
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "title": "Admin",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "antiPing": {
+                    "title": "AntiPing",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "antiSpam": {
+                    "title": "AntiSpam",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "censor": {
+                    "title": "Censor",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "commands": {
+                    "title": "Commands",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "counting": {
+                    "title": "Counting",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "infractions": {
+                    "title": "Infractions",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "logging": {
+                    "title": "Logging",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "starboard": {
+                    "title": "Starboard",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "tags": {
+                    "title": "Tags",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "translation": {
+                    "title": "Translation",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        }
+                    }
+                },
+                "utilities": {
+                    "title": "Utilities",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        },
+                        "snipe": {
+                            "title": "Snipe",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "delay": {
+                                    "title": "Delay",
+                                    "type": "integer",
+                                    "default": 120,
+                                    "minimum": 0,
+                                    "maximum": 10000,
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
                             }
                         }
                     }
