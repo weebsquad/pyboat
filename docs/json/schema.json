@@ -180,6 +180,146 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "checkLogs": {
+                            "type": "boolean",
+                            "title": "Check Audit Logs",
+                            "description": "Whether to use audit logs information to log infractions not made using the bot's commands",
+                            "default": true,
+                            "format": "checkbox",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "integrate": {
+                            "type": "boolean",
+                            "title": "Integrate System",
+                            "description": "Whether to use the ban reason/nickname integration system (see docs)",
+                            "default": true,
+                            "format": "checkbox",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "muteRole": {
+                            "title": "Mute Role",
+                            "description": "ID of your server's mute role",
+                            "type": "string",
+                            "minLength": 16,
+                            "maxLength": 20,
+                            "pattern": "^[0-9]+$",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "defaultDeleteDays": {
+                            "title": "Default Ban Message Deletion Days",
+                            "description": "When banning members with command such as ban and tempban, how many days to delete messages of banned members",
+                            "default": 0,
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 7,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "targetting": {
+                            "title": "Targetting Settings",
+                            "description": "How members are able to interact with each other using commands",
+                            "type": "object",
+                            "properties": {
+                                "reqDiscordPermissions": {
+                                    "type": "boolean",
+                                    "title": "Require Discord Permissions",
+                                    "description": "Whether the actor will always need the respective discord permission in order to perform an action with the bot",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "checkLevels": {
+                                    "type": "boolean",
+                                    "title": "Check Bot Levels",
+                                    "description": "Whether bot levels are checked for allowing targetting",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "checkRoles": {
+                                    "type": "boolean",
+                                    "title": "Check Role Hierarchy",
+                                    "description": "Whether the server's role hierarchy is checked for allowing targetting (members can't target people with higher roles)",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "allowSelf": {
+                                    "type": "boolean",
+                                    "title": "Self Targetting",
+                                    "description": "Allow users to target themselves at all times",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "othersEditLevel": {
+                                    "type": "integer",
+                                    "title": "Bot Level to Edit Other's Infractions",
+                                    "default": 200,
+                                    "minimum": 1,
+                                    "maximum": 999
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "confirmation": {
+                            "title": "Command Confirmation Settings",
+                            "description": "How the bot will respond to your commands",
+                            "type": "object",
+                            "properties": {
+                                "reaction": {
+                                    "type": "boolean",
+                                    "title": "Reaction",
+                                    "description": "Whether the bot will add a reaction to your message depending on the outcome of the command",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "message": {
+                                    "type": "boolean",
+                                    "title": "Message",
+                                    "description": "Whether the bot will reply to you with full verbose on the outcome of a command",
+                                    "default": true,
+                                    "format": "checkbox"
+                                },
+                                "expiry": {
+                                    "type": "number",
+                                    "title": "Expiry",
+                                    "description": "If >0, how many seconds before the bot deletes the reaction and/or message.",
+                                    "default": 0,
+                                    "minimum": 0,
+                                    "maximum": 13
+                                },
+                                "deleteOriginal": {
+                                    "type": "boolean",
+                                    "title": "Delete Original Message",
+                                    "description": "Whether the bot will delete the original command caller's message when expiry is up",
+                                    "default": false,
+                                    "format": "checkbox"
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
                         }
                     },
                     "options": {
