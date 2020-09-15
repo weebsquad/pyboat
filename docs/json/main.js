@@ -46,13 +46,14 @@ function copyJson() {
 }
 
 function importJSON() {
-    const val = document.getElementById('import');
-    try {
-        const parsed = JSON.parse(val.value);
-        editor.setValue(parsed);
-    } catch(e) {console.error(e)}
+  const val = document.getElementById('import');
+  try {
+    const parsed = JSON.parse(val.value);
+    editor.setValue(parsed);
+  } catch (e) {
+    console.error(e);
+  }
 }
-
 
 fetch('./schema.json')
   .then((response) => response.json())
@@ -69,8 +70,8 @@ fetch('./schema.json')
       disable_array_delete_last_row: true,
       disable_array_delete_all_rows: false,
       prompt_before_delete: false,
-      required_by_default: true,
-      show_opt_in: true,
+      required_by_default: false,
+      show_opt_in: false,
     };
 
     const element = document.getElementById('editor_holder');
@@ -86,7 +87,7 @@ fetch('./schema.json')
         document.getElementById('button_copy').style = 'background-color:red';
         document.getElementById('button_copy').disabled = true;
         document.getElementById('button_copy').text = '';
-        document.getElementById('json_output').value = 'JSON Error';
+        document.getElementById('json_output').value = `JSON Error: ${JSON.stringify(vali, null, 2)}`;
       } else {
         document.getElementById('button_copy').style = 'background-color:green';
         document.getElementById('button_copy').disabled = false;

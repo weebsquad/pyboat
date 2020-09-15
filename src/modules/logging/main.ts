@@ -563,7 +563,7 @@ async function getMessages(
             em.setTimestamp(date.toISOString());
           }
           if (cfg.embedColor) {
-            em.setColor(cfg.embedColor);
+            em.setColor(parseInt(cfg.embedColor, 16));
           }
           if (cfg.showEventName) {
             let event = ev.eventName;

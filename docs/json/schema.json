@@ -13,6 +13,7 @@
         "levels": {
             "title": "Levels",
             "type": "object",
+            "required": true,
             "properties": {
                 "roles": {
                     "type": "array",
@@ -73,6 +74,7 @@
         "modules": {
             "title": "Modules",
             "type": "object",
+            "required": true,
             "properties": {
                 "queue": {
                     "type": "boolean",
@@ -232,7 +234,6 @@
                                         "type": "string",
                                         "default": "Server Logs",
                                         "description": "Text to show on embed footer",
-                                        "minLength": 1,
                                         "maxLength": 50,
                                         "required": false,
                                         "options": {
@@ -243,10 +244,10 @@
                                     },
                                     "embedColor": {
                                         "title": "Embed color",
-                                        "type": "integer",
-                                        "default": 0,
+                                        "type": "string",
                                         "description": "Embed color",
                                         "required": false,
+                                        "format": "color",
                                         "options": {
                                             "dependencies": {
                                                 "embed": true
@@ -258,7 +259,6 @@
                                         "type": "string",
                                         "default": "",
                                         "description": "URL of an image to use as embed footer icon",
-                                        "minLength": 1,
                                         "maxLength": 50,
                                         "required": false,
                                         "options": {
@@ -271,7 +271,6 @@
                                         "title": "Webhook URL",
                                         "type": "string",
                                         "description": "A Webhook URL for this channel. Highly recommended specially if using embeds.",
-                                        "minLength": 1,
                                         "maxLength": 50,
                                         "required": false
                                     },
