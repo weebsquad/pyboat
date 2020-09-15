@@ -273,6 +273,8 @@ const defaultConfig = { // for non-defined configs!
 };
 export const guildConfigs = <any>{};
 
+
+
 function recursiveDefault(source: any, dest: any) {
   for (const key in source) {
     const obj = source[key];
@@ -281,13 +283,34 @@ function recursiveDefault(source: any, dest: any) {
         dest[key] = obj;
         continue;
       } else {
+        if(Array.isArray(dest[key]) && dest[key].length > 0 && !Array.isArray(obj) && typeof obj === 'object' && obj !== null) {
+          // config generator stuff!
+          const newOb: {[key: string]: any} = {};
+          dest[key].forEach(e => {
+            if(typeof e['__key'] === 'string') {
+              const keyName = e['__key'];
+              delete e['__key'];
+              const remaining = Object.keys(e);
+              if(remaining.length === 1) {
+                newOb[keyName] = e[remaining[0]];
+              } else {
+                newOb[keyName] = {...e};
+              }
+            }
+          });
+          if(newOb !== {}) {
+            dest[key] = newOb;
+            continue;
+          }
+        }
         if (typeof (dest[key]) !== 'object') {
           dest[key] = {};
         }
 
         dest[key] = recursiveDefault(obj, dest[key]);
       }
-    }
+      continue;
+    } 
     if (dest[key] === undefined) {
       dest[key] = obj;
     }
