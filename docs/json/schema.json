@@ -150,6 +150,174 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "prefix": {
+                            "title": "Command Prefix",
+                            "type": "array",
+                            "format": "table",
+                            "default": ["!"],
+                            "uniqueItems": true,
+                            "items": {
+                                "title": "prefix",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "allowMentionPrefix": {
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "title": "Allow Mention Prefix",
+                            "default": true,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "hideNoAccess": {
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "title": "Hide No Access Commands",
+                            "description": "When a member can't execute a command, whether to hide the 'you don't have permission' message",
+                            "default": true,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "overrides": {
+                            "type": "array",
+                            "title": "Command Overrides",
+                            "items": {
+                                "type": "object",
+                                "title": "Override",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Selector",
+                                        "description": "The targetted selector",
+                                        "type": "string",
+                                        "minLength": 4,
+                                        "default": "module.utilities"
+                                    },
+                                    "disabled": {
+                                        "title": "Disabled",
+                                        "type": "boolean",
+                                        "format": "checkbox",
+                                        "default": false
+                                    },
+                                    "level": {
+                                        "title": "New Level",
+                                        "description": "The new level for this selector",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999,
+                                        "options": {
+                                            "dependencies": {
+                                                "disabled": false
+                                            }
+                                        }
+                                    },
+                                    "bypassLevel": {
+                                        "title": "Bypass Level",
+                                        "description": "Level needed to bypass this entire override",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999,
+                                        "default": 999
+                                    },
+                                    
+                                    "channelsBlacklist": {
+                                        "title": "Channel Blacklist",
+                                        "description": "Channels where this override won't be able to be executed",
+                                        "type": "array",
+                                        "format":"table",
+                                        "items": {
+                                            "title": "Channel",
+                                            "type": "string",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "options": {
+                                            "collapsed": true,
+                                            "dependencies": {
+                                                "disabled": false
+                                            }
+                                        }
+                                    },
+                                    "channelsWhitelist": {
+                                        "title": "Channel Whitelist",
+                                        "description": "If any defined, the only channels that will be able to execute this override",
+                                        "type": "array",
+                                        "format":"table",
+                                        "items": {
+                                            "title": "Channel",
+                                            "type": "string",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "options": {
+                                            "collapsed": true,
+                                            "dependencies": {
+                                                "disabled": false
+                                            }
+                                        }
+                                    },
+                                    "rolesBlacklist": {
+                                        "title": "Role Blacklist",
+                                        "description": "Roles that won't be able to execute this override",
+                                        "type": "array",
+                                        "format":"table",
+                                        "items": {
+                                            "title": "Role",
+                                            "type": "string",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "options": {
+                                            "collapsed": true,
+                                            "dependencies": {
+                                                "disabled": false
+                                            }
+                                        }
+                                    },
+                                    "rolesWhitelist": {
+                                        "title": "Role Whitelist",
+                                        "description": "If any defined, the only roles that will be able to execute this override",
+                                        "type": "array",
+                                        "format":"table",
+                                        "items": {
+                                            "title": "Role",
+                                            "type": "string",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        },
+                                        "options": {
+                                            "collapsed": true,
+                                            "dependencies": {
+                                                "disabled": false
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     },
                     "options": {
@@ -419,6 +587,7 @@
                         },
                         "logChannels": {
                             "type": "array",
+                            "format": "tabs-top",
                             "items": {
                                 "type": "object",
                                 "title": "Channel",
@@ -602,6 +771,7 @@
                         },
                         "channels": {
                             "type": "array",
+                            "format": "tabs-top",
                             "items": {
                                 "type": "object",
                                 "title": "Channel",
