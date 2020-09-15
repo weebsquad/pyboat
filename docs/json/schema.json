@@ -9,7 +9,6 @@
             "maxLength": 20,
             "pattern": "^[0-9]+$",
             "required": true
-
         },
         "levels": {
             "title": "Levels",
@@ -37,6 +36,9 @@
                                 "maximum": 999
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "users": {
@@ -61,6 +63,9 @@
                                 "maximum": 999
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 }
             }
@@ -69,6 +74,11 @@
             "title": "Modules",
             "type": "object",
             "properties": {
+                "queue": {
+                    "type": "boolean",
+                    "default": true,
+                    "format": "checkbox"
+                },
                 "admin": {
                     "title": "Admin",
                     "type": "object",
@@ -79,6 +89,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "antiPing": {
@@ -91,6 +104,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "antiSpam": {
@@ -103,6 +119,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "censor": {
@@ -115,6 +134,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "commands": {
@@ -127,6 +149,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "counting": {
@@ -139,6 +164,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "infractions": {
@@ -151,6 +179,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "logging": {
@@ -163,6 +194,9 @@
                             "default": false,
                             "format": "checkbox"
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "starboard": {
@@ -176,110 +210,113 @@
                             "format": "checkbox"
                         },
                         "channels": {
-                            "title": "Channels",
-                            "type": "object",
-                            "properties": {
-                                "__key": {
-                                    "title": "Channel ID",
-                                    "description": "The channel to post starred messages on (for this configuration)",
-                                    "type": "string",
-                                    "minLength": 16,
-                                    "maxLength": 20,
-                                    "pattern": "^[0-9]+$"
-                                },
-                                "emoji": {
-                                    "title": "Emoji",
-                                    "description": "The emoji to trigger message starring on",
-                                    "type": "string",
-                                    "default": "⭐",
-                                    "minLength": 1,
-                                    "maxLength": 5
-                                },
-                                "maxEmoji": {
-                                    "title": "Max Emoji",
-                                    "description": "The emoji to visually display on the starboard channel when a message hits max stars",
-                                    "type": "string",
-                                    "default": "🌟",
-                                    "minLength": 1,
-                                    "maxLength": 5,
-                                    "required": false
-                                },
-                                "clearOnDelete": {
-                                    "title": "Clear On Delete",
-                                    "description": "Clears the starboard starred message if the original is deleted by the author",
-                                    "type": "boolean",
-                                    "default": false,
-                                    "format": "checkbox"
-                                },
-                                "clearOnModDelete": {
-                                    "title": "Clear On Mod Delete",
-                                    "description": "Clears the starboard starred message if the original is deleted by another person",
-                                    "type": "boolean",
-                                    "default": false,
-                                    "format": "checkbox"
-                                },
-                                "minReacts": {
-                                    "title": "Minimum Reacts",
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 1000,
-                                    "description": "Minimum amount of reactions on a message for it to be published on the starboard channel",
-                                    "default": 5
-                                },
-                                "minReactsPin": {
-                                    "title": "Minimum Reacts to Pin",
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 5000,
-                                    "description": "Minimum amount of reactions on a message for it to be pinned on the starboard channel",
-                                    "default": 30
-                                },
-                                "maxReacts": {
-                                    "title": "Maximum Reactions",
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 5000,
-                                    "description": "Maximum amount of reactions for color calculation and Max Emoji usage (doesn't actually stop new reactions after this is hit)",
-                                    "default": 30
-                                },
-                                "messageLifetime": {
-                                    "title": "Message Lifetime",
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 336,
-                                    "description": "How old a message can be, in hours, for it to be able to be starred",
-                                    "default": 24
-                                },
-                                "preventSelf": {
-                                    "title": "Prevent Self Reacts",
-                                    "description": "Prevents the message author from starring their own message",
-                                    "type": "boolean",
-                                    "default": true,
-                                    "format": "checkbox"
-                                },
-                                "sources": {
-                                    "title": "Sources",
-                                    "description": "Channel IDs in which to allow starred messages to originate from. If this is not set, any channel will be allowed.",
-                                    "required": false,
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string",
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "title": "Channel",
+                                "properties": {
+                                    "__key": {
                                         "title": "Channel ID",
+                                        "description": "The channel to post starred messages on (for this configuration)",
+                                        "type": "string",
                                         "minLength": 16,
                                         "maxLength": 20,
                                         "pattern": "^[0-9]+$"
-                                    }
-                                },
-                                "ignores": {
-                                    "title": "Ignores",
-                                    "description": "Channel IDs in which to deny starred messages to originate from.",
-                                    "type": "array",
-                                    "items": {
+                                    },
+                                    "emoji": {
+                                        "title": "Emoji",
+                                        "description": "The emoji to trigger message starring on",
                                         "type": "string",
-                                        "title": "Channel ID",
-                                        "minLength": 16,
-                                        "maxLength": 20,
-                                        "pattern": "^[0-9]+$"
+                                        "default": "⭐",
+                                        "minLength": 1,
+                                        "maxLength": 5
+                                    },
+                                    "maxEmoji": {
+                                        "title": "Max Emoji",
+                                        "description": "The emoji to visually display on the starboard channel when a message hits max stars",
+                                        "type": "string",
+                                        "default": "🌟",
+                                        "minLength": 1,
+                                        "maxLength": 5,
+                                        "required": false
+                                    },
+                                    "clearOnDelete": {
+                                        "title": "Clear On Delete",
+                                        "description": "Clears the starboard starred message if the original is deleted by the author",
+                                        "type": "boolean",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "clearOnModDelete": {
+                                        "title": "Clear On Mod Delete",
+                                        "description": "Clears the starboard starred message if the original is deleted by another person",
+                                        "type": "boolean",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "minReacts": {
+                                        "title": "Minimum Reacts",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 1000,
+                                        "description": "Minimum amount of reactions on a message for it to be published on the starboard channel",
+                                        "default": 5
+                                    },
+                                    "minReactsPin": {
+                                        "title": "Minimum Reacts to Pin",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 5000,
+                                        "description": "Minimum amount of reactions on a message for it to be pinned on the starboard channel",
+                                        "default": 30
+                                    },
+                                    "maxReacts": {
+                                        "title": "Maximum Reactions",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 5000,
+                                        "description": "Maximum amount of reactions for color calculation and Max Emoji usage (doesn't actually stop new reactions after this is hit)",
+                                        "default": 30
+                                    },
+                                    "messageLifetime": {
+                                        "title": "Message Lifetime",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 336,
+                                        "description": "How old a message can be, in hours, for it to be able to be starred",
+                                        "default": 24
+                                    },
+                                    "preventSelf": {
+                                        "title": "Prevent Self Reacts",
+                                        "description": "Prevents the message author from starring their own message",
+                                        "type": "boolean",
+                                        "default": true,
+                                        "format": "checkbox"
+                                    },
+                                    "sources": {
+                                        "title": "Sources",
+                                        "description": "Channel IDs in which to allow starred messages to originate from. If this is not set, any channel will be allowed.",
+                                        "required": false,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "Channel ID",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        }
+                                    },
+                                    "ignores": {
+                                        "title": "Ignores",
+                                        "description": "Channel IDs in which to deny starred messages to originate from.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "Channel ID",
+                                            "minLength": 16,
+                                            "maxLength": 20,
+                                            "pattern": "^[0-9]+$"
+                                        }
                                     }
                                 }
                             },
@@ -289,6 +326,9 @@
                                 }
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "tags": {
@@ -325,6 +365,9 @@
                                 }
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "translation": {
@@ -366,6 +409,9 @@
                                 }
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 },
                 "utilities": {
@@ -461,6 +507,9 @@
                                 }
                             }
                         }
+                    },
+                    "options": {
+                        "collapsed": true
                     }
                 }
             }

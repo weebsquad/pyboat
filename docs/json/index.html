@@ -17,15 +17,16 @@
             <h1>PyBoat configuration generator</h1>
             <p>After configuring using the editor below, click "Copy to clipboard" to get your generated JSON!</p>
             <label for="json_output">Your JSON:</label>
-            
-            <br><button onclick="copyJson()" id="button_copy">Copy to clipboard</button>
+            <button onclick="copyJson()" id="button_copy">Copy to clipboard</button>
+            <br>
+            <label for="import">Import JSON:</label><input type="text" id="import" onchange="importJSON()"></input>
             <br><br>
             <div class='col-8 col-md-8 w-8/12'>
                 <div id='editor_holder'></div>
                 <!-- <button id='submit'>Submit (console.log)</button> -->
                 
             </div>
-            <textarea id="json_output" name="json_output" rows="1" cols="1" readonly disabled></textarea>
+            <textarea id="json_output" name="json_output" rows="10" cols="10" readonly></textarea>
             <script src="./main.js"></script>
     </body>
 </html>

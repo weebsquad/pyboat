@@ -44,6 +44,16 @@ function copyJson() {
   /* Copy the text inside the text field */
   document.execCommand('copy');
 }
+
+function importJSON() {
+    const val = document.getElementById('import');
+    try {
+        const parsed = JSON.parse(val.value);
+        editor.setValue(parsed);
+    } catch(e) {console.error(e)}
+}
+
+
 fetch('./schema.json')
   .then((response) => response.json())
   .then((obj) => {
