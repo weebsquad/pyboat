@@ -165,6 +165,75 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "channels": {
+                            "type": "array",
+                            "title": "Channels",
+                            "items": {
+                                "type": "string",
+                                "minLength": 16,
+                                "maxLength": 20,
+                                "pattern": "^[0-9]+$"
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "autoPins": {
+                            "type": "object",
+                            "title": "Automatic Pins",
+                            "properties": {
+                                "single": {
+                                    "type": "array",
+                                    "title": "Exact Match",
+                                    "items": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "repeating": {
+                                    "type": "array",
+                                    "title": "Modulus === 0 Match (i.e. 1000 = 1000, 2000, 3000)",
+                                    "items": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "repeatingLast": {
+                                    "type": "array",
+                                    "title": "Last N digits equal (i.e. 69 = 69, 169, 269, 1069, 500069)",
+                                    "items": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "useWebhook": {
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "default": false,
+                            "title": "Whether to replace users' messages with a webhook message",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "webhook": {
+                            "type": "string",
+                            "title": "The Webhook URL",
+                            "options": {
+                                "dependencies": {
+                                    "useWebhook": true
+                                }
+                            }
                         }
                     },
                     "options": {
@@ -455,7 +524,8 @@
                             "options": {
                                 "dependencies": {
                                     "enabled": true
-                                }
+                                },
+                                "collapsed": true
                             }
                         },
                         "userTag": {
@@ -644,7 +714,8 @@
                             "options": {
                                 "dependencies": {
                                     "enabled": true
-                                }
+                                },
+                                "collapsed": true
                             }
                         }
                     },
@@ -772,7 +843,8 @@
                             "options": {
                                 "dependencies": {
                                     "enabled": true
-                                }
+                                },
+                                "collapsed": true
                             }
                         },
                         "customUserRoles": {
@@ -825,7 +897,8 @@
                             "options": {
                                 "dependencies": {
                                     "enabled": true
-                                }
+                                },
+                                "collapsed": true
                             }
                         }
                     },
