@@ -230,7 +230,8 @@
                                 "key": {
                                     "type": "string",
                                     "title": "API Key",
-                                    "description": "Your Google API Key"
+                                    "description": "Your Google API Key",
+                                    "minLength": 5
                                 }
                             },
                             "options": {
