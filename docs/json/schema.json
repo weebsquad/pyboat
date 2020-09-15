@@ -186,6 +186,30 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "maxLength": {
+                            "type": "integer",
+                            "title": "Maximum Tag Length",
+                            "minimum": 10,
+                            "maximum": 1990,
+                            "default": 200,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "levelEditOthers": {
+                            "type": "integer",
+                            "title": "Bot Level needed to edit other people's tags",
+                            "minimum": 0,
+                            "default": 50,
+                            "maximum": 999,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     }
                 },
@@ -198,6 +222,34 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "googleApi": {
+                            "title": "Google API",
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string",
+                                    "title": "API Key",
+                                    "description": "Your Google API Key"
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "level": {
+                            "title": "Bot Level",
+                            "description": "Bot level needed to use translation reactions",
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 999,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     }
                 },
@@ -224,6 +276,7 @@
                                 "delay": {
                                     "title": "Delay",
                                     "type": "integer",
+                                    "description": "The delay for which deleted messages can be sniped for (in seconds)",
                                     "default": 120,
                                     "minimum": 0,
                                     "maximum": 10000,
