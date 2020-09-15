@@ -71,8 +71,14 @@ fetch('./schema.json')
     editor.on('change', () => {
       const vali = editor.validate();
       if (vali.length) {
+        document.getElementById('button_copy').style = 'background-color:red';
+        document.getElementById('button_copy').disabled = true;
+        document.getElementById('button_copy').text = '';
         document.getElementById('json_output').value = 'JSON Error';
       } else {
+        document.getElementById('button_copy').style = 'background-color:green';
+        document.getElementById('button_copy').disabled = false;
+        document.getElementById('button_copy').text = 'Copy to clipboard';
         document.getElementById('json_output').value = JSON.stringify(editor.getValue(), null, 2);
       }
     });
