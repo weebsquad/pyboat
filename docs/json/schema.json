@@ -1,0 +1,64 @@
+{
+    "title": "PyBoat config",
+    "type": "object",
+    "properties": {
+        "levels": {
+            "title": "Levels",
+            "type": "object",
+            "properties": {
+                "roles": {
+                    "type": "array",
+                    "format": "table",
+                    "uniqueItems": "true",
+                    "items": {
+                        "type": "object",
+                        "title": "Roles",
+                        "properties": {
+                            "id": {
+                                "title": "Role ID",
+                                "type": "string",
+                                "default": "Role ID",
+                                "minLength": "16",
+                                "maxLength": "20",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "level": {
+                                "title": "Bot Level",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 999,
+                                "default": 10
+                            }
+                        }
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "format": "table",
+                    "uniqueItems": "true",
+                    "items": {
+                        "type": "object",
+                        "title": "Users",
+                        "properties": {
+                            "id": {
+                                "title": "User ID",
+                                "type": "string",
+                                "default": "User ID",
+                                "minLength": "16",
+                                "maxLength": "20",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "level": {
+                                "title": "Bot Level",
+                                "type": "integer",
+                                "minimum": -1,
+                                "maximum": 999,
+                                "default": 10
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
