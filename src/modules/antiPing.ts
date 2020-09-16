@@ -389,7 +389,7 @@ export async function OnMessageCreate(
   ];
   const data = await kv.get(kvDataKey);
   let isMute = false;
-  if (typeof data === 'object' && typeof config.modules.antiPing.pingsForAutoMute === 'number' && typeof data[author.id] === 'object' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
+  if (typeof data === 'object' && typeof config.modules.antiPing.pingsForAutoMute === 'number' && config.modules.antiPing.pingsForAutoMute > 0 && typeof data[author.id] === 'object' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
       await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
@@ -709,7 +709,7 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (isBanned !== null) {
     return;
   }
-  const isBan = (typeof config.modules.antiPing.pingsForAutoMute === 'number' && Object.keys(data[user.id]).length >= config.modules.antiPing.pingsForAutoMute)
+  const isBan = (typeof config.modules.antiPing.pingsForAutoMute === 'number' && config.modules.antiPing.pingsForAutoMute > 0 && Object.keys(data[user.id]).length >= config.modules.antiPing.pingsForAutoMute)
     || (typeof config.modules.antiPing.banOnLeave === 'boolean' && config.modules.antiPing.banOnLeave);
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
