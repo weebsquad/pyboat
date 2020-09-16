@@ -240,7 +240,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
   }
   if (checkCaps === true) {
     const minLength = typeof thisCfg.caps.minLength === 'number' ? thisCfg.caps.minLength : 5;
-    if (txt.length >= minLength) {
+    if (txt.length >= minLength && minLength > 0) {
       const matches = txt.match(/[A-z]/gi);
       if (Array.isArray(matches) && matches.length > 0) {
         if (typeof thisCfg.caps.percentage === 'number' && thisCfg.caps.percentage > 1) {

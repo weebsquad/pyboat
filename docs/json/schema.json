@@ -985,6 +985,7 @@
                         },
                         "nameChecks": {
                             "title": "Username/Nickname censoring",
+                            "description": "Violations will censor the user's nickname",
                             "type": "array",
                             "format": "tabs-top",
                             "items": {
@@ -1187,6 +1188,1058 @@
                                                 "options": {
                                                     "collapsed": true
                                                 }
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "zalgo": {
+                                        "type": "boolean",
+                                        "title": "Check Zalgo",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "words": {
+                                        "type": "array",
+                                        "title": "Blocked Words",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "word",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "tokens": {
+                                        "type": "array",
+                                        "title": "Blocked Tokens",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "token",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "caps": {
+                                        "type": "object",
+                                        "title": "Capitals",
+                                        "description": "Note: to disable, set Minimum Length to 0",
+                                        "properties": {
+                                            "minLength": {
+                                                "title": "Minimum Length",
+                                                "description": "Minimum length that the text should be before checking the 2 next filters",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 0,
+                                                "maximum": 1500
+                                            },
+                                            "followed": {
+                                                "title": "Caps in a row",
+                                                "type": "integer",
+                                                "description": "How many capital characters in a row to trigger on",
+                                                "minimum": 2,
+                                                "maximum": 200,
+                                                "default": 10
+                                            },
+                                            "percentage": {
+                                                "title": "Percentage of capitals",
+                                                "type": "integer",
+                                                "description": "Percentage of capital characters in the text, 0-100",
+                                                "minimum": 2,
+                                                "maximum": 100,
+                                                "default": 75
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "chars": {
+                                        "type": "object",
+                                        "title": "Characters",
+                                        "description": "Note: to disable, set values to 0",
+                                        "properties": {
+                                            "limit": {
+                                                "title": "Limit",
+                                                "description": "Maximum characters allowed in the text",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 1000,
+                                                "maximum": 2000
+                                            },
+                                            "newLines": {
+                                                "title": "Newlines",
+                                                "type": "integer",
+                                                "description": "Allowed newlines in the text",
+                                                "minimum": 0,
+                                                "maximum": 1500,
+                                                "default": 20
+                                            },
+                                            "nonAscii": {
+                                                "title": "Block Non-Ascii",
+                                                "description": "Whether to censor if the text contains any non-ascii characters",
+                                                "type": "boolean",
+                                                "format": "checkbox"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "channels": {
+                            "title": "Channel message censoring",
+                            "description": "Violations will censor the user's message",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "format": "table",
+                                "title": "Filter",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Channel",
+                                        "description": "The channel ID of the channel which this filter will apply to.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "violations": {
+                                        "title": "Violation Config",
+                                        "description": "Define what to do when members violate this filter. NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                                "type": "string",
+                                                "default": "30m"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "globalViolations": {
+                                        "title": "Global Violation Config",
+                                        "description": "Define what to do when members collectively violate this filter (i.e. a raid). NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["SLOWMODE", "MASSBAN", "LOCK_CHANNEL", "LOCK_GUILD"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using SLOWMODE, LOCK_CHANNEL or LOCK_GUILD",
+                                                "type": "string",
+                                                "default": "30m"
+                                            },
+                                            "actionValue": {
+                                                "title": "Action Value",
+                                                "description": "When using slowmode, how often members can send messages, in seconds",
+                                                "type": "integer",
+                                                "default": 5,
+                                                "minimum": 1,
+                                                "maximum": 3600
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "invites": {
+                                        "type": "object",
+                                        "description": "Invite censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "self": {
+                                                "type": "boolean",
+                                                "default": true,
+                                                "description": "Whether to always allow invites for this server",
+                                                "format": "checkbox"
+                                            },
+                                            "vanityUrl": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to always allow invites for servers with vanity urls",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "object",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all invites sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "object",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }  
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "urls": {
+                                        "type": "object",
+                                        "description": "URL censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "allowSubdomains": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to automatically allow subdomains of domains you whitelist.",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "array",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all urls sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "array",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "zalgo": {
+                                        "type": "boolean",
+                                        "title": "Check Zalgo",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "words": {
+                                        "type": "array",
+                                        "title": "Blocked Words",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "word",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "tokens": {
+                                        "type": "array",
+                                        "title": "Blocked Tokens",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "token",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "caps": {
+                                        "type": "object",
+                                        "title": "Capitals",
+                                        "description": "Note: to disable, set Minimum Length to 0",
+                                        "properties": {
+                                            "minLength": {
+                                                "title": "Minimum Length",
+                                                "description": "Minimum length that the text should be before checking the 2 next filters",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 0,
+                                                "maximum": 1500
+                                            },
+                                            "followed": {
+                                                "title": "Caps in a row",
+                                                "type": "integer",
+                                                "description": "How many capital characters in a row to trigger on",
+                                                "minimum": 2,
+                                                "maximum": 200,
+                                                "default": 10
+                                            },
+                                            "percentage": {
+                                                "title": "Percentage of capitals",
+                                                "type": "integer",
+                                                "description": "Percentage of capital characters in the text, 0-100",
+                                                "minimum": 2,
+                                                "maximum": 100,
+                                                "default": 75
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "chars": {
+                                        "type": "object",
+                                        "title": "Characters",
+                                        "description": "Note: to disable, set values to 0",
+                                        "properties": {
+                                            "limit": {
+                                                "title": "Limit",
+                                                "description": "Maximum characters allowed in the text",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 1000,
+                                                "maximum": 2000
+                                            },
+                                            "newLines": {
+                                                "title": "Newlines",
+                                                "type": "integer",
+                                                "description": "Allowed newlines in the text",
+                                                "minimum": 0,
+                                                "maximum": 1500,
+                                                "default": 20
+                                            },
+                                            "nonAscii": {
+                                                "title": "Block Non-Ascii",
+                                                "description": "Whether to censor if the text contains any non-ascii characters",
+                                                "type": "boolean",
+                                                "format": "checkbox"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "categories": {
+                            "title": "Category message censoring",
+                            "description": "Violations will censor the user's message",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "format": "table",
+                                "title": "Filter",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Category",
+                                        "description": "The category ID of the category which this filter will apply to sub-channels of.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "violations": {
+                                        "title": "Violation Config",
+                                        "description": "Define what to do when members violate this filter. NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                                "type": "string",
+                                                "default": "30m"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "globalViolations": {
+                                        "title": "Global Violation Config",
+                                        "description": "Define what to do when members collectively violate this filter (i.e. a raid). NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["SLOWMODE", "MASSBAN", "LOCK_CHANNEL", "LOCK_GUILD"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using SLOWMODE, LOCK_CHANNEL or LOCK_GUILD",
+                                                "type": "string",
+                                                "default": "30m"
+                                            },
+                                            "actionValue": {
+                                                "title": "Action Value",
+                                                "description": "When using slowmode, how often members can send messages, in seconds",
+                                                "type": "integer",
+                                                "default": 5,
+                                                "minimum": 1,
+                                                "maximum": 3600
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "invites": {
+                                        "type": "object",
+                                        "description": "Invite censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "self": {
+                                                "type": "boolean",
+                                                "default": true,
+                                                "description": "Whether to always allow invites for this server",
+                                                "format": "checkbox"
+                                            },
+                                            "vanityUrl": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to always allow invites for servers with vanity urls",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "object",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all invites sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "object",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }  
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "urls": {
+                                        "type": "object",
+                                        "description": "URL censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "allowSubdomains": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to automatically allow subdomains of domains you whitelist.",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "array",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all urls sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "array",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "zalgo": {
+                                        "type": "boolean",
+                                        "title": "Check Zalgo",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "words": {
+                                        "type": "array",
+                                        "title": "Blocked Words",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "word",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "tokens": {
+                                        "type": "array",
+                                        "title": "Blocked Tokens",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "token",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "caps": {
+                                        "type": "object",
+                                        "title": "Capitals",
+                                        "description": "Note: to disable, set Minimum Length to 0",
+                                        "properties": {
+                                            "minLength": {
+                                                "title": "Minimum Length",
+                                                "description": "Minimum length that the text should be before checking the 2 next filters",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 0,
+                                                "maximum": 1500
+                                            },
+                                            "followed": {
+                                                "title": "Caps in a row",
+                                                "type": "integer",
+                                                "description": "How many capital characters in a row to trigger on",
+                                                "minimum": 2,
+                                                "maximum": 200,
+                                                "default": 10
+                                            },
+                                            "percentage": {
+                                                "title": "Percentage of capitals",
+                                                "type": "integer",
+                                                "description": "Percentage of capital characters in the text, 0-100",
+                                                "minimum": 2,
+                                                "maximum": 100,
+                                                "default": 75
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "chars": {
+                                        "type": "object",
+                                        "title": "Characters",
+                                        "description": "Note: to disable, set values to 0",
+                                        "properties": {
+                                            "limit": {
+                                                "title": "Limit",
+                                                "description": "Maximum characters allowed in the text",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 1000,
+                                                "maximum": 2000
+                                            },
+                                            "newLines": {
+                                                "title": "Newlines",
+                                                "type": "integer",
+                                                "description": "Allowed newlines in the text",
+                                                "minimum": 0,
+                                                "maximum": 1500,
+                                                "default": 20
+                                            },
+                                            "nonAscii": {
+                                                "title": "Block Non-Ascii",
+                                                "description": "Whether to censor if the text contains any non-ascii characters",
+                                                "type": "boolean",
+                                                "format": "checkbox"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "levels": {
+                            "title": "Global message censoring (levels)",
+                            "description": "Violations will censor the user's message",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "format": "table",
+                                "title": "Filter",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Level",
+                                        "description": "The level and below of users that this filter applies to. All filters will be checked for a user as long as they match the level requirement, from lowest to highest until a violation is found.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "violations": {
+                                        "title": "Violation Config",
+                                        "description": "Define what to do when members violate this filter. NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                                "type": "string",
+                                                "default": "30m"
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "globalViolations": {
+                                        "title": "Global Violation Config",
+                                        "description": "Define what to do when members collectively violate this filter (i.e. a raid). NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["SLOWMODE", "MASSBAN", "LOCK_CHANNEL", "LOCK_GUILD"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using SLOWMODE, LOCK_CHANNEL or LOCK_GUILD",
+                                                "type": "string",
+                                                "default": "30m"
+                                            },
+                                            "actionValue": {
+                                                "title": "Action Value",
+                                                "description": "When using slowmode, how often members can send messages, in seconds",
+                                                "type": "integer",
+                                                "default": 5,
+                                                "minimum": 1,
+                                                "maximum": 3600
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "invites": {
+                                        "type": "object",
+                                        "description": "Invite censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "self": {
+                                                "type": "boolean",
+                                                "default": true,
+                                                "description": "Whether to always allow invites for this server",
+                                                "format": "checkbox"
+                                            },
+                                            "vanityUrl": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to always allow invites for servers with vanity urls",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "object",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all invites sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "object",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }  
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "urls": {
+                                        "type": "object",
+                                        "description": "URL censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "allowSubdomains": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to automatically allow subdomains of domains you whitelist.",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "array",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all urls sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "array",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "zalgo": {
+                                        "type": "boolean",
+                                        "title": "Check Zalgo",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
+                                    "words": {
+                                        "type": "array",
+                                        "title": "Blocked Words",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "word",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "tokens": {
+                                        "type": "array",
+                                        "title": "Blocked Tokens",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "token",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "caps": {
+                                        "type": "object",
+                                        "title": "Capitals",
+                                        "description": "Note: to disable, set Minimum Length to 0",
+                                        "properties": {
+                                            "minLength": {
+                                                "title": "Minimum Length",
+                                                "description": "Minimum length that the text should be before checking the 2 next filters",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 0,
+                                                "maximum": 1500
+                                            },
+                                            "followed": {
+                                                "title": "Caps in a row",
+                                                "type": "integer",
+                                                "description": "How many capital characters in a row to trigger on",
+                                                "minimum": 2,
+                                                "maximum": 200,
+                                                "default": 10
+                                            },
+                                            "percentage": {
+                                                "title": "Percentage of capitals",
+                                                "type": "integer",
+                                                "description": "Percentage of capital characters in the text, 0-100",
+                                                "minimum": 2,
+                                                "maximum": 100,
+                                                "default": 75
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "chars": {
+                                        "type": "object",
+                                        "title": "Characters",
+                                        "description": "Note: to disable, set values to 0",
+                                        "properties": {
+                                            "limit": {
+                                                "title": "Limit",
+                                                "description": "Maximum characters allowed in the text",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "default": 1000,
+                                                "maximum": 2000
+                                            },
+                                            "newLines": {
+                                                "title": "Newlines",
+                                                "type": "integer",
+                                                "description": "Allowed newlines in the text",
+                                                "minimum": 0,
+                                                "maximum": 1500,
+                                                "default": 20
+                                            },
+                                            "nonAscii": {
+                                                "title": "Block Non-Ascii",
+                                                "description": "Whether to censor if the text contains any non-ascii characters",
+                                                "type": "boolean",
+                                                "format": "checkbox"
                                             }
                                         },
                                         "options": {
