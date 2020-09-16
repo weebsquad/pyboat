@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prefer-destructuring */
 import * as conf from '../config';
-import { pad, swapKV, logError } from './utils';
+import { pad, swapKV, logError, makeFake } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
 // import { bigInt } from './bigint';
 import { Permissions } from './bitField';
@@ -233,13 +233,13 @@ export async function getUser(userId: string, forceFetch = false) {
   );
   try {
     const res = await data.json();
-    res.getTag = function () {
+    /*res.getTag = function () {
       return `${res.username}#${res.discriminator}`;
     };
     res.getAvatarUrl = function () {
       return `https://cdn.discordapp.com/avatars/${userId}/${res.avatar}`;
-    };
-    return res;
+    };*/
+    return makeFake<discord.User>(res, discord.User)
   } catch (e) {
     logError(e);
   }
