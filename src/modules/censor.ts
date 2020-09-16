@@ -309,9 +309,9 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
     const invCfg = thisCfg.invites;
     const allowVanities = typeof invCfg.vanityUrl === 'boolean' ? invCfg.vanityUrl : false;
     const allowSelf = typeof invCfg.self === 'boolean' ? invCfg.self : false;
-    const allowedGuilds = typeof invCfg.whitelist === 'object' && Array.isArray(invCfg.whitelist.guilds) ? invCfg.whitelist.guilds : null;
+    const allowedGuilds = typeof invCfg.whitelist === 'object' && Array.isArray(invCfg.whitelist.guilds) && invCfg.whitelist.guilds.length > 0 ? invCfg.whitelist.guilds : null;
     const deniedGuilds = typeof invCfg.blacklist === 'object' && Array.isArray(invCfg.blacklist.guilds) ? invCfg.blacklist.guilds : [];
-    const allowedCodes = typeof invCfg.whitelist === 'object' && Array.isArray(invCfg.whitelist.codes) ? invCfg.whitelist.codes : null;
+    const allowedCodes = typeof invCfg.whitelist === 'object' && Array.isArray(invCfg.whitelist.codes) && invCfg.whitelist.codes.length > 0 ? invCfg.whitelist.codes : null;
     const deniedCodes = typeof invCfg.blacklist === 'object' && Array.isArray(invCfg.blacklist.codes) ? invCfg.blacklist.codes : [];
 
     if (invites.length > 5) {
@@ -368,7 +368,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
       }
     }
   }
-  if (typeof thisCfg.zalgo === 'object' && Array.isArray(zalgo) && zalgo.length > 0) {
+  if ((typeof thisCfg.zalgo === 'object' || thisCfg.zalgo === true) && Array.isArray(zalgo) && zalgo.length > 0) {
     return new CensorCheck(true, CensorType.ZALGO, 'Zalgo found', zalgo.length.toString(), _stop);
   }
   if (typeof thisCfg.words === 'object' && Array.isArray(words) && words.length > 0) {
@@ -491,7 +491,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
     if (typeof val.urls === 'object') {
       grabUrls = true;
     }
-    if (typeof val.zalgo === 'object') {
+    if (typeof val.zalgo === 'object' || val.zalgo === true) {
       grabZalgo = true;
     }
     if (Array.isArray(val.words)) {
@@ -629,7 +629,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     if (typeof val.urls === 'object') {
       grabUrls = true;
     }
-    if (typeof val.zalgo === 'object') {
+    if (typeof val.zalgo === 'object' || val.zalgo === true) {
       grabZalgo = true;
     }
     if (Array.isArray(val.words)) {
