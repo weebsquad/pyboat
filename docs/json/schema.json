@@ -982,6 +982,102 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "nameChecks": {
+                            "title": "Username/Nickname censoring",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "format": "table",
+                                "title": "Filter",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Level",
+                                        "description": "The level and below of users that this filter applies to. All filters will be checked for a user as long as they match the level requirement, from lowest to highest until a violation is found.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "violations": {
+                                        "title": "Violation Config",
+                                        "description": "Define what to do when members violate this filter. NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                                "type": "string",
+                                                "default": "30m"
+                                            }
+                                        }
+                                    },
+                                    "globalViolations": {
+                                        "title": "Global Violation Config",
+                                        "description": "Define what to do when members collectively violate this filter (i.e. a raid). NOTE: To disable, either set action to empty, or trigger to 0/0",
+                                        "type": "object",
+                                        "format": "table",
+                                        "properties": {
+                                            "trigger": {
+                                                "description": "When to trigger this violation",
+                                                "default": "2/5",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+\/[0-9]+$"
+                                            },
+                                            "action": {
+                                                "title": "Action",
+                                                "description": "The action to take when this violation is hit",
+                                                "type": "string",
+                                                "enum": ["SLOWMODE", "MASSBAN", "LOCK_CHANNEL", "LOCK_GUILD"],
+                                                "default": ""
+                                            },
+                                            "actionDuration": {
+                                                "title": "Action Duration",
+                                                "description": "How long the action should last (in 1h30m format) when using SLOWMODE, LOCK_CHANNEL or LOCK_GUILD",
+                                                "type": "string",
+                                                "default": "30m"
+                                            },
+                                            "actionValue": {
+                                                "title": "Action Value",
+                                                "description": "When using slowmode, how often members can send messages, in seconds",
+                                                "type": "integer",
+                                                "default": 5,
+                                                "minimum": 1,
+                                                "maximum": 3600
+                                            }
+                                        }
+                                    },
+                                    "invites": {
+                                        
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     },
                     "options": {

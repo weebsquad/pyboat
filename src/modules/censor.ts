@@ -348,7 +348,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   if (typeof thisCfg.urls === 'object' && Array.isArray(urls) && urls.length > 0) {
     const urlCfg = thisCfg.urls;
     const allowSubdomains = typeof urlCfg.allowSubdomains === 'boolean' ? urlCfg.allowSubdomains : false;
-    const allowed = typeof urlCfg.whitelist === 'object' && Array.isArray(urlCfg.whitelist) ? urlCfg.whitelist : null;
+    const allowed = typeof urlCfg.whitelist === 'object' && Array.isArray(urlCfg.whitelist) && urlCfg.whitelist.length > 0 ? urlCfg.whitelist : null;
     const denied = typeof urlCfg.blacklist === 'object' && Array.isArray(urlCfg.blacklist) ? urlCfg.blacklist : [];
     for (let i = 0; i < urls.length; i += 1) {
       const url = urls[i];
