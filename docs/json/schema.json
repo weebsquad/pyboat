@@ -1030,6 +1030,9 @@
                                                 "type": "string",
                                                 "default": "30m"
                                             }
+                                        },
+                                        "options": {
+                                            "collapsed": true
                                         }
                                     },
                                     "globalViolations": {
@@ -1065,10 +1068,130 @@
                                                 "minimum": 1,
                                                 "maximum": 3600
                                             }
+                                        },
+                                        "options": {
+                                            "collapsed": true
                                         }
                                     },
                                     "invites": {
-                                        
+                                        "type": "object",
+                                        "description": "Invite censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "self": {
+                                                "type": "boolean",
+                                                "default": true,
+                                                "description": "Whether to always allow invites for this server",
+                                                "format": "checkbox"
+                                            },
+                                            "vanityUrl": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to always allow invites for servers with vanity urls",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "object",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all invites sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "object",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "properties": {
+                                                    "codes": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "invite code"
+                                                        }
+                                                    },
+                                                    "guilds": {
+                                                        "type": "array",
+                                                        "format": "table",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "title": "guild ID",
+                                                            "minLength": 16,
+                                                            "maxLength": 20,
+                                                            "pattern": "^[0-9]+$"
+                                                        }
+                                                    }
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }  
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "urls": {
+                                        "type": "object",
+                                        "description": "URL censoring",
+                                        "format": "table",
+                                        "properties": {
+                                            "allowSubdomains": {
+                                                "type": "boolean",
+                                                "default": false,
+                                                "description": "Whether to automatically allow subdomains of domains you whitelist.",
+                                                "format": "checkbox"
+                                            },
+                                            "whitelist": {
+                                                "type": "array",
+                                                "description": "Whitelist configurations. NOTE: If you set any whitelist property, all urls sent that do not match it will be censored.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "blacklist": {
+                                                "type": "array",
+                                                "description": "Blacklist configurations.",
+                                                "format": "tabs-top",
+                                                "items": {
+                                                    "type": "string",
+                                                    "title": "domain"
+                                                },
+                                                "options": {
+                                                    "collapsed": true
+                                                }
+                                            }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
                                     }
                                 }
                             },
