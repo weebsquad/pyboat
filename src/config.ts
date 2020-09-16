@@ -287,7 +287,9 @@ function recursiveDefault(source: any, dest: any) {
           dest[key].forEach((e) => {
             if (typeof e.__key === 'string') {
               let keyName = e.__key;
-              if(typeof keyName === 'number') keyName = keyName.toString();
+              if (typeof keyName === 'number') {
+                keyName = keyName.toString();
+              }
               delete e.__key;
               const remaining = Object.keys(e);
               if (remaining.length === 1) {
