@@ -144,7 +144,7 @@ fetch('./schema.json')
       object_layout: 'table',
       show_errors: 'interaction',
       schema: obj,
-      theme: 'spectre',
+      theme: 'bootstrap4',
       disable_properties: true,
       disable_edit_json: true,
       disable_array_reorder: true,
