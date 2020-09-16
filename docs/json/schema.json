@@ -2707,6 +2707,7 @@
                         "logChannels": {
                             "type": "array",
                             "format": "tabs-top",
+                            "title": "Logging Channels",
                             "items": {
                                 "type": "object",
                                 "title": "Channel",
@@ -2818,6 +2819,84 @@
                                     "enabled": true
                                 },
                                 "collapsed": true
+                            }
+                        },
+                        "ignores": {
+                            "type": "object",
+                            "title": "Ignores Config",
+                            "description": "Set what should be ignored in logging",
+                            "properties": {
+                                "channels": {
+                                    "title": "Channels to ignore logs from",
+                                    "type": "array",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "channel",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "users": {
+                                    "title": "Users to ignore logs from",
+                                    "type": "array",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "user",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "self": {
+                                    "title": "Ignore Self",
+                                    "description": "Whether to ignore logs of changes to the bot user",
+                                    "type": "boolean",
+                                    "format": "checkbox",
+                                    "default": false
+                                },
+                                "selfAuditLogs": {
+                                    "title": "Ignore Self Actions",
+                                    "description": "Whether to ignore logs of changes performed by the bot user",
+                                    "type": "boolean",
+                                    "format": "checkbox",
+                                    "default": false
+                                },
+                                "extendUsersToAuditLogs": {
+                                    "title": "Extend Users to Audit Logs",
+                                    "description": "Whether to also ignore actions performed by ignored users",
+                                    "type": "boolean",
+                                    "format": "checkbox",
+                                    "default": false
+                                },
+                                "blacklistedUsers": {
+                                    "title": "Ignore Blacklisted",
+                                    "description": "Whether to auto-ignore blacklisted users",
+                                    "type": "boolean",
+                                    "format": "checkbox",
+                                    "default": false
+                                },
+                                "logChannels": {
+                                    "title": "Ignore Log Channels",
+                                    "description": "Whether to auto-ignore logs from channels marked as Log Channels",
+                                    "type": "boolean",
+                                    "format": "checkbox",
+                                    "default": false
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
                             }
                         },
                         "userTag": {
