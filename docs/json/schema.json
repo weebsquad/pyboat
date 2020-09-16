@@ -490,6 +490,483 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "antiRaid": {
+                            "type": "array",
+                            "format": "tabs-top",
+                            "description": "Anti raid configuration for message spam",
+                            "items": {
+                                "type": "object",
+                                "title": "Filter",
+                                "description": "NOTE: If you would like to disable a filter below, just set it to 0/0",
+                                "format": "table",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Bot Level",
+                                        "description": "The users of bot level and below that this filter will apply to",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "clean": {
+                                        "title": "Clean Messages",
+                                        "description": "Whether to clean users messages when they violate this filter",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "cleanDuration": {
+                                        "title": "Message Clean Time",
+                                        "description": "If >0, how long ago to clear messages of users when they violate this filter. If this is 0, this time will be automatically calculated",
+                                        "default": 0,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 120,
+                                        "options": {
+                                            "dependencies": {
+                                                "clean": true
+                                            }
+                                        }
+                                    },
+                                    "action": {
+                                        "title": "Action",
+                                        "description": "The action to take when this filter is hit",
+                                        "type": "string",
+                                        "enum": ["LOCK_GUILD"],
+                                        "default": ""
+                                    },
+                                    "actionDuration": {
+                                        "title": "Action Duration",
+                                        "description": "How long the action should last (in 1h30m format)",
+                                        "type": "string",
+                                        "default": "30m"
+                                    },
+                                    "characters": {
+                                        "title": "Characters",
+                                        "description": "Amount of characters to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4000/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "messages": {
+                                        "title": "Messages",
+                                        "description": "Amount of messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "15/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "newlines": {
+                                        "title": "Newlines",
+                                        "description": "Amount of newlines to trigger a violation on",
+                                        "type": "string",
+                                        "default": "700/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "emoji": {
+                                        "title": "Emoji",
+                                        "description": "Amount of emoji to trigger a violation on",
+                                        "type": "string",
+                                        "default": "60/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "attachments": {
+                                        "title": "Attachments",
+                                        "description": "Amount of attachments to trigger a violation on",
+                                        "type": "string",
+                                        "default": "15/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "links": {
+                                        "title": "Links",
+                                        "description": "Amount of links to trigger a violation on",
+                                        "type": "string",
+                                        "default": "15/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "duplicateMessages": {
+                                        "title": "Duplicate Messages",
+                                        "description": "Amount of duplicate messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "8/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "antiRaidPingRole": {
+                            "title": "Anti Raid Role to Mention",
+                            "description": "If using AntiRaid, the role ID of the role to mention when a raid is triggered",
+                            "type": "string",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "antiRaidPingChannel": {
+                            "title": "Anti Raid Channel to Mention on",
+                            "description": "If using AntiRaid, the channel ID of the channel to send a mention when a raid is triggered",
+                            "type": "string",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "channels": {
+                            "title": "Channel Configurations",
+                            "description": "Individual antispam configurations for a specific channels",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "title": "Filter",
+                                "description": "NOTE: If you would like to disable a filter below, just set it to 0/0",
+                                "format": "table",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Channel",
+                                        "description": "The ID of the channel to apply this filter on, regardless of who sends the message",
+                                        "type": "string",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "clean": {
+                                        "title": "Clean Messages",
+                                        "description": "Whether to clean users messages when they violate this filter",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "cleanDuration": {
+                                        "title": "Message Clean Time",
+                                        "description": "If >0, how long ago to clear messages of users when they violate this filter. If this is 0, this time will be automatically calculated",
+                                        "default": 0,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 120,
+                                        "options": {
+                                            "dependencies": {
+                                                "clean": true
+                                            }
+                                        }
+                                    },
+                                    "action": {
+                                        "title": "Action",
+                                        "description": "The action to take when this filter is hit",
+                                        "type": "string",
+                                        "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                        "default": ""
+                                    },
+                                    "actionDuration": {
+                                        "title": "Action Duration",
+                                        "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                        "type": "string",
+                                        "default": "30m"
+                                    },
+                                    "characters": {
+                                        "title": "Characters",
+                                        "description": "Amount of characters to trigger a violation on",
+                                        "type": "string",
+                                        "default": "750/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "messages": {
+                                        "title": "Messages",
+                                        "description": "Amount of messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "6/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "newlines": {
+                                        "title": "Newlines",
+                                        "description": "Amount of newlines to trigger a violation on",
+                                        "type": "string",
+                                        "default": "20/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "emoji": {
+                                        "title": "Emoji",
+                                        "description": "Amount of emoji to trigger a violation on",
+                                        "type": "string",
+                                        "default": "40/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "attachments": {
+                                        "title": "Attachments",
+                                        "description": "Amount of attachments to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "links": {
+                                        "title": "Links",
+                                        "description": "Amount of links to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "duplicateMessages": {
+                                        "title": "Duplicate Messages",
+                                        "description": "Amount of duplicate messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "3/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "categories": {
+                            "title": "Category Configurations",
+                            "description": "Individual antispam configurations for all sub-channels of a category",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "title": "Filter",
+                                "description": "NOTE: If you would like to disable a filter below, just set it to 0/0",
+                                "format": "table",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Category",
+                                        "description": "The ID of the category to apply this filter on sub-channels, regardless of who sends the message",
+                                        "type": "string",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "clean": {
+                                        "title": "Clean Messages",
+                                        "description": "Whether to clean users messages when they violate this filter",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "cleanDuration": {
+                                        "title": "Message Clean Time",
+                                        "description": "If >0, how long ago to clear messages of users when they violate this filter. If this is 0, this time will be automatically calculated",
+                                        "default": 0,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 120,
+                                        "options": {
+                                            "dependencies": {
+                                                "clean": true
+                                            }
+                                        }
+                                    },
+                                    "action": {
+                                        "title": "Action",
+                                        "description": "The action to take when this filter is hit",
+                                        "type": "string",
+                                        "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                        "default": ""
+                                    },
+                                    "actionDuration": {
+                                        "title": "Action Duration",
+                                        "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                        "type": "string",
+                                        "default": "30m"
+                                    },
+                                    "characters": {
+                                        "title": "Characters",
+                                        "description": "Amount of characters to trigger a violation on",
+                                        "type": "string",
+                                        "default": "750/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "messages": {
+                                        "title": "Messages",
+                                        "description": "Amount of messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "6/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "newlines": {
+                                        "title": "Newlines",
+                                        "description": "Amount of newlines to trigger a violation on",
+                                        "type": "string",
+                                        "default": "20/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "emoji": {
+                                        "title": "Emoji",
+                                        "description": "Amount of emoji to trigger a violation on",
+                                        "type": "string",
+                                        "default": "40/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "attachments": {
+                                        "title": "Attachments",
+                                        "description": "Amount of attachments to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "links": {
+                                        "title": "Links",
+                                        "description": "Amount of links to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "duplicateMessages": {
+                                        "title": "Duplicate Messages",
+                                        "description": "Amount of duplicate messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "3/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "levels": {
+                            "title": "Global Configurations",
+                            "description": "Individual antispam configurations for all members of a level and below",
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "title": "Filter",
+                                "description": "NOTE: If you would like to disable a filter below, just set it to 0/0",
+                                "format": "table",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Level",
+                                        "description": "The level and below of users that this filter applies to. All filters will be checked for a user as long as they match the level requirement, from lowest to highest until a violation is found.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 999
+                                    },
+                                    "stop": {
+                                        "title": "Stop Processing Rules",
+                                        "description": "Whether to stop processing rules after this one, regardless if a violation is found",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "clean": {
+                                        "title": "Clean Messages",
+                                        "description": "Whether to clean users messages when they violate this filter",
+                                        "type": "boolean",
+                                        "format": "checkbox"
+                                    },
+                                    "cleanDuration": {
+                                        "title": "Message Clean Time",
+                                        "description": "If >0, how long ago to clear messages of users when they violate this filter. If this is 0, this time will be automatically calculated",
+                                        "default": 0,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 120,
+                                        "options": {
+                                            "dependencies": {
+                                                "clean": true
+                                            }
+                                        }
+                                    },
+                                    "action": {
+                                        "title": "Action",
+                                        "description": "The action to take when this filter is hit",
+                                        "type": "string",
+                                        "enum": ["MUTE", "TEMPMUTE", "TEMPBAN", "KICK", "SOFTBAN", "BAN"],
+                                        "default": ""
+                                    },
+                                    "actionDuration": {
+                                        "title": "Action Duration",
+                                        "description": "How long the action should last (in 1h30m format) when using TEMPMUTE or TEMPBAN",
+                                        "type": "string",
+                                        "default": "30m"
+                                    },
+                                    "characters": {
+                                        "title": "Characters",
+                                        "description": "Amount of characters to trigger a violation on",
+                                        "type": "string",
+                                        "default": "750/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "messages": {
+                                        "title": "Messages",
+                                        "description": "Amount of messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "6/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "newlines": {
+                                        "title": "Newlines",
+                                        "description": "Amount of newlines to trigger a violation on",
+                                        "type": "string",
+                                        "default": "20/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "emoji": {
+                                        "title": "Emoji",
+                                        "description": "Amount of emoji to trigger a violation on",
+                                        "type": "string",
+                                        "default": "40/4",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "attachments": {
+                                        "title": "Attachments",
+                                        "description": "Amount of attachments to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "links": {
+                                        "title": "Links",
+                                        "description": "Amount of links to trigger a violation on",
+                                        "type": "string",
+                                        "default": "4/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    },
+                                    "duplicateMessages": {
+                                        "title": "Duplicate Messages",
+                                        "description": "Amount of duplicate messages to trigger a violation on",
+                                        "type": "string",
+                                        "default": "3/10",
+                                        "pattern": "^[0-9]+\/[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     },
                     "options": {
