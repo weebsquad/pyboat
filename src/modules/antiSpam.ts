@@ -248,7 +248,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     }
     if (flagged.length > 0) {
       flaggedOnce = true;
-      const cleanDuration = typeof thisCfg.cleanDuration === 'number' ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
+      const cleanDuration = typeof thisCfg.cleanDuration === 'number' && thisCfg.cleanDuration > 0 ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
 
       if (typeof thisCfg.action === 'string' && (VALID_ACTIONS_INDIVIDUAL.includes(thisCfg.action.toUpperCase()) || (thisCfg._key.includes('antiRaid_') && VALID_ACTIONS_GLOBAL.includes(thisCfg.action)))) {
         const action = thisCfg.action.toUpperCase();
