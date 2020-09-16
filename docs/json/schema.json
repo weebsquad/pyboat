@@ -2769,7 +2769,7 @@
                                         "title": "Webhook URL",
                                         "type": "string",
                                         "description": "A Webhook URL for this channel. Highly recommended specially if using embeds.",
-                                        "maxLength": 50,
+                                        "maxLength": 300,
                                         "required": false
                                     },
                                     "showEventName": {
