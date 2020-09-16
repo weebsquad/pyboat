@@ -19,18 +19,19 @@
     <body>
         <div style="width:800px; margin:0 auto;">
             <h1>PyBoat configuration generator</h1>
-                <p>After configuring using the editor below, use the button below to get your generated json!</p>
+                <p>After configuring using the editor below, use the buttons to get your generated json!</p>
                 <p>To import your own config, put it in the text box below and it should be loaded!</p>
-                <label for="import">Import:</label><input type="text" id="import" onchange="importJSON()"></input>
-                <br><br>
-                <label for="json_output">Generated:</label>
+                <label for="import">Import: </label><input type="text" id="import" onchange="importJSON()"></input>
+                <br><br><h3>Editor</h3>
                 <a class="btn btn-primary" id="button_copy">Copy to clipboard</a>
                 <a class="btn btn-primary" id="button_download">Download</a>
                 <a class="btn btn-primary" id="direct_link">Direct Link</a>
                     
                     
                 <div id='editor_holder'></div>
+                <br><br><br>
                 <!-- <button id='submit'>Submit (console.log)</button> -->
+                <h3>JSON Output</h3><br>
                 <textarea id="json_output" name="json_output" rows="15" cols="100" readonly></textarea></div>
         </div>
         <script src="./main.js"></script>
