@@ -75,6 +75,9 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
     if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
       throw new ConfigError(`config.modules.censor.${conf._key}.globalViolations.trigger`, 'Incorrect formatting');
     }
+    if (triggerCount === '0' || triggerSeconds === '0') {
+      return false;
+    }
     triggerCount = parseInt(triggerCount, 10);
     triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
     const individuals = [];
@@ -105,6 +108,9 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
     let triggerSeconds = trigger.split('/')[1];
     if (!utils.isNormalInteger(triggerCount, true) || !utils.isNormalInteger(triggerSeconds, true)) {
       throw new ConfigError(`config.modules.censor.${conf._key}.violations.trigger`, 'Incorrect formatting');
+    }
+    if (triggerCount === '0' || triggerSeconds === '0') {
+      return false;
     }
     triggerCount = parseInt(triggerCount, 10);
     triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));

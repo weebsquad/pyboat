@@ -198,6 +198,9 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
       if (!utils.isNormalInteger(trigger.split('/')[0]) || !utils.isNormalInteger(trigger.split('/')[1])) {
         return false;
       }
+      if (trigger.split('/')[0] === '0' || trigger.split('/')[1] === '0') {
+        return false;
+      }
       const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
       const dur = Math.floor((+trigger.split('/')[1]) * 1000);
       const after = msgTs - dur;
@@ -208,41 +211,45 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     if (typeof thisCfg.messages === 'string') {
       const trigger = thisCfg.messages;
       if (trigger.includes('/')) {
-        const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
-        const dur = Math.floor((+trigger.split('/')[1]) * 1000);
-        const after = msgTs - dur;
-        let individuals = [];
-        const needed = Math.max(2, Math.floor(count / 3));
-        repeatedMessages = theseItems.filter((item) => {
-          if (!individuals.includes(item.authorId)) {
-            individuals.push(item.authorId);
+        if (trigger.split('/')[0] !== '0' && trigger.split('/')[1] !== '0') {
+          const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
+          const dur = Math.floor((+trigger.split('/')[1]) * 1000);
+          const after = msgTs - dur;
+          let individuals = [];
+          const needed = Math.max(2, Math.floor(count / 3));
+          repeatedMessages = theseItems.filter((item) => {
+            if (!individuals.includes(item.authorId)) {
+              individuals.push(item.authorId);
+            }
+            return item.ts > after && item.id !== msg.id;
+          });
+          individuals = [...new Set(individuals)];
+          if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
+            flagged.push('messages');
           }
-          return item.ts > after && item.id !== msg.id;
-        });
-        individuals = [...new Set(individuals)];
-        if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
-          flagged.push('messages');
         }
       }
     }
     if (typeof thisCfg.duplicateMessages === 'string') {
       const trigger = thisCfg.duplicateMessages;
       if (trigger.includes('/')) {
-        duplicateMessages = checkDuplicateContent(msg, theseItems);
-        const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
-        const dur = Math.floor((+trigger.split('/')[1]) * 1000);
-        const after = msgTs - dur;
-        let individuals = [];
-        const needed = Math.max(2, Math.floor(count / 3));
-        duplicateMessages = duplicateMessages.filter((item) => {
-          if (!individuals.includes(item.authorId)) {
-            individuals.push(item.authorId);
+        if (trigger.split('/')[0] !== '0' && trigger.split('/')[1] !== '0') {
+          duplicateMessages = checkDuplicateContent(msg, theseItems);
+          const count = Math.min(MAX_POOL_ENTRY_LIFETIME, +trigger.split('/')[0]);
+          const dur = Math.floor((+trigger.split('/')[1]) * 1000);
+          const after = msgTs - dur;
+          let individuals = [];
+          const needed = Math.max(2, Math.floor(count / 3));
+          duplicateMessages = duplicateMessages.filter((item) => {
+            if (!individuals.includes(item.authorId)) {
+              individuals.push(item.authorId);
+            }
+            return item.ts > after && item.id !== msg.id;
+          });
+          individuals = [...new Set(individuals)];
+          if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
+            flagged.push('duplicateMessages');
           }
-          return item.ts > after && item.id !== msg.id;
-        });
-        individuals = [...new Set(individuals)];
-        if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
-          flagged.push('duplicateMessages');
         }
       }
     }
