@@ -55,11 +55,12 @@ class MessageEntry {
         emj += normalEmoji1.length;
       } */
 
-      const emojiCheck = message.content.match(new RegExp(emojiv2, 'g'));
+      let emojiCheck = message.content.match(new RegExp(emojiv2, 'g'));
       if (Array.isArray(emojiCheck)) {
+        emojiCheck = emojiCheck.filter((val) => !utils.isNormalInteger(val));
         emj += emojiCheck.length;
       }
-      const customEmoji = message.content.match(constants.EmojiRegex);
+      const customEmoji = message.content.match(new RegExp(constants.EmojiRegex, 'gi'));
       if (Array.isArray(customEmoji)) {
         emj += customEmoji.length;
       }
@@ -163,7 +164,6 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
   }
   const previous = await pools.getByQuery<MessageEntry>({ authorId: msg.author.id });
   const thisObj = previous.find((e) => e.id === msg.id);
-  console.log('previous len', previous.length);
   if (!thisObj || previous.length === 0) {
     return;
   }

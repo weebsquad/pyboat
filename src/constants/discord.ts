@@ -9,7 +9,7 @@ export const EntitlementTypeEnum : {[key: string]: number} = {
 };
 
 export const Epoch = 1420070400000;
-export const EmojiRegex = /<(a?):(.+):([0-9]+)>/gi;
+export const EmojiRegex = /<(a?):([A-Za-z_\-0-9]+):([0-9]+)>/gi;
 export const InviteRegex = /(discordapp.com\/invite|discord.me|discord.gg)(?:\/#)?(?:\/invite)?\/([a-z0-9\-]+)/gi;
 export const UrlRegex = /(https?:\/\/[^\s]+)/gi;
 const ZALGO_CHARS = [
