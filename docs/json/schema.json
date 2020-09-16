@@ -183,6 +183,298 @@
                             "type": "boolean",
                             "default": false,
                             "format": "checkbox"
+                        },
+                        "caughtMessages": {
+                            "title": "Random Trigger Messages",
+                            "description": "Random message shown on top of the warning message",
+                            "type": "array",
+                            "format": "table",
+                            "items": {
+                                "type": "string",
+                                "title": "message",
+                                "minLength": 1
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "actualCaughtMessage": {
+                            "title": "Static Trigger Message",
+                            "description": "Static message shown at the bottom of the warning message",
+                            "type": "string",
+                            "minLength": 1,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "instaDeletePings": {
+                            "title": "Automatically delete triggered messages",
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "banOnLeave": {
+                            "title": "Automatically ban users that leave the server with pending punishments",
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "pingsForAutoMute": {
+                            "title": "Number of triggers for auto mute",
+                            "type": "integer",
+                            "default": 0,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "staff": {
+                            "title": "Bot Level needed to select user punishments (staff level)",
+                            "type": "integer",
+                            "default": 50,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "emojiActions": {
+                            "title": "Emoji Actions Punishments",
+                            "description": "The emojis that the bot will add for issuing punishments",
+                            "type":"array",
+                            "format": "table",
+                            "default": [{"__key": "\uD83D\uDC4C", "action": "IgnoreOnce"}, {"__key": "\u2714\uFE0F", "action": "Ignore"}, {"__key":"\uD83D\uDD07", "action": "Mute"}, {"__key": "\uD83D\uDC62", "action": "Softban"}, {"__key": "\uD83D\uDD28", "action": "Ban"}],
+                            "items": {
+                                "type": "object",
+                                "title": "Action",
+                                "properties": {
+                                    "__key": {
+                                        "title": "Emoji",
+                                        "type": "string"
+                                    },  
+                                    "action": {
+                                        "title": "Action",
+                                        "enum": ["IgnoreOnce", "Ignore", "Mute", "Kick", "Softban", "Ban"],
+                                        "type": "string"
+                                    }  
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "bypass": {
+                            "title": "Bypass Settings",
+                            "type": "object",
+                            "properties": {
+                                "level": {
+                                    "type": "integer",
+                                    "default": 10,
+                                    "description": "Bot Level needed to bypass AntiPing triggers",
+                                    "minimum": 1,
+                                    "maximum": 999
+                                },
+                                "users": {
+                                    "type": "array",
+                                    "title": "Users",
+                                    "description": "Users that bypass AntiPing triggers",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "user",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "roles": {
+                                    "type": "array",
+                                    "title": "Roles",
+                                    "format": "table",
+                                    "description": "Roles that bypass AntiPing triggers",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "role",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "targets": {
+                            "type": "object",
+                            "title": "Targets",
+                            "description": "Who to trigger illegal mentions on. Atleast one user/role AND one channel/category must be defined for this to work at all.",
+                            "properties": {
+                                "users": {
+                                    "title": "Users",
+                                    "type": "object",
+                                    "properties": {
+                                        "include": {
+                                            "description": "Users to include",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "user",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        },
+                                        "exclude": {
+                                            "description": "Users to exclude",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "user",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "roles": {
+                                    "title": "Roles",
+                                    "type": "object",
+                                    "properties": {
+                                        "include": {
+                                            "description": "Roles to include",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "role",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        },
+                                        "exclude": {
+                                            "description": "Roles to exclude",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "role",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "channels": {
+                                    "title": "Channels",
+                                    "type": "object",
+                                    "properties": {
+                                        "include": {
+                                            "description": "Channels to include",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "channel",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        },
+                                        "exclude": {
+                                            "description": "Channels to exclude",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "channel",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                },
+                                "categories": {
+                                    "title": "Categories",
+                                    "type": "object",
+                                    "properties": {
+                                        "include": {
+                                            "description": "Categories to include",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "category",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        },
+                                        "exclude": {
+                                            "description": "Categories to exclude",
+                                            "type": "array",
+                                            "format": "table",
+                                            "items": {
+                                                "type": "string",
+                                                "title": "category",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
                         }
                     },
                     "options": {
