@@ -4,27 +4,34 @@
     <head>
         <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
         <!-- CSS only -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous"> -->
+        <!--  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script> -->
+
         <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+
         <!-- JS, Popper.js, and jQuery -->
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+        <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     </head>
     <body>
         <div style="width:800px; margin:0 auto;">
             <h1>PyBoat configuration generator</h1>
-                <p>After configuring using the editor below, click "Copy to clipboard" to get your generated JSON!</p>
-                <br><p>To import your own config, put it in the text box below and it should be loaded!</p>
-                <label for="json_output">Your JSON:</label>
+                <p>After configuring using the editor below, use the button below to get your generated json!</p>
+                <p>To import your own config, put it in the text box below and it should be loaded!</p>
+                <label for="import">Import:</label><input type="text" id="import" onchange="importJSON()"></input>
+                <br><br>
+                <label for="json_output">Generated:</label>
                 <button onclick="copyJson()" id="button_copy">Copy to clipboard</button>
-                <br>
-                <div class='col-8 col-md-8 w-8/12'></div>
+                <button onclick="getConfigJson()" id="button_download">Download</button>
                     
-                    <label for="import">Import JSON:</label><input type="text" id="import" onchange="importJSON()"></input>
+                    
                 <div id='editor_holder'></div>
                 <!-- <button id='submit'>Submit (console.log)</button> -->
-                <textarea id="json_output" name="json_output" rows="10" cols="10" readonly></textarea></div>
+                <textarea id="json_output" name="json_output" rows="15" cols="100" readonly></textarea></div>
         </div>
         <script src="./main.js"></script>
     </body>

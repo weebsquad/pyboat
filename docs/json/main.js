@@ -34,6 +34,23 @@ function submit() {
   console.log('after', data);
 }
 
+function download(filename, text) {
+  const element = document.createElement('a');
+  element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`);
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+function getConfigJson() {
+  download('config.json', JSON.stringify(JSON.parse(document.getElementById('json_output').value), null, 2));
+}
+
 function copyJson() {
   const copyText = document.getElementById('json_output');
 
@@ -63,7 +80,7 @@ fetch('./schema.json')
       object_layout: 'table',
       show_errors: 'always',
       schema: obj,
-      theme: 'bootstrap4',
+      theme: 'spectre',
       disable_properties: true,
       disable_edit_json: true,
       disable_array_reorder: true,
@@ -86,12 +103,14 @@ fetch('./schema.json')
       if (vali.length) {
         document.getElementById('button_copy').style = 'background-color:red';
         document.getElementById('button_copy').disabled = true;
-        document.getElementById('button_copy').text = '';
+        document.getElementById('button_download').style = 'background-color:red';
+        document.getElementById('button_download').disabled = true;
         document.getElementById('json_output').value = `JSON Error: ${JSON.stringify(vali, null, 2)}`;
       } else {
         document.getElementById('button_copy').style = 'background-color:green';
         document.getElementById('button_copy').disabled = false;
-        document.getElementById('button_copy').text = 'Copy to clipboard';
+        document.getElementById('button_download').style = 'background-color:green';
+        document.getElementById('button_download').disabled = false;
         document.getElementById('json_output').value = JSON.stringify(editor.getValue(), null, 2);
       }
     });
