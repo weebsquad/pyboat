@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 /* eslint-disable no-undef */
 /* eslint-disable strict */
 /* eslint-disable no-console */
@@ -142,7 +143,7 @@ fetch('./schema.json')
     const defaultOptions = {
       iconlib: 'spectre',
       object_layout: 'table',
-      show_errors: 'interaction',
+      show_errors: 'always',
       schema: obj,
       theme: 'bootstrap4',
       disable_properties: true,
