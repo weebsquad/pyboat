@@ -1,4 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
+import * as utils from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,
