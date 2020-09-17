@@ -233,13 +233,13 @@ export async function getUser(userId: string, forceFetch = false) {
   );
   try {
     const res = await data.json();
-    /*res.getTag = function () {
+    /* res.getTag = function () {
       return `${res.username}#${res.discriminator}`;
     };
     res.getAvatarUrl = function () {
       return `https://cdn.discordapp.com/avatars/${userId}/${res.avatar}`;
-    };*/
-    return makeFake<discord.User>(res, discord.User)
+    }; */
+    return makeFake<discord.User>(res, discord.User);
   } catch (e) {
     logError(e);
   }

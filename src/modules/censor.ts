@@ -435,7 +435,7 @@ export async function processViolations(id: string, member: discord.GuildMember,
           objs.push(gm);
           return;
         }
-        const usr = await discord.getUser(ido);
+        const usr = await utils.getUser(ido);
         if (usr !== null) {
           objs.push(usr);
         }

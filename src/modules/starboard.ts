@@ -764,7 +764,7 @@ export function InitializeCommands() {
             const txt = [];
             const usrs: Array<discord.User> = [];
             await Promise.all(top10.map(async (vl) => {
-              const _thisusr = await discord.getUser(vl.id);
+              const _thisusr = await utils.getUser(vl.id);
               if (_thisusr !== null) {
                 usrs.push(_thisusr);
               }

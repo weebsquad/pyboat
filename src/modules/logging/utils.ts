@@ -202,7 +202,7 @@ export async function parseMessageContent(
     await Promise.allSettled(
       users.map(async function(u) {
         if (!usrIds.has(u)) {
-          const _usr = await discord.getUser(u);
+          const _usr = await utils.getUser(u);
           if (_usr === null) return;
           usrIds.set(u, _usr.getTag());
         }

@@ -30,7 +30,7 @@ export async function showTag(msg: discord.GuildMemberMessage, tagName: string) 
       vl.uses += 1;
       return vl;
     });
-    const usr: discord.User | null = await discord.getUser(obj.authorId);
+    const usr: discord.User | null = await utils.getUser(obj.authorId);
     const emb = new discord.Embed();
     if (usr !== null) {
       emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
@@ -125,7 +125,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
         if (!obj) {
           return { content: 'There is no tag with that name!' };
         }
-        const usr: discord.User | null = await discord.getUser(obj.authorId);
+        const usr: discord.User | null = await utils.getUser(obj.authorId);
         const emb = new discord.Embed();
         emb.setDescription(`\n**By**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**Uses**: **${obj.uses}**\n**Created**: ${new Date(obj.ts).toLocaleDateString()}`);
         emb.setTitle(`Tag: ${obj.id}`);

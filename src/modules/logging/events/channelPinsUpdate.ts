@@ -28,7 +28,7 @@ export const messages = {
     if (!(log instanceof discord.AuditLogEntry.MessagePin)) {
       return;
     }
-    const _usr = await discord.getUser(log.targetId);
+    const _usr = await utils.getUser(log.targetId);
     const mp = new Map<string, any>([
       ['_TYPE_', 'MESSAGE_PINNED'],
       ['_CHANNEL_ID_', ev.channelId],
@@ -49,7 +49,7 @@ export const messages = {
     if (!(log instanceof discord.AuditLogEntry.MessageUnpin)) {
       return;
     }
-    const _usr = await discord.getUser(log.targetId);
+    const _usr = await utils.getUser(log.targetId);
     const mp = new Map<string, any>([
       ['_TYPE_', 'MESSAGE_UNPINNED'],
       ['_CHANNEL_ID_', ev.channelId],

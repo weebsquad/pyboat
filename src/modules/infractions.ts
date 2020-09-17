@@ -107,7 +107,7 @@ export class Infraction {
       await logAction('tempmute_expired', null, member);
       await this.checkActive();
     } else if (this.type === InfractionType.TEMPBAN) {
-      const usr = await discord.getUser(this.memberId);
+      const usr = await utils.getUser(this.memberId);
       await guild.deleteBan(this.memberId);
       await logAction('tempban_expired', null, usr);
       await this.checkActive();
@@ -874,7 +874,7 @@ export function InitializeCommands() {
           objs.push(gm);
           return;
         }
-        const usr = await discord.getUser(id);
+        const usr = await utils.getUser(id);
         if (usr !== null) {
           objs.push(usr);
           return;

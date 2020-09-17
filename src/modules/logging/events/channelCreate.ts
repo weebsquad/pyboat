@@ -32,7 +32,7 @@ export const messages = {
     ]);
   },
   async dmChannelOpened(log: discord.AuditLogEntry, chan: discord.DmChannel) {
-    const usr = await discord.getUser(chan.id);
+    const usr = await utils.getUser(chan.id);
     if (usr === null) {
       return;
     }

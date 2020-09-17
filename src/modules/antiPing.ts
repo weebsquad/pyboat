@@ -650,7 +650,7 @@ export async function OnMessageReactionAdd(id: string,
     }
     return membr;
   }
-  const user = await discord.getUser(userMsg.authorId);
+  const user = await utils.getUser(userMsg.authorId);
   if (user === null) {
     return;
   }

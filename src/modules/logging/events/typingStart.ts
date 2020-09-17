@@ -24,7 +24,7 @@ export const messages = {
       || !tpdata.guildId
       || !(tpdata.member instanceof discord.GuildMember)
     ) {
-      const usr = await discord.getUser(tpdata.userId);
+      const usr = await utils.getUser(tpdata.userId);
       if (usr === null) {
         return null;
       }

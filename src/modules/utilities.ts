@@ -437,7 +437,7 @@ export function InitializeCommands() {
             return { content: 'Nothing to snipe.' };
           }
           const emb = new discord.Embed();
-          const _usr = await discord.getUser(_sn.author.id);
+          const _usr = await utils.getUser(_sn.author.id);
           if (!_usr) {
             return { content: 'User not found (?)' };
           }

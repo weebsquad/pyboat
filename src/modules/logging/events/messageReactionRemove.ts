@@ -49,7 +49,7 @@ export const messages = {
     const mp = new Map();
     const emj = ev.emoji;
     let mention = emj.toMention();
-    const _usr = await discord.getUser(ev.userId);
+    const _usr = await utils.getUser(ev.userId);
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
     }

@@ -462,7 +462,7 @@ async function getMessages(
                 }
 
                 if (usrid !== '' && !(usr instanceof discord.User) && usr !== 'SYSTEM') {
-                  usr = await discord.getUser(usrid);
+                  usr = await utils2.getUser(usrid);
                 }
               }
               if (usr instanceof discord.User) {
@@ -507,7 +507,7 @@ async function getMessages(
                 }
               }
               if (usrid !== '' && !(usr instanceof discord.User)) {
-                usr = await discord.getUser(usrid);
+                usr = await utils2.getUser(usrid);
               }
               if (usr instanceof discord.User) {
                 temp = temp.replace('_USERTAG_', '');
