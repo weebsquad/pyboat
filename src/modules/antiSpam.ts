@@ -155,6 +155,7 @@ export function exceedsThreshold(items: Array<MessageEntry>, key: string, allowe
 }
 export async function doChecks(msg: discord.GuildMemberMessage) {
   let flaggedOnce = false;
+  let flaggedAntiraid = false;
   const msgTs = utils.decomposeSnowflake(msg.id).timestamp;
   const channel = await msg.getChannel();
   const guild = await msg.getGuild();
@@ -184,6 +185,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
       theseItems = await pools.getAll();
     }
     theseItems = theseItems.filter((item) => !item.deleted);
+    flaggedAntiraid = thisCfg._key.includes('antiRaid');
     flagged = normalKeysCheck.filter((check) => {
       if (typeof thisCfg[check] !== 'string') {
         return false;
@@ -447,19 +449,22 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         }
       }
     }
-
-    if (flaggedOnce && messageRemovedCount > 0) {
-      if (!thisCfg._key.includes('antiRaid')) {
-        logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
-      } else {
-        logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
-      }
+    if (flaggedOnce) {
       break;
     }
     if (typeof thisCfg.stop === 'boolean' && thisCfg.stop === true) {
       break;
     }
   }
+
+  if (flaggedOnce && messageRemovedCount > 0) {
+    if (!flaggedAntiraid) {
+      logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+    } else {
+      logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+    }
+  }
+
   return !flaggedOnce;
 }
 

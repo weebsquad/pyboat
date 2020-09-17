@@ -890,20 +890,31 @@ export function InitializeCommands() {
 
         const roles = await guild.getRoles();
         const emojis = await guild.getEmojis();
-
-        desc += `
-
-
-**❯ **Other Counts
- <:settings:735782884836638732> **Roles**: ${roles.length}
- <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
+        let bans = 0;
+        let invites = 0;
         if (me.can(discord.Permissions.BAN_MEMBERS)) {
-          const bans = await guild.getBans();
-          desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans.length}`;
+          bans = (await guild.getBans()).length;
         }
         if (me.can(discord.Permissions.MANAGE_GUILD)) {
-          const invites = await guild.getInvites();
-          desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites.length}`;
+          invites = (await guild.getInvites()).length;
+        }
+        if (roles.length > 0 || emojis.length > 0 || bans > 0 || invites > 0) {
+          desc += `
+
+
+**❯ **Other Counts`;
+          if (roles.length > 0) {
+            desc += `\n <:settings:735782884836638732> **Roles**: ${roles.length}`;
+          }
+          if (emojis.length > 0) {
+            desc += `\n <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
+          }
+          if (bans > 0) {
+            desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans}`;
+          }
+          if (invites > 0) {
+            desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites}`;
+          }
         }
 
         const memberCounts = {
