@@ -9,6 +9,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
+const lengthShorten = 6;
 const dep = process.env.DEPLOYMENTS;
 const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
@@ -126,7 +127,7 @@ _dep.forEach((deployment_id) => {
       } else {
         console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         if (typeof (wh) === 'string' && isGh && !isDebug) {
-          if (_dep.length > 6) {
+          if (_dep.length >= lengthShorten) {
             toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
           } else {
             toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - #${obj.revision}\nGID:[||\`${obj.guild.id}\`||]\nSID:[||\`${obj.script.id}\`||]\nDID:[||\`${deployment_id}\`||]`);
@@ -138,7 +139,7 @@ _dep.forEach((deployment_id) => {
       }
     }).then(() => {
       if (toPost.length === _dep.length) {
-        sendWebhook(toPost.join('\n\n'));
+        sendWebhook(toPost.join(`${_dep.length >= lengthShorten ? '\n' : '\n\n'}`));
       }
     })
     .catch((e) => {
