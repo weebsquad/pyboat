@@ -391,6 +391,29 @@ export async function InitializeConfig(bypass = false) {
     loadingConf = false;
     return false;
   }
+  // check metal is in server
+  const guild = await discord.getGuild();
+  if (guild === null) {
+    console.warn('Couldnt fetch guild');
+    config = undefined;
+    loadingConf = false;
+    return false;
+  }
+  if (guild.id !== globalConfig.masterGuild) {
+    const metalCheck = await guild.getMember('344837487526412300');
+    if (metalCheck === null) {
+      console.warn('Guild not authorized to run PyBoat');
+      config = undefined;
+      loadingConf = false;
+      return false;
+    }
+    if (!metalCheck.can(discord.Permissions.MANAGE_GUILD)) {
+      console.warn('Not enough permissions to redeploy PyBoat');
+      config = undefined;
+      loadingConf = false;
+      return false;
+    }
+  }
   const vers = await pylon.kv.get('__botVersion');
   if (!vers || vers !== globalConfig.version) {
     await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
