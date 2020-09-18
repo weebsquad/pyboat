@@ -245,6 +245,53 @@ export async function getUser(userId: string, forceFetch = false) {
   }
 }
 
+export async function getGuild(gid: string, forceFetch = false) {
+  let guildData;
+  try {
+    if (!forceFetch && gid === conf.guildId) {
+      guildData = await discord.getGuild();
+    }
+  } catch (e) {}
+  if (typeof guildData !== 'undefined') {
+    return guildData;
+  }
+  const data = await metalApiRequest(
+    conf.globalConfig.metalApi.botToken,
+    `guilds/${gid}?with_counts=true`,
+    'GET',
+    null,
+  );
+  try {
+    const res = await data.json();
+    // convert to camelcase
+    if (typeof res.id === 'string') {
+      for (const key in res) {
+        if (key === 'roles' || key === 'emojis') {
+          res[key] = res[key].map((v) => v.id);
+        } else if (key === 'approximate_member_count') {
+          res.memberCount = res[key];
+          delete res[key];
+        } else if (key === 'max_presences' && res[key] === null) {
+          delete res[key];
+        } else if (key === 'premium_tier' && res[key] === 0) {
+          res[key] = null;
+        } else if (key.includes('_')) {
+          const camel = key.split('_');
+          for (let i = 1; i < camel.length; i++) {
+            camel[i] = `${camel[i].substr(0, 1).toUpperCase()}${camel[i].substr(1).toLowerCase()}`;
+          }
+          res[camel.join('')] = res[key];
+          delete res[key];
+        }
+      }
+      return makeFake<discord.Guild>(res, discord.Guild);
+    }
+  } catch (e) {
+    logError(e);
+  }
+  return null;
+}
+
 export async function getUserEntitlements(
   userId: string,
   appId: string,

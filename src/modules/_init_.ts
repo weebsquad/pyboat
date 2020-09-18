@@ -11,8 +11,10 @@ import * as censor from './censor';
 import * as antiSpam from './antiSpam';
 import * as admin from './admin';
 import * as tags from './tags';
+import * as internal from './internal';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
+  internal,
   logging,
   admin, // since it only does tracking, let's allow it to run first
   antiSpam,

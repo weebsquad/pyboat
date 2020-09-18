@@ -26,6 +26,10 @@ export const globalConfig = <any>{
     url: 'https://metalruller.com/api/discordMiddleman.php',
     botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
   },
+  memStore: {
+    key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
+    url: 'http://51.38.114.230:8000',
+  },
   ranks: Ranks,
   Ranks, // lol
   version: '1.6.2',

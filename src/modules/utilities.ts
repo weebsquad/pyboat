@@ -4,7 +4,7 @@
 // TODO: jumbo, urban, kittyapi
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
-import { config, globalConfig, Ranks } from '../config';
+import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool } from '../lib/utils';
@@ -108,7 +108,7 @@ export async function clearReminders(msg) {
 const snipekvs = new pylon.KVNamespace('snipe');
 export async function AL_OnMessageDelete(
   id: string,
-  guildId: string,
+  gid: string,
   log: discord.AuditLogEntry | unknown,
   ev: discord.Event.IMessageDelete,
   msg: discord.Message.AnyMessage | null,
@@ -751,14 +751,20 @@ export function InitializeCommands() {
       saveMessage(res);
     },
   );
-  cmdGroup.raw(
-    { name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) }, async (message) => {
+  cmdGroup.on(
+    { name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) },
+    (ctx) => ({ gid: ctx.stringOptional() }),
+    async (message, { gid }) => {
       const res: any = await message.reply(async () => {
         const embed = new discord.Embed();
-        const guild = await message.getGuild();
-        const me = await guild.getMember(discord.getBotId());
-        if (guild === null) {
-          throw new Error('guild not found');
+        if (gid === null) {
+          gid = guildId;
+        }
+        const guildThis = await message.getGuild();
+        const guild: any = await utils.getGuild(gid);
+        const me = await guildThis.getMember(discord.getBotId());
+        if (guild === null || !(guild instanceof discord.Guild)) {
+          return { content: 'Guild not found' };
         }
         if (me === null) {
           throw new Error('bot user not found');
@@ -792,22 +798,22 @@ export function InitializeCommands() {
     && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
           ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\``
           : '';
-        const boosts = guild.premiumSubscriptionCount > 0
+        const boosts = typeof guild.premiumSubscriptionCount === 'number' && guild.premiumSubscriptionCount > 0
           ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}`
           : '';
-        const boostTier = guild.premiumTier !== null
+        const boostTier = guild.premiumTier !== null && guild.premiumTier !== undefined
           ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}`
           : '';
-        const systemChannel = guild.systemChannelId !== null
+        const systemChannel = typeof guild.systemChannelId === 'string'
           ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>`
           : '';
-        const vanityUrl = guild.vanityUrlCode !== null
+        const vanityUrl = typeof guild.vanityUrlCode === 'string'
           ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
           : '';
-        const description = guild.description !== null
+        const description = typeof guild.description === 'string'
           ? `\n  󠇰**Description**: \`${guild.description}\``
           : '';
-        const widgetChannel = guild.widgetChannelId !== null
+        const widgetChannel = typeof guild.widgetChannelId === 'string'
           ? `<#${guild.widgetChannelId}>`
           : 'No channel';
         const widget = guild.widgetEnabled === true
@@ -822,8 +828,7 @@ export function InitializeCommands() {
   󠇰**Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**
 <:owner:735780703903547443>**Owner**: <@!${guild.ownerId}>
 <:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
-  󠇰**Features**: \`${features}\`
-  󠇰**Max Presences**: ${guild.maxPresences}${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
+  󠇰**Features**: \`${features}\`${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
         const chanStats = [];
         const counts = {
@@ -886,16 +891,18 @@ export function InitializeCommands() {
             chanStats.push(`${emj}: **${obj}**`);
           }
         }
-        desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
-
-        const roles = await guild.getRoles();
-        const emojis = await guild.getEmojis();
+        if (guild.id === guildThis.id) {
+          desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
+        }
+        const guildEx: any = guild;
+        const roles = guild.id !== guildThis.id ? guildEx.roles : await guild.getRoles();
+        const emojis = guild.id !== guildThis.id ? guildEx.emojis : await guild.getEmojis();
         let bans = 0;
         let invites = 0;
-        if (me.can(discord.Permissions.BAN_MEMBERS)) {
+        if (guildThis.id === guild.id && me.can(discord.Permissions.BAN_MEMBERS)) {
           bans = (await guild.getBans()).length;
         }
-        if (me.can(discord.Permissions.MANAGE_GUILD)) {
+        if (guildThis.id === guild.id && me.can(discord.Permissions.MANAGE_GUILD)) {
           invites = (await guild.getInvites()).length;
         }
         if (roles.length > 0 || emojis.length > 0 || bans > 0 || invites > 0) {
@@ -968,7 +975,7 @@ export function InitializeCommands() {
             memberCounts.presences[pres.status] += 1;
           }
         }
-        if (guild.memberCount < 60) {
+        if (guild.memberCount < 60 && guildThis.id === guild.id) {
           await calcMembers();
           let prestext = '';
           let nolb = false;

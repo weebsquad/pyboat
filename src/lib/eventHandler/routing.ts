@@ -513,6 +513,9 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
 }
 
 export function isModuleEnabled(modName: string) {
+  if (modName === 'internal') {
+    return true;
+  }
   if (typeof conf.config === 'undefined') {
     return true;
   }
