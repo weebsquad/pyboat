@@ -9,7 +9,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
-const lengthShorten = 6;
+const lengthShorten = 10;
 const dep = process.env.DEPLOYMENTS;
 const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
