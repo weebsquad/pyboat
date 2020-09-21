@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-async-promise-executor */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as utils from './utils';
 import * as constants from '../constants/constants';
 
@@ -133,6 +134,9 @@ export class StoragePool {
     }
 
     async saveToPool(newObj: any) {
+      if (newObj === null || newObj === undefined) {
+        return;
+      }
       if (this.local === true) {
         const ex = this.localStore.find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
         if (typeof ex !== 'undefined') {
@@ -226,7 +230,11 @@ export class StoragePool {
             const newData = JSON.parse(JSON.stringify(prev));
             const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
             if (_ind !== -1) {
-              newData[_ind] = callback(newData[_ind]);
+              let newDataVal = callback(newData[_ind]);
+              if (newDataVal === null) {
+                newDataVal = undefined;
+              }
+              newData[_ind] = newDataVal;
             }
             return newData;
           });
@@ -304,6 +312,15 @@ export class StoragePool {
         return false;
       });
       if (transactPools.length > 0) {
+        // @ts-ignore
+        await this.kv.transactMulti(transactPools.map((v) => v.key), (prev) => {
+          const prevt: any[][] = <any[]>prev.filter((v) => true);
+          prevt.map((val) => {
+            val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(val[this.uniqueId]) ? val : callback(val))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
+            return val;
+          });
+        });
+        /*
         await Promise.all(transactPools.map(async (item) => {
           await this.kv.transact(item.key, (prev: any) => {
             let dt: Array<any> = JSON.parse(JSON.stringify(prev));
@@ -311,6 +328,7 @@ export class StoragePool {
             return dt;
           });
         }));
+        */
         return true;
       }
       return false;

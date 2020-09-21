@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { globalConfig, InitializeConfig, config } from '../config';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
@@ -156,7 +157,285 @@ export function InitializeCommands() {
         throw new Error('testing pls ignore');
       },
     );
-
+    sub.raw(
+      'kv', async (m) => {
+        const testingkv = new pylon.KVNamespace('testingkv');
+        const start = Date.now();
+        let passed = 0;
+        const tests = {
+          'get & put': async (name: string) => {
+            await testingkv.put(name, '1234');
+            const check = await testingkv.get(name);
+            return check === '1234';
+          },
+          'put if not exists fails if key exists': async (name: string) => {
+            await testingkv.put(name, true);
+            try {
+              await testingkv.put(name, false, { ifNotExists: true });
+              return false;
+            } catch (e) {
+              return true;
+            }
+          },
+          'put if not exists sets key': async (name: string) => {
+            await testingkv.put(name, '1234', { ifNotExists: true });
+            const check = await testingkv.get(name);
+            return check === '1234';
+          },
+          'delete': async (name: string) => {
+            await testingkv.put(name, '1234');
+            const check = await testingkv.get(name);
+            if (check !== '1234') {
+              return false;
+            }
+            await testingkv.delete(name);
+            const check2 = await testingkv.get(name);
+            return check2 === undefined;
+          },
+          'delete if equals': async (name: string) => {
+            await testingkv.put(name, '1234');
+            await testingkv.delete(name, { prevValue: '1234' });
+            const check2 = await testingkv.get(name);
+            return check2 === undefined;
+          },
+          'delete if equals does not delete if not equals': async (name: string) => {
+            await testingkv.put(name, '1234');
+            try {
+              await testingkv.delete(name, { prevValue: 1234 });
+              return false;
+            } catch (e) {
+            }
+            const check = await testingkv.get(name);
+            return check !== undefined;
+          },
+          'put with ttl': async (name: string) => {
+            await testingkv.put(name, '1234', { ttl: 200 });
+            const check = await testingkv.get(name);
+            if (check === undefined) {
+              return false;
+            }
+            await sleep(201);
+            const check2 = await testingkv.get(name);
+            return check2 === undefined;
+          },
+          'put with ttlEpoch': async (name: string) => {
+            await testingkv.put(name, '1234', { ttlEpoch: new Date(Date.now() + 200) });
+            const check = await testingkv.get(name);
+            if (check === undefined) {
+              return false;
+            }
+            await sleep(201);
+            const check2 = await testingkv.get(name);
+            return check2 === undefined;
+          },
+          'list': async (name: string) => {
+            for (let i = 0; i < 5; i++) {
+              await testingkv.put(`${name}_${i}`, true);
+            }
+            const list = await testingkv.list();
+            for (let i = 0; i < 5; i++) {
+              const check = list.includes(`${name}_${i}`);
+              if (!check) {
+                return false;
+              }
+            }
+            return true;
+          },
+          'cas set nx': async (name: string) => {
+            await testingkv.cas(name, undefined, '1234');
+            const check = await testingkv.get(name);
+            return check === '1234';
+          },
+          'cas set nx fail': async (name: string) => {
+            await testingkv.put(name, '1234');
+            try {
+              await testingkv.cas(name, undefined, '12345');
+            } catch (e) {}
+            const check = await testingkv.get(name);
+            return check === '1234';
+          },
+          'cas set nx expires': async (name: string) => {
+            await testingkv.cas(name, undefined, '1234', 200);
+            const check = await testingkv.get(name);
+            if (check === undefined) {
+              return false;
+            }
+            await sleep(201);
+            const check2 = await testingkv.get(name);
+            return check2 === undefined;
+          },
+          'cas - swap': async (name: string) => {
+            await testingkv.put(name, 1);
+            await testingkv.cas(name, 1, 2);
+            const check = await testingkv.get(name);
+            return check === 2;
+          },
+          'cas - delete': async (name: string) => {
+            await testingkv.put(name, 1);
+            await testingkv.cas(name, 1, undefined);
+            const list = await testingkv.list();
+            return !list.includes(name);
+          },
+          'cas multi': async (name: string) => {
+            const keys = [];
+            for (let i = 0; i < 5; i++) {
+              keys.push(`${name}_${i + 1}`);
+            }
+            const ops: pylon.KVNamespace.CasOperation[] = keys.map((v) => ({ key: v, compare: undefined, set: v }));
+            await testingkv.casMulti(ops);
+            const results = [];
+            await Promise.all(keys.map(async (val) => {
+              const thisR = await testingkv.get(val);
+              results.push(thisR === val);
+            }));
+            return results.every((v) => v === true);
+          },
+          'cas multi delete': async (name: string) => {
+            const keys = [];
+            for (let i = 0; i < 5; i++) {
+              keys.push(`${name}_${i + 1}`);
+            }
+            const ops1: pylon.KVNamespace.CasOperation[] = keys.map((v) => ({ key: v, compare: undefined, set: v }));
+            await testingkv.casMulti(ops1);
+            const ops2: pylon.KVNamespace.CasOperation[] = keys.map((v) => ({ key: v, compare: v, set: undefined }));
+            await testingkv.casMulti(ops2);
+            const list = await testingkv.list();
+            const results = keys.map((key) => !list.includes(key));
+            return results.every((v) => v === true);
+          },
+          'cas multi expires': async (name: string) => {
+            const keys = [];
+            for (let i = 0; i < 5; i++) {
+              keys.push(`${name}_${i + 1}`);
+            }
+            const ops1: pylon.KVNamespace.CasOperation[] = keys.map((v) => ({ key: v, compare: undefined, set: v, ttl: 200 }));
+            await testingkv.casMulti(ops1);
+            const list1 = await testingkv.list();
+            const results1 = keys.map((key) => list1.includes(key));
+            if (!results1.every((v) => v === true)) {
+              return false;
+            }
+            await sleep(201);
+            const list2 = await testingkv.list();
+            const results2 = keys.map((key) => !list2.includes(key));
+            return results2.every((v) => v === true);
+          },
+          'transact': async (name: string) => {
+            await testingkv.put(name, '1234');
+            let corrVal = false;
+            await testingkv.transact(name, (v) => {
+              if (v === '1234') {
+                corrVal = true;
+              }
+              return v;
+            });
+            return corrVal;
+          },
+          'transact update': async (name: string) => {
+            await testingkv.put(name, '1234');
+            await testingkv.transact(name, (v) => {
+              if (v === '1234') {
+                v = '12345';
+              }
+              return v;
+            });
+            const result = await testingkv.get(name);
+            return result === '12345';
+          },
+          'transact delete': async (name: string) => {
+            await testingkv.put(name, '1234');
+            await testingkv.transact(name, (v) => {
+              if (v === '1234') {
+                v = undefined;
+              }
+              return v;
+            });
+            const result = await testingkv.list();
+            return !result.includes(name);
+          },
+          'transact with result': async (name: string) => {
+            await testingkv.put(name, '1234');
+            const test = await testingkv.transactWithResult(name, (v) => {
+              if (v !== '1234') {
+                return { next: v, result: false };
+              }
+              return { next: '12345', result: true };
+            });
+            return test.result === true && test.next === '12345';
+          },
+          'transact multi': async (name: string) => {
+            const keys = [`${name}_1`, `${name}_2`];
+            // @ts-ignore
+            await testingkv.transactMulti(keys, (v) => ['2', '3']);
+            const list = await testingkv.items();
+            const first = list.find((v) => v.key === keys[0]);
+            const second = list.find((v) => v.key === keys[1]);
+            if (!first || !second) {
+              return false;
+            }
+            if (first.value !== '2' || second.value !== '3') {
+              return false;
+            }
+            return true;
+          },
+          'transact multi with result': async (name: string) => {
+            const keys = [`${name}_1`, `${name}_2`];
+            await testingkv.put(keys[0], '1');
+            await testingkv.put(keys[1], '2');
+            // @ts-ignore
+            const res = await testingkv.transactMultiWithResult(keys, (v) => {
+              // @ts-ignore
+              if (v[0] !== '1' || v[1] !== '2') {
+                return { next: v, result: false };
+              }
+              return { next: ['2', '3'], result: true };
+            });
+            const list = await testingkv.items();
+            const first = list.find((v) => v.key === keys[0]);
+            const second = list.find((v) => v.key === keys[1]);
+            const rest: any[] = res.next;
+            if (!first || !second || rest.length !== 2) {
+              return false;
+            }
+            if (first.value !== '2' || second.value !== '3') {
+              return false;
+            }
+            if (res.result !== true || rest[0] !== '2' || rest[1] !== '3') {
+              return false;
+            }
+            return true;
+          },
+        };
+        let txt = '';
+        await testingkv.clear();
+        const results = {};
+        for (const key in tests) {
+          results[key] = false;
+        }
+        await pylon.requestCpuBurst(async () => {
+          await Promise.all(Object.keys(tests).map(async (key) => {
+            try {
+              const result: boolean = await tests[key](`${key}`);
+              if (result === true) {
+                results[key] = true;
+                passed += 1;
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }));
+        });
+        for (const key in results) {
+          txt += `\n${results[key] === true ? discord.decor.Emojis.GREEN_CIRCLE : discord.decor.Emojis.RED_CIRCLE} **${key}**`;
+        }
+        await testingkv.clear();
+        const emb = new discord.Embed();
+        emb.setDescription(txt);
+        emb.setTitle(`${passed}/${Object.keys(tests).length} tests passed`);
+        const resmsg: any = await m.reply({ content: `Done. Took **${Date.now() - start}ms** (~**${Math.floor((Date.now() - start) / Object.keys(tests).length)}ms** per test)`, embed: emb });
+        admin.saveMessage(resmsg);
+      },
+    );
     sub.raw(
       'kvmkeys', async (m) => {
         const keys = await utils.KVManager.listKeys();
