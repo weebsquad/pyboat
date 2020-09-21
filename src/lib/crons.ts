@@ -13,6 +13,13 @@ import * as routing from './eventHandler/routing';
 import { logError } from './utils';
 
 const _cr: {[key: string]: any} = {
+  '0 0 * * * * *': {
+    name: 'every_hour',
+    async function() {
+      await conf.InitializeConfig(true);
+    },
+    started: false,
+  },
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {

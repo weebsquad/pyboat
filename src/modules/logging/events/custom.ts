@@ -54,6 +54,9 @@ export async function logCustom(
   placeholders: Map<string, any> | undefined = undefined,
   id: string = utils.composeSnowflake(),
 ) {
+  if (config === undefined) {
+    return;
+  }
   cat = cat.toUpperCase();
   subtype = subtype.toUpperCase();
   if (placeholders && placeholders.has('_USER_ID_') && isIgnoredUser(placeholders.get('_USER_ID_'))) {
@@ -85,6 +88,9 @@ export async function logDebug(
   placeholders: Map<string, any> | undefined = undefined,
   id: string = utils.composeSnowflake(),
 ) {
+  if (config === undefined) {
+    return;
+  }
   // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'))
   const evData = config.modules.logging.messages.DEBUG[type];
   if (evData === undefined) {

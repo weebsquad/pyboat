@@ -395,7 +395,6 @@ export async function InitializeConfig(bypass = false) {
   const guild = await discord.getGuild();
   if (guild === null) {
     console.warn('Couldnt fetch guild');
-    config = undefined;
     loadingConf = false;
     return false;
   }
