@@ -31,6 +31,25 @@ export class StoragePool {
       this.local = local;
       return this;
     }
+    private async getItems() {
+      const list = await this.kv.list();
+      let items: pylon.KVNamespace.Item[];
+      if (list.length > 100) {
+        items = [];
+        const runs = Math.floor(list.length / 100);
+        for (let i = 0; i < runs; i += 1) {
+          if (i !== 0) {
+            const these = await this.kv.items({ from: items.slice(-1)[0].key });
+            items.concat(...these);
+          } else {
+            items = await this.kv.items();
+          }
+        }
+      } else {
+        items = await this.kv.items();
+      }
+      return items;
+    }
     private async err(txt: string) {
       throw new TypeError(`[Storage Pool]: ${this.kvName}: ${txt}`);
     }
@@ -62,7 +81,7 @@ export class StoragePool {
         if (this.local === true) {
           return;
         }
-        const items = await this.kv.items();
+        const items = await this.getItems();
         await Promise.all(items.map(async (item: any) => {
           const vl: Array<any> = item.value;
           const { key } = item;
@@ -97,7 +116,7 @@ export class StoragePool {
         }
         return;
       }
-      const items = await this.kv.items();
+      const items = await this.getItems();
       if (typeof this.reduceAt === 'number' && this.reduceAt > 0) {
         const count = items.length;
         if (count > this.reduceAt) {
@@ -148,7 +167,7 @@ export class StoragePool {
       }
       // check same len
       let _thisLen;
-      const items = await this.kv.items();
+      const items = await this.getItems();
       const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
       if (typeof ex !== 'undefined') {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
@@ -222,7 +241,7 @@ export class StoragePool {
         }
         return false;
       }
-      const items = await this.kv.items();
+      const items = await this.getItems();
       const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
       if (res) {
         try {
@@ -260,7 +279,7 @@ export class StoragePool {
         }
         return false;
       }
-      const items = await this.kv.items();
+      const items = await this.getItems();
       const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
       if (res) {
         for (let i = 0; i < 2; i += 1) {
@@ -299,7 +318,7 @@ export class StoragePool {
         }).filter((v) => v !== null && typeof v === 'object' && typeof v !== 'undefined');
         return false;
       }
-      const items = await this.kv.items();
+      const items = await this.getItems();
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
           const _val: Array<any> = item.value;
@@ -339,7 +358,7 @@ export class StoragePool {
       if (this.local === true) {
         items = this.localStore;
       } else {
-        items = (Array.isArray(it) ? it : await this.kv.items());
+        items = (Array.isArray(it) ? it : await this.getItems());
       }
       if (items.length === 0) {
         return [] as Array<T>;
