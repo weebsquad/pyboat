@@ -11,7 +11,8 @@ const path = require('path');
 require('dotenv').config();
 
 let opts = {
-  __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed)
+  __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
+  __GH_TOKEN__: process.env.GH_TOKEN
 };
 
 module.exports = () => ({

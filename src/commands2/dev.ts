@@ -11,6 +11,7 @@ import * as pools from '../lib/storagePools';
 import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
+import * as github from '../lib/github';
 import { handleEvent } from '../modules/logging/main';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 
@@ -236,6 +237,27 @@ export function InitializeCommands() {
     async (msg) => {
       await InitializeConfig(true);
       const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`);
+      admin.saveMessage(res);
+    },
+  );
+  cmdGroup.raw(
+    'deploy',
+    async (msg, repo) => {
+      const res: any = await msg.reply(async () => {
+        if (repo === null || repo.length < 1) {
+          repo = 'pyboat';
+        }
+        if (!globalConfig.github.deployments[repo.toLowerCase()]) {
+          return 'Invalid deployment';
+        }
+        const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
+        if (r === true) {
+          await sleep(300);
+          const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
+          return `<a:loading:735794724480483409> Deploying **master**@\`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`;
+        }
+        return `${discord.decor.Emojis.X} Failed to deploy!`;
+      });
       admin.saveMessage(res);
     },
   );

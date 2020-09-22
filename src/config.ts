@@ -1,4 +1,5 @@
 /* eslint-disable import/no-mutable-exports */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as messages from './modules/logging/messages';
 import * as updates from './updates';
 
@@ -25,6 +26,12 @@ export const globalConfig = <any>{
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://metalruller.com/api/discordMiddleman.php',
     botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
+  },
+  github: {
+    // @ts-ignore
+    token: '__GH_TOKEN__',
+    org: 'weebsquad',
+    deployments: { pyboat: 'node.js.deploy.yml' },
   },
   memStore: {
     key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
