@@ -17,8 +17,8 @@ export async function sendDispatchEvent(org: string, repo: string, workflow: str
 }
 
 type WorkflowRuns = {workflow_runs: Array<any>};
-export async function getWorkflowRuns(org: string, repo: string, workflow: string): Promise<WorkflowRuns> {
-  const url = `https://api.github.com/repos/${org}/${repo}/actions/workflows/${workflow}/runs?event=workflow_dispatch`;
+export async function getWorkflowRuns(org: string, repo: string, workflow: string, status = ''): Promise<WorkflowRuns> {
+  const url = `https://api.github.com/repos/${org}/${repo}/actions/workflows/${workflow}/runs?event=workflow_dispatch${status !== '' ? `&status=${status}` : ''}`;
   const res = await fetch(url, {
     method: 'GET',
     headers: {
@@ -29,5 +29,6 @@ export async function getWorkflowRuns(org: string, repo: string, workflow: strin
   if (res.status !== 200) {
     throw new Error(`Error while listing runs of ${org}/${repo}/${workflow}:\n${JSON.stringify(json, null, 2)}`);
   }
+  console.log(json);
   return json;
 }

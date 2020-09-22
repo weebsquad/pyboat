@@ -243,22 +243,28 @@ export function InitializeCommands() {
   cmdGroup.raw(
     'deploy',
     async (msg, repo) => {
-      const res: any = await msg.reply(async () => {
-        if (repo === null || repo.length < 1) {
-          repo = 'pyboat';
+      if (repo === null || repo.length < 1) {
+        repo = 'pyboat';
+      }
+      if (!globalConfig.github.deployments[repo.toLowerCase()]) {
+        return 'Invalid repo name';
+      }
+      const res = await msg.reply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
+      if (res instanceof discord.GuildMemberMessage) {
+        admin.saveMessage(res);
+      }
+      const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
+      if (r === true) {
+        await sleep(3500);
+        const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
+        if (!runs.workflow_runs || runs.workflow_runs.length < 1) {
+          await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** __Could not grab run URL__`);
+        } else {
+          await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
         }
-        if (!globalConfig.github.deployments[repo.toLowerCase()]) {
-          return 'Invalid deployment';
-        }
-        const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
-        if (r === true) {
-          await sleep(1000);
-          const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
-          return `<a:loading:735794724480483409> Deploying **master**@\`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`;
-        }
-        return `${discord.decor.Emojis.X} Failed to deploy!`;
-      });
-      admin.saveMessage(res);
+        return;
+      }
+      await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
     },
   );
   cmdGroup.subcommand('test', (sub) => {
