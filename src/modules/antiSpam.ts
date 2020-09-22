@@ -516,7 +516,7 @@ export async function OnMessageDeleteBulk(
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
-  pools.editPools(messages.ids, (val: MessageEntry) => {
+  pools.editPools<MessageEntry>(messages.ids, (val) => {
     if (val === null) {
       return val;
     }

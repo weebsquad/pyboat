@@ -1228,7 +1228,7 @@ export function InitializeCommands() {
           if (infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
           }
-          await infsPool.editPools(infs.map((v) => v.id), () => null);
+          await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`;
         });
         saveMessage(res);
@@ -1243,7 +1243,7 @@ export function InitializeCommands() {
           if (infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
           }
-          await infsPool.editPools(infs.map((v) => v.id), () => null);
+          await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`;
         });
         saveMessage(res);

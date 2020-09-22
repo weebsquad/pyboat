@@ -159,7 +159,7 @@ export class StarredMessage {
         if (nf.length !== t.reactors.length) {
           const f = t.reactors.filter((e) => !nf.includes(e) && e !== t.author);
           if (f.length > 0) {
-            await statsKv.editPools(f, (vl: StarStats) => {
+            await statsKv.editPools<StarStats>(f, (vl) => {
               vl.given += 1;
               return vl;
             });
@@ -394,7 +394,7 @@ export async function AL_OnMessageDeleteBulk(
   let msgData = await messagesKv.getAll<StarredMessage>();
   msgData = msgData.filter((e) => messages.ids.includes(e.id));
   if (msgData.length > 0) {
-    await messagesKv.editPools(msgData.map((v) => v.id), null);
+    await messagesKv.editPools<StarredMessage>(msgData.map((v) => v.id), null);
     await Promise.all(msgData.map(async (key) => {
       key = utils.makeFake<StarredMessage>(key, StarredMessage);
       await key.deleted(log instanceof discord.AuditLogEntry);

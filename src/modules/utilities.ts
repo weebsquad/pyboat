@@ -99,7 +99,7 @@ export async function clearReminders(msg) {
       return `${discord.decor.Emojis.X} You don't have any active reminders!`;
     }
     const ids = bythem.map((val) => val.id);
-    await reminders.editPools(ids, (val) => null);
+    await reminders.editPools<Reminder>(ids, () => null);
     return `${discord.decor.Emojis.WHITE_CHECK_MARK} cleared ${ids.length} reminders!`;
   });
   saveMessage(res);
@@ -178,7 +178,7 @@ export async function checkAllCustomRoles() {
   const guildRoles = await guild.getRoles();
   const missing = roles.filter((role) => guildRoles.find((v) => v.id === role.roleId) === undefined);
   if (missing.length > 0) {
-    await customUserRoles.editPools(missing.map((v) => v.memberId), (v) => null);
+    await customUserRoles.editPools<UserRole>(missing.map((v) => v.memberId), () => null);
   }
 }
 async function setUserRole(memberId: string, roleId: string) {

@@ -227,7 +227,7 @@ export class StoragePool {
 
       return false;
     }
-    async editTransact(id: string, callback: Function) {
+    async editTransact<T>(id: string, callback: (val: T) => T | null | undefined) {
       if (this.local === true) {
         const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
         if (_f !== -1) {
@@ -305,7 +305,7 @@ export class StoragePool {
 
       return false;
     }
-    async editPools(ids: Array<string>, callback: Function) {
+    async editPools<T>(ids: Array<string>, callback: (val: T) => T | null | undefined) {
       if (this.local === true) {
         this.localStore = this.localStore.map((v) => {
           if (v === null) {
@@ -333,9 +333,9 @@ export class StoragePool {
       if (transactPools.length > 0) {
         // @ts-ignore
         await this.kv.transactMulti(transactPools.map((v) => v.key), (prev) => {
-          const prevt: any[][] = <any[]>prev.filter((v) => true);
+          const prevt: T[][] = <any[]>prev.filter(() => true);
           prevt.map((val) => {
-            val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(val[this.uniqueId]) ? val : callback(val))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
+            val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(v[this.uniqueId]) ? v : callback(v))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
             return val;
           });
         });

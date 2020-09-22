@@ -265,7 +265,6 @@ export function InitializeCommands() {
     sub.raw(
       'kv', async (m, filter) => {
         const res: any = await m.reply(async () => {
-          const testingkv = new pylon.KVNamespace('testingkv');
           const start = Date.now();
           const results = await runTests(
             (test) => {

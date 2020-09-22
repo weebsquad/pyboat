@@ -337,7 +337,7 @@ export async function every5Min() {
       active: false,
     }));
     if (actsClear.length > 0) {
-      await actionPool.editPools(actsClear.map((val) => val.id), (val) => null);
+      await actionPool.editPools<Action>(actsClear.map((val) => val.id), () => null);
     }
   } catch (e) {
     await utils.logError(e);
@@ -1006,7 +1006,7 @@ export async function OnMessageDeleteBulk(
   gid: string,
   messages: discord.Event.IMessageDeleteBulk,
 ) {
-  adminPool.editPools(messages.ids, (val: TrackedMessage) => {
+  adminPool.editPools<TrackedMessage>(messages.ids, (val) => {
     if (val === null) {
       return null;
     }
