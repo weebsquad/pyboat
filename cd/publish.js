@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+
 'use strict';
 
 /* eslint-disable no-console */
@@ -7,18 +9,156 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const WebSocket = require('ws');
+const { sleep } = require('sleep');
+const Permissions = require('./permissions');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
 const lengthShorten = 10;
-const dep = process.env.DEPLOYMENTS;
 const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
-let _dep = [dep];
-if (dep.includes('|')) {
-  _dep = [].concat(dep.split('|'));
-}
-const isDebug = !isGh && _dep.length === 1;
+const pylonApiBase = 'https://pylon.bot/api/';
+const pylonToken = process.env.API_TOKEN;
+
+const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
+
+async function getPyBoatGlobalConf() {
+  const res = await fetch('https://pyboat.i0.tf/globalconf.json');
+  const json = await res.json();
+  return json;
+}
+
+async function getActivePylonGuilds() {
+  const res = await fetch(`${pylonApiBase}user/guilds`, {
+    method: 'GET',
+    headers: {
+      'authorization': pylonToken,
+      'content-type': 'application/json',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
+    } });
+  const json = await res.json();
+  return json;
+}
+
+async function getNonActivePylonGuilds() {
+  const active = await getActivePylonGuilds();
+  sleep(1);
+  const res = await fetch(`${pylonApiBase}user/guilds/available`, {
+    method: 'GET',
+    headers: {
+      'authorization': pylonToken,
+      'content-type': 'application/json',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
+    } });
+  const txt = await res.text();
+  console.log(res.status, res.statusText);
+  console.log('available raw: ', [txt]);
+  const json = JSON.parse(txt);
+  const nonActive = json.filter((val) => active.find((v) => v.id === val.id) === undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
+  return nonActive;
+}
+
+const deploymentCache = {};
+async function getDeployment(gid) {
+  if (typeof deploymentCache[gid] === 'object' && deploymentCache[gid] !== null) {
+    return deploymentCache[gid];
+  }
+  const res = await fetch(`${pylonApiBase}guilds/${gid}`, {
+    method: 'GET',
+    headers: {
+      'authorization': pylonToken,
+      'content-type': 'application/json',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
+    } });
+  const json = await res.json();
+  deploymentCache[gid] = json.deployments;
+  return json.deployments;
+}
+
+async function getValidGuilds() {
+  const active = await getActivePylonGuilds();
+  sleep(1);
+  const res = await fetch(`${pylonApiBase}user/guilds/available`, {
+    method: 'GET',
+    headers: {
+      'authorization': pylonToken,
+      'content-type': 'application/json',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
+    } });
+  const txt = await res.text();
+  console.log(res.status, res.statusText);
+  console.log('available raw: ', [txt]);
+  const json = JSON.parse(txt);
+  const valid = json.filter((val) => active.find((v) => v.id === val.id) !== undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
+  return valid;
+}
+
+async function getDeploymentIds() {
+  if (isDebug === true) {
+    const dept = await getDeployment(process.env.TEST_GUILD);
+    const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
+    if (correctDep !== undefined) {
+      return [correctDep.id];
+    }
+    console.error('Failed to grab deployment, data: ', dept);
+  }
+  const gconf = await getPyBoatGlobalConf();
+  const whitelist = gconf.whitelistedGuilds;
+  // await getActivePylonGuilds(); // pylon api bug where it doesnt cache our perms on the first request
+  const nonactive = await getNonActivePylonGuilds();
+  sleep(1);
+  const toadd = nonactive.filter((v) => whitelist.includes(v.id));
+  if (toadd.length > 0) {
+    console.log(`Adding guilds: \`${toadd.map((v) => v.id).join(', ')}\` ....`);
+    // https://pylon.bot/api/guilds/595608446150115348/add
+    // {"requiresGuildAuth": false, "guild": ... }
+    const failToAdd = [];
+    await Promise.all(toadd.map(async (val) => {
+      const res = await fetch(`${pylonApiBase}guilds/${val.id}/add`, {
+        method: 'GET',
+        headers: {
+          'authorization': pylonToken,
+          'content-type': 'application/json',
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
+        } });
+      const json = await res.json();
+      if (json.requiresGuildAuth === true) {
+        failToAdd.push(val);
+      }
+    }));
+    const added = toadd.filter((v) => !failToAdd.includes(v));
+    console.log(`${added.length > 0 ? `Added **${added.length}** guilds successfully!` : ''}${failToAdd.length > 0 ? `\nFailed to add **${failToAdd.length}** guilds: \`${failToAdd.join(', ')}\`` : ''}`);
+  }
+  sleep(1);
+  let validGuilds = await getValidGuilds();
+  validGuilds = validGuilds.filter((val) => whitelist.includes(val.id)).map((v) => v.id);
+  const notFound = whitelist.filter((v) => validGuilds.find((val) => val === v) === undefined);
+  if (notFound.length > 0) {
+    console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
+  }
+  sleep(1);
+  const deployments = [];
+  await Promise.all(validGuilds.map(async (val) => {
+    const dept = await getDeployment(val);
+    const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
+    if (correctDep !== undefined) {
+      deployments.push(correctDep);
+    } else {
+      console.error('Failed to grab deployment, data: ', dept);
+    }
+  }));
+  if (deployments.length !== validGuilds.length) {
+    const failed = validGuilds.filter((val) => deployments.find((v) => v.guild_id === val) === undefined);
+    console.log(`Failed to grab deployment IDs for **${failed.length}** guilds: \`${failed.join(', ')}\``);
+  }
+  if (deployments.length === 0) {
+    console.log('No guilds to deploy to!');
+    return [];
+  }
+  const retval = deployments.map((v) => v.id);
+  return retval;
+}
+
 function deserialize(value) {
   if (typeof value === 'object' && value !== null) {
     switch (value['@t']) {
@@ -77,74 +217,75 @@ function sendWebhook(txt) {
   });
 }
 
-if (typeof (wh) === 'string' && _dep.length > 1 && isGh && !isDebug) {
-  sendWebhook(`Publishing PyBoat to **${_dep.length}** guilds ...`);
-}
-
 const doneGuilds = [];
-_dep.forEach((deployment_id) => {
-  if (doneGuilds.includes(deployment_id)) {
-    return;
+getDeploymentIds().then((ids) => {
+  if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
+    sendWebhook(`Publishing PyBoat to **${ids.length}** guilds ...`);
   }
-  doneGuilds.push(deployment_id);
-  const bundle = fs.readFileSync('./dist/bundle.ts', 'utf8');
-  const data = {
-    method: 'POST',
-    headers: {
-      'Authorization': process.env.API_TOKEN,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      script: {
-        contents: bundle,
-        // contents: '',
-        project: {
-          files: [{ path: '/main.ts', content: defaultMainText }],
-        },
-      },
-    }),
-  };
-
-  // eslint-disable-next-line consistent-return
-  fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
-    try {
-      const txtJson = r.json();
-      return txtJson;
-    } catch (e) {
-      console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
-      if (!isGh) {
-        console.error(`Publish error: ${r}`);
-        const txt = await r.text();
-        console.error(txt);
-      }
-      process.exit(1);
+  ids.forEach((deployment_id) => {
+    if (doneGuilds.includes(deployment_id)) {
+      return;
     }
-  })
-    .then((obj) => {
-      if (typeof (obj.msg) === 'string') {
-        console.error(`Publish error: ${obj.msg}`);
+    doneGuilds.push(deployment_id);
+    const bundle = fs.readFileSync('./dist/bundle.ts', 'utf8');
+    const data = {
+      method: 'POST',
+      headers: {
+        'Authorization': process.env.API_TOKEN,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        script: {
+          contents: bundle,
+          // contents: '',
+          project: {
+            files: [{ path: '/main.ts', content: defaultMainText }],
+          },
+        },
+      }),
+    };
+
+    // eslint-disable-next-line consistent-return
+    fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
+      try {
+        const txtJson = r.json();
+        return txtJson;
+      } catch (e) {
+        console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
+        if (!isGh) {
+          console.error(`Publish error: ${r}`);
+          const txt = await r.text();
+          console.error(txt);
+        }
         process.exit(1);
-      } else {
-        console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
-        if (typeof (wh) === 'string' && isGh && !isDebug) {
-          if (_dep.length >= lengthShorten) {
-            toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
-          } else {
-            toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - #${obj.revision}\nGID:[||\`${obj.guild.id}\`||]\nSID:[||\`${obj.script.id}\`||]\nDID:[||\`${deployment_id}\`||]`);
-          }
-        }
-        if (isDebug && !isGh) {
-          workbenchWs(obj.workbench_url);
-        }
-      }
-    }).then(() => {
-      if (toPost.length === _dep.length) {
-        sendWebhook(toPost.join(`${_dep.length >= lengthShorten ? '\n' : '\n\n'}`));
       }
     })
-    .catch((e) => {
-      console.error('Deploy Error!');
-      console.error(e);
-      process.exit(1);
-    });
+      .then((obj) => {
+        if (typeof (obj.msg) === 'string') {
+          console.error(`Publish error: ${obj.msg}`);
+          process.exit(1);
+        } else {
+          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          if (typeof (wh) === 'string' && isGh && !isDebug) {
+            if (ids.length >= lengthShorten) {
+              toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
+            } else {
+              toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - #${obj.revision}\nGID:[||\`${obj.guild.id}\`||]\nSID:[||\`${obj.script.id}\`||]\nDID:[||\`${deployment_id}\`||]`);
+            }
+          }
+          if (isDebug && !isGh) {
+            workbenchWs(obj.workbench_url);
+          }
+        }
+      }).then(() => {
+        if (toPost.length === ids.length) {
+          sendWebhook(toPost.join(`${ids.length >= lengthShorten ? '\n' : '\n\n'}`));
+        }
+      })
+      .catch((e) => {
+        console.error('Deploy Error!');
+        console.error(e);
+        process.exit(1);
+      });
+  });
 });
