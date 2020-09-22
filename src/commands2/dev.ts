@@ -18,7 +18,6 @@ type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
 type Teardown<T> = (setup: T) => Promise<void>;
 type TestF<T> = (name: string, runner: Runner<T>) => void;
-
 type Result =
   | { name: string; success: true }
   | { name: string; success: false; error: Error };
@@ -46,10 +45,11 @@ async function runTests<T = undefined>(
   let numTestsSkipped = 0;
 
   filter = filter.toLowerCase();
+  // await Promise.all(tests.map(async ({name, runner}) => {
   for (const { name, runner } of tests) {
     if (filter !== '' && !name.toLowerCase().includes(filter)) {
       numTestsSkipped += 1;
-      continue;
+      return;
     }
 
     const t = setup != null ? await setup() : undefined;
