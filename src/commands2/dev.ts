@@ -252,7 +252,7 @@ export function InitializeCommands() {
         }
         const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
         if (r === true) {
-          await sleep(300);
+          await sleep(1000);
           const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
           return `<a:loading:735794724480483409> Deploying **master**@\`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`;
         }
