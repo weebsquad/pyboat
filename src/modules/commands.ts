@@ -5,6 +5,10 @@ import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser } from './logging/main';
 
+interface ApiError extends discord.ApiError {
+  messageExtended: string | undefined;
+}
+
 async function HandleDM(msg: discord.Message) {
   // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
@@ -49,23 +53,23 @@ export async function OnMessageCreate(
     if (!channel || !me || channel instanceof discord.DmChannel) {
       return;
     }
-    if (!channel.canMember(me, discord.Permissions.READ_MESSAGES) || !channel.canMember(me, discord.Permissions.SEND_MESSAGES) || !channel.canMember(me, discord.Permissions.EMBED_LINKS) || !channel.canMember(me, discord.Permissions.EXTERNAL_EMOJIS)) {
+    let isDevCmd = false;
+    if (typeof conf.globalConfig.devPrefix === 'string' && msg.content.length > conf.globalConfig.devPrefix.length && msg.content.substr(0, conf.globalConfig.devPrefix.length) === conf.globalConfig.devPrefix) {
+      isDevCmd = true;
+    }
+    if (!isDevCmd || !utils.isGlobalAdmin(msg.author.id)) {
+      if (!channel.canMember(me, discord.Permissions.READ_MESSAGES) || !channel.canMember(me, discord.Permissions.SEND_MESSAGES) || !channel.canMember(me, discord.Permissions.EMBED_LINKS) || !channel.canMember(me, discord.Permissions.EXTERNAL_EMOJIS)) {
+        return;
+      }
+    }
+    if (isDevCmd === true && !utils.isGlobalAdmin(msg.author.id)) {
       return;
     }
-
     if (!utils.isCommandsAuthorized(msg.member)) {
       await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
       return;
     }
-    let isDevCmd = false;
-    if (typeof conf.globalConfig.devPrefix === 'string' && msg.content.length > conf.globalConfig.devPrefix.length) {
-      if (msg.content.substr(0, conf.globalConfig.devPrefix.length) === conf.globalConfig.devPrefix) {
-        isDevCmd = true;
-        if (!utils.isGlobalAdmin(msg.author.id)) {
-          return;
-        }
-      }
-    }
+
     cooldowns[msg.author.id] = Date.now();
     const cmdExec = await commands2.handleCommand(msg);
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
@@ -93,7 +97,15 @@ export async function OnMessageCreate(
         if (!isCmd2) await HandleChat(msg); */
     } else {
       // original cmd errored!
-      const _e:Error = cmdExec;
+      const _e: ApiError = cmdExec;
+      if (_e.messageExtended && typeof _e.messageExtended === 'string') {
+        try {
+          const emsg: any = JSON.parse(_e.messageExtended).message;
+          if (emsg && emsg.toLowerCase() === 'missing permissions') {
+            return;
+          }
+        } catch (e) {}
+      }
       await utils.logError(_e);
 
       logDebug(
