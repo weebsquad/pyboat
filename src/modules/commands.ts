@@ -43,6 +43,15 @@ export async function OnMessageCreate(
     if (!validCmd) {
       return;
     }
+    const guild = await msg.getGuild();
+    const me = await guild!.getMember(discord.getBotId());
+    const channel = await msg.getChannel();
+    if (!channel || !me || channel instanceof discord.DmChannel) {
+      return;
+    }
+    if (!channel.canMember(me, discord.Permissions.READ_MESSAGES) || !channel.canMember(me, discord.Permissions.SEND_MESSAGES) || !channel.canMember(me, discord.Permissions.EMBED_LINKS) || !channel.canMember(me, discord.Permissions.EXTERNAL_EMOJIS)) {
+      return;
+    }
 
     if (!utils.isCommandsAuthorized(msg.member)) {
       await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
