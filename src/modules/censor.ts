@@ -14,7 +14,6 @@ const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 const ACTION_REASON = 'Too many censor violations';
 const kvPool = new utils.StoragePool('censor', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
 class PoolEntry {
-  id: string;
   ts: number;
   key: string;
   member: string;
@@ -37,11 +36,11 @@ enum CensorType {
 }
 class CensorCheck {
     target: string | undefined;
-    type: CensorType;
+    type: CensorType | undefined;
     message: string | undefined;
     stop = false;
     check = false;
-    constructor(check: boolean, type: CensorType, message: string | undefined, target: string | undefined = undefined, stop: boolean | undefined = false) {
+    constructor(check: boolean, type: CensorType | undefined, message: string | undefined, target: string | undefined = undefined, stop: boolean | undefined = false) {
       this.check = check;
       this.type = type;
       this.message = message;
@@ -80,7 +79,7 @@ export async function checkViolations(id: string, noServerActions: boolean, key:
     }
     triggerCount = parseInt(triggerCount, 10);
     triggerSeconds = Math.min(Math.floor(MAX_POOL_ENTRY_LIFETIME / 1000), parseInt(triggerSeconds, 10));
-    const individuals = [];
+    const individuals: string[] = [];
     const indNeeded = Math.min(10, Math.max(2, Math.floor(triggerCount / 3)));
     const compare = now - (Math.floor(triggerSeconds * 1000));
     const matchesThis = violations.filter((e) => {
@@ -152,12 +151,12 @@ export function getApplicableConfigs(member: discord.GuildMember, channel: disco
   return toret;
 }
 export async function getCensorshipData(txt: string, checkInvites = false, checkUrls = false, checkZalgo = false) {
-  const toret = {
+  const toret: {[key: string]: any[] | undefined} = {
     invites: checkInvites === true ? [] : undefined,
     urls: checkUrls === true ? [] : undefined,
     zalgo: checkZalgo === true ? [] : undefined,
   };
-  if (checkInvites === true) {
+  if (checkInvites === true && Array.isArray(toret.invites)) {
     const invites = txt.match(InviteRegex);
     if (Array.isArray(invites) && invites.length > 0) {
       let _invs = [...new Set(invites)].map((url) => {
@@ -177,11 +176,11 @@ export async function getCensorshipData(txt: string, checkInvites = false, check
         await Promise.all(_invs.map(async (code) => {
           const thisInv = await discord.getInvite(code);
           if (thisInv instanceof discord.Invite) {
-            toret.invites.push(thisInv);
+            toret.invites!.push(thisInv);
           }
         }));
         _invs = _invs.filter((code) => {
-          const _f = toret.invites.find((e) => e instanceof discord.Invite && e.code === code);
+          const _f = toret.invites!.find((e) => e instanceof discord.Invite && e.code === code);
           return !_f;
         });
         toret.invites.concat(_invs);
@@ -204,17 +203,18 @@ export async function getCensorshipData(txt: string, checkInvites = false, check
   return toret;
 }
 export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = false, checkTokens = false, checkCaps = false, checkChars = false) {
-  const toRet = { words: checkWords === true ? [] : undefined,
+  const toRet: any = {
+    words: checkWords === true ? [] : undefined,
     tokens: checkTokens === true ? [] : undefined,
     caps: checkCaps === true ? [] : undefined,
     chars: checkChars === true ? [] : undefined,
   };
   if (checkWords === true) {
-    const blocks = thisCfg.words.filter((w) => typeof w === 'string' && w.length > 0);
+    const blocks = thisCfg.words.filter((w: any) => typeof w === 'string' && w.length > 0);
     let found = [];
     let splitting = txt.includes(' ') ? txt.toLowerCase().split(' ') : [txt.toLowerCase()];
     if (txt.includes('\n')) {
-      const topush = [];
+      const topush: any = [];
       const newl = splitting.filter((ch) => {
         if (ch.includes('\n')) {
           topush.push(...ch.split('\n'));
@@ -230,7 +230,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     }
   }
   if (checkTokens === true) {
-    const checks = thisCfg.tokens.filter((w) => typeof w === 'string' && w.length > 0);
+    const checks = thisCfg.tokens.filter((w: any) => typeof w === 'string' && w.length > 0);
     if (checks.length > 0) {
       const blocks: any = txt.toLowerCase().match(new RegExp(checks.join('|'), 'gi'));
       if (Array.isArray(blocks) && blocks.length > 0) {
@@ -326,6 +326,9 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
         }
         continue;
       }
+      if (!inv.guild) {
+        continue;
+      }
       if (Array.isArray(allowedGuilds) && !allowedGuilds.includes(inv.guild.id)) {
         if (!(inv.guild.id === guildId && allowSelf === true) && !(inv.guild.vanityUrlCode !== null && typeof inv.guild.vanityUrlCode === 'string' && inv.guild.vanityUrlCode.length >= 2 && allowVanities === true)) {
           return new CensorCheck(true, CensorType.INVITE, 'Guild not in whitelist', inv.guild.id, _stop);
@@ -385,7 +388,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   }
   return new CensorCheck(false, undefined, undefined, undefined, _stop);
 }
-export async function processViolations(id: string, member: discord.GuildMember, channel: discord.GuildTextChannel | undefined, conf: any) {
+export async function processViolations(id: string, member: discord.GuildMember, channel: discord.GuildTextChannel | discord.GuildNewsChannel | undefined, conf: any) {
   await addViolation(id, conf._key, member.user.id);
   const guild = await member.getGuild();
   const isVio = await checkViolations(id, false, conf._key, member.user.id, conf);
@@ -397,7 +400,7 @@ export async function processViolations(id: string, member: discord.GuildMember,
   if (checkMember === null) {
     return;
   }
-  const objs = [];
+  const objs: any[] = [];
   const { action, actionDuration, actionValue, individuals } = isVio;
   switch (action) {
     case 'KICK':
@@ -419,17 +422,17 @@ export async function processViolations(id: string, member: discord.GuildMember,
       await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
       break;
     case 'SLOWMODE':
-      await admin.SlowmodeChannel(null, channel, actionValue, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      await admin.SlowmodeChannel(null, channel!, actionValue!, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
       break;
     case 'LOCK_CHANNEL':
-      await admin.LockChannel(null, channel, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      await admin.LockChannel(null, channel!, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
       break;
     case 'LOCK_GUILD':
       await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
       break;
     case 'MASSBAN':
 
-      await Promise.all(individuals.map(async (ido) => {
+      await Promise.all(individuals!.map(async (ido) => {
         const gm = await guild.getMember(ido);
         if (gm !== null) {
           objs.push(gm);
@@ -449,7 +452,10 @@ export async function processViolations(id: string, member: discord.GuildMember,
 
 export async function censorMessage(message: discord.GuildMemberMessage, check: CensorCheck, conf: any) {
   const channel = await message.getChannel();
-  await processViolations(message.id, message.member, channel && channel.type === discord.Channel.Type.GUILD_TEXT ? channel : undefined, conf);
+  if (!channel) {
+    return;
+  }
+  await processViolations(message.id, message.member, channel, conf);
   await message.delete();
   logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
 }
@@ -471,6 +477,9 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
     return;
   }
   const me = await (await channel.getGuild()).getMember(discord.getBotId());
+  if (!me) {
+    return;
+  }
   if (!channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
     return;
   }
@@ -606,7 +615,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
   if (typeof cfgMod.nameChecks !== 'object') {
     return;
   }
-  const appConfigs = [];
+  const appConfigs: any[] = [];
   const auth = utils.getUserAuth(member);
   Object.keys(cfgMod.nameChecks).map((item) => (utils.isNumber(item) && utils.isNormalInteger(item) ? parseInt(item, 10) : -1)).sort().reverse()
     .map((lvl) => {

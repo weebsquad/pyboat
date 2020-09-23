@@ -50,7 +50,7 @@ async function runTests<T = undefined>(
   for (const { name, runner } of tests) {
     if (filter !== '' && !name.toLowerCase().includes(filter)) {
       numTestsSkipped += 1;
-      return;
+      continue;
     }
 
     const t = setup != null ? await setup() : undefined;
@@ -614,6 +614,10 @@ export function InitializeCommands() {
     sub.raw(
       'user', async (m) => {
         const resUsr = await utils.getUser(m.author.id, true);
+        if (!resUsr || !(resUsr instanceof utils.BetterUser)) {
+          console.error('no');
+          return;
+        }
         const flags = new utils.UserFlags(resUsr.public_flags);
         const res: any = await m.reply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
         admin.saveMessage(res);

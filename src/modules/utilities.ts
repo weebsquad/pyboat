@@ -14,6 +14,11 @@ import { saveMessage, getRoleIdByText } from './admin';
 class UserRole {
   memberId: string;
   roleId: string;
+  constructor(member: string, role: string) {
+    this.memberId = member;
+    this.roleId = role;
+    return this;
+  }
 }
 const customUserRoles = new StoragePool('customUserRoles', 0, 'memberId');
 class Reminder {
@@ -67,7 +72,7 @@ export async function checkReminders() {
   }));
 }
 
-export async function addReminder(msg, when, text) {
+export async function addReminder(msg: discord.GuildMemberMessage, when: string, text: string) {
   const res: any = await msg.reply(async () => {
     const dur = utils.timeArgumentToMs(when);
     if (dur === 0) {
@@ -92,7 +97,7 @@ export async function addReminder(msg, when, text) {
   saveMessage(res);
 }
 
-export async function clearReminders(msg) {
+export async function clearReminders(msg: discord.GuildMemberMessage) {
   const res: any = await msg.reply(async () => {
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length === 0) {
@@ -122,6 +127,7 @@ export async function AL_OnMessageDelete(
     || msg.author === null
     || msg.webhookId !== null
     || msg.author.bot === true
+    || msg.member === null
   ) {
     return;
   }
@@ -163,10 +169,12 @@ async function deleteCustomRoleOf(memberId: string) {
     return;
   }
   const roles = await customUserRoles.getById<UserRole>(memberId);
-  const guild = await discord.getGuild();
-  const role = await guild.getRole(roles.roleId);
-  if (role !== null) {
-    await role.delete();
+  if (roles) {
+    const guild = await discord.getGuild();
+    const role = await guild.getRole(roles.roleId);
+    if (role !== null) {
+      await role.delete();
+    }
   }
 }
 export async function checkAllCustomRoles() {
@@ -185,9 +193,7 @@ async function setUserRole(memberId: string, roleId: string) {
   if (typeof config.modules.utilities.customUserRoles !== 'object' || typeof config.modules.utilities.customUserRoles.enabled !== 'boolean' || config.modules.utilities.customUserRoles.enabled !== true) {
     return;
   }
-  const ur = new UserRole();
-  ur.memberId = memberId;
-  ur.roleId = roleId;
+  const ur = new UserRole(memberId, roleId);
   await customUserRoles.saveToPool(ur);
 }
 async function checkUserRoles(member: discord.GuildMember) {
@@ -306,6 +312,9 @@ export function InitializeCommands() {
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(checkrole.roleId);
+            if (!role) {
+              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+            }
             await role.edit({ name });
             return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name)}\`` };
           });
@@ -329,6 +338,9 @@ export function InitializeCommands() {
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(checkrole.roleId);
+            if (!role) {
+              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+            }
             await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
             return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` };
           });
@@ -342,6 +354,9 @@ export function InitializeCommands() {
         async (msg, { target, roleText }) => {
           const res: any = await msg.reply(async () => {
             const rlid = await getRoleIdByText(roleText);
+            if (!rlid) {
+              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+            }
             const guild = await msg.getGuild();
             const role = await guild.getRole(rlid);
             if (!(role instanceof discord.Role)) {
@@ -776,7 +791,7 @@ export function InitializeCommands() {
         }
         embed.setAuthor({
           name: guild.name,
-          iconUrl: guild.getIconUrl(),
+          iconUrl: guild.getIconUrl() ?? undefined,
         });
         const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
         const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
@@ -831,7 +846,7 @@ export function InitializeCommands() {
   󠇰**Features**: \`${features}\`${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
 
         const chanStats = [];
-        const counts = {
+        const counts: {[key: string]: number} = {
           text: 0,
           category: 0,
           voice: 0,
@@ -923,8 +938,25 @@ export function InitializeCommands() {
             desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites}`;
           }
         }
-
-        const memberCounts = {
+        interface presCount {
+          [key: string]: number,
+          streaming: number,
+          game: number,
+          listening: number,
+          watching: number,
+          online: number,
+          dnd: number,
+          idle: number,
+          offline: number
+        }
+        interface memCount {
+          [key: string]: number | presCount,
+          human: number,
+          bot: number,
+          presences: presCount
+        }
+        // type memCount = {[key: string] : number | presCount};
+        const memberCounts: memCount = {
           human: 0,
           bot: 0,
           presences: {
@@ -940,7 +972,8 @@ export function InitializeCommands() {
         };
 
         async function calcMembers() {
-          for await (const member of guild.iterMembers()) {
+          for await (const mem of guild.iterMembers()) {
+            const member: discord.GuildMember = mem;
             const usr = member.user;
             if (!usr.bot) {
               memberCounts.human += 1;
@@ -1138,7 +1171,7 @@ export function InitializeCommands() {
         }
         try {
           const flagsUsr = await utils.getUser(user.id, true);
-          if (typeof flagsUsr === 'object' && typeof flagsUsr.public_flags === 'number') {
+          if (typeof flagsUsr === 'object' && flagsUsr instanceof utils.BetterUser) {
             let badges = [];
             const flags = new utils.UserFlags(flagsUsr.public_flags).serialize();
             for (const key in flags) {
@@ -1195,7 +1228,7 @@ export function InitializeCommands() {
               desc += `\n${globalConfig.badges.globaladmin}`;
             }
             if ((typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id]))) {
-              desc += `\n${globalConfig.userBadges[user.id].map((bd) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
+              desc += `\n${globalConfig.userBadges[user.id].map((bd: string) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
             }
           }
         }

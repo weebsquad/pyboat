@@ -457,7 +457,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     }
   }
 
-  if (flaggedOnce && messageRemovedCount > 0) {
+  if (flaggedOnce) {
     if (!flaggedAntiraid) {
       logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
     } else {

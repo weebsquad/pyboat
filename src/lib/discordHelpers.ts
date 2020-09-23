@@ -10,6 +10,9 @@ import { metalApiRequest } from './metalApi';
 
 const { config } = conf;
 
+export class BetterUser extends discord.User {
+  public_flags = 0;
+}
 export class FakeConsole {
   private channel: discord.ITextChannel;
   private timeout: number | null = null;
@@ -152,7 +155,7 @@ export function getSnowflakeDate(snowflake: string) {
   const snowflakeData = decomposeSnowflake(snowflake);
   return snowflakeData.timestamp;
 }
-function parseBigInt(str, base: any = 10) {
+function parseBigInt(str: string, base: any = 10) {
   base = BigInt(base);
   let bigint = BigInt(0);
   for (let i = 0; i < str.length; i += 1) {
@@ -195,9 +198,9 @@ export function decomposeSnowflake(snowflake: string) {
 
 export async function getUserRoles(member: discord.GuildMember) {
   const roleIds = member.roles;
-  const roles = [];
-  const guildRoles = await (await discord.getGuild(member.guildId)).getRoles();
-  guildRoles.forEach((role: discord.Role) => {
+  const roles: discord.Role[] = [];
+  const guildRoles = await (await discord.getGuild(member.guildId))!.getRoles();
+  guildRoles!.forEach((role: discord.Role) => {
     if (roleIds.indexOf(role.id) > -1) {
       roles.push(role);
     }
@@ -209,13 +212,16 @@ export async function getMemberHighestRole(member: discord.GuildMember): Promise
   const gl = await member.getGuild();
   const rl = (await gl.getRoles()).filter((e) => member.roles.includes(e.id)).sort((a, b) => b.position - a.position);
   if (Array.isArray(rl) && rl.length === 0) {
-    const def = gl.getRole(gl.id);
+    const def = await gl.getRole(gl.id);
+    if (!def) {
+      return makeFake<discord.Role>({}, discord.Role); // lol
+    }
     return def;
   }
   return rl[0];
 }
 
-export async function getUser(userId: string, forceFetch = false) {
+export async function getUser(userId: string, forceFetch = false): Promise<BetterUser | discord.User | null> {
   let userData;
   try {
     if (!forceFetch) {
@@ -239,9 +245,10 @@ export async function getUser(userId: string, forceFetch = false) {
     res.getAvatarUrl = function () {
       return `https://cdn.discordapp.com/avatars/${userId}/${res.avatar}`;
     }; */
-    return makeFake<discord.User>(res, discord.User);
+    return makeFake<BetterUser>(res, BetterUser);
   } catch (e) {
     logError(e);
+    return null;
   }
 }
 
@@ -267,7 +274,7 @@ export async function getGuild(gid: string, forceFetch = false) {
     if (typeof res.id === 'string') {
       for (const key in res) {
         if (key === 'roles' || key === 'emojis') {
-          res[key] = res[key].map((v) => v.id);
+          res[key] = res[key].map((v: any) => v.id);
         } else if (key === 'approximate_member_count') {
           res.memberCount = res[key];
           delete res[key];
@@ -306,12 +313,12 @@ export async function getUserEntitlements(
   );
   const data = await res.json();
   const mainData: any = {
-    branches: {},
+    branches: <any>{},
     type: 'none',
   };
   const masterBranchId = swapKV(config.global.game.applicationBranches).master;
   const typesId = swapKV(EntitlementTypeEnum);
-  data.forEach((table) => {
+  data.forEach((table: any) => {
     if (
       table.user_id === userId
       && table.application_id === appId
@@ -322,7 +329,7 @@ export async function getUserEntitlements(
       if (typeof table.branches !== 'undefined') {
         branchId = table.branches[0];
       }
-      const branchData = {
+      const branchData = <any>{
         type: 'none',
       };
 

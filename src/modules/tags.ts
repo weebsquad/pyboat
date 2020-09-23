@@ -84,11 +84,10 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
             await pool.editPool(nm, ex);
             return `Edited tag with name \`${nm}\` !`;
           }
-        } else {
-          const newObj = new Tag(nm, msg.author.id, content);
-          await pool.saveToPool(newObj);
-          return `Saved tag with name \`${nm}\` !`;
         }
+        const newObj = new Tag(nm, msg.author.id, content);
+        await pool.saveToPool(newObj);
+        return `Saved tag with name \`${nm}\` !`;
       });
       saveMessage(res);
     },

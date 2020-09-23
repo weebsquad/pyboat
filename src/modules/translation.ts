@@ -108,7 +108,7 @@ async function saveToPool(pool: any, mid: string, lang: string) {
   newObj.translations.push(lang);
   if (!Array.isArray(pool) || pool === null) {
     // idk how to do this better lmao
-    const pool2 = [];
+    const pool2: any = [];
     pool2.push(newObj);
     await kv.put('translatedMessages', pool2);
     return;
@@ -185,7 +185,8 @@ export async function OnMessageReactionAdd(
   }
 
   const emoji = reaction.emoji;
-  const lang = getLanguageFromFlag(emoji.name);
+  if(!emoji) return;
+  const lang = getLanguageFromFlag(emoji.name!);
   if (lang === null) {
     return;
   }

@@ -109,7 +109,7 @@ export async function checkUserRoles(mem: discord.GuildMember) {
 
 /* SEPERATOR ROLES MANAGEMENT */
 const colors = ['#2f3136', '#000000'];
-const chars = {
+const chars: {[key: string]: {amount: number, alphaAllowed: number}} = {
   '▬': {
     amount: 5,
     alphaAllowed: 8,
@@ -203,13 +203,13 @@ async function checkMemberSeperatorRoles(member: discord.GuildMember) {
   const roles = guildRoles
     .filter((el) => member.roles.indexOf(el.id) > -1)
     .reverse();
-  let rolesAdd = [];
-  let rolesRemove = [];
+  let rolesAdd: discord.Role[] = [];
+  let rolesRemove: discord.Role[] = [];
   if (seps.length < 1 || roles.length < 2) {
     return;
   }
-  const sepPosMaps = {};
-  const posArray = [];
+  const sepPosMaps: {[key: string]: {[key: string]: number}} = {};
+  const posArray: number[] = [];
   seps.forEach((sep) => {
     posArray.push(sep.position);
   });

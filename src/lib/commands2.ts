@@ -47,13 +47,13 @@ export async function filterOverridingGlobalAdmin(message: discord.GuildMemberMe
   return _ret;
 }
 class CmdOverride {
-  level: number;
+  level: number | undefined;
   disabled = false;
-  channelsWhitelist: Array<string> | undefined = undefined;
-  channelsBlacklist: Array<string> | undefined = undefined;
-  rolesWhitelist: Array<string> | undefined = undefined;
-  rolesBlacklist: Array<string> | undefined = undefined;
-  bypassLevel: number | undefined = undefined;
+  channelsWhitelist: Array<string> | undefined;
+  channelsBlacklist: Array<string> | undefined;
+  rolesWhitelist: Array<string> | undefined;
+  rolesBlacklist: Array<string> | undefined;
+  bypassLevel: number | undefined;
 }
 export function checkOverrides(level: number, ovtext: string) {
   const retVal = new CmdOverride();

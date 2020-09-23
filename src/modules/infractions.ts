@@ -54,12 +54,12 @@ export class Infraction {
     }
     const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
     if (!(this.guild instanceof discord.Guild)) {
-      this.guild = guild;
+      this.guild = guild!;
     }
 
     if (this.type === InfractionType.TEMPMUTE) {
-      const member = await guild.getMember(this.memberId);
-      if (member === null) {
+      const member = await guild!.getMember(this.memberId);
+      if (!member) {
         this.active = false;
         await this.updateStorage();
         return false;
@@ -76,8 +76,8 @@ export class Infraction {
       await this.updateStorage();
       return false;
     } if (this.type === InfractionType.TEMPBAN) {
-      const ban = await guild.getBan(this.memberId);
-      if (ban === null) {
+      const ban = await guild!.getBan(this.memberId);
+      if (!ban) {
         this.active = false;
         await this.updateStorage();
         return false;
@@ -96,11 +96,11 @@ export class Infraction {
     }
     const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
     if (!(this.guild instanceof discord.Guild)) {
-      this.guild = guild;
+      this.guild = guild!;
     }
     if (this.type === InfractionType.TEMPMUTE) {
-      const member = await guild.getMember(this.memberId);
-      if (member === null) {
+      const member = await guild!.getMember(this.memberId);
+      if (!member) {
         return;
       }
       await member.removeRole(config.modules.infractions.muteRole);
@@ -108,7 +108,7 @@ export class Infraction {
       await this.checkActive();
     } else if (this.type === InfractionType.TEMPBAN) {
       const usr = await utils.getUser(this.memberId);
-      await guild.deleteBan(this.memberId);
+      await guild!.deleteBan(this.memberId);
       await logAction('tempban_expired', null, usr);
       await this.checkActive();
     }
@@ -130,7 +130,7 @@ export async function every5Min() {
     }));
     const actives = infs.map((v) => utils.makeFake<Infraction>(v, Infraction)).filter((inf) => inf.active === true && inf.isExpired());
     if (actives.length > 0) {
-      const promises2 = [];
+      const promises2: Promise<void>[] = [];
       for (let i = 0; i < actives.length; i += 1) {
         const inf = actives[i];
         if (inf.isExpired()) {
@@ -149,7 +149,7 @@ export async function clearInfractions() {
   await infsPool.clear();
 }
 export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {
-  if (actor === null) {
+  if (!actor) {
     actor = 'SYSTEM';
   }
   let targetId;
@@ -169,8 +169,8 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
     reason = '';
   }
 
-  let actorId;
-  if (typeof actor === 'string' || actor === null) {
+  let actorId = '';
+  if (typeof actor === 'string') {
     actorId = actor;
   }
   if (actor instanceof discord.User) {
@@ -186,10 +186,10 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isTargetAdmin = utils.isGlobalAdmin(targetId);
-  if (actor === null && targetId === discord.getBotId()) {
+  if (!actor && targetId === discord.getBotId()) {
     return false;
   }
-  if (actor === null) {
+  if (!actor) {
     return !isTargetAdmin;
   }
   const isGA = utils.isGlobalAdmin(actor.user.id);
@@ -200,6 +200,9 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   const guild = await actor.getGuild();
   const me = await guild.getMember(discord.getBotId());
+  if (!me) {
+    return false;
+  }
   // check bot can actually do it
   if (actionType === InfractionType.KICK && !me.can(discord.Permissions.KICK_MEMBERS)) {
     return 'I can\'t kick members';
@@ -282,6 +285,9 @@ export async function logAction(actionType: string, actor: discord.User | discor
   if (member instanceof discord.GuildMember) {
     member = member.user;
   }
+  if (!member) {
+    return;
+  }
   if ((actor !== null && isIgnoredActor(actor)) || isIgnoredUser(member)) {
     return;
   }
@@ -302,10 +308,14 @@ export async function logAction(actionType: string, actor: discord.User | discor
   }
   logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
-export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: discord.GuildMemberMessage, result: boolean, txt: string | undefined, noDeleteOriginal = false) {
+export async function confirmResult(me: discord.GuildMember | undefined | null, ogMsg: discord.GuildMemberMessage, result: boolean | null, txt: string | undefined, noDeleteOriginal = false) {
   if (!(me instanceof discord.GuildMember)) {
-    me = await (await ogMsg.getGuild()).getMember(discord.getBotId());
+    me = await (await ogMsg.getGuild())!.getMember(discord.getBotId());
   }
+  if (!me) {
+    return;
+  }
+  const botme = me;
   const chan = await ogMsg.getChannel();
   if (config.modules.infractions && config.modules.infractions.confirmation) {
     const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
@@ -342,6 +352,7 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
         replyMsg = await ogMsg.reply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
           allowedMentions: {} });
         if (expiry === 0) {
+          // @ts-ignore
           saveMessage(replyMsg);
         }
       } catch (e) {
@@ -352,7 +363,7 @@ export async function confirmResult(me: discord.GuildMember | undefined, ogMsg: 
       const _theMsg = replyMsg;
       setTimeout(async () => {
         try {
-          if (chan.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+          if (chan.canMember(botme, discord.Permissions.MANAGE_MESSAGES)) {
             if (react === true && !del) {
               if (result === true || result === false) {
                 await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
@@ -516,6 +527,9 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
   const usr = member instanceof discord.GuildMember ? member.user : member;
   const guild = await discord.getGuild(guildId);
+  if (!guild) {
+    return;
+  }
   if (typeof reason !== 'string') {
     reason = '';
   }
@@ -523,7 +537,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
     reason = reason.substr(0, 100);
   }
   const ban = await guild.getBan(memberId);
-  if (ban !== null) {
+  if (ban) {
     return `${usr.toMention()} is already banned`;
   }
   const canT = await canTarget(actor, member, InfractionType.BAN);
@@ -548,7 +562,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   MASSBAN
 */
 export async function MassBan(members: Array<discord.GuildMember | discord.User>, actor: discord.GuildMember | null, deleteDays: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, reason: string) {
-  const results = {
+  const results: {[key: string]: string[]} = {
     success: [],
     fail: [],
   };
@@ -568,6 +582,9 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
     reason = reason.substr(0, 100);
   }
   const guild = await discord.getGuild(guildId);
+  if (!guild) {
+    return results;
+  }
   await pylon.requestCpuBurst(async () => {
     for (const key in members) {
       const member = members[key];
@@ -608,6 +625,9 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   }
 
   const guild = await discord.getGuild(guildId);
+  if (!guild) {
+    return false;
+  }
   if (typeof reason !== 'string') {
     reason = '';
   }
@@ -646,6 +666,9 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
   const usr = member instanceof discord.GuildMember ? member.user : member;
   const guild = await discord.getGuild(guildId);
+  if (!guild) {
+    return false;
+  }
   if (typeof reason !== 'string') {
     reason = '';
   }
@@ -682,6 +705,9 @@ export async function UnBan(member: discord.GuildMember | discord.User, actor: d
   const memberId = member instanceof discord.GuildMember ? member.user.id : member.id;
   const usr = member instanceof discord.GuildMember ? member.user : member;
   const guild = await discord.getGuild(guildId);
+  if (!guild) {
+    return false;
+  }
   if (typeof reason !== 'string') {
     reason = '';
   }
@@ -820,8 +846,8 @@ export function InitializeCommands() {
     { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
-      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
-      if (member === null) {
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(user.id);
+      if (!member) {
         member = user;
       }
       if (typeof reason !== 'string') {
@@ -844,8 +870,8 @@ export function InitializeCommands() {
     { name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
     (ctx) => ({ deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), args: ctx.text() }),
     async (msg, { deleteDays, args }) => {
-      let ids = [];
-      const reas = [];
+      let ids: string[] = [];
+      const reas: string[] = [];
       args.split(' ').forEach((test) => {
         const rmpossible = test.split('@').join('').split('<').join('')
           .split('>')
@@ -865,8 +891,8 @@ export function InitializeCommands() {
         saveMessage(res);
         return;
       }
-      const objs = [];
-      const failNotFound = [];
+      const objs: any[] = [];
+      const failNotFound: string[] = [];
       const guild = await msg.getGuild();
       await Promise.all(ids.map(async (id) => {
         const gm = await guild.getMember(id);
@@ -890,7 +916,7 @@ export function InitializeCommands() {
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
-      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
       }
@@ -914,7 +940,7 @@ export function InitializeCommands() {
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
-      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
       }
@@ -938,7 +964,7 @@ export function InitializeCommands() {
     { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { user, time, reason }) => {
-      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
       }
@@ -964,7 +990,7 @@ export function InitializeCommands() {
     { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
     (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
-      let member: discord.User | discord.GuildMember = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
       }
@@ -1405,7 +1431,7 @@ export async function AL_OnGuildMemberUpdate(
         active: true,
       })).filter((inf) => inf.type === InfractionType.TEMPMUTE || inf.type === InfractionType.MUTE);
       if (query.length > 0) {
-        const promises = [];
+        const promises: Promise<boolean>[] = [];
         query.forEach((inf) => {
           inf = utils.makeFake<Infraction>(inf, Infraction);
           promises.push(inf.checkActive());
@@ -1434,26 +1460,26 @@ export async function AL_OnGuildMemberUpdate(
       return;
     }
     const changedNick = member.nick.toLowerCase();
-    const gm = await (await discord.getGuild(guildId)).getMember(log.userId);
-    if (gm === null) {
+    const gm = await (await discord.getGuild(guildId))!.getMember(log.userId);
+    if (!gm) {
       return;
     }
     if (changedNick === 'unmute' && member.roles.includes(config.modules.infractions.muteRole)) {
       const res = await UnMute(member, gm, '');
       if (res === true) {
-        await member.edit({ nick: oldMember.nick });
+        await member.edit({ nick: oldMember.nick! });
       }
     } else if (changedNick === 'mute' && !member.roles.includes(config.modules.infractions.muteRole)) {
       const res = await Mute(member, gm, '');
       if (res === true) {
-        await member.edit({ nick: oldMember.nick });
+        await member.edit({ nick: oldMember.nick! });
       }
     } else if (changedNick.substr(0, 5) === 'mute ' && changedNick.length >= 6 && !member.roles.includes(config.modules.infractions.muteRole)) {
       const time = changedNick.substr(5);
 
       const res = await TempMute(member, gm, time, '');
       if (res === true) {
-        await member.edit({ nick: oldMember.nick });
+        await member.edit({ nick: oldMember.nick! });
       }
     }
   }
@@ -1536,7 +1562,7 @@ export async function AL_OnGuildBanRemove(
     active: true,
   })).filter((inf) => inf.type === InfractionType.BAN || inf.type === InfractionType.TEMPBAN);
   if (query.length > 0) {
-    const promises = [];
+    const promises: Promise<boolean>[] = [];
     query.forEach((inf) => {
       inf = utils.makeFake<Infraction>(inf, Infraction);
       promises.push(inf.checkActive());

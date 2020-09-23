@@ -7,7 +7,7 @@ import { saveMessage } from './admin';
 
 const MAX_LIFETIME = 336;
 
-const processing = [];
+const processing: string[] = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
 const kv = new pylon.KVNamespace('starboard');
 
@@ -28,9 +28,15 @@ export class StarStats {
 }
 
 export class PublishData {
-    channelId: string;
-    messageId: string;
-    lastUpdate: number;
+    channelId: string | undefined;
+    messageId: string | undefined;
+    lastUpdate: number | undefined;
+    constructor(ch: string | undefined = undefined, msg :string | undefined = undefined, last: number | undefined = undefined) {
+      this.channelId = ch;
+      this.messageId = msg;
+      this.lastUpdate = last;
+      return this;
+    }
 }
 export class StarredMessage {
     id: string;
@@ -58,14 +64,20 @@ export class StarredMessage {
       await messagesKv.saveToPool(this);
     }
     private async publish() {
+      if (!this.publishData.channelId) {
+        return;
+      }
       const boardCfg = getBoardCfg(this.publishData.channelId);
       const channel = await discord.getChannel(this.publishData.channelId);
       const ogChannel = await discord.getChannel(this.channelId);
-      if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS) || (ogChannel.type !== discord.Channel.Type.GUILD_TEXT && ogChannel.type !== discord.Channel.Type.GUILD_NEWS)) {
+      if (channel === null || ogChannel === null || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS) || (ogChannel.type !== discord.Channel.Type.GUILD_TEXT && ogChannel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
       try {
         const ogMsg = await ogChannel.getMessage(this.id);
+        if (!ogMsg) {
+          return;
+        }
         const newEmbed = new discord.Embed();
         newEmbed.setAuthor({ iconUrl: ogMsg.author.getAvatarUrl(), name: ogMsg.author.getTag() });
         newEmbed.setTimestamp(new Date().toISOString());
@@ -111,13 +123,18 @@ export class StarredMessage {
       } catch (e) {}
     }
     private async unpublish() {
+      if (!this.publishData.channelId) {
+        return;
+      }
       const channel = await discord.getChannel(this.publishData.channelId);
-      if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
+      if (!channel || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
       try {
-        const oldMsg = await channel.getMessage(this.publishData.messageId);
-        await oldMsg.delete();
+        const oldMsg = await channel.getMessage(this.publishData.messageId!);
+        if (oldMsg) {
+          await oldMsg.delete();
+        }
       } catch (e) {}
       delete this.publishData.messageId;
       delete this.publishData.lastUpdate;
@@ -139,7 +156,7 @@ export class StarredMessage {
         authorStats.posts += 1;
         await statsKv.saveToPool(authorStats);
       } else {
-        authorStats = utils.makeFake(authorStats, StarStats);
+        authorStats = utils.makeFake<StarStats>(authorStats, StarStats);
         authorStats.received += uniqueReactors;
         authorStats.posts += 1;
         await authorStats.update();
@@ -175,11 +192,15 @@ export class StarredMessage {
       }
     }
     private async needsUpdate() {
-      const channel = await discord.getChannel(this.publishData.channelId);
-      if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
+      const channel = await discord.getChannel(this.publishData.channelId!);
+
+      if (!channel || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
         return;
       }
-      const oldMsg = await channel.getMessage(this.publishData.messageId);
+      const oldMsg = await channel.getMessage(this.publishData.messageId!);
+      if (!oldMsg) {
+        return false;
+      }
       const split = oldMsg.content.split('-')[0].split(' ').join('').slice(-1);
       if (utils.isNumber(split) && utils.isNormalInteger(split, true)) {
         const _num = +split;
@@ -188,20 +209,22 @@ export class StarredMessage {
       return false;
     }
     private async update(finalize = false) {
-      const boardCfg = getBoardCfg(this.publishData.channelId);
+      const boardCfg = getBoardCfg(this.publishData.channelId!);
       try {
-        const channel = await discord.getChannel(this.publishData.channelId);
-        if ((channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
+        const channel = await discord.getChannel(this.publishData.channelId!);
+        if (!channel || (channel.type !== discord.Channel.Type.GUILD_TEXT && channel.type !== discord.Channel.Type.GUILD_NEWS)) {
           return;
         }
 
-        const oldMsg = await channel.getMessage(this.publishData.messageId);
-
+        const oldMsg = await channel.getMessage(this.publishData.messageId!);
+        if (!oldMsg) {
+          return;
+        }
         const emb = oldMsg.embeds[0];
         if (typeof boardCfg.maxReacts === 'number') {
           emb.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
         }
-        if (finalize === true && !emb.footer.text.toLowerCase().includes('message deleted')) {
+        if (finalize === true && emb.footer && !emb.footer.text.toLowerCase().includes('message deleted')) {
           emb.setFooter({ text: `Message Deleted | ${emb.footer.text}` });
         }
         const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxEmoji : this.emojiMention;
@@ -223,7 +246,7 @@ export class StarredMessage {
     async deleted(isLog = false) {
       await this.finalize();
       if (this.publishData.messageId) {
-        const boardCfg = getBoardCfg(this.publishData.channelId);
+        const boardCfg = getBoardCfg(this.publishData.channelId!);
         if (typeof boardCfg.clearOnDelete === 'boolean' && boardCfg.clearOnDelete === true) {
           await this.unpublish();
         } else if (isLog === true && typeof boardCfg.clearOnModDelete === 'boolean' && boardCfg.clearOnModDelete === true) {
@@ -237,7 +260,7 @@ export class StarredMessage {
       await this.awardStats();
     }
     async check() {
-      const boardCfg = getBoardCfg(this.publishData.channelId);
+      const boardCfg = getBoardCfg(this.publishData.channelId!);
       if (this.getReactorCount() >= boardCfg.minReacts) {
         if (!this.publishData.messageId) {
           // publish
@@ -311,7 +334,7 @@ export async function periodicClear() {
   }
   const keys = await messagesKv.getAll<StarredMessage>();
   await Promise.all(keys.map(async (e) => {
-    const cfg = getBoardCfg(e.publishData.channelId);
+    const cfg = getBoardCfg(e.publishData.channelId!);
     const lifetime = typeof cfg.messageLifetime === 'number' ? Math.min(MAX_LIFETIME, Math.max(1, cfg.messageLifetime)) : MAX_LIFETIME;
     if (typeof cfg === 'object') {
       const messageId = e.id;
@@ -394,7 +417,7 @@ export async function AL_OnMessageDeleteBulk(
   let msgData = await messagesKv.getAll<StarredMessage>();
   msgData = msgData.filter((e) => messages.ids.includes(e.id));
   if (msgData.length > 0) {
-    await messagesKv.editPools<StarredMessage>(msgData.map((v) => v.id), null);
+    await messagesKv.editPools<StarredMessage>(msgData.map((v) => v.id), () => null);
     await Promise.all(msgData.map(async (key) => {
       key = utils.makeFake<StarredMessage>(key, StarredMessage);
       await key.deleted(log instanceof discord.AuditLogEntry);
@@ -415,7 +438,7 @@ export async function OnMessageReactionAdd(
   if (Object.keys(config.modules.starboard.channels).includes(reaction.channelId)) {
     isBoardMsg = true;
   }
-  let board;
+  let board: string | boolean = false;
   if (!isBoardMsg) {
     board = getRespectiveBoard(reaction.channelId, emoji);
   }
@@ -423,7 +446,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   let boardCfg;
-  if (!isBoardMsg) {
+  if (!isBoardMsg && typeof board === 'string') {
     boardCfg = getBoardCfg(board);
   }
   if (!isBoardMsg && boardCfg === false) {
@@ -439,6 +462,9 @@ export async function OnMessageReactionAdd(
     return;
   }
   const message = await channel.getMessage(msgId);
+  if (!message) {
+    return;
+  }
   let actualMsg;
   if (isBoardMsg) {
     board = reaction.channelId;
@@ -494,6 +520,9 @@ export async function OnMessageReactionAdd(
   }
 
   const me = await (await channel.getGuild()).getMember(discord.getBotId());
+  if (!me) {
+    return;
+  }
   if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === actualMsg.author.id)) {
     if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
       await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
@@ -534,7 +563,7 @@ export async function OnMessageReactionAdd(
   if (checkStorage !== undefined) {
     data = utils.makeFake(checkStorage, StarredMessage);
   } else {
-    data = new StarredMessage(actualMsg.author.id, chanId, msgId, board, [], emoji.toMention());
+    data = new StarredMessage(actualMsg.author.id, chanId, msgId, board, [], emoji.toMention!());
   }
   if (!data.reactors.includes(reaction.userId)) {
     data.reactors.push(reaction.userId);
@@ -568,7 +597,7 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     return;
   }
   let boardCfg;
-  if (!isBoardMsg) {
+  if (!isBoardMsg && typeof board === 'string') {
     boardCfg = getBoardCfg(board);
   }
   if (!isBoardMsg && boardCfg === false) {
@@ -591,6 +620,9 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   }
 
   let actualMsg;
+  if (!message) {
+    return;
+  }
   if (isBoardMsg) {
     board = reaction.channelId;
     boardCfg = config.modules.starboard.channels[reaction.channelId];
@@ -845,7 +877,6 @@ export function InitializeCommands() {
           const isb = await isBlocked(user.id);
           if (isb === false) {
             return `${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`;
-            return;
           }
           let blocks = await kv.get('blocks');
           if (!Array.isArray(blocks)) {

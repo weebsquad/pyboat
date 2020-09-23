@@ -3,7 +3,7 @@ import * as utils from '../lib/utils';
 
 const kv = new pylon.KVNamespace('counting');
 
-function isNormalInteger(str) {
+function isNormalInteger(str: string) {
   const n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && n >= 0;
 }
@@ -20,11 +20,11 @@ function isPinnable(num: number) {
   if (config.modules.counting.autoPins.single.indexOf(num) > -1) {
     return true;
   }
-  const checkRep = config.modules.counting.autoPins.repeating.find((numbr) => num % numbr === 0);
+  const checkRep = config.modules.counting.autoPins.repeating.find((numbr: number) => num % numbr === 0);
   if (typeof checkRep === 'number') {
     return true;
   }
-  const checkRepLast = config.modules.counting.autoPins.repeatingLast.find((numbr) => {
+  const checkRepLast = config.modules.counting.autoPins.repeatingLast.find((numbr: number) => {
     const lastChars = num.toString().slice(-numbr.toString().length); // gets last character
     return lastChars === numbr.toString();
   });
@@ -232,10 +232,13 @@ export async function OnMessageDelete(
 export async function OnMessageUpdate(
   id: string,
   guildId: string,
-  message: discord.Message,
+  message: discord.Message.AnyMessage,
   oldMessage: discord.GuildMemberMessage | null,
 ) {
-  if (oldMessage === null) {
+  if (!(oldMessage instanceof discord.GuildMemberMessage) || !(message instanceof discord.GuildMemberMessage)) {
+    return;
+  }
+  if (!oldMessage) {
     return;
   }
   if (
@@ -251,8 +254,8 @@ export async function OnMessageUpdate(
     return;
   }
 
-  async function delet(msg: discord.Message) {
-    await MessageDeletedChecks(oldMessage);
+  async function delet(msg: discord.GuildMemberMessage) {
+    await MessageDeletedChecks(oldMessage!);
     await msg.delete();
     return false;
   }

@@ -5,7 +5,7 @@ import * as updates from './updates';
 
 export class ConfigError extends Error {
   configPath: string;
-  constructor(configPath: string, message) {
+  constructor(configPath: string, message: string) {
     super(message);
     this.name = 'ConfigError';
     this.configPath = configPath;
@@ -295,7 +295,7 @@ function recursiveDefault(source: any, dest: any) {
         if (Array.isArray(dest[key]) && dest[key].length > 0 && !Array.isArray(obj) && typeof obj === 'object' && obj !== null) {
           // config generator stuff!
           const newOb: {[key: string]: any} = {};
-          dest[key].forEach((e) => {
+          dest[key].forEach((e: any) => {
             if (typeof e.__key === 'string') {
               let keyName = e.__key;
               if (typeof keyName === 'number') {
@@ -446,10 +446,7 @@ export async function InitializeConfig(bypass = false) {
   return config;
 }
 
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
-}
-function str2ab(str) {
+function str2ab(str: string) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
   const bufView = new Uint16Array(buf);
   for (let i = 0, strLen = str.length; i < strLen; i++) {

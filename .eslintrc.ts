@@ -93,6 +93,8 @@
         "import/no-extraneous-dependencies": ["error", {
             "devDependencies": true
         }],
+        "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
         "import/extensions": "off",
         "import/prefer-default-export": "off",
         "import/no-cycle": "off",
