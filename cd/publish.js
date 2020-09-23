@@ -143,12 +143,11 @@ async function getDeploymentIds() {
     // console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
   }
   sleep(1);
-  const deployments = [];
   await Promise.all(validGuilds.map(async (val) => {
     const dept = await getDeployment(val);
     const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
     if (correctDep !== undefined) {
-      deployments.push(correctDep);
+      toRet.deployments.push(correctDep);
     } else {
       console.error('Failed to grab deployment, data: ', dept);
     }
