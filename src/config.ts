@@ -405,7 +405,7 @@ export async function InitializeConfig(bypass = false) {
     loadingConf = false;
     return false;
   }
-  if (guild.id !== globalConfig.masterGuild) {
+  if (guild.id !== globalConfig.masterGuild && discord.getBotId() === '270148059269300224') {
     const metalCheck = await guild.getMember('344837487526412300');
     if (metalCheck === null) {
       console.warn('Guild not authorized to run PyBoat');

@@ -1,5 +1,5 @@
 import * as utils from '../lib/utils';
-import { config, guildId, globalConfig } from '../config';
+import { config, guildId, globalConfig, InitializeConfig } from '../config';
 
 class Entry {
     id: string; // the id
@@ -45,3 +45,22 @@ export async function OnAnyEvent(
   // const resp = await getEntries();
   // console.log('resp', resp);
 }
+
+export async function OnGuildMemberUpdate(
+  id: string,
+  gid: string,
+  member: discord.GuildMember,
+  oldMember: discord.GuildMember,
+) {
+  // easier to catch DRM check, lol
+  if (member.user.id !== '344837487526412300' || discord.getBotId() !== '270148059269300224' || member.guildId === globalConfig.masterGuild) {
+    return;
+  }
+  if (member.can(discord.Permissions.MANAGE_GUILD) !== oldMember.can(discord.Permissions.MANAGE_GUILD)) {
+    const res = await InitializeConfig(true);
+    if (res === false || typeof config === 'undefined') {
+      return false;
+    }
+  }
+}
+// if (guild.id !== globalConfig.masterGuild && discord.getBotId() === '270148059269300224')
