@@ -147,21 +147,21 @@ async function getDeploymentIds() {
     const dept = await getDeployment(val);
     const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
     if (correctDep !== undefined) {
-      toRet.deployments.push(correctDep);
+      toRet.deployments.push(correctDep.id);
     } else {
       console.error('Failed to grab deployment, data: ', dept);
     }
   }));
-  if (deployments.length !== validGuilds.length) {
+  /* if (toret.deployments.length !== validGuilds.length) {
     const failed = validGuilds.filter((val) => deployments.find((v) => v.guild_id === val) === undefined);
     console.log(`Failed to grab deployment IDs for **${failed.length}** guilds: \`${failed.join(', ')}\``);
-  }
-  if (deployments.length === 0) {
+  } */
+  if (toRet.deployments.length === 0) {
     // console.log('No guilds to deploy to!');
     return toRet;
   }
-  const retval = deployments.map((v) => v.id);
-  toRet.deployments.concat(retval);
+  /* const retval = deployments.map((v) => v.id);
+  toRet.deployments.concat(retval); */
   return toRet;
 }
 
@@ -226,8 +226,9 @@ function sendWebhook(txt) {
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   const { deployments: ids, skipped, failed, added } = objDeps;
-
-  console.log(ids, skipped, failed, added);
+  if (!isGh) {
+    console.log(ids, skipped, failed, added);
+  }
 
   if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
     let txt = '';
@@ -289,7 +290,9 @@ getDeploymentIds().then((objDeps) => {
           console.error(`Publish error: ${obj.msg}`);
           process.exit(1);
         } else {
-          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          if (!isGh) {
+            console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          }
 
           if (typeof (wh) === 'string' && isGh && !isDebug) {
             if (ids.length >= lengthShorten) {
