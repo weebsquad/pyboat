@@ -13,7 +13,7 @@ const { sleep } = require('sleep');
 const Permissions = require('./permissions');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
-const lengthShorten = 10;
+const lengthShorten = 5;
 const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
 const pylonApiBase = 'https://pylon.bot/api/';
@@ -52,7 +52,7 @@ async function getNonActivePylonGuilds() {
     } });
   const txt = await res.text();
   console.log(res.status, res.statusText);
-  console.log('available raw: ', [txt]);
+  // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
   const nonActive = json.filter((val) => active.find((v) => v.id === val.id) === undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
   return nonActive;
@@ -87,18 +87,20 @@ async function getValidGuilds() {
     } });
   const txt = await res.text();
   console.log(res.status, res.statusText);
-  console.log('available raw: ', [txt]);
+  // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
   const valid = json.filter((val) => active.find((v) => v.id === val.id) !== undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
   return valid;
 }
 
 async function getDeploymentIds() {
+  const toRet = { deployments: [], skipped: [], added: [], failed: [] };
   if (isDebug === true) {
     const dept = await getDeployment(process.env.TEST_GUILD);
     const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
     if (correctDep !== undefined) {
-      return [correctDep.id];
+      toRet.deployments.push(correctDep.id);
+      return toRet;
     }
     console.error('Failed to grab deployment, data: ', dept);
   }
@@ -107,14 +109,15 @@ async function getDeploymentIds() {
   // await getActivePylonGuilds(); // pylon api bug where it doesnt cache our perms on the first request
   const nonactive = await getNonActivePylonGuilds();
   sleep(1);
-  const toadd = nonactive.filter((v) => whitelist.includes(v.id));
+  const toadd = nonactive.filter((v) => whitelist.includes(v.id)).map((v) => v.id);
   if (toadd.length > 0) {
-    console.log(`Adding guilds: \`${toadd.map((v) => v.id).join(', ')}\` ....`);
+    console.log(`Adding guilds: \`${toadd.join(', ')}\` ....`);
+
     // https://pylon.bot/api/guilds/595608446150115348/add
     // {"requiresGuildAuth": false, "guild": ... }
     const failToAdd = [];
     await Promise.all(toadd.map(async (val) => {
-      const res = await fetch(`${pylonApiBase}guilds/${val.id}/add`, {
+      const res = await fetch(`${pylonApiBase}guilds/${val}/add`, {
         method: 'GET',
         headers: {
           'authorization': pylonToken,
@@ -128,13 +131,16 @@ async function getDeploymentIds() {
     }));
     const added = toadd.filter((v) => !failToAdd.includes(v));
     console.log(`${added.length > 0 ? `Added **${added.length}** guilds successfully!` : ''}${failToAdd.length > 0 ? `\nFailed to add **${failToAdd.length}** guilds: \`${failToAdd.join(', ')}\`` : ''}`);
+    toRet.added.concat(added);
+    toRet.failed.concat(failToAdd);
   }
   sleep(1);
   let validGuilds = await getValidGuilds();
   validGuilds = validGuilds.filter((val) => whitelist.includes(val.id)).map((v) => v.id);
   const notFound = whitelist.filter((v) => validGuilds.find((val) => val === v) === undefined);
   if (notFound.length > 0) {
-    console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
+    toRet.skipped.concat(notFound);
+    // console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
   }
   sleep(1);
   const deployments = [];
@@ -152,11 +158,12 @@ async function getDeploymentIds() {
     console.log(`Failed to grab deployment IDs for **${failed.length}** guilds: \`${failed.join(', ')}\``);
   }
   if (deployments.length === 0) {
-    console.log('No guilds to deploy to!');
-    return [];
+    // console.log('No guilds to deploy to!');
+    return toRet;
   }
   const retval = deployments.map((v) => v.id);
-  return retval;
+  toRet.deployments.concat(retval);
+  return toRet;
 }
 
 function deserialize(value) {
@@ -218,9 +225,25 @@ function sendWebhook(txt) {
 }
 
 const doneGuilds = [];
-getDeploymentIds().then((ids) => {
+getDeploymentIds().then((objDeps) => {
+  const { deployments: ids, skipped, failed, added } = objDeps;
+  console.log(ids, skipped, failed, added);
   if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
-    sendWebhook(`Publishing PyBoat to **${ids.length}** guilds ...`);
+    let txt = '';
+    if (added.length > 0) {
+      txt += `\n📥 Added **${added.length}** guilds: \`${added.join(', ')}\``;
+    }
+    if (ids.length > 0) {
+      txt += `\n✅ Publishing PyBoat to **${ids.length}** guilds..`;
+    }
+    if (skipped.length > 0) {
+      txt += `\n🟡 Skipping **${skipped.length}** guilds \`${skipped.join(', ')}\``;
+    }
+    if (failed.length > 0) {
+      txt += `\n🔴 Failed for **${failed.length}** guilds: \`${failed.join(', ')}\``;
+    }
+    sendWebhook(txt);
+    console.info(txt);
   }
   ids.forEach((deployment_id) => {
     if (doneGuilds.includes(deployment_id)) {
@@ -265,7 +288,9 @@ getDeploymentIds().then((ids) => {
           console.error(`Publish error: ${obj.msg}`);
           process.exit(1);
         } else {
-          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          if (!isGh) {
+            console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          }
           if (typeof (wh) === 'string' && isGh && !isDebug) {
             if (ids.length >= lengthShorten) {
               toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
@@ -279,6 +304,7 @@ getDeploymentIds().then((ids) => {
         }
       }).then(() => {
         if (toPost.length === ids.length) {
+          console.info('Done deploying!');
           sendWebhook(toPost.join(`${ids.length >= lengthShorten ? '\n' : '\n\n'}`));
         }
       })
