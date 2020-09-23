@@ -227,7 +227,9 @@ function sendWebhook(txt) {
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   const { deployments: ids, skipped, failed, added } = objDeps;
-  console.log(ids, skipped, failed, added);
+  if (!isGh) {
+    console.log(ids, skipped, failed, added);
+  }
   if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
     let txt = '';
     if (added.length > 0) {
