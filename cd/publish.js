@@ -131,15 +131,15 @@ async function getDeploymentIds() {
     }));
     const added = toadd.filter((v) => !failToAdd.includes(v));
     console.log(`${added.length > 0 ? `Added **${added.length}** guilds successfully!` : ''}${failToAdd.length > 0 ? `\nFailed to add **${failToAdd.length}** guilds: \`${failToAdd.join(', ')}\`` : ''}`);
-    toRet.added.concat(added);
-    toRet.failed.concat(failToAdd);
+    toRet.added.push(...added);
+    toRet.failed.push(...failToAdd);
   }
   sleep(1);
   let validGuilds = await getValidGuilds();
   validGuilds = validGuilds.filter((val) => whitelist.includes(val.id)).map((v) => v.id);
   const notFound = whitelist.filter((v) => validGuilds.find((val) => val === v) === undefined);
   if (notFound.length > 0) {
-    toRet.skipped.concat(notFound);
+    toRet.skipped.push(...notFound);
     // console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
   }
   sleep(1);
