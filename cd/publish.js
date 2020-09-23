@@ -227,9 +227,9 @@ function sendWebhook(txt) {
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   const { deployments: ids, skipped, failed, added } = objDeps;
-  if (!isGh) {
-    console.log(ids, skipped, failed, added);
-  }
+
+  console.log(ids, skipped, failed, added);
+
   if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
     let txt = '';
     if (added.length > 0) {
@@ -290,9 +290,8 @@ getDeploymentIds().then((objDeps) => {
           console.error(`Publish error: ${obj.msg}`);
           process.exit(1);
         } else {
-          if (!isGh) {
-            console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
-          }
+          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+
           if (typeof (wh) === 'string' && isGh && !isDebug) {
             if (ids.length >= lengthShorten) {
               toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
