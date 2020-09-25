@@ -255,7 +255,7 @@ export function InitializeCommands() {
       }
       const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
       if (r === true) {
-        await sleep(3500);
+        await sleep(4000);
         const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
         if (!runs.workflow_runs || runs.workflow_runs.length < 1) {
           await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** __Could not grab run URL__`);
