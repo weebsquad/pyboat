@@ -119,7 +119,6 @@ export async function getEventAuditLogData(
   tm: number,
   ...args: any[]
 ) {
-  const tdiff = new Date().getTime();
   let auditLogData;
   if (!isAuditLogEnabled(event)) {
     return getAuditLogErrorJson(
@@ -157,7 +156,6 @@ export async function getEventAuditLogData(
 }
 
 export async function getMultiEventAuditLogData(evs: Array<QueuedEvent>) {
-  const tdiff = new Date().getTime();
   let events = [].concat(evs); // making a solid copy just in case
   let auditLogData;
   events = events.map((e) => {
@@ -221,12 +219,15 @@ export async function ExecuteModules(
   ...args: any[]
 ) {
   const tm = new Date(utils.decomposeSnowflake(ts).timestamp).getTime();
-  const id = ts;
+  let id = ts;
   const eventFuncName = eventFunctions[event];
 
   let auditLogData;
   if (EventHasAuditLog(event)) {
     auditLogData = await getEventAuditLogData(event, tm, ...args);
+    if (Array.isArray(auditLogData) && auditLogData[0] instanceof discord.AuditLogEntry) {
+      id = auditLogData[0].id;
+    }
   }
 
   const { guildId } = conf;
