@@ -255,13 +255,17 @@ export function InitializeCommands() {
       }
       const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
       if (r === true) {
-        await sleep(2000);
-        const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
-        if (!runs.workflow_runs || runs.workflow_runs.length < 1) {
-          await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** __Could not grab run URL__`);
-        } else {
-          await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
+        for (let i = 0; i < 6; i++) {
+          const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
+          if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
+            await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
+            return;
+          }
+          await sleep(500);
         }
+        await res.edit(`Sent deployment dispatch event: \`https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}\`\n\t**=>** __Could not grab run URL__`);
+        await sleep(2000);
+
         return;
       }
       await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
