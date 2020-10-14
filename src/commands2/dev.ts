@@ -255,13 +255,13 @@ export function InitializeCommands() {
       }
       const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
       if (r === true) {
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 9; i++) {
           const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
           if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
             await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
             return;
           }
-          await sleep(500);
+          await sleep(300);
         }
         await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
         await sleep(2000);
