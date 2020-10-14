@@ -264,8 +264,6 @@ export function InitializeCommands() {
           await sleep(300);
         }
         await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
-        await sleep(2000);
-
         return;
       }
       await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
