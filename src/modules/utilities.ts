@@ -264,8 +264,8 @@ export async function OnGuildRoleDelete(
   role: discord.Role,
 ) {
   const checkrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
-  if (checkrole instanceof UserRole) {
-    await customUserRoles.editPool(checkrole.memberId, null);
+  if (checkrole && checkrole.length === 1) {
+    await customUserRoles.editPool(checkrole[0].memberId, null);
   }
   await checkAllCustomRoles();
 }
@@ -393,11 +393,8 @@ export function InitializeCommands() {
             const rlid = kvc.roleId;
             const guild = await msg.getGuild();
             const role = await guild.getRole(rlid);
-            if (!(role instanceof discord.Role)) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Role not found` };
-            }
             await customUserRoles.editPool(target.user.id, null);
-            if (target.roles.includes(role.id)) {
+            if (role instanceof discord.Role && target.roles.includes(role.id)) {
               await target.removeRole(role.id);
             }
             return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Cleared ${target.toMention()}'s custom role!` };
