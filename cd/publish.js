@@ -290,9 +290,9 @@ getDeploymentIds().then((objDeps) => {
           console.error(`Publish error: ${obj.msg}`);
           process.exit(1);
         } else {
-          // if (!isGh) {
-          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
-          // }
+          if (!isGh) {
+            console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          }
 
           if (typeof (wh) === 'string' && isGh && !isDebug) {
             if (ids.length >= lengthShorten) {
