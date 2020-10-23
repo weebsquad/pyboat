@@ -142,7 +142,6 @@ fetch('./schema.json')
   .then((obj) => {
     const defaultOptions = {
       iconlib: 'spectre',
-      object_layout: 'table',
       show_errors: 'always',
       schema: obj,
       theme: 'bootstrap4',
