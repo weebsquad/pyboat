@@ -51,7 +51,7 @@ async function getNonActivePylonGuilds() {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
-  console.log(res.status, res.statusText);
+  //  console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
   const nonActive = json.filter((val) => active.find((v) => v.id === val.id) === undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
@@ -86,7 +86,7 @@ async function getValidGuilds() {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
-  console.log(res.status, res.statusText);
+  // console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
   const valid = json.filter((val) => active.find((v) => v.id === val.id) !== undefined && new Permissions(val.permissions).has('MANAGE_GUILD'));
@@ -226,9 +226,9 @@ function sendWebhook(txt) {
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   const { deployments: ids, skipped, failed, added } = objDeps;
-  // if (!isGh) {
-  console.log(ids, skipped, failed, added);
-  // }
+  if (!isGh) {
+    console.log(ids, skipped, failed, added);
+  }
 
   if (typeof (wh) === 'string' && ids.length > 1 && isGh && !isDebug) {
     let txt = '';
