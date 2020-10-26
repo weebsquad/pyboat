@@ -6,9 +6,7 @@ import { EntitlementTypeEnum, Epoch } from '../constants/constants';
 // import { bigInt } from './bigint';
 import { Permissions } from './bitField';
 
-
 const { config } = conf;
-
 
 export class FakeConsole {
   private channel: discord.ITextChannel;
@@ -217,8 +215,3 @@ export async function getMemberHighestRole(member: discord.GuildMember): Promise
   }
   return rl[0];
 }
-
-
-
-
-

@@ -167,7 +167,7 @@ export async function sendInLogChannel(
             newE[indexArr].push(embeds[i]);
           }
           for (let i = 0; i < newE.length; i += 1) {
-            await utils2.executeWebhook(whUrl, '', newE[i], botAvatar.username, botAvatar.getAvatarUrl(), false, {})
+            await utils2.executeWebhook(whUrl, '', newE[i], botAvatar.username, botAvatar.getAvatarUrl(), false, {});
             webhookSends++;
           }
         }

@@ -11,23 +11,27 @@ async function baseRequest(
   headers: { [key: string]: string },
   method: string,
   body: string | undefined | null,
-  requireAuth: boolean = false
+  requireAuth = false,
 ): Promise<Response> {
   method = method.toUpperCase();
-  let baseHeaders: { [key: string]: string } = {
+  const baseHeaders: { [key: string]: string } = {
     'content-type': 'application/json',
-    accept: 'application/json',
+    'accept': 'application/json',
     'proxy-key': globalConfig.metalApi.key,
-    'api-url': endpoint
+    'api-url': endpoint,
   };
-  if (requireAuth) baseHeaders['Authorization'] = `Bot ${globalConfig.metalApi.botToken}`;
+  if (requireAuth) {
+    baseHeaders.Authorization = `Bot ${globalConfig.metalApi.botToken}`;
+  }
   for (const key in headers) {
-    if (!baseHeaders[key]) baseHeaders[key] = headers[key];
+    if (!baseHeaders[key]) {
+      baseHeaders[key] = headers[key];
+    }
   }
   const request = new Request(globalConfig.metalApi.url, {
     method,
     headers: baseHeaders,
-    body: body ? body : undefined
+    body: body || undefined,
   });
   const response = await fetch(request);
   return response;
@@ -36,18 +40,18 @@ async function baseRequest(
 const embedsRemaps = {
   author: {
     iconUrl: 'icon_url',
-    proxyIconUrl: 'proxy_icon_url'
+    proxyIconUrl: 'proxy_icon_url',
   },
   thumbnail: {
-    proxyUrl: 'proxy_url'
+    proxyUrl: 'proxy_url',
   },
   footer: {
     iconUrl: 'icon_url',
-    proxyIconUrl: 'proxy_icon_url'
+    proxyIconUrl: 'proxy_icon_url',
   },
   image: {
-    proxyUrl: 'proxy_url'
-  }
+    proxyUrl: 'proxy_url',
+  },
 } as any;
 
 export async function executeWebhook(
@@ -56,8 +60,8 @@ export async function executeWebhook(
   embeds: Array<discord.Embed> | undefined = undefined,
   username: string | undefined = undefined,
   avatar_url: string | undefined = undefined,
-  tts: boolean = false,
-  allowed_mentions: discord.Message.IAllowedMentions | undefined = undefined
+  tts = false,
+  allowed_mentions: discord.Message.IAllowedMentions | undefined = undefined,
 ): Promise<boolean> {
   const [id, token] = getWebhookIdTokenFromUrl(webhook_url);
   const url = `webhooks/${id}/${token}`;
@@ -80,25 +84,27 @@ export async function executeWebhook(
       return e;
     });
   }
-  let bodyJson: { [key: string]: any } = {
-    content: content,
-    username: username,
-    avatar_url: avatar_url,
+  const bodyJson: { [key: string]: any } = {
+    content,
+    username,
+    avatar_url,
     tts: tts ? true : undefined,
     embeds: Array.isArray(embeds) && embeds.length > 0 ? embeds : undefined,
-    allowed_mentions: allowed_mentions ? allowed_mentions : undefined
+    allowed_mentions: allowed_mentions || undefined,
   };
   for (const k in bodyJson) {
-    if (typeof bodyJson[k] === 'undefined') delete bodyJson[k];
+    if (typeof bodyJson[k] === 'undefined') {
+      delete bodyJson[k];
+    }
   }
   const response = await baseRequest(
     url,
     {},
     'POST',
     JSON.stringify(bodyJson),
-    false
+    false,
   );
-  const status = response.status;
+  const { status } = response;
   if (status !== 204) {
     const text = await response.json();
     console.error(`Webhook - ${status} - `, text);
@@ -118,9 +124,8 @@ export function getWebhookIdTokenFromUrl(webhook_url: string) {
     .join('')
     .split('https://discordapp.com/api/webhooks/')
     .join('');
-    return webhook_url.split('/');
+  return webhook_url.split('/');
 }
-
 
 export async function getUser(userId: string, forceFetch = false): Promise<BetterUser | discord.User | null> {
   let userData;
@@ -137,7 +142,7 @@ export async function getUser(userId: string, forceFetch = false): Promise<Bette
     {},
     'GET',
     null,
-    true
+    true,
   );
   try {
     const res = await data.json();
@@ -163,7 +168,7 @@ export async function getGuild(gid: string, forceFetch = false) {
     {},
     'GET',
     null,
-    true
+    true,
   );
   try {
     const res = await data.json();
@@ -207,7 +212,7 @@ export async function getUserEntitlements(
     {},
     'GET',
     null,
-    true
+    true,
   );
   const data = await res.json();
   const mainData: any = {
@@ -223,10 +228,7 @@ export async function getUserEntitlements(
       && table.sku_id === skuId
     ) {
       const typeText = typesId[table.type];
-      let branchId = masterBranchId;
-      if (typeof table.branches !== 'undefined') {
-        branchId = table.branches[0];
-      }
+      const [branchId] = masterBranchId;
       const branchData = <any>{
         type: 'none',
       };
