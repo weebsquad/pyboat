@@ -1088,22 +1088,22 @@ export function InitializeCommands() {
         let user: discord.User | BetterUser;
         if (usrtxt === null) {
           user = msg.author;
-          if(utils.isGlobalAdmin(msg.author.id)) {
+          if (utils.isGlobalAdmin(msg.author.id)) {
             const tempusr = await utils.getUser(user.id, true);
-            if(tempusr) {
+            if (tempusr) {
               user = tempusr;
             }
           }
         } else {
-          usrtxt = usrtxt.replace(/\D/g,''); // strip all non-number chars
+          usrtxt = usrtxt.replace(/\D/g, ''); // strip all non-number chars
           let tempusr;
-          if(utils.isGlobalAdmin(msg.author.id)) {
+          if (utils.isGlobalAdmin(msg.author.id)) {
             tempusr = await utils.getUser(usrtxt, true);
           } else {
             tempusr = await discord.getUser(usrtxt);
           }
-          if(!tempusr) {
-            return {content:`${discord.decor.Emojis.X} User not found!`, allowedMentions: {}};
+          if (!tempusr) {
+            return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
           }
           user = tempusr;
         }
@@ -1184,56 +1184,56 @@ export function InitializeCommands() {
           const clr = (Math.random() * 0xFFFFFF << 0).toString(16);
           emb.setColor(parseInt(clr, 16));
         }
-          try {
-            if (typeof user === 'object' && user instanceof utils.BetterUser && typeof user.public_flags === 'number') {
-              let badges = [];
-              const flags = new utils.UserFlags(user.public_flags).serialize();
-              for (const key in flags) {
-                if (flags[key] === true) {
-                  badges.push(key);
-                }
-              }
-              if (badges.length > 0) {
-                desc += '\n\n**❯ Discord Badges**';
-                badges = badges.map((val) => {
-                  switch (val) {
-                    case 'STAFF':
-                      return '<:discordstaff:751155123648069743> Discord Staff';
-                    case 'PARTNER':
-                      return '<:partner:735780703941165057> Discord Partner';
-                    case 'HYPESQUAD_EVENTS':
-                      return '<:hypesquad_events:735780703958204446> Hypesquad';
-                    case 'BUG_HUNTER':
-                      return '<:bughunter:735780703920324762> Bug Hunter';
-                    case 'HYPESQUAD_BRAVERY':
-                      return '<:bravery:735780704159531089> Bravery';
-                    case 'HYPESQUAD_BRILLIANCE':
-                      return '<:brilliance:735780703878512711> Brilliance';
-                    case 'HYPESQUAD_BALANCE':
-                      return '<:balance:735780704100679720> Balance';
-                    case 'EARLY_SUPPORTER':
-                      return '<:earlysupporter:735780703631048786> Early Supporter';
-                    case 'TEAM_USER':
-                      return '<:members:735780703559745558> Team User';
-                    case 'SYSTEM':
-                      return '<:discordstaff:751155123648069743> System';
-                    case 'BUG_HUNTER_GOLDEN':
-                      return '<:goldenbughunter:751153800693284924> Golden Bug Hunter';
-                    case 'VERIFIED_BOT':
-                      return '<:verified:735780703874318417> Verified Bot';
-                    case 'VERIFIED_BOT_DEVELOPER':
-                      return '<:botdev:751154656679559259> Early Bot Developer';
-                    default:
-                      return val;
-                  }
-                }).filter((val) => val !== '').map((val) => `**${val}**`);
-                desc += `\n ${badges.join('\n ')}`;
+        try {
+          if (typeof user === 'object' && user instanceof utils.BetterUser && typeof user.public_flags === 'number') {
+            let badges = [];
+            const flags = new utils.UserFlags(user.public_flags).serialize();
+            for (const key in flags) {
+              if (flags[key] === true) {
+                badges.push(key);
               }
             }
-          } catch (e) {
-            utils.logError(e);
+            if (badges.length > 0) {
+              desc += '\n\n**❯ Discord Badges**';
+              badges = badges.map((val) => {
+                switch (val) {
+                  case 'STAFF':
+                    return '<:discordstaff:751155123648069743> Discord Staff';
+                  case 'PARTNER':
+                    return '<:partner:735780703941165057> Discord Partner';
+                  case 'HYPESQUAD_EVENTS':
+                    return '<:hypesquad_events:735780703958204446> Hypesquad';
+                  case 'BUG_HUNTER':
+                    return '<:bughunter:735780703920324762> Bug Hunter';
+                  case 'HYPESQUAD_BRAVERY':
+                    return '<:bravery:735780704159531089> Bravery';
+                  case 'HYPESQUAD_BRILLIANCE':
+                    return '<:brilliance:735780703878512711> Brilliance';
+                  case 'HYPESQUAD_BALANCE':
+                    return '<:balance:735780704100679720> Balance';
+                  case 'EARLY_SUPPORTER':
+                    return '<:earlysupporter:735780703631048786> Early Supporter';
+                  case 'TEAM_USER':
+                    return '<:members:735780703559745558> Team User';
+                  case 'SYSTEM':
+                    return '<:discordstaff:751155123648069743> System';
+                  case 'BUG_HUNTER_GOLDEN':
+                    return '<:goldenbughunter:751153800693284924> Golden Bug Hunter';
+                  case 'VERIFIED_BOT':
+                    return '<:verified:735780703874318417> Verified Bot';
+                  case 'VERIFIED_BOT_DEVELOPER':
+                    return '<:botdev:751154656679559259> Early Bot Developer';
+                  default:
+                    return val;
+                }
+              }).filter((val) => val !== '').map((val) => `**${val}**`);
+              desc += `\n ${badges.join('\n ')}`;
+            }
           }
-        
+        } catch (e) {
+          utils.logError(e);
+        }
+
         // actual server stuff
         const isAdmin = utils.isGlobalAdmin(user.id);
         if (typeof globalConfig.badges === 'object') {
