@@ -24,7 +24,7 @@ export const globalConfig = <any>{
   masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
-    url: 'https://metalruller.com/api/discordMiddleman.php',
+    url: 'https://dapiproxy.homo.workers.dev',
     botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
   },
   github: {

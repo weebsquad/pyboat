@@ -164,12 +164,7 @@ export async function OnMessageCreate(
   }
   if (config.modules.counting.useWebhook) {
     delet(message);
-    await utils.sendWebhookPost(
-      config.modules.counting.webhook,
-      cont,
-      message.author.getAvatarUrl(),
-      message.author.getTag(),
-    );
+    await utils.executeWebhook(config.modules.counting.webhook, cont, undefined, message.author.getTag(), message.author.getAvatarUrl(), false, {});
   }
   return false;
 }

@@ -148,24 +148,14 @@ export async function sendInLogChannel(
             await channel.sendMessage(opt);
             webhookSends = 1;
           } else {
-            await utils2.sendWebhookPostComplex(whUrl, {
-              content: _cont,
-              allowed_mentions: {},
-              avatar_url: botAvatar.getAvatarUrl(),
-              username: botAvatar.username,
-            });
+            await utils2.executeWebhook(whUrl, _cont, undefined, botAvatar.username, botAvatar.getAvatarUrl(), false, {});
             webhookSends += 1;
           }
         }
       }
       if (embeds.length > 1 || alwaysWh) {
         if (embeds.length < 10) {
-          await utils2.sendWebhookPostComplex(whUrl, {
-            embeds,
-            avatar_url: botAvatar.getAvatarUrl(),
-            allowed_mentions: {}, // just in case
-            username: botAvatar.username,
-          });
+          await utils2.executeWebhook(whUrl, '', embeds, botAvatar.username, botAvatar.getAvatarUrl(), false, {});
           webhookSends += 1;
         } else {
           const newE = new Array<any[]>();
@@ -177,12 +167,7 @@ export async function sendInLogChannel(
             newE[indexArr].push(embeds[i]);
           }
           for (let i = 0; i < newE.length; i += 1) {
-            await utils2.sendWebhookPostComplex(whUrl, {
-              embeds: newE[i],
-              avatar_url: botAvatar.getAvatarUrl(),
-              allowed_mentions: {}, // just in case
-              username: botAvatar.username,
-            });
+            await utils2.executeWebhook(whUrl, '', newE[i], botAvatar.username, botAvatar.getAvatarUrl(), false, {})
             webhookSends++;
           }
         }

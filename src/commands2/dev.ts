@@ -667,12 +667,7 @@ export function InitializeCommands() {
         }
         embed.setFooter({ text: txt });
         embed.setTimestamp(new Date().toISOString());
-        await utils.sendWebhookPostComplex(whUrl, {
-          embeds: [embed],
-          allowed_mentions: {},
-          avatar_url: guild.getIconUrl(),
-          username: ' ឵឵ ',
-        });
+        await utils.executeWebhook(whUrl, '', [embed],' ឵឵ ', guild.getIconUrl(), false, {} );
       },
     );
     sub.on(
