@@ -882,7 +882,7 @@ export function InitializeCommands() {
     );
     sub.raw(
       'perms', async (m) => {
-        let permsVal = <any>'17179869186';
+        let permsVal: number | BigInt = BigInt('17179869186');
         permsVal = m.member.permissions;
         const p = new utils.Permissions(permsVal);
         const mp = p.serialize(false);
