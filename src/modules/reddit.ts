@@ -123,6 +123,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
     } else if (data.preview) {
       if (data.preview.images) {
         console.log('data.preview.images', data.preview.images);
+        image = unescape(data.preview.images[0].source.url);
       }
     } else if (data.thumbnail) {
       if (data.thumbnail.startsWith('http')) {
@@ -148,12 +149,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
       footr += ` | ${data.ups} upvotes | ${data.downs} downvotes | ${data.num_comments} comments`;
     }
     embed.setFooter({ text: footr });
-    /*
-            elif data.get('preview'):
-                if 'images' in data['preview']:
-                    h = HTMLParser()
-                    image = h.unescape(data['preview']['images'][0]['source']['url'])
-                */
+
     embed.setTimestamp(new Date((+data.created_utc) * 1000).toISOString());
     await channel.sendMessage({ content: `${subConfig.role ? `<@&${subConfig.role}>` : ''}`, embed, allowedMentions: { roles: subConfig.role ? [subConfig.role] : undefined } });
   }
