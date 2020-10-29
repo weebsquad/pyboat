@@ -12,6 +12,7 @@ import * as antiSpam from './antiSpam';
 import * as admin from './admin';
 import * as tags from './tags';
 import * as internal from './internal';
+import * as reddit from './reddit';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   internal,
@@ -28,5 +29,6 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   tags,
   translation,
   commands,
+  reddit,
 };
 export const asyncModules = ['logging'];

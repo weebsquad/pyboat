@@ -50,6 +50,10 @@ const defaultConfig = { // for non-defined configs!
   },
   modules: {
     queue: false,
+    reddit: {
+      enabled: false,
+      subs: []
+    },
     logging: { // event logging module
       enabled: false,
       // should we try to pull audit log data for every event, or just display raw data??
