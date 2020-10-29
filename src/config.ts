@@ -52,7 +52,7 @@ const defaultConfig = { // for non-defined configs!
     queue: false,
     reddit: {
       enabled: false,
-      subs: []
+      subs: [],
     },
     logging: { // event logging module
       enabled: false,
