@@ -4,12 +4,12 @@
   "description": "yes",
   "scripts": {
     "typings": "typings install",
-    "build": "npm run-script typings && rollup -c cd/rollup.config.js",
+    "build": "npm run-script typings && rollup -c rollup.config.js",
     "publish": "node cd/publish.js",
     "lint": "eslint cd/publish.js --config .eslintrc.js && eslint src/ --ext .ts --max-warnings 99999 --config .eslintrc.ts",
     "lintfix": "eslint cd/publish.js --config .eslintrc.js --quiet --fix && eslint src/ --ext .ts --fix --config .eslintrc.ts --quiet",
-    "test": "rollup -c cd/rollup.config.js && npm run-script publish",
-    "testlint": "npm run-script lintfix && rollup -c cd/rollup.config.js && npm run-script publish"
+    "test": "rollup -c rollup.config.js && npm run-script publish",
+    "testlint": "npm run-script lintfix && rollup -c rollup.config.js && npm run-script publish"
   },
   "author": "weebsquad",
   "license": "MIT",
@@ -27,7 +27,8 @@
     "rollup-plugin-ignore": "^1.0.6",
     "rollup-plugin-terser": "^7.0.0",
     "rollup-plugin-typescript2": "^0.28.0",
-    "typescript": "^4.0.2",
+    "typescript": "^4.0.5",
+    "typescript-tools": "^0.3.1",
     "ws": "^7.2.3"
   },
   "dependencies": {

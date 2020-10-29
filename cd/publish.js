@@ -1,7 +1,5 @@
 /* eslint-disable no-plusplus */
 
-'use strict';
-
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
 
@@ -252,7 +250,7 @@ getDeploymentIds().then((objDeps) => {
       return;
     }
     doneGuilds.push(deployment_id);
-    const bundle = fs.readFileSync('./dist/bundle.ts', 'utf8');
+    const bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
     const data = {
       method: 'POST',
       headers: {

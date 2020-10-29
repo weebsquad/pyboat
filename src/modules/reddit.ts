@@ -77,7 +77,6 @@ export async function updateSubs(): Promise<void> {
         continue;
       }
       timesNew[sub.name] = utc;
-      console.log('posting', sub.name);
       const res = await sendPost(sub.channel, sub, post);
       if (res) {
         postedCount++;
@@ -123,7 +122,6 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
       }
     } else if (data.preview) {
       if (data.preview.images) {
-        console.log('data.preview.images', data.preview.images);
         image = unescape(data.preview.images[0].source.url);
       }
     } else if (data.thumbnail) {

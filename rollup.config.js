@@ -1,5 +1,3 @@
-'use strict';
-
 import typescript from 'rollup-plugin-typescript2';
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -7,33 +5,28 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 const { terser } = require('rollup-plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const ignore = require('rollup-plugin-ignore');
-const path = require('path');
 require('dotenv').config();
 
-let opts = {
+const opts = {
   __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
-  __GH_TOKEN__: process.env.GH_TOKEN
+  __GH_TOKEN__: process.env.GH_TOKEN,
 };
 
 module.exports = () => ({
   input: './src/index.ts',
   output: [
     {
-      file: './dist/bundle.ts',
+      file: './dist/bundle.js',
       format: 'umd',
-      name: "test"
     },
   ],
   plugins: [
     ignore(['pylon-runtime.d.ts', 'pylon-runtime-discord.d.ts']),
-    
+
     replace(opts),
-    
-    nodeResolve({
-      extensions: ['.ts'],
-      rootDir: path.join(process.cwd(), '..')
-    }),
-    typescript(),
+
+    nodeResolve(),
+    typescript({ lib: ['es2020'], target: 'es2020' }),
     terser(),
   ],
   onwarn(warning, warn) {

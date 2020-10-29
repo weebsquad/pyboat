@@ -1,16 +1,14 @@
-'use strict';
-
 module.exports = {
   extends: 'airbnb-base',
   parser: 'babel-eslint',
   parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: 'script',
+    ecmaVersion: 2020,
+    sourceType: 'module',
   },
   env: {
     node: true,
   },
-  ignorePatterns: ["*.d.ts", "bigInt.ts", "translation.ts"],
+  ignorePatterns: ['*.d.ts', 'bigInt.ts', 'translation.ts'],
   overrides: [
     {
       files: ['*.ts'],
