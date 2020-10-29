@@ -1,6 +1,6 @@
 import * as utils from '../lib/utils';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
-import { config, guildId, globalConfig, InitializeConfig } from '../config';
+import { config } from '../config';
 
 enum FormatMode {
     'PLAIN' = 'PLAIN',
