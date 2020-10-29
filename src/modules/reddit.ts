@@ -137,7 +137,6 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
       if (data.selftext.length > 1900) {
         content = `${content.substr(0, 1900)} ...`;
       }
-      content += `\n\n[Link](https://reddit.com${data.permalink})`;
       embed.setDescription(content);
       if (image) {
         embed.setThumbnail({ url: image });
