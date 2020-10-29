@@ -2957,6 +2957,72 @@
                         "collapsed": true
                     }
                 },
+                "reddit": {
+                    "title": "Reddit",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        },
+                        "subs": {
+                            "type": "array",
+                            "format": "tabs-top",
+                            "items": {
+                                "type": "object",
+                                "title": "Subreddit",
+                                "properties": {
+                                    "name": {
+                                        "title": "Subreddit Name",
+                                        "description": "The name of the subreddit that you want to pull data from",
+                                        "type": "string"
+                                    },
+                                    "channel": {
+                                        "title": "Channel ID",
+                                        "description": "The channel to post messages from this sub to",
+                                        "type": "string",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "mode": {
+                                        "title": "Mode",
+                                        "description": "Mode to post messages as",
+                                        "enum": ["PRETTY", "PLAIN"],
+                                        "type": "string",
+                                        "default": "PRETTY"
+                                    },
+                                    "stats": {
+                                        "title": "Statistics",
+                                        "description": "Post statistics in PRETTY mode",
+                                        "type": "boolean",
+                                        "default": true,
+                                        "format": "checkbox"
+                                    },
+                                    "role": {
+                                        "title": "Role ID",
+                                        "description": "A role to mention whenever a new message is posted, don't set if you don't want this functionality",
+                                        "type": "string",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        }
+                    },
+                    "options": {
+                        "collapsed": true
+                    }
+                },
                 "starboard": {
                     "title": "Starboard",
                     "type": "object",

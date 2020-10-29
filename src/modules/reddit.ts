@@ -37,7 +37,7 @@ export async function updateSubs(): Promise<void> {
     if (!val.channel || !val.mode || !val.stats || !val.name) {
       return;
     }
-    return new Subreddit(val.name, val.channel, val.mode, val.stats, val.role);
+    return new Subreddit(val.name.toLowerCase(), val.channel, val.mode.toUpperCase(), val.stats, val.role);
   });
   subs = await Promise.all(subs.map(async (sub) => {
     const channel = await discord.getChannel(sub.channelId);
