@@ -60,7 +60,7 @@ export async function updateSubs(): Promise<void> {
             timesNew[sub.name] = utc;
             console.log('posting', sub.name);
             const res = await sendPost(sub.channel, sub, post);
-            postedCount++;
+            if(res) postedCount++;
         }
 
     }))
@@ -88,7 +88,48 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
             embed.setColor(0xaecfc8);
         }
         embed.setUrl('https://reddit.com' + data.permalink);
-        embed.setAuthor({})
+        embed.setAuthor({name: `Posted by /u/${data.author}`, url: `https://reddit.com/u/${data.author}`});
+        let image;
+        if(data.media) {
+            if(data.media.oembed) {
+                image = data.media.oembed.thumbnail_url;
+            }
+        } else if(data.preview) {
+            if(data.preview.images) {
+                console.log('data.preview.images', data.preview.images);
+            }
+
+        }else if(data.thumbnail) { 
+            if(data.thumbnail.startsWith('http')) {
+                image = data.thumbnail;
+            }
+        }
+
+        if(typeof data.selftext !== 'undefined' && data.selftext) {
+            let content = data.selftext;
+            if(data.selftext.length > 1900) {
+                content = `${content.substr(0, 1900)} ...`
+            }
+            content += `\n\n[Link](https://reddit.com${data.permalink})`;
+            embed.setDescription(content);
+            if(image) {
+                embed.setThumbnail({url: image});
+            }
+        } else if(image) {
+            embed.setImage({url: image});
+        }
+        let footr = `/r/${config.name}`;
+        if(config.stats) {
+            footr += ` | ${data.ups} upvotes | ${data.downs} downvotes | ${data.num_comments} comments`;
+        }
+        embed.setFooter({text: footr});
+        /*
+            elif data.get('preview'):
+                if 'images' in data['preview']:
+                    h = HTMLParser()
+                    image = h.unescape(data['preview']['images'][0]['source']['url'])
+                */
+        embed.setTimestamp(new Date((+data.created_utc)*1000).toISOString());
         await channel.sendMessage({content: `${config.role ? `<@&${config.role}>`: ''}`, embed, allowedMentions: {roles: config.role ? [config.role] : undefined}})
     }
     return true;
