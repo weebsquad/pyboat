@@ -113,6 +113,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
     } else {
       embed.setColor(0xaecfc8);
     }
+    embed.setTitle(title);
     embed.setUrl(`https://reddit.com${data.permalink}`);
     embed.setAuthor({ name: `Posted by /u/${data.author}`, url: `https://reddit.com/u/${data.author}` });
     let image;
