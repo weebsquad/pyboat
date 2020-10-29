@@ -34,7 +34,7 @@ export async function updateSubs(): Promise<void> {
     return;
   }
   let subs: Array<Subreddit> = modConfig.subs.map((val: any) => {
-    if (!val.channel || !val.mode || !val.stats || !val.name) {
+    if (typeof val.channel !== 'string' || typeof val.mode !== 'string' || typeof val.stats !== 'boolean' || typeof val.name !== 'string') {
       return;
     }
     return new Subreddit(val.name.toLowerCase(), val.channel, val.mode.toUpperCase(), val.stats, val.role);
@@ -122,7 +122,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
       }
     } else if (data.preview) {
       if (data.preview.images) {
-        image = unescape(data.preview.images[0].source.url);
+        image = unescape(data.preview.images[0].source.url).split('&amp;').join('&');
       }
     } else if (data.thumbnail) {
       if (data.thumbnail.startsWith('http')) {
