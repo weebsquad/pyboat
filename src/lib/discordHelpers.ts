@@ -191,6 +191,41 @@ export function decomposeSnowflake(snowflake: string) {
   return res;
 }
 
+export function getPermDiffs(chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
+  const ret: {[key: string]: Array<discord.Channel.IPermissionOverwrite>} = {
+    added: [],
+    removed: [],
+    changed: [],
+  };
+  const newOv = chan.permissionOverwrites;
+  const oldOv = oldChan.permissionOverwrites;
+  newOv.map((e) => {
+    const _f = oldOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      if (!ret.added.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.added.push(e);
+      }
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.changed.push(e);
+      }
+    }
+  });
+  oldOv.map((e) => {
+    const _f = newOv.find((obj) => obj.id === e.id);
+    if (!_f) {
+      if (!ret.removed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.removed.push(e);
+      }
+    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
+      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
+        ret.changed.push(e);
+      }
+    }
+  });
+  return ret;
+}
+
 export async function getUserRoles(member: discord.GuildMember) {
   const roleIds = member.roles;
   const roles: discord.Role[] = [];

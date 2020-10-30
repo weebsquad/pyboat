@@ -38,41 +38,6 @@ async function getChannelMention(chan: discord.GuildChannel, parent: undefined |
   return `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`;
 }
 
-function getPermDiffs(chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
-  const ret: {[key: string]: Array<discord.Channel.IPermissionOverwrite>} = {
-    added: [],
-    removed: [],
-    changed: [],
-  };
-  const newOv = chan.permissionOverwrites;
-  const oldOv = oldChan.permissionOverwrites;
-  newOv.map((e) => {
-    const _f = oldOv.find((obj) => obj.id === e.id);
-    if (!_f) {
-      if (!ret.added.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.added.push(e);
-      }
-    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
-      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.changed.push(e);
-      }
-    }
-  });
-  oldOv.map((e) => {
-    const _f = newOv.find((obj) => obj.id === e.id);
-    if (!_f) {
-      if (!ret.removed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.removed.push(e);
-      }
-    } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
-      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.changed.push(e);
-      }
-    }
-  });
-  return ret;
-}
-
 export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel, oldChan: discord.Channel.AnyChannel) {
   if (chan.type === discord.Channel.Type.DM || oldChan.type === discord.Channel.Type.DM) {
     return [];
@@ -123,7 +88,7 @@ export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.
     }
   }
 
-  const pDiffs = getPermDiffs(chan, oldChan);
+  const pDiffs = utils.getPermDiffs(chan, oldChan);
   if (pDiffs.added.length > 0 || pDiffs.changed.length > 0 || pDiffs.removed.length > 0) {
     const isSync = await isParentPermSync(chan);
     if (isSync) {
@@ -247,7 +212,7 @@ export const messages = {
     ]);
   },
   async permissionsChanged(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
-    const changes = getPermDiffs(chan, oldChan);
+    const changes = utils.getPermDiffs(chan, oldChan);
     const mention = await getChannelMention(chan);
     const guild = await chan.getGuild();
     let txt = '';
@@ -317,6 +282,25 @@ export const messages = {
           diffs[key] = serNew[key];
         }
       }
+
+      if (oldV && !newV) {
+        for (const key in permsAllowOld) {
+          if (permsAllowOld[key] === true) {
+            diffs[key] = 1;
+          } else if (permsDenyOld[key] === true) {
+            diffs[key] = -1;
+          }
+        }
+      }
+      if (!oldV && newV) {
+        for (const key in permsAllowNew) {
+          if (permsAllowNew[key] === true) {
+            diffs[key] = 1;
+          } else if (permsDenyNew[key] === true) {
+            diffs[key] = -1;
+          }
+        }
+      }
       if (Object.keys(diffs).length > 0) {
         txt += '\n```diff\n';
         for (let key in diffs) {
@@ -355,5 +339,6 @@ export async function AL_OnChannelUpdate(
   chan: discord.Channel.AnyChannel,
   oldChan: discord.Channel.AnyChannel,
 ) {
+  console.log('OnChannelUpdate', log);
   await handleEvent(id, guildId, discord.Event.CHANNEL_UPDATE, log, chan, oldChan);
 }

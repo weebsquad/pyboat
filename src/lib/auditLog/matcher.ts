@@ -17,7 +17,7 @@ const waits: {[key: string]: number} = {
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_REMOVE
   23: 400,
 };
-const minwait = 150;
+const minwait = 170;
 const logsPerSecond = 15; // used to determine how many entries to show
 const groupingActions = [
   discord.AuditLogEntry.ActionType.MESSAGE_DELETE,
@@ -227,7 +227,7 @@ export async function validateAuditEvent(
         }
       }
 
-      if (typeof cck !== typeof al) {
+      if (typeof cck !== typeof al && key !== 'permissionOverwrites') {
         // check disabled
         if (
           disableAliases.indexOf(cck) > -1
@@ -245,7 +245,7 @@ export async function validateAuditEvent(
               cc[key],
             ) > -1
           ) {
-            // c onsole.log('validate', 'type-check', 'bypass by artificial match');
+            // console.log('validate', 'type-check', 'bypass by artificial match');
             continue;
           }
         }
@@ -388,6 +388,7 @@ export async function getAuditLogData(
     if (dateSn < limit) {
       break;
     }
+
     if (actionsForThis.indexOf(item.actionType) === -1) {
       continue;
     }

@@ -1,3 +1,4 @@
+import { formatDiagnosticsWithColorAndContext } from 'typescript';
 import * as utils from '../utils';
 
 /*
@@ -63,7 +64,59 @@ export const auditLogDefinitions: {[key: string]: any} = {
   CHANNEL_UPDATE: {
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => [dt[0], dt[1]],
-    auditLogEntries: discord.AuditLogEntry.ActionType.CHANNEL_UPDATE,
+    // CHANNEL_OVERWRITE_CREATE
+    13(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwriteCreate) {
+      const perms = utils.getPermDiffs(dt[0], dt[1]);
+      if (perms.added.length === 1) {
+        const thisp = perms.added[0];
+        if (thisp.id === log.options.id && thisp.type === log.options.type) {
+          if (log.changes.allow.newValue === thisp.allow && log.changes.deny.newValue === thisp.deny) {
+            return true;
+          }
+        }
+      }
+      return false;
+    },
+    // CHANNEL_OVERWRITE_UPDATE
+    14(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwritesUpdate) {
+      const perms = utils.getPermDiffs(dt[0], dt[1]);
+      if (perms.changed.length === 1) {
+        const thisp = perms.changed[0];
+        console.log('changed', thisp, log);
+        if (thisp.id === log.options.id && thisp.type === log.options.type) {
+          const oldpe = dt[0].permissionOverwrites.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === thisp.id);
+          if (!oldpe) {
+            return false;
+          }
+          if (log.changes.allow) {
+            if ((log.changes.allow.newValue && log.changes.allow.newValue !== thisp.allow) || (log.changes.allow.oldValue && log.changes.allow.oldValue !== oldpe.allow)) {
+              return false;
+            }
+          }
+          if (log.changes.deny) {
+            if ((log.changes.deny.newValue && log.changes.deny.newValue !== thisp.deny) || (log.changes.deny.oldValue && log.changes.deny.oldValue !== oldpe.deny)) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+      return false;
+    },
+    // CHANNEL_OVERWRITE_DELETE
+    15(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwriteDelete) {
+      const perms = utils.getPermDiffs(dt[0], dt[1]);
+      if (perms.removed.length === 1) {
+        const thisp = perms.removed[0];
+        if (thisp.id === log.options.id && thisp.type === log.options.type) {
+          if (log.changes.allow.oldValue === thisp.allow && log.changes.deny.oldValue === thisp.deny) {
+            return true;
+          }
+        }
+      }
+      return false;
+    },
+    auditLogEntries: [discord.AuditLogEntry.ActionType.CHANNEL_OVERWRITE_CREATE, discord.AuditLogEntry.ActionType.CHANNEL_OVERWRITE_DELETE, discord.AuditLogEntry.ActionType.CHANNEL_OVERWRITE_UPDATE, discord.AuditLogEntry.ActionType.CHANNEL_UPDATE],
     store: {
       ignoreFound: true,
     },
