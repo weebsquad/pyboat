@@ -70,7 +70,6 @@ export async function resolveQueue() {
         procQueue.length - 1,
         Math.floor((3000 - usedCpu) / cpuTimePerEvent) - 1,
       );
-      // console.log('canFit3k = ', canFit);
       if (canFit > 0) {
         const _alt = procQueue.slice(0, canFit);
         try {

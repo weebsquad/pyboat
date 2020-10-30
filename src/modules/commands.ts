@@ -10,7 +10,6 @@ interface ApiError extends discord.ApiError {
 }
 
 async function HandleDM(msg: discord.Message) {
-  // console.log(`#DM:${msg.author.getTag()}>${msg.content}`);
 }
 const cooldowns: any = {};
 export async function OnMessageCreate(

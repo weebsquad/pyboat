@@ -549,9 +549,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         }
       }
       split = split.filter((val) => typeof val === 'string' && val.length > 0);
-      // console.log(split);
       data = split.join('');
-      // data = data.split('\n').join('').split('\t').join('').split('\r').join('');
 
       // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
@@ -567,7 +565,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
 
       await configKv.clear();
       for (let i = 0; i < parts.length; i += 1) {
-        // console.log(parts[i].length)
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
@@ -577,7 +574,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
-    // console.log('received config check');
     try {
       await message.delete();
     } catch (e) {

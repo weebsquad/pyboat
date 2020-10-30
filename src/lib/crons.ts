@@ -24,7 +24,6 @@ const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
-      const dt = Date.now();
       try {
         await pylon.requestCpuBurst(async () => {
           await ratelimit.clean();
@@ -49,7 +48,6 @@ const _cr: {[key: string]: any} = {
           await logError(e);
         }
       }
-      // console.log(`Took ${Date.now() - dt}ms to run cron`);
     },
     started: false,
   },

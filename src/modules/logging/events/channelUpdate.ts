@@ -339,6 +339,5 @@ export async function AL_OnChannelUpdate(
   chan: discord.Channel.AnyChannel,
   oldChan: discord.Channel.AnyChannel,
 ) {
-  console.log('OnChannelUpdate', log);
   await handleEvent(id, guildId, discord.Event.CHANNEL_UPDATE, log, chan, oldChan);
 }

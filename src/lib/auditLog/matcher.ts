@@ -245,7 +245,6 @@ export async function validateAuditEvent(
               cc[key],
             ) > -1
           ) {
-            // console.log('validate', 'type-check', 'bypass by artificial match');
             continue;
           }
         }

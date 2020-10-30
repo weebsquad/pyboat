@@ -41,9 +41,7 @@ export async function OnAnyEvent(
   gid: string,
   ...args: any
 ) {
-  // console.log('hi');
   // const resp = await getEntries();
-  // console.log('resp', resp);
 }
 
 export async function OnGuildMemberUpdate(

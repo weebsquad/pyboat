@@ -708,7 +708,6 @@ export function combineMessages(
             if (typeof start === 'number' && i > start) {
               // we were parsing a codeblock!
               const slice = thisSplit.slice(start, i + 1);
-              // console.log('slice = ', slice);
               newArr.push(slice.join('\n'));
               start = undefined;
               continue;
@@ -846,7 +845,6 @@ let tsa = utils.decomposeSnowflake(a.id).timestamp;
     messages.set(chId, sorted);
   } */
     // if (utils.isDebug()) {
-    //   console.log('logging trigger multi', messages);
     // }
     // add to queue!
     for (const [chId, opts] of messages) {
@@ -941,12 +939,9 @@ export async function handleEvent(
       await sendInLogChannel(messages, true, conf.globalConfig.masterWebhook);
       return;
     }
-    // console.log('logging trigger', eventName, obj);
 
     const chans = await parseChannelsData(obj);
-    // console.log('handleevent.parseChannelData', chans);
     const messages = await getMessages(chans, obj);
-    // console.log('handleevent.getMessages', messages);
     // add to queue
     for (const [chId, opts] of messages) {
       queue.addToQueue(chId, opts);
