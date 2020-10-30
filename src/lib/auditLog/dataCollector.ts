@@ -82,7 +82,6 @@ export const auditLogDefinitions: {[key: string]: any} = {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
       if (perms.changed.length === 1) {
         const thisp = perms.changed[0];
-        console.log('changed', thisp, log);
         if (thisp.id === log.options.id && thisp.type === log.options.type) {
           const oldpe = dt[0].permissionOverwrites.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === thisp.id);
           if (!oldpe) {
