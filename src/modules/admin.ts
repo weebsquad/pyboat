@@ -2215,9 +2215,13 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
-        (ctx) => ({ usr: ctx.user() }),
-        async (msg, { usr }) => {
+        (ctx) => ({ usrtxt: ctx.string({ name: 'user' }) }),
+        async (msg, { usrtxt }) => {
           const res: any = await msg.reply(async () => {
+            const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
+            if (!usr) {
+              return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
+            }
             const thisObj = await persistPool.getById<MemberPersist>(usr.id);
             if (!thisObj) {
               return { content: `${discord.decor.Emojis.X} no backup found for this member` };
@@ -2235,8 +2239,12 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
-        (ctx) => ({ usr: ctx.user() }),
-        async (msg, { usr }) => {
+        (ctx) => ({ usrtxt: ctx.string({ name: 'user' }) }),
+        async (msg, { usrtxt }) => {
+          const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
+          if (!usr) {
+            return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
+          }
           const res: any = await msg.reply(async () => {
             const thiskv = await persistPool.getById<MemberPersist>(usr.id);
             if (!thiskv) {

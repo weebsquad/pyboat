@@ -844,8 +844,14 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
-    async (msg, { user, reason }) => {
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), reason: ctx.textOptional() }),
+    async (msg, { usrtxt, reason }) => {
+      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
+      if (!user) {
+        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        return;
+      }
+
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(user.id);
       if (!member) {
         member = user;
@@ -914,8 +920,13 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
-    async (msg, { user, deleteDays, reason }) => {
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    async (msg, { usrtxt, deleteDays, reason }) => {
+      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
+      if (!user) {
+        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        return;
+      }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
@@ -938,8 +949,13 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
-    async (msg, { user, deleteDays, reason }) => {
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    async (msg, { usrtxt, deleteDays, reason }) => {
+      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
+      if (!user) {
+        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        return;
+      }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
@@ -962,8 +978,13 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), time: ctx.string(), reason: ctx.textOptional() }),
-    async (msg, { user, time, reason }) => {
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
+    async (msg, { usrtxt, time, reason }) => {
+      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
+      if (!user) {
+        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        return;
+      }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
@@ -988,8 +1009,13 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
-    (ctx) => ({ user: ctx.user(), reason: ctx.textOptional() }),
-    async (msg, { user, reason }) => {
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), reason: ctx.textOptional() }),
+    async (msg, { usrtxt, reason }) => {
+      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
+      if (!user) {
+        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        return;
+      }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
       if (member === null) {
         member = user;
