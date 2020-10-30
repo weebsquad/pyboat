@@ -1109,7 +1109,6 @@ export function InitializeCommands() {
         }
         const emb = new discord.Embed();
         emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
-        console.log('user');
         if (typeof user.avatar === 'string') {
           emb.setThumbnail({ url: user.getAvatarUrl() });
         }

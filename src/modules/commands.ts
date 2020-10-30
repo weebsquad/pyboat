@@ -10,6 +10,7 @@ interface ApiError extends discord.ApiError {
 }
 
 async function HandleDM(msg: discord.Message) {
+  //
 }
 const cooldowns: any = {};
 export async function OnMessageCreate(
