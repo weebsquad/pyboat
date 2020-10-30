@@ -1277,7 +1277,7 @@ export function InitializeCommands() {
           const infsGiven = await infsPool.getByQuery({ actorId: user.id });
           const infsReceived = await infsPool.getByQuery({ memberId: user.id });
           if (infsGiven.length > 0 || infsReceived.length > 0) {
-            desc += '\n\n**❯ Infractions**';
+            desc += '\n\n**❯ Infractions** (This Server)';
           }
           if (infsGiven.length > 0) {
             desc += `\n ${discord.decor.Emojis.HAMMER} **Applied**: **${infsGiven.length}**`;
