@@ -2215,10 +2215,10 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
-        (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
-        async (msg, { usrtxt }) => {
+        (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+        async (msg, { user }) => {
           const res: any = await msg.reply(async () => {
-            const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
+            const usr = await utils.getUser(user.replace(/\D/g, ''));
             if (!usr) {
               return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
             }
@@ -2239,9 +2239,9 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
-        (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
-        async (msg, { usrtxt }) => {
-          const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
+        (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+        async (msg, { user }) => {
+          const usr = await utils.getUser(user.replace(/\D/g, ''));
           if (!usr) {
             return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
           }

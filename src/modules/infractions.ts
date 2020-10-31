@@ -844,17 +844,17 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
-    async (msg, { usrtxt, reason }) => {
-      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
-      if (!user) {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
+    async (msg, { user, reason }) => {
+      const usr = await utils.getUser(user.replace(/\D/g, ''));
+      if (!usr) {
         await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
 
-      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(usr.id);
       if (!member) {
-        member = user;
+        member = usr;
       }
       if (typeof reason !== 'string') {
         reason = '';
@@ -869,7 +869,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(usr.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
   cmdGroup.on(
@@ -920,16 +920,16 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
-    async (msg, { usrtxt, deleteDays, reason }) => {
-      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
-      if (!user) {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    async (msg, { user, deleteDays, reason }) => {
+      const usr = await utils.getUser(user.replace(/\D/g, ''));
+      if (!usr) {
         await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
-      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
-        member = user;
+        member = usr;
       }
       if (typeof reason !== 'string') {
         reason = '';
@@ -944,21 +944,21 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(usr.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
   cmdGroup.on(
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
-    async (msg, { usrtxt, deleteDays, reason }) => {
-      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
-      if (!user) {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    async (msg, { user, deleteDays, reason }) => {
+      const usr = await utils.getUser(user.replace(/\D/g, ''));
+      if (!usr) {
         await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
-      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
-        member = user;
+        member = usr;
       }
       if (typeof reason !== 'string') {
         reason = '';
@@ -973,21 +973,21 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(usr.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
   cmdGroup.on(
     { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
-    async (msg, { usrtxt, time, reason }) => {
-      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
-      if (!user) {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
+    async (msg, { user, time, reason }) => {
+      const usr = await utils.getUser(user.replace(/\D/g, ''));
+      if (!usr) {
         await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
-      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
-        member = user;
+        member = usr;
       }
       if (typeof reason !== 'string') {
         reason = '';
@@ -1004,21 +1004,21 @@ export function InitializeCommands() {
       }
       const dur = utils.timeArgumentToMs(time);
       const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-      await confirmResult(undefined, msg, true, `Temp-banned \`${utils.escapeString(user.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, `Temp-banned \`${utils.escapeString(usr.getTag())}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
   cmdGroup.on(
     { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
-    async (msg, { usrtxt, reason }) => {
-      const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
-      if (!user) {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
+    async (msg, { user, reason }) => {
+      const usr = await utils.getUser(user.replace(/\D/g, ''));
+      if (!usr) {
         await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
-      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(user.id);
+      let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
-        member = user;
+        member = usr;
       }
       if (typeof reason !== 'string') {
         reason = '';
@@ -1032,7 +1032,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(user.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(usr.getTag())}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`);
     },
   );
   cmdGroup.subcommand({ name: 'inf', filters: c2.getFilters('infractions.inf', Ranks.Moderator) }, (subCommandGroup) => {

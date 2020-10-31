@@ -1082,25 +1082,25 @@ export function InitializeCommands() {
 
   cmdGroup.on(
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
-    async (msg, { usrtxt }) => {
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+    async (msg, { user }) => {
       const res: any = await msg.reply(async () => {
-        let user: discord.User | BetterUser;
-        if (usrtxt === null) {
-          user = msg.author;
+        let usr: discord.User | BetterUser;
+        if (user === null) {
+          usr = msg.author;
           if (utils.isGlobalAdmin(msg.author.id)) {
-            const tempusr = await utils.getUser(user.id, true);
+            const tempusr = await utils.getUser(usr.id, true);
             if (tempusr) {
-              user = tempusr;
+              usr = tempusr;
             }
           }
         } else {
-          usrtxt = usrtxt.replace(/\D/g, ''); // strip all non-number chars
+          user = user.replace(/\D/g, ''); // strip all non-number chars
           let tempusr;
           if (utils.isGlobalAdmin(msg.author.id)) {
-            tempusr = await utils.getUser(usrtxt, true);
+            tempusr = await utils.getUser(user, true);
           } else {
-            tempusr = await discord.getUser(usrtxt);
+            tempusr = await discord.getUser(user);
           }
           if (!tempusr) {
             return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
@@ -1108,14 +1108,14 @@ export function InitializeCommands() {
           user = tempusr;
         }
         const emb = new discord.Embed();
-        emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
-        if (typeof user.avatar === 'string') {
-          emb.setThumbnail({ url: user.getAvatarUrl() });
+        emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
+        if (typeof usr.avatar === 'string') {
+          emb.setThumbnail({ url: usr.getAvatarUrl() });
         }
-        let desc = `**❯ ${user.bot === false ? 'User' : 'Bot'} Information**
-        <:rich_presence:735781410509684786> 󠇰**ID**: \`${user.id}\`
-        ${discord.decor.Emojis.LINK} **Profile**: ${user.toMention()}`;
-        const dtCreation = new Date(utils.decomposeSnowflake(user.id).timestamp);
+        let desc = `**❯ ${usr.bot === false ? 'User' : 'Bot'} Information**
+        <:rich_presence:735781410509684786> 󠇰**ID**: \`${usr.id}\`
+        ${discord.decor.Emojis.LINK} **Profile**: ${usr.toMention()}`;
+        const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
         const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
         const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
           year: 'numeric',
@@ -1124,7 +1124,7 @@ export function InitializeCommands() {
         })}`;
         desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
         const guild = await msg.getGuild();
-        const member = await guild.getMember(user.id);
+        const member = await guild.getMember(usr.id);
         if (member !== null) {
         // presences
           const presence = await member.getPresence();
@@ -1185,9 +1185,9 @@ export function InitializeCommands() {
           emb.setColor(parseInt(clr, 16));
         }
         try {
-          if (typeof user === 'object' && user instanceof utils.BetterUser && typeof user.public_flags === 'number') {
+          if (typeof user === 'object' && usr instanceof utils.BetterUser && typeof usr.public_flags === 'number') {
             let badges = [];
-            const flags = new utils.UserFlags(user.public_flags).serialize();
+            const flags = new utils.UserFlags(usr.public_flags).serialize();
             for (const key in flags) {
               if (flags[key] === true) {
                 badges.push(key);
@@ -1235,15 +1235,15 @@ export function InitializeCommands() {
         }
 
         // actual server stuff
-        const isAdmin = utils.isGlobalAdmin(user.id);
+        const isAdmin = utils.isGlobalAdmin(usr.id);
         if (typeof globalConfig.badges === 'object') {
-          if (isAdmin || (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id]))) {
+          if (isAdmin || (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[usr.id]))) {
             desc += '\n\n**❯ PyBoat Badges**';
             if (isAdmin && typeof globalConfig.badges.globaladmin === 'string') {
               desc += `\n${globalConfig.badges.globaladmin}`;
             }
-            if ((typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[user.id]))) {
-              desc += `\n${globalConfig.userBadges[user.id].map((bd: string) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
+            if ((typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[usr.id]))) {
+              desc += `\n${globalConfig.userBadges[usr.id].map((bd: string) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
             }
           }
         }
@@ -1274,8 +1274,8 @@ export function InitializeCommands() {
           if (member.roles.length > 0) {
             desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
           }
-          const infsGiven = await infsPool.getByQuery({ actorId: user.id });
-          const infsReceived = await infsPool.getByQuery({ memberId: user.id });
+          const infsGiven = await infsPool.getByQuery({ actorId: usr.id });
+          const infsReceived = await infsPool.getByQuery({ memberId: usr.id });
           if (infsGiven.length > 0 || infsReceived.length > 0) {
             desc += '\n\n**❯ Infractions** (This Server)';
           }
@@ -1296,7 +1296,7 @@ export function InitializeCommands() {
           if (hasPerms.ADMINISTRATOR === true) {
             hasPerms = { ADMINISTRATOR: true };
           }
-          if (guild.ownerId === user.id) {
+          if (guild.ownerId === usr.id) {
             hasPerms = { SERVER_OWNER: true };
           }
           hasPerms = Object.keys(hasPerms).map((str) => str.split('_').map((upp) => `${upp.substr(0, 1).toUpperCase()}${upp.substr(1).toLowerCase()}`).join(' '));
@@ -1307,7 +1307,7 @@ export function InitializeCommands() {
           if (Number(perms.bitfield) > 0 && hasPerms.length > 0) {
             desc += `\n <:settings:735782884836638732> **Staff**: \`${hasPerms.join(', ')}\``;
           }
-          if (auth > 0 && !user.bot) {
+          if (auth > 0 && !usr.bot) {
             desc += `\n ${discord.decor.Emojis.CYCLONE} **Bot Level**: **${auth}**`;
           }
         }
