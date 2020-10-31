@@ -844,7 +844,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), reason: ctx.textOptional() }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
     async (msg, { usrtxt, reason }) => {
       const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
       if (!user) {
@@ -920,7 +920,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { usrtxt, deleteDays, reason }) => {
       const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
       if (!user) {
@@ -949,7 +949,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { usrtxt, deleteDays, reason }) => {
       const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
       if (!user) {
@@ -978,7 +978,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { usrtxt, time, reason }) => {
       const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
       if (!user) {
@@ -1009,7 +1009,7 @@ export function InitializeCommands() {
   );
   cmdGroup.on(
     { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }), reason: ctx.textOptional() }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
     async (msg, { usrtxt, reason }) => {
       const user = await utils.getUser(usrtxt.replace(/\D/g, ''));
       if (!user) {

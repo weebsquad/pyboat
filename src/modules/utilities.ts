@@ -1082,7 +1082,7 @@ export function InitializeCommands() {
 
   cmdGroup.on(
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
-    (ctx) => ({ usrtxt: ctx.string({ name: 'user' }) }),
+    (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
     async (msg, { usrtxt }) => {
       const res: any = await msg.reply(async () => {
         let user: discord.User | BetterUser;

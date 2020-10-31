@@ -2215,7 +2215,7 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
-        (ctx) => ({ usrtxt: ctx.string({ name: 'user' }) }),
+        (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
         async (msg, { usrtxt }) => {
           const res: any = await msg.reply(async () => {
             const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
@@ -2239,7 +2239,7 @@ export function InitializeCommands() {
       );
       subCommandGroup.on(
         { name: 'delete', filters: c2.getFilters('utilities.backup.delete', Ranks.Moderator) },
-        (ctx) => ({ usrtxt: ctx.string({ name: 'user' }) }),
+        (ctx) => ({ usrtxt: ctx.string({ name: 'user', description: 'user' }) }),
         async (msg, { usrtxt }) => {
           const usr = await utils.getUser(usrtxt.replace(/\D/g, ''));
           if (!usr) {
