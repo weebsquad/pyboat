@@ -581,7 +581,7 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason)}\`` : ''}`;
+    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -649,7 +649,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
   }
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason)}\`` : ''}`;
+    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason, true)}\`` : ''}`;
     const res:any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -1544,17 +1544,9 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   await handleReactRoles(id, reaction, false);
 }
 
-export function InitializeCommands() {
-  const _groupOptions = {
-    description: 'Admin Commands',
-    filters: c2.getFilters('admin', Ranks.Guest),
-  };
 
-  const optsGroup = c2.getOpts(
-    _groupOptions,
-  );
-  const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand({ name: 'clean', filters: c2.getFilters('admin.clean', Ranks.Moderator) }, (subCommandGroup) => {
+
+export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
     subCommandGroup.on(
       { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
@@ -1659,7 +1651,22 @@ export function InitializeCommands() {
         }
       },
     );
-  });
+
+}
+
+
+export function InitializeCommands() {
+  const _groupOptions = {
+    description: 'Admin Commands',
+    filters: c2.getFilters('admin', Ranks.Guest),
+  };
+
+  const optsGroup = c2.getOpts(
+    _groupOptions,
+  );
+  const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  cmdGroup.subcommand({ name: 'clean', filters: c2.getFilters('admin.clean', Ranks.Moderator) }, cleanCommands);
+  cmdGroup.subcommand({ name: 'clear', filters: c2.getFilters('admin.clean', Ranks.Moderator) }, cleanCommands);
   cmdGroup.subcommand({ name: 'invites', filters: c2.getFilters('admin.invites', Ranks.Administrator) }, (subCommandGroup) => {
     subCommandGroup.on(
       { name: 'prune', filters: c2.getFilters('admin.invites.prune', Ranks.Administrator) },
@@ -1917,7 +1924,7 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname)}\``);
+        await infractions.confirmResult(undefined, msg, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname, true)}\``);
       } else {
         await infractions.confirmResult(undefined, msg, false, 'Failed to set nickname');
       }
@@ -2154,7 +2161,7 @@ export function InitializeCommands() {
           last10.map((inf) => {
             let targMention;
             // todo properly format this
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason)}\`` : ''}`;
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
