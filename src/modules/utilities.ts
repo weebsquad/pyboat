@@ -1112,7 +1112,7 @@ export function InitializeCommands() {
         if (typeof usr.avatar === 'string') {
           emb.setThumbnail({ url: usr.getAvatarUrl() });
         }
-        let desc = `**❯ ${usr.bot === false ? 'User' : 'Bot'} Information**
+        let desc = `**❯ ${!usr.bot ? 'User' : 'Bot'} Information**
         <:rich_presence:735781410509684786> 󠇰**ID**: \`${usr.id}\`
         ${discord.decor.Emojis.LINK} **Profile**: ${usr.toMention()}`;
         const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
@@ -1185,7 +1185,7 @@ export function InitializeCommands() {
           emb.setColor(parseInt(clr, 16));
         }
         try {
-          if (typeof user === 'object' && usr instanceof utils.BetterUser && typeof usr.public_flags === 'number') {
+          if (typeof usr === 'object' && usr instanceof utils.BetterUser && typeof usr.public_flags === 'number') {
             let badges = [];
             const flags = new utils.UserFlags(usr.public_flags).serialize();
             for (const key in flags) {

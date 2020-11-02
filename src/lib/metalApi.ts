@@ -4,6 +4,9 @@ import { EntitlementTypeEnum } from '../constants/constants';
 
 export class BetterUser extends discord.User {
   public_flags = 0;
+  bot = false;
+  system = false;
+  premium_type = 0;
 }
 
 async function baseRequest(
