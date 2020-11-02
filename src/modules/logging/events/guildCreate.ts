@@ -22,7 +22,7 @@ export const messages = {
     return new Map([
       ['_TYPE_', 'RECONNECTED'],
       ['_GUILD_ID_', guild.id],
-      ['_GUILD_NAME_', utils.escapeString(guild.name)],
+      ['_GUILD_NAME_', utils.escapeString(guild.name, true)],
     ]);
   },
   newGuild(log: discord.AuditLogEntry, guild: discord.Guild) {

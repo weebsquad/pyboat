@@ -161,7 +161,7 @@ export async function parseMessageContent(
     test = test.slice(0, Math.min(test.length, MAXNEWLINES));
     cutVertical = true;
   }
-  cont = utils.escapeString(test.join('\n'));
+  cont = utils.escapeString(test.join('\n'), false, true);
 
   const usrIds = new Map<string, string>();
   const channelIds = new Map<string, discord.GuildChannel>();
@@ -337,7 +337,6 @@ export function replacePlaceholders(txt: string, map: Map<string, string>) {
     if (key.substr(0, 1) !== '_' && key.substr(key.length - 1, 1) !== '_') {
       continue;
     }
-    // txt = txt.replace(key, utils.escapeString(value));
     txt = txt.split(key).join(value);
   }
   return txt;

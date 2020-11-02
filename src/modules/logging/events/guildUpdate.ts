@@ -119,8 +119,8 @@ export const messages = {
   ) {
     return new Map([
       ['_TYPE_', 'NAME_CHANGED'],
-      ['_OLD_NAME_', utils.escapeString(oldGuild.name)],
-      ['_NEW_NAME_', utils.escapeString(guild.name)],
+      ['_OLD_NAME_', utils.escapeString(oldGuild.name, true)],
+      ['_NEW_NAME_', utils.escapeString(guild.name, true)],
     ]);
   },
   region(
@@ -141,8 +141,8 @@ export const messages = {
   ) {
     return new Map([
       ['_TYPE_', 'DESCRIPTION_CHANGED'],
-      ['_OLD_DESC_', utils.escapeString(oldGuild.description)],
-      ['_NEW_DESC_', utils.escapeString(guild.description)],
+      ['_OLD_DESC_', utils.escapeString(oldGuild.description, true)],
+      ['_NEW_DESC_', utils.escapeString(guild.description, true)],
     ]);
   },
   defaultMessageNotifications(

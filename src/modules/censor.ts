@@ -665,7 +665,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     if (check instanceof CensorCheck) {
       if (check.check === true) {
         await member.edit({ nick: `censored name (${Math.floor(Math.min(9999, 1000 + (Math.random() * 10000)))})` });
-        logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_OLD_NAME_', utils.escapeString(visibleName)], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_OLD_NAME_', utils.escapeString(visibleName, true)], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
         await processViolations(eventId, member, undefined, appConfigs[i]);
         return false;
       }

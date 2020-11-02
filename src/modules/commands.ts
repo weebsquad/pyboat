@@ -66,7 +66,7 @@ export async function OnMessageCreate(
       return;
     }
     if (!utils.isCommandsAuthorized(msg.member)) {
-      await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content)}\``);
+      await utils.reportBlockedAction(msg.member, `command execution: \`${utils.escapeString(msg.content, true)}\``);
       return;
     }
 

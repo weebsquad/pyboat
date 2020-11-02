@@ -114,7 +114,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -135,7 +135,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -156,7 +156,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -177,7 +177,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -198,7 +198,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -219,7 +219,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -240,7 +240,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -261,7 +261,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -282,7 +282,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -303,7 +303,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -324,7 +324,7 @@ export const messages = {
       ['_CHANNEL_ID_', voiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -346,7 +346,7 @@ export const messages = {
       ['_CHANNEL_ID_', oldVoiceState.channelId],
       [
         '_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
     ]);
     return mp;
@@ -369,12 +369,12 @@ export const messages = {
       ['_OLD_CHANNEL_ID_', oldVoiceState.channelId],
       [
         '_NEW_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
       ['_NEW_CHANNEL_ID_', voiceState.channelId],
       [
         '_OLD_CHANNEL_NAME_',
-        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(oldChan.name)}`,
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(oldChan.name, true)}`,
       ],
     ]);
     return mp;
