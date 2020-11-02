@@ -138,20 +138,42 @@ export function convertEmoji(str) {
   );
 }
 const blacklist = ['\t', '\u200F', '\u008D', '\u202E'];
-const escapeList = ['*', '_', '||', '`', '@everyone', '@here']
-export function escapeString(string) {
+const escapeGeneral = ['*', '_', '||', '`', '@everyone', '@here', '~~'];
+const escapeCodeblock = ['```'];
+const escapeQuote = ['`']
+export function escapeString(string: string, inQuote: boolean = false, inBlock: boolean = false) {
   blacklist.forEach((vl) => {
     string = string.split(vl).join('');
   });
-  escapeList.forEach((char) => {
-    if(char === '@everyone' || char === '@here') {
-      const escape = `${char.substr(0,1)}\u200B${char.substr(1)}`;
-      string = string.split(char).join(escape);
-      return;
-    }
+  let escapeList: Array<string> = [];
+  if(!inQuote && !inBlock) {
+    // text isnt inside anything
+    escapeList = escapeGeneral;
+  
+} else if(inQuote && !inBlock) {
+  // text is inside a quote block
+  escapeList = escapeQuote;
+
+} else if(!inQuote && inBlock) {
+  // text is inside a code-block
+  escapeList = escapeCodeblock;
+}
+escapeList.forEach((char) => {
+  if(char === '@everyone' || char === '@here') {
+    const escape = `${char.substr(0,1)}\u200B${char.substr(1)}`;
+    string = string.split(char).join(escape);
+    return;
+  }
+  
+  if(char === '`' || char === '```') {
+    string = string.split(char).join(`'`);
+  } else if(char === '```') {
+    string = string.split(char).join(`'''`);
+  } else {
     const escape = char.split('').map((v) => `\\${v}`).join('');
     string = string.split(char).join(escape);
-  })
+  }
+})
   return string;
 }
 

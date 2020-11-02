@@ -28,7 +28,7 @@ export const messages = {
     return new Map([
       ['_TYPE_', 'CHANNEL_CREATED'],
       ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``}`],
     ]);
   },
   async dmChannelOpened(log: discord.AuditLogEntry, chan: discord.DmChannel) {

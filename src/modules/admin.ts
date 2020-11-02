@@ -1544,116 +1544,112 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   await handleReactRoles(id, reaction, false);
 }
 
-
-
 export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
-    subCommandGroup.on(
-      { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
-      (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
-      async (msg, { user, count }) => {
-        // const msgs = await getMessagesBy({authorId: user.id});
-        const chan = await msg.getChannel();
-        const guild = await msg.getGuild();
-        let member: discord.User | discord.GuildMember = user;
-        const _tryf = await guild.getMember(user.id);
-        if (_tryf !== null) {
-          member = _tryf;
+  subCommandGroup.on(
+    { name: 'user', filters: c2.getFilters('admin.clean.user', Ranks.Moderator) },
+    (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    async (msg, { user, count }) => {
+      // const msgs = await getMessagesBy({authorId: user.id});
+      const chan = await msg.getChannel();
+      const guild = await msg.getGuild();
+      let member: discord.User | discord.GuildMember = user;
+      const _tryf = await guild.getMember(user.id);
+      if (_tryf !== null) {
+        member = _tryf;
+      }
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, member, msg.member, chan, count, msg.channelId);
+      if (typeof res !== 'number') {
+        if (res === false) {
+          await infractions.confirmResult(undefined, msg, false, 'Failed to clean user');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResult(undefined, msg, false, res);
         }
-        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, member, msg.member, chan, count, msg.channelId);
-        if (typeof res !== 'number') {
-          if (res === false) {
-            await infractions.confirmResult(undefined, msg, false, 'Failed to clean user');
-          } else if (typeof res === 'string') {
-            await infractions.confirmResult(undefined, msg, false, res);
-          }
-        } else if (res > 0) {
-          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from ${user.getTag()}`);
-        } else {
-          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      } else if (res > 0) {
+        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from ${user.getTag()}`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      }
+    },
+  );
+  subCommandGroup.on(
+    { name: 'channel', filters: c2.getFilters('admin.clean.channel', Ranks.Moderator) },
+    (ctx) => ({ channel: ctx.guildTextChannel(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    async (msg, { channel, count }) => {
+      // const msgs = await getMessagesBy({authorId: user.id});
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, channel, count, channel.id);
+      if (typeof res !== 'number') {
+        if (res === false) {
+          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResult(undefined, msg, false, res);
         }
-      },
-    );
-    subCommandGroup.on(
-      { name: 'channel', filters: c2.getFilters('admin.clean.channel', Ranks.Moderator) },
-      (ctx) => ({ channel: ctx.guildTextChannel(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
-      async (msg, { channel, count }) => {
-        // const msgs = await getMessagesBy({authorId: user.id});
-        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, channel, count, channel.id);
-        if (typeof res !== 'number') {
-          if (res === false) {
-            await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
-          } else if (typeof res === 'string') {
-            await infractions.confirmResult(undefined, msg, false, res);
-          }
-        } else if (res > 0) {
-          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${channel.id}>`);
-        } else {
-          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      } else if (res > 0) {
+        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${channel.id}>`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      }
+    },
+  );
+  subCommandGroup.on(
+    { name: 'here', filters: c2.getFilters('admin.clean.here', Ranks.Moderator) },
+    (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    async (msg, { count }) => {
+      // const msgs = await getMessagesBy({authorId: user.id});
+      const chan = await msg.getChannel();
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count, msg.channelId);
+      if (typeof res !== 'number') {
+        if (res === false) {
+          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResult(undefined, msg, false, res);
         }
-      },
-    );
-    subCommandGroup.on(
-      { name: 'here', filters: c2.getFilters('admin.clean.here', Ranks.Moderator) },
-      (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
-      async (msg, { count }) => {
-        // const msgs = await getMessagesBy({authorId: user.id});
-        const chan = await msg.getChannel();
-        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count, msg.channelId);
-        if (typeof res !== 'number') {
-          if (res === false) {
-            await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
-          } else if (typeof res === 'string') {
-            await infractions.confirmResult(undefined, msg, false, res);
-          }
-        } else if (res > 0) {
-          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${msg.channelId}>`);
-        } else {
-          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      } else if (res > 0) {
+        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${msg.channelId}>`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      }
+    },
+  );
+  subCommandGroup.on(
+    { name: 'all', filters: c2.getFilters('admin.clean.all', Ranks.Administrator) },
+    (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    async (msg, { count }) => {
+      // const msgs = await getMessagesBy({authorId: user.id});
+      const chan = await msg.getChannel();
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count);
+      if (typeof res !== 'number') {
+        if (res === false) {
+          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResult(undefined, msg, false, res);
         }
-      },
-    );
-    subCommandGroup.on(
-      { name: 'all', filters: c2.getFilters('admin.clean.all', Ranks.Administrator) },
-      (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
-      async (msg, { count }) => {
-        // const msgs = await getMessagesBy({authorId: user.id});
-        const chan = await msg.getChannel();
-        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count);
-        if (typeof res !== 'number') {
-          if (res === false) {
-            await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
-          } else if (typeof res === 'string') {
-            await infractions.confirmResult(undefined, msg, false, res);
-          }
-        } else if (res > 0) {
-          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages`);
-        } else {
-          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      } else if (res > 0) {
+        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      }
+    },
+  );
+  subCommandGroup.on(
+    { name: 'bots', filters: c2.getFilters('admin.clean.bots', Ranks.Moderator) },
+    (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    async (msg, { count }) => {
+      const chan = await msg.getChannel();
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, { bot: true }, msg.member, chan, count, msg.channelId);
+      if (typeof res !== 'number') {
+        if (res === false) {
+          await infractions.confirmResult(undefined, msg, false, 'Failed to clean bots');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResult(undefined, msg, false, res);
         }
-      },
-    );
-    subCommandGroup.on(
-      { name: 'bots', filters: c2.getFilters('admin.clean.bots', Ranks.Moderator) },
-      (ctx) => ({ count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
-      async (msg, { count }) => {
-        const chan = await msg.getChannel();
-        const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, { bot: true }, msg.member, chan, count, msg.channelId);
-        if (typeof res !== 'number') {
-          if (res === false) {
-            await infractions.confirmResult(undefined, msg, false, 'Failed to clean bots');
-          } else if (typeof res === 'string') {
-            await infractions.confirmResult(undefined, msg, false, res);
-          }
-        } else if (res > 0) {
-          await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from bots`);
-        } else {
-          await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
-        }
-      },
-    );
-
+      } else if (res > 0) {
+        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from bots`);
+      } else {
+        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+      }
+    },
+  );
 }
-
 
 export function InitializeCommands() {
   const _groupOptions = {

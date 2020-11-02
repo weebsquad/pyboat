@@ -28,7 +28,7 @@ export const messages = {
     return new Map([
       ['_TYPE_', 'CHANNEL_DELETED'],
       ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``],
     ]);
   },
 };

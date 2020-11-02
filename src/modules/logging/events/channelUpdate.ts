@@ -35,7 +35,7 @@ async function getChannelMention(chan: discord.GuildChannel, parent: undefined |
   if (parent === undefined) {
     parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
   }
-  return `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name)}\``}`;
+  return `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``}`;
 }
 
 export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.AnyChannel, oldChan: discord.Channel.AnyChannel) {
@@ -120,8 +120,8 @@ export const messages = {
       ['_TYPE_', 'NAME_CHANGED'],
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
-      ['_NEW_NAME_', utils.escapeString(chan.name)],
-      ['_OLD_NAME_', utils.escapeString(oldChan.name)],
+      ['_NEW_NAME_', utils.escapeString(chan.name, true)],
+      ['_OLD_NAME_', utils.escapeString(oldChan.name, true)],
     ]);
   },
   async parentId(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
@@ -134,8 +134,8 @@ export const messages = {
       ['_TYPE_', 'CATEGORY_CHANGED'],
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
-      ['_NEW_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`` : `\`${parExists}\``],
-      ['_OLD_MENTION_', parentOld !== null ? `${getChannelEmoji(parentOld)}\`${utils.escapeString(parentOld.name)}\`` : `\`${oldParExists}\``],
+      ['_NEW_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
+      ['_OLD_MENTION_', parentOld !== null ? `${getChannelEmoji(parentOld)}\`${utils.escapeString(parentOld.name, true)}\`` : `\`${oldParExists}\``],
     ]);
   },
   async type(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
@@ -165,8 +165,8 @@ export const messages = {
     return new Map([
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
-      ['_NEW_TOPIC_', utils.escapeString(chan.topic !== null && chan.topic !== undefined ? chan.topic : 'None')],
-      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic !== null && oldChan.topic !== undefined ? oldChan.topic : 'None')],
+      ['_NEW_TOPIC_', utils.escapeString(chan.topic !== null && chan.topic !== undefined ? chan.topic : 'None', true)],
+      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic !== null && oldChan.topic !== undefined ? oldChan.topic : 'None', true)],
       ['_TYPE_', 'TOPIC_CHANGED'],
     ]);
   },
@@ -207,7 +207,7 @@ export const messages = {
     return new Map([
       ['_CHANNEL_ID_', chan.id],
       ['_CHANNEL_MENTION_', mention],
-      ['_PARENT_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name)}\`` : `\`${parExists}\``],
+      ['_PARENT_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
       ['_TYPE_', 'PERMS_SYNCED'],
     ]);
   },

@@ -45,8 +45,8 @@ export const messages = {
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'NAME_CHANGED'],
     ]);
-    mp.set('_OLD_NAME_', utils.escapeString(oldRole.name));
-    mp.set('_NEW_NAME_', utils.escapeString(role.name));
+    mp.set('_OLD_NAME_', utils.escapeString(oldRole.name, true));
+    mp.set('_NEW_NAME_', utils.escapeString(role.name, true));
     return mp;
   },
   color(

@@ -14,7 +14,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'REMOVED_ROLE'],
-      ['_NAME_', utils.escapeString(role.name)],
+      ['_NAME_', utils.escapeString(role.name, true)],
     ]);
     return mp;
   },

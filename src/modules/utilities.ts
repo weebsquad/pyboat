@@ -316,7 +316,7 @@ export function InitializeCommands() {
               return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
             }
             await role.edit({ name });
-            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name)}\`` };
+            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name, true)}\`` };
           });
           saveMessage(res);
         },
@@ -1149,7 +1149,7 @@ export function InitializeCommands() {
               } else {
                 emjMention = discord.decor.Emojis.NOTEPAD_SPIRAL;
               }
-              return `${emjMention}${pres.state !== null ? ` \`${utils.escapeString(pres.state)}\`` : ''} (Custom Status)`;
+              return `${emjMention}${pres.state !== null ? ` \`${utils.escapeString(pres.state, true)}\`` : ''} (Custom Status)`;
             }
 
             return `${emj}${pres.name.length > 0 ? ` \`${pres.name}\`` : ''}`;
@@ -1259,7 +1259,7 @@ export function InitializeCommands() {
           })}`;
           desc += `\n ${discord.decor.Emojis.INBOX_TRAY} **Joined**: ${tdiffjoin} ago **[**\`${formattedDtJoin}\`**]**`;
           if (member.nick && member.nick !== null && member.nick.length > 0) {
-            desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**Nickname**: \`${utils.escapeString(member.nick)}\``;
+            desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**Nickname**: \`${utils.escapeString(member.nick, true)}\``;
           }
           if (member.premiumSince !== null) {
             const boostDt = new Date(member.premiumSince);
