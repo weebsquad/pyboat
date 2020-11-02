@@ -1082,7 +1082,7 @@ export function InitializeCommands() {
 
   cmdGroup.on(
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+    (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'user' }) }),
     async (msg, { user }) => {
       const res: any = await msg.reply(async () => {
         let usr: discord.User | BetterUser;
@@ -1105,7 +1105,7 @@ export function InitializeCommands() {
           if (!tempusr) {
             return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
           }
-          user = tempusr;
+          usr = tempusr;
         }
         const emb = new discord.Embed();
         emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
