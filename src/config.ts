@@ -27,6 +27,10 @@ export const globalConfig = <any>{
     url: 'https://dapiproxy.homo.workers.dev',
     botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
   },
+  twitch: {
+    clientId: 'c1aeipr56yslrrb1m31dip02uuh3w3',
+    token: '' // bearer
+  },
   github: {
     // @ts-ignore
     token: '__GH_TOKEN__',

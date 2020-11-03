@@ -11,6 +11,7 @@ import * as pools from '../lib/storagePools';
 import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
+import * as twitch from '../modules/twitch';
 import * as github from '../lib/github';
 import { handleEvent } from '../modules/logging/main';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
@@ -677,6 +678,17 @@ export function InitializeCommands() {
         const len = text.length;
         const parsed = utils.escapeString(text);
         await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
+      },
+    );
+    sub.on(
+      'twitch',
+      (ctx) => ({ key: ctx.string() }),
+      async (m, { key }) => {
+        const res: any = await m.reply(async () => {
+          const status = await twitch.getChannelStatuses([key]);
+          return `\`\`\`json\n${JSON.stringify(status,null,2)}\n\`\`\``;
+        });
+        admin.saveMessage(res);
       },
     );
     sub.on(

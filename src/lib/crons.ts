@@ -11,6 +11,7 @@ import * as utilities from '../modules/utilities';
 import { InitializedPools } from './storagePools';
 import * as routing from './eventHandler/routing';
 import * as reddit from '../modules/reddit';
+import * as twitch from '../modules/twitch';
 import { logError } from './utils';
 
 const _cr: {[key: string]: any} = {
@@ -36,6 +37,7 @@ const _cr: {[key: string]: any} = {
           await utilities.checkReminders();
           await utilities.checkAllCustomRoles();
           await reddit.updateSubs();
+          await twitch.checkStreams();
           if (InitializedPools.length > 0) {
             await Promise.all(InitializedPools.map(async (pool) => {
               await pool.clean();
