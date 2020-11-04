@@ -101,11 +101,10 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     }
     // @ts-ignore
     const cput = Math.floor(await pylon.getCpuTime());
-    console.log(`executing modules for a ${event} event. CPU Time so far: ${cput}ms`);
     await ExecuteModules(event, ts, null, ...args);
     // @ts-ignore
     const cputd = Math.floor(await pylon.getCpuTime());
-    console.log(`DONE executing modules for a ${event} event. CPU Time so far: ${cputd}ms`);
+    console.log(`Executed modules for a ${event} event. -- CPU Time so far: ${cputd}ms`);
   } catch (e) {
     const err: Error = e;
 

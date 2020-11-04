@@ -29,6 +29,5 @@ export async function getWorkflowRuns(org: string, repo: string, workflow: strin
   if (res.status !== 200) {
     throw new Error(`Error while listing runs of ${org}/${repo}/${workflow}:\n${JSON.stringify(json, null, 2)}`);
   }
-  console.log(json);
   return json;
 }

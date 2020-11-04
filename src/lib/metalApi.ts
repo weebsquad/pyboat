@@ -88,7 +88,7 @@ export async function executeWebhook(
     });
   }
   const bodyJson: { [key: string]: any } = {
-    content,
+    content: content.length > 0 ? content : undefined,
     username,
     avatar_url,
     tts: tts ? true : undefined,
@@ -110,7 +110,7 @@ export async function executeWebhook(
   const { status } = response;
   if (status !== 204) {
     const text = await response.json();
-    console.error(`Webhook - ${status} - `, text);
+    logError(`Webhook - ${status} - `, text);
     return false;
   }
 

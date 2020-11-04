@@ -153,7 +153,7 @@ export async function sendInLogChannel(
           }
         }
       }
-      if (embeds.length > 1 || alwaysWh) {
+      if (embeds.length > 1) {
         if (embeds.length < 10) {
           await utils2.executeWebhook(whUrl, '', embeds, botAvatar.username, botAvatar.getAvatarUrl(), false, {});
           webhookSends += 1;
@@ -171,7 +171,7 @@ export async function sendInLogChannel(
             webhookSends++;
           }
         }
-      } else {
+      } else if (channel && channel instanceof discord.GuildChannel) {
         await channel.sendMessage({
           embed: embeds[0],
           allowedMentions: {},

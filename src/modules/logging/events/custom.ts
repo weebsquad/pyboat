@@ -91,7 +91,9 @@ export async function logDebug(
   if (config === undefined) {
     return;
   }
-  // if (type === 'BOT_ERROR') console.error(placeholders.get('ERROR'))
+  if (type === 'BOT_ERROR') {
+    utils.logError(placeholders.get('ERROR'));
+  }
   const evData = config.modules.logging.messages.DEBUG[type];
   if (evData === undefined) {
     throw new Error(`Tried to log ${type} but not defined in config!`);

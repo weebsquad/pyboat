@@ -249,7 +249,7 @@ export async function validateAuditEvent(
           }
         }
 
-        console.log(
+        utils.logError(
           'auditlog.validate failed key type-check',
           key,
           cck,
@@ -286,11 +286,11 @@ export async function validateAuditEvent(
             }
             return false;
           }
-          console.log('validate', 'failed obj Compare', key, auditLogEntry);
+          utils.logError('validate failed obj Compare', key, auditLogEntry);
           return false;
         }
       } else if (cck !== al) {
-        console.log('validate', 'failed key Compare', key, auditLogEntry);
+        utils.logError('validate failed key Compare', key, auditLogEntry);
         return false;
       }
     }

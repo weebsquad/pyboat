@@ -26,12 +26,9 @@ async function getEntries() {
       Host: 'Pylon',
     },
   });
-  console.log('url', req.url);
   const res = await fetch(req);
   const text = await res.text();
-  console.log('text', text);
   const json = await res.json();
-  console.log('json', json);
   return json.data as Array<Entry>;
 }
 

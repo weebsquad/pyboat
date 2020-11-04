@@ -379,7 +379,6 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
       globalConfig[k] = obj;
     }
   } catch (e) {
-    // console.error(`Loading globals error: ${e.stack}`);
     console.warn('Loading globals error (1)');
     return false;
   }
@@ -575,7 +574,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       await InitializeConfig(true);
       await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
-      // console.error(e);
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {

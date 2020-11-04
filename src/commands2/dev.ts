@@ -621,8 +621,7 @@ export function InitializeCommands() {
       'user', async (m) => {
         const resUsr = await utils.getUser(m.author.id, true);
         if (!resUsr || !(resUsr instanceof utils.BetterUser)) {
-          console.error('no');
-          return;
+          throw new Error('no user found');
         }
         const flags = new utils.UserFlags(resUsr.public_flags);
         const res: any = await m.reply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
