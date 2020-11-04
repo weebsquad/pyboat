@@ -370,7 +370,7 @@ export async function isBlocked(userId: string) {
   return blocks.includes(userId);
 }
 
-export async function OnMessageCreate(
+/* export async function OnMessageCreate(
   id: string,
   gid: string,
   message: discord.Message,
@@ -385,7 +385,7 @@ export async function OnMessageCreate(
     await message.delete();
     return false;
   }
-}
+} */
 export async function AL_OnMessageDelete(
   id: string,
   gid: string,

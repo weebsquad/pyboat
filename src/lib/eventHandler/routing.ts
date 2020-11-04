@@ -41,7 +41,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
     if (typeof conf.config === 'undefined') {
       const ret = await conf.InitializeConfig();
-      if (ret === false) {
+      if (!ret) {
         return;
       }
       cachedConfig = conf.config;
@@ -99,7 +99,11 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
       // await checkObject(qObj);
       return;
     }
+    const cput = Math.floor(await pylon.getCpuTime());
+    console.log(`executing modules for a ${event} event. CPU Time so far: ${cput}ms`);
     await ExecuteModules(event, ts, null, ...args);
+    const cputd = Math.floor(await pylon.getCpuTime());
+    console.log(`DONE executing modules for a ${event} event. CPU Time so far: ${cputd}ms`);
   } catch (e) {
     const err: Error = e;
 
@@ -388,7 +392,7 @@ export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
     if (modulesSendIndividual.indexOf(moduleName) > -1) {
       // todo: send individual events to every eventfunc in this module based on stuff in the queue!
 
-      const test = await Promise.all(
+      await Promise.all(
         procQueue.map(async (e: QueuedEvent) => {
           const eventFunctionName = eventFunctions[e.eventName];
           const eventFunctionInd = module[eventFunctionName];

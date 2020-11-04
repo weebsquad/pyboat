@@ -235,8 +235,12 @@ export function InitializeCommands() {
   cmdGroup.raw(
     'reload',
     async (msg) => {
-      await InitializeConfig(true);
-      const res: any = await msg.reply(`${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`);
+      const cfgres = await InitializeConfig(true);
+      let txt = `${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`;
+      if (!cfgres) {
+        txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
+      }
+      const res: any = await msg.reply(txt);
       admin.saveMessage(res);
     },
   );

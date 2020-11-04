@@ -344,25 +344,27 @@ const configKv = new pylon.KVNamespace('config');
 export let config: any;
 let loadingConf = false;
 let lastTry = Date.now();
-export async function InitializeConfig(bypass = false) {
-  if (loadingConf === true) {
+export async function InitializeConfig(bypass = false): Promise<boolean> {
+  if (loadingConf) {
     const diff = Date.now() - lastTry;
     if (diff > 60 * 1000) {
       loadingConf = false;
     }
   }
-  if (loadingConf === true && !bypass) {
+  if (loadingConf && !bypass) {
     const start = Date.now();
-    for (let i = 0; i < 5; i += 1) {
+    let runs = 3;
+    while (typeof config === 'undefined') {
       if (typeof config !== 'undefined' || !loadingConf) {
         break;
       }
       if ((Date.now() - start) >= 10000) {
         break;
       }
-      await sleep(400);
+      runs++;
+      await sleep(Math.min(1000, Math.pow(2, runs)));
     }
-    return typeof config !== 'undefined' ? config : false;
+    return typeof config !== 'undefined';
   }
   if (!bypass) {
     config = undefined;
@@ -447,7 +449,9 @@ export async function InitializeConfig(bypass = false) {
   }
 
   config = loadConfigDefaults(cfg);
-  return config;
+  const cput = Math.floor(await pylon.getCpuTime());
+  console.info(`Initialized! Cpu time so far: ${cput}ms`);
+  return true;
 }
 
 function str2ab(str: string) {

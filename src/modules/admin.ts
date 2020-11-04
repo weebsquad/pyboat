@@ -14,7 +14,7 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
 const TRACKING_KEYS_LIMIT = 70;
-const ENTRIES_PER_POOL = 73; // approximate maximum
+const ENTRIES_PER_POOL = 64; // approximate maximum
 
 // persist
 
@@ -991,7 +991,7 @@ export async function OnMessageCreate(
   if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
     return;
   }
-  adminPool.saveToPool(new TrackedMessage(message));
+  await adminPool.saveToPool(new TrackedMessage(message));
 }
 export async function OnMessageDelete(
   id: string,

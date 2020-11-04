@@ -56,7 +56,7 @@ export async function OnGuildMemberUpdate(
   }
   if (member.can(discord.Permissions.MANAGE_GUILD) !== oldMember.can(discord.Permissions.MANAGE_GUILD)) {
     const res = await InitializeConfig(true);
-    if (res === false || typeof config === 'undefined') {
+    if (!res) {
       return false;
     }
   }

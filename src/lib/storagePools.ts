@@ -152,7 +152,7 @@ export class StoragePool {
       }));
     }
 
-    async saveToPool(newObj: any) {
+    async saveToPool(newObj: any, retries = 0) {
       if (newObj === null || newObj === undefined) {
         return;
       }
@@ -212,15 +212,23 @@ export class StoragePool {
               failed = true;
               return prev;
             }
-            return prev.concat(newObj);
+            const newarr = [...prev, newObj];
+            return newarr;
           });
           if (!failed) {
             return true;
           }
-          const newres = await this.saveToPool(newObj);
+          if (retries > 3) {
+            return false;
+          }
+          const newres = await this.saveToPool(newObj, retries += 1);
           return newres;
         } catch (e) {
-          const newres = await this.saveToPool(newObj);
+          utils.logError(e);
+          if (retries > 3) {
+            return false;
+          }
+          const newres = await this.saveToPool(newObj, retries += 1);
           return newres;
         }
       }
@@ -355,36 +363,36 @@ export class StoragePool {
     async getAll<T>(it: any = undefined, sort = true): Promise<Array<T>> {
       const diff = Date.now() - this.duration;
       const tdiffc = Date.now();
-      console.log(`${Date.now() - tdiffc}ms > getting all for ${this.kvName}`);
+      // console.log(`${Date.now() - tdiffc}ms > getting all for ${this.kvName}`);
       let items: Array<any>;
       if (this.local === true) {
         items = this.localStore;
       } else {
         items = (Array.isArray(it) ? it : await this.getItems());
       }
-      console.log(`${Date.now() - tdiffc}ms > got all items from kv`);
+      // console.log(`${Date.now() - tdiffc}ms > got all items from kv`);
       if (items.length === 0) {
         return [] as Array<T>;
       }
       if (!Array.isArray(it) && !this.local) {
         items = items.map((v) => v.value).flat(1);
       }
-      console.log(`${Date.now() - tdiffc}ms > mapped to values and flattened`);
+      // console.log(`${Date.now() - tdiffc}ms > mapped to values and flattened`);
       items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      console.log(`${Date.now() - tdiffc}ms > filtered garbage`);
+      // console.log(`${Date.now() - tdiffc}ms > filtered garbage`);
       if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
         items = items.filter((item) => {
           const ts = this.getTimestamp(item);
           return this.duration === 0 || (typeof ts === 'number' && ts >= diff);
         });
-        console.log(`${Date.now() - tdiffc}ms > filtered by timestamp`);
+        // console.log(`${Date.now() - tdiffc}ms > filtered by timestamp`);
         if (sort === true) {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
-        console.log(`${Date.now() - tdiffc}ms > sorted`);
+        // console.log(`${Date.now() - tdiffc}ms > sorted`);
       }
 
-      console.log(`${Date.now() - tdiffc}ms > done`);
+      // console.log(`${Date.now() - tdiffc}ms > done`);
       const _new: any = items;
       return _new as Array<T>;
     }

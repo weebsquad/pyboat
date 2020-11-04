@@ -21,7 +21,7 @@ export class QueuedEvent {
   }
 }
 
-const cpuTimePerEvent = 20; // to determine when to use burst :P
+const cpuTimePerEvent = 23; // to determine when to use burst :P
 const interval = 5000;
 
 export let queue = new Array<QueuedEvent>();
@@ -146,6 +146,7 @@ export async function resolveQueue() {
       ]),
     );
   }
+  console.log('Done executing queue!');
   procQueue.map((e) => {
     const _f = queue.findIndex((e2) => e.id === e2.id);
     if (_f === -1) {

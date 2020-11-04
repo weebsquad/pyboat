@@ -56,7 +56,7 @@ const _cr: {[key: string]: any} = {
 export async function onCron(name: string) {
   if (typeof conf.config === 'undefined') {
     const res = await conf.InitializeConfig();
-    if (res === false || typeof conf.config === 'undefined') {
+    if (!res) {
       return;
     }
   }
