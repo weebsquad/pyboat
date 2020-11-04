@@ -35,14 +35,14 @@ async function getEntries() {
   return json.data as Array<Entry>;
 }
 
-export async function OnAnyEvent(
+/* export async function OnAnyEvent(
   event: string,
   id: string,
   gid: string,
   ...args: any
 ) {
   // const resp = await getEntries();
-}
+} */
 
 export async function OnGuildMemberUpdate(
   id: string,

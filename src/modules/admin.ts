@@ -181,14 +181,14 @@ class TrackedMessage {
     id: string;
     channelId: string;
     bot: boolean;
-    // ts: number;
+    ts: number;
     // type: discord.Message.Type;
     // flags: discord.Message.Flags;
     constructor(message: discord.Message.AnyMessage) {
       this.authorId = message.author.id;
       this.channelId = message.channelId;
       this.id = message.id;
-      // this.ts = utils.decomposeSnowflake(this.id).timestamp;
+      this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.bot = message.author.bot;
       if (message.webhookId !== null) {
         this.bot = true;

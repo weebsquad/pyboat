@@ -231,9 +231,9 @@ export async function ExecuteModules(
   }
 
   const { guildId } = conf;
-
+  let tdiff = Date.now();
   for (const moduleName in moduleDefinitions) {
-    const tdiff = new Date().getTime();
+    tdiff = Date.now();
     const module = moduleDefinitions[moduleName];
     if (typeof module !== 'object' || module === null) {
       continue;
@@ -294,6 +294,10 @@ export async function ExecuteModules(
             }
           }
         }
+      }
+      const diffexec = Date.now() - tdiff;
+      if (diffexec > 4) {
+        console.log(`Done executing ${moduleName} , ( ${diffexec}ms )`);
       }
     } catch (e) {
       _err = `${event}.ExecuteModules.${moduleName}.${eventFuncName}\n${e.stack}`;
