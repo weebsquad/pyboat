@@ -30,7 +30,7 @@ module.exports = () => ({
     nodeResolve(),
     typescript({ lib: ['es2020'], target: 'es2020' }),
     strip({
-      functions: ['console.*'],
+      functions: ['console.*', 'pylon.getCpuTime'],
       sourceMap: true,
       include: ['**/*.ts'],
     }),
