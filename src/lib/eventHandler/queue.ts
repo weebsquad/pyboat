@@ -60,7 +60,8 @@ export async function resolveQueue() {
   // @ts-ignore
   if (typeof (pylon.getCpuTime) === 'function') {
     // @ts-ignore
-    usedCpu = (await pylon.getCpuTime());
+    usedCpu = Math.floor(await pylon.getCpuTime());
+    console.log(`Queue used cpu : ${usedCpu}`);
   }
 
   const neededCpuTime = Math.floor(cpuTimePerEvent * len);
