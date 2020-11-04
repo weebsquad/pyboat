@@ -217,7 +217,7 @@ export class StoragePool {
         if (retries > 3) {
           return false;
         }
-        const newres = await this.saveToPool(newObj, retries += 1);
+        const newres = await this.saveToPool(newObj, retries + 1);
         return newres;
       }
     }
@@ -326,8 +326,8 @@ export class StoragePool {
       });
       if (transactPools.length > 0) {
         // @ts-ignore
-        await this.kv.transactMulti(transactPools.map((v) => v.key), (prev) => {
-          let prevt: T[][] = <any[]>prev.filter(() => true);
+        await this.kv.transactMulti<Array<T>>(transactPools.map((v) => v.key), (prev) => {
+          let prevt: T[][] = prev.filter(() => true);
           prevt = prevt.map((val) => {
             val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(v[this.uniqueId]) ? v : callback(v))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
             return val;

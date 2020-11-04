@@ -13,8 +13,8 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
-const TRACKING_KEYS_LIMIT = 70;
-const ENTRIES_PER_POOL = 64; // approximate maximum
+const TRACKING_KEYS_LIMIT = 80;
+const ENTRIES_PER_POOL = 62; // approximate maximum
 
 // persist
 
