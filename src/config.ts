@@ -119,11 +119,11 @@ const defaultConfig = { // for non-defined configs!
       integrate: true,
       muteRole: '',
       defaultDeleteDays: 0,
-      targetting: {
+      targeting: {
         reqDiscordPermissions: true,
         checkLevels: true,
         checkRoles: true,
-        allowSelf: true,
+        allowSelf: false,
         othersEditLevel: 100,
       },
       confirmation: {

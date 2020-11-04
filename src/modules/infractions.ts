@@ -239,11 +239,11 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     }
   }
   // check levels and discord perms
-  if (config.modules.infractions && config.modules.infractions.targetting && !isOverride && !isGuildOwner) {
-    const checkLevels = typeof config.modules.infractions.targetting.checkLevels === 'boolean' ? config.modules.infractions.targetting.checkLevels : true;
-    const checkRoles = typeof config.modules.infractions.targetting.checkRoles === 'boolean' ? config.modules.infractions.targetting.checkRoles : true;
-    const requireExtraPerms = typeof config.modules.infractions.targetting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targetting.reqDiscordPermissions : true;
-    const allowSelf = typeof config.modules.infractions.targetting.allowSelf === 'boolean' ? config.modules.infractions.targetting.allowSelf : true;
+  if (config.modules.infractions && config.modules.infractions.targeting && !isOverride && !isGuildOwner) {
+    const checkLevels = typeof config.modules.infractions.targeting.checkLevels === 'boolean' ? config.modules.infractions.targeting.checkLevels : true;
+    const checkRoles = typeof config.modules.infractions.targeting.checkRoles === 'boolean' ? config.modules.infractions.targeting.checkRoles : true;
+    const requireExtraPerms = typeof config.modules.infractions.targeting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targeting.reqDiscordPermissions : true;
+    const allowSelf = typeof config.modules.infractions.targeting.allowSelf === 'boolean' ? config.modules.infractions.targeting.allowSelf : false;
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
         return 'You can\'t kick members';
@@ -1141,7 +1141,7 @@ export function InitializeCommands() {
           if (!inf.active) {
             return `${discord.decor.Emojis.X} This infraction is not active.`;
           }
-          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
 
@@ -1179,7 +1179,7 @@ export function InitializeCommands() {
           }
           const inf: Infraction = infs[0];
 
-          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
           inf.reason = reason;
@@ -1217,7 +1217,7 @@ export function InitializeCommands() {
           }
           const inf: Infraction = infs[0];
 
-          if (typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+          if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
           inf.actorId = actor.id;
@@ -1255,7 +1255,7 @@ export function InitializeCommands() {
             return `${discord.decor.Emojis.X} No infraction found`;
           }
           const inf: Infraction = infs[0];
-          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targetting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targetting.othersEditLevel) {
+          if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
           }
           await infsPool.delete(inf.id);
@@ -1464,7 +1464,7 @@ export async function AL_OnGuildMemberUpdate(
         });
         await Promise.all(promises);
       }
-      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.user.id === log.userId) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || (member.user.id === log.userId && member.user.bot)) {
         return;
       }
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
@@ -1472,7 +1472,7 @@ export async function AL_OnGuildMemberUpdate(
       }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
-      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || member.user.id === log.userId) {
+      if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || (member.user.id === log.userId && member.user.bot)) {
         return;
       }
 

@@ -2320,7 +2320,7 @@
                                 "properties": {
                                     "__key": {
                                         "title": "Selector",
-                                        "description": "The targetted selector",
+                                        "description": "The targeted selector",
                                         "type": "string",
                                         "minLength": 4,
                                         "default": "module.utilities"
@@ -2587,8 +2587,8 @@
                                 }
                             }
                         },
-                        "targetting": {
-                            "title": "Targetting Settings",
+                        "targeting": {
+                            "title": "Targeting Settings",
                             "description": "How members are able to interact with each other using commands",
                             "type": "object",
                             "properties": {
@@ -2602,20 +2602,20 @@
                                 "checkLevels": {
                                     "type": "boolean",
                                     "title": "Check Bot Levels",
-                                    "description": "Whether bot levels are checked for allowing targetting",
+                                    "description": "Whether bot levels are checked for allowing targeting",
                                     "default": true,
                                     "format": "checkbox"
                                 },
                                 "checkRoles": {
                                     "type": "boolean",
                                     "title": "Check Role Hierarchy",
-                                    "description": "Whether the server's role hierarchy is checked for allowing targetting (members can't target people with higher roles)",
+                                    "description": "Whether the server's role hierarchy is checked for allowing targeting (members can't target people with higher roles)",
                                     "default": true,
                                     "format": "checkbox"
                                 },
                                 "allowSelf": {
                                     "type": "boolean",
-                                    "title": "Self Targetting",
+                                    "title": "Self Targeting",
                                     "description": "Allow users to target themselves at all times",
                                     "default": false,
                                     "format": "checkbox"

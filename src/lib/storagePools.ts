@@ -152,7 +152,7 @@ export class StoragePool {
       }));
     }
 
-    async saveToPool(newObj: any, retries = 0) {
+    async saveToPool<T>(newObj: T, retries = 0) {
       if (newObj === null || newObj === undefined) {
         return;
       }
@@ -173,9 +173,8 @@ export class StoragePool {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
       }
-      let saveTo;
-      let lenOg;
-      const res = items.every((item: any) => {
+      let saveTo: string | undefined;
+      items.every((item: any) => {
         if (!Array.isArray(item.value)) {
           return true;
         }
@@ -183,7 +182,6 @@ export class StoragePool {
         if (typeof this.maxObjects === 'number' && this.maxObjects > 0) {
           if (_entries.length < this.maxObjects) {
             saveTo = item.key;
-            lenOg = item.value.length;
             return false;
           }
         } else {
@@ -193,47 +191,35 @@ export class StoragePool {
           const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + _thisLen;
           if (len < constants.MAX_KV_SIZE) {
             saveTo = item.key;
-            lenOg = item.value.length;
             return false;
           }
         }
         return true;
       });
-      if (res === true) {
-        await this.kv.put(utils.composeSnowflake(), [newObj]);
+      if (!saveTo) {
+        saveTo = utils.composeSnowflake();
+      }
+
+      try {
+        await this.kv.transact(saveTo, (prev: any) => {
+          let newArr: Array<T>;
+          if (!prev) {
+            newArr = [];
+          } else {
+            newArr = [...prev];
+          }
+          newArr.push(newObj);
+          return newArr;
+        });
         return true;
-      }
-      if (res === false && typeof saveTo === 'string') {
-        let failed = false;
-
-        try {
-          await this.kv.transact(saveTo, (prev: any) => {
-            if (prev.length !== lenOg) {
-              failed = true;
-              return prev;
-            }
-            const newarr = [...prev, newObj];
-            return newarr;
-          });
-          if (!failed) {
-            return true;
-          }
-          if (retries > 3) {
-            return false;
-          }
-          const newres = await this.saveToPool(newObj, retries += 1);
-          return newres;
-        } catch (e) {
-          utils.logError(e);
-          if (retries > 3) {
-            return false;
-          }
-          const newres = await this.saveToPool(newObj, retries += 1);
-          return newres;
+      } catch (e) {
+        utils.logError('[StoragePools] Transact:', e);
+        if (retries > 3) {
+          return false;
         }
+        const newres = await this.saveToPool(newObj, retries += 1);
+        return newres;
       }
-
-      return false;
     }
     async editTransact<T>(id: string, callback: (val: T) => T | null | undefined) {
       if (this.local === true) {
