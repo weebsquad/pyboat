@@ -449,6 +449,7 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   }
 
   config = loadConfigDefaults(cfg);
+  // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
   console.info(`Initialized! Cpu time so far: ${cput}ms`);
   return true;

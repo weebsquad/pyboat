@@ -56,10 +56,12 @@ export async function resolveQueue() {
     _lock = undefined;
     return false;
   }
-  const usedCpu = 35;
-  /* if (typeof (pylon.getCpuTime) === 'function') {
+  let usedCpu = 35;
+  // @ts-ignore
+  if (typeof (pylon.getCpuTime) === 'function') {
+    // @ts-ignore
     usedCpu = (await pylon.getCpuTime());
-  } */
+  }
 
   const neededCpuTime = Math.floor(cpuTimePerEvent * len);
   console.log(`Executing event queue of ${procQueue.length} events (${neededCpuTime}ms needed cpu)`);
