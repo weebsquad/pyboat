@@ -1277,7 +1277,7 @@ export function InitializeCommands() {
       async (msg, { user }) => {
         const res:any = await msg.reply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ memberId: user.id }));
-          if (infs.length === 0) {
+          if (!infs || infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
           }
           await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
@@ -1292,7 +1292,7 @@ export function InitializeCommands() {
       async (msg, { actor }) => {
         const res:any = await msg.reply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
-          if (infs.length === 0) {
+          if (!infs || infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
           }
           await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);

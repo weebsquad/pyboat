@@ -315,7 +315,7 @@ export class StoragePool {
       const items = await this.getItems();
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
-          const _val: Array<any> = item.value;
+          const _val: Array<T> = item.value;
           const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.uniqueId]));
           if (!hasAny) {
             return false;
@@ -327,11 +327,12 @@ export class StoragePool {
       if (transactPools.length > 0) {
         // @ts-ignore
         await this.kv.transactMulti(transactPools.map((v) => v.key), (prev) => {
-          const prevt: T[][] = <any[]>prev.filter(() => true);
-          prevt.map((val) => {
+          let prevt: T[][] = <any[]>prev.filter(() => true);
+          prevt = prevt.map((val) => {
             val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(v[this.uniqueId]) ? v : callback(v))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
             return val;
           });
+          return prevt;
         });
         /*
         await Promise.all(transactPools.map(async (item) => {
