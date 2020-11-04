@@ -991,7 +991,7 @@ export async function OnMessageCreate(
   if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
     return;
   }
-  await adminPool.saveToPool(new TrackedMessage(message));
+  adminPool.saveToPool(new TrackedMessage(message));
 }
 export async function OnMessageDelete(
   id: string,
