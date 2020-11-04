@@ -26,7 +26,7 @@ function stdTimezoneOffset(dt: Date) {
 function isDateDst(dt: Date) {
     return dt.getTimezoneOffset() === stdTimezoneOffset(dt);
 }
-export function changeTimezone(date, ianatz) {
+export function changeTimezone(date: Date, ianatz: string) {
     // suppose the date is 12:00 UTC
     var invdate = new Date(date.toLocaleString('en-US', {
       timeZone: ianatz
