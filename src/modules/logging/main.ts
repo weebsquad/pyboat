@@ -98,7 +98,7 @@ export async function sendInLogChannel(
   if (thisGuild === null) {
     return;
   }
-  const botAvatar = await discord.getBotUser();
+  const botAvatar = conf.globalConfig.botUser;
   for (const [chId, opts] of messages) {
     let webhookSends = 1;
     const gconf = conf.config;
@@ -283,7 +283,6 @@ async function getMessages(
   chans: Map<string, Array<Map<string, any>>>,
   ev: Event,
 ) {
-  // if (avatar === '') avatar = (await discord.getBotUser()).getAvatarUrl();
   const msgs = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
   /* if (!msgs.has(guildId))
     msgs.set(

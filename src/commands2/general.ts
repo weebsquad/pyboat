@@ -27,8 +27,7 @@ export function InitializeCommands() {
       newemb.setAuthor({ name: 'PyBoat' });
       newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
       newemb.setColor(0xFF0000);
-      const myavatar = await discord.getBotUser();
-      newemb.setThumbnail({ url: myavatar.getAvatarUrl() });
+      newemb.setThumbnail({ url: conf.globalConfig.botUser.getAvatarUrl() });
       const res: any = await msg.reply({ allowedMentions: {}, content: '', embed: newemb });
       admin.saveMessage(res);
     },

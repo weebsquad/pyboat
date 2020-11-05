@@ -397,6 +397,11 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
     console.warn('Wrong bot ID');
     return false;
   }
+  globalConfig.botUser = await discord.getBotUser();
+  if (!globalConfig.botUser || globalConfig.botUser.id !== globalConfig.botId) {
+    console.warn('Couldnt fetch bot user account details');
+    return false;
+  }
   if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
     console.warn('Not whitelisted');
     config = undefined;
