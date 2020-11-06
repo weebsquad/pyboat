@@ -1089,23 +1089,18 @@ export function InitializeCommands() {
         if (user === null) {
           usr = msg.author;
           if (utils.isGlobalAdmin(msg.author.id)) {
-            const tempusr = await utils.getUser(usr.id, true);
-            if (tempusr) {
-              usr = tempusr;
-            }
+            usr = await utils.getUser(msg.author.id, true);
           }
         } else {
           user = user.replace(/\D/g, ''); // strip all non-number chars
-          let tempusr;
           if (utils.isGlobalAdmin(msg.author.id)) {
-            tempusr = await utils.getUser(user, true);
+            usr = await utils.getUser(user, true);
           } else {
-            tempusr = await discord.getUser(user);
+            usr = await discord.getUser(user);
           }
-          if (!tempusr) {
-            return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
-          }
-          usr = tempusr;
+        }
+        if (!usr) {
+          return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
         }
         const emb = new discord.Embed();
         emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });

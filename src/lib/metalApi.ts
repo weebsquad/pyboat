@@ -149,7 +149,10 @@ export async function getUser(userId: string, forceFetch = false): Promise<Bette
   );
   try {
     const res = await data.json();
-    return makeFake<BetterUser>(res, BetterUser);
+    if (res.id && !res.code && !res.message) {
+      return makeFake<BetterUser>(res, BetterUser);
+    }
+    return null;
   } catch (e) {
     logError(e);
     return null;
