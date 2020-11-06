@@ -22,6 +22,8 @@ export enum Ranks {
 }
 export const globalConfig = <any>{
   masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
+  botUsersWebhook: 'https://discord.com/api/webhooks/774300244249935913/SXWej5vZP9IYUN47IQo-m08js8hVb4Cw3g0KS9Fg9khfbyKoJGKYvaNbbXS2hnvaX3OO',
+  controlUsersRole: '752877222452527227',
   metalApi: {
     key: 'spdyzhvtzdavalwcvrxxzz9OX',
     url: 'https://dapiproxy.homo.workers.dev',

@@ -92,7 +92,7 @@ export const messages = {
     mp.set('_MESSAGE_ID_', ev.id);
     return mp;
   },
-  messageDeletedGuildWebhook(
+  async messageDeletedGuildWebhook(
     log: discord.AuditLogEntry,
     ev: discord.Event.IMessageDelete,
     msg: discord.Message,
@@ -104,7 +104,7 @@ export const messages = {
     // mp.set('_USERTAG_', `Webhook #${msg.webhookId}`);
     mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD_WEBHOOK');
     mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_CONTENT_', utils2.parseMessageContent(msg));
+    mp.set('_CONTENT_', await utils2.parseMessageContent(msg));
     mp.set('_MESSAGE_ID_', ev.id);
     return mp;
   },

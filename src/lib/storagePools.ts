@@ -385,6 +385,9 @@ export class StoragePool {
     }
     async getById<T>(id: string): Promise<T | undefined> {
       const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
+      if (typeof _f === 'undefined') {
+        return;
+      }
       return _f as T;
     }
     async getByQuery<T>(query: any, OR = false): Promise<Array<T>> {
