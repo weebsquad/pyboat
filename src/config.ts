@@ -302,7 +302,7 @@ function recursiveDefault(source: any, dest: any) {
           // config generator stuff!
           const newOb: {[key: string]: any} = {};
           dest[key].forEach((e: any) => {
-            if (typeof e.__key === 'string') {
+            if (typeof e.__key !== 'undefined') {
               let keyName = e.__key;
               if (typeof keyName === 'number') {
                 keyName = keyName.toString();
