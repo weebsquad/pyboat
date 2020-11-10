@@ -200,7 +200,7 @@
                                         "description": "Settings of what this config does",
                                         "type": "object",
                                         "properties": {
-                                            "_key": {
+                                            "__key": {
                                                 "title": "Level",
                                                 "description": "The member level and below to apply this to",
                                                 "type": "number",
