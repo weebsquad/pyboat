@@ -2992,7 +2992,7 @@
                                         "type": "string",
                                         "default": "",
                                         "description": "URL of an image to use as embed footer icon",
-                                        "maxLength": 50,
+                                        "maxLength": 500,
                                         "required": false,
                                         "options": {
                                             "dependencies": {
