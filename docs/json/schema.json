@@ -2548,6 +2548,7 @@
                         "overrides": {
                             "type": "array",
                             "title": "Command Overrides",
+                            "format": "tabs-top",
                             "items": {
                                 "type": "object",
                                 "title": "Override",
