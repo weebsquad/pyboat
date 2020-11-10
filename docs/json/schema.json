@@ -168,6 +168,240 @@
                                 },
                                 "collapsed": true
                             }
+                        },
+                        "defaultRole": {
+                            "title": "Default Role",
+                            "type": "string",
+                            "minLength": 16,
+                            "maxLength": 20,
+                            "pattern": "^[0-9]+$",
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
+                        "persist": {
+                            "title": "Persist",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "levels": {
+                                    "title": "Level configs",
+                                    "type": "array",
+                                    "format": "tabs-top",
+                                    "items": {
+                                        "title": "Persist configuration",
+                                        "description": "Settings of what this config does",
+                                        "type": "object",
+                                        "properties": {
+                                            "_key": {
+                                                "title": "Level",
+                                                "description": "The member level and below to apply this to",
+                                                "type": "number",
+                                                "default": 999,
+                                                "minimum": 0,
+                                                "maximum": 999
+                                            },
+                                            "roles": {
+                                                "title": "Save Roles",
+                                                "type": "boolean",
+                                                "default": true,
+                                                "format": "checkbox"
+                                            },
+                                            "nick": {
+                                                "title": "Save Nickname",
+                                                "type": "boolean",
+                                                "default": true,
+                                                "format": "checkbox"
+                                            },
+                                            "mute": {
+                                                "title": "Save Server Mute",
+                                                "type": "boolean",
+                                                "default": true,
+                                                "format": "checkbox"
+                                            },
+                                            "deaf": {
+                                                "title": "Save Server Deafen",
+                                                "type": "boolean",
+                                                "default": true,
+                                                "format": "checkbox"
+                                            },
+                                            "channels": {
+                                                "title": "Save Channel Permission Overwrites",
+                                                "type": "boolean",
+                                                "default": true,
+                                                "format": "checkbox"
+                                            },
+                                            "roleIncludes": {
+                                                "title": "Roles to save",
+                                                "type": "array",
+                                                "format": "table",
+                                                "items": {
+                                                    "title": "Role ID",
+                                                    "type": "string",
+                                                    "minLength": 16,
+                                                    "maxLength": 20,
+                                                    "pattern": "^[0-9]+$"
+                                                },
+                                                "options": {
+                                                    "dependencies": {
+                                                        "enabled": true
+                                                    },
+                                                    "collapsed": true
+                                                }
+                                            },
+                                            "roleExcludes": {
+                                                "title": "Roles to not save",
+                                                "type": "array",
+                                                "format": "table",
+                                                "items": {
+                                                    "title": "Role ID",
+                                                    "type": "string",
+                                                    "minLength": 16,
+                                                    "maxLength": 20,
+                                                    "pattern": "^[0-9]+$"
+                                                },
+                                                "options": {
+                                                    "dependencies": {
+                                                        "enabled": true
+                                                    },
+                                                    "collapsed": true
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        },
+                                        "collapsed": true
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "autoroles": {
+                            "title": "Auto Roles",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "human": {
+                                    "title": "Human roles",
+                                    "type": "array",
+                                    "description": "Roles to assign to human users",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "Role ID",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                },
+                                "bot": {
+                                    "title": "Bot roles",
+                                    "type": "array",
+                                    "description": "Roles to assign to bot users",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "string",
+                                        "title": "Role ID",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
+                        },
+                        "reactroles": {
+                            "title": "React Roles",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
+                                "definitions": {
+                                    "title": "Definitions",
+                                    "type": "array",
+                                    "format": "tabs-top",
+                                    "items": {
+                                        "type": "object",
+                                        "title": "Definition",
+                                        "properties": {
+                                            "role": {
+                                                "title": "Role ID to assign",
+                                                "type": "string",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            },
+                                            "message": {
+                                                "title": "Message ID to detect reactions on",
+                                                "type": "string",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            },
+                                            "emoji": {
+                                                "title": "Emoji to trigger reactions on",
+                                                "description": "When using default emoji, paste in their json escapes, when using custom emojis only place in their IDs.",
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["toggle", "once", "remove"],
+                                                "default": "toggle"
+                                            }
+                                        }
+                                    },
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
                         }
                     },
                     "options": {
