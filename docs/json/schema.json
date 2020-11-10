@@ -203,7 +203,7 @@
                                             "__key": {
                                                 "title": "Level",
                                                 "description": "The member level and below to apply this to",
-                                                "type": "number",
+                                                "type": "integer",
                                                 "default": 999,
                                                 "minimum": 0,
                                                 "maximum": 999
@@ -281,6 +281,17 @@
                                             "enabled": true
                                         },
                                         "collapsed": true
+                                    }
+                                },
+                                "saveOnBan": {
+                                    "title": "Save On Ban",
+                                    "type": "boolean",
+                                    "default": true,
+                                    "format": "checkbox",
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
                                     }
                                 }
                             },
@@ -2890,7 +2901,7 @@
                                     "format": "checkbox"
                                 },
                                 "expiry": {
-                                    "type": "number",
+                                    "type": "integer",
                                     "title": "Expiry",
                                     "description": "If >0, how many seconds before the bot deletes the reaction and/or message.",
                                     "default": 0,
