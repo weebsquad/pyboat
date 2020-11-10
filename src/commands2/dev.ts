@@ -827,7 +827,7 @@ export function InitializeCommands() {
           if (mods.length === 0) {
             return 'No modules enabled!';
           }
-          return `Modules enabled:\n\`${mods.join(', ')}\``;
+          return `Modules enabled: **(${mods.length})**\n\n\`${mods.join(', ')}\``;
         });
         admin.saveMessage(res);
       },

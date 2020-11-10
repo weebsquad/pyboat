@@ -75,7 +75,7 @@ export function checkOverrides(level: number, ovtext: string) {
   } else {
     modName = ovtext;
   }
-
+  // console.log(`ovtext = ${ovtext}`, `cmdname: ${cmdName}, modName: ${modName}, groupName: ${groupName}`)
   const checkStrings = [`module.${modName}`, `group.${groupName}`, `command.${cmdName}`];
   for (let i = 0; i < checkStrings.length; i++) {
     const obj = config.modules.commands.overrides[checkStrings[i]];
