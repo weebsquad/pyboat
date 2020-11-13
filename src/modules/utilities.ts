@@ -1266,8 +1266,31 @@ export function InitializeCommands() {
             })}`;
             desc += `\n <:booster:735780703912067160> **Boosting since**: ${tdiffboost} ago **[**\`${formattedDtBoost}\`**]**`;
           }
+          const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER'];
           if (member.roles.length > 0) {
-            desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
+            if (member.roles.length < 20) {
+              desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
+            } else {
+              // only show key roles if those are less than 20
+
+              const theseroles = (await guild.getRoles()).filter((m) => member.roles.includes(m.id));
+              const keyroles: string[] = theseroles.filter((m) => {
+                const perms = new utils.Permissions(m.permissions);
+                const hasPerms: any = perms.serialize();
+
+                for (const key in hasPerms) {
+                  if (hasPerms[key] === false || irrelevantPerms.includes(key)) {
+                    delete hasPerms[key];
+                  }
+                }
+                return Object.keys(hasPerms).length > 0;
+              }).map((v) => v.id);
+              if (keyroles.length < 20) {
+                desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length})\n ${discord.decor.Emojis.SHIELD} **Key Roles** (${keyroles.length}): ${keyroles.map((rl) => `<@&${rl}>`).join(' ')}`;
+              } else {
+                desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length})`;
+              }
+            }
           }
           const infsGiven = await infsPool.getByQuery({ actorId: usr.id });
           const infsReceived = await infsPool.getByQuery({ memberId: usr.id });
@@ -1282,9 +1305,9 @@ export function InitializeCommands() {
           }
           const perms = new utils.Permissions(member.permissions);
           let hasPerms: any = perms.serialize();
-          const irrelevant = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER'];
+
           for (const key in hasPerms) {
-            if (hasPerms[key] === false || irrelevant.includes(key)) {
+            if (hasPerms[key] === false || irrelevantPerms.includes(key)) {
               delete hasPerms[key];
             }
           }
