@@ -435,12 +435,27 @@ export const auditLogDefinitions: {[key: string]: any} = {
       }
       return false;
     },
+    73: (dt: any, log: discord.AuditLogEntry.MessageBulkDelete, store: discord.AuditLogEntry.MessageBulkDelete) => {
+      if (dt[0].channelId !== log.targetId) {
+        return false;
+      }
+      if (store && typeof store === 'object') {
+        const storedCount = +store.options.count;
+        return storedCount + 1 === +log.options.count;
+      }
+      if (log.options.count === '1') {
+        return true;
+      } // if we got nothing saved and the log is a single delete
+
+      return false;
+    },
     store: {
       entryFound: true,
     },
     auditLogEntries: [
       discord.AuditLogEntry.ActionType.MESSAGE_DELETE,
       discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD,
+      discord.AuditLogEntry.ActionType.MESSAGE_BULK_DELETE,
     ],
   },
   MESSAGE_DELETE_BULK: {
