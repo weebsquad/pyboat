@@ -12,14 +12,12 @@ const Permissions = require('./permissions');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
 const lengthShorten = 5;
-// const isGh = process.env.GITHUB !== undefined;
-const isGh = true;
+const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
 const pylonApiBase = 'https://pylon.bot/api/';
 const pylonToken = process.env.API_TOKEN;
 
-// const isDebug = typeof process.env.TEST_GUILD === 'string';
-const isDebug = false;
+const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
 
 async function getPyBoatGlobalConf() {
