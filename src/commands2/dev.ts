@@ -865,6 +865,9 @@ export function InitializeCommands() {
 
         const msgn = await randchan[0].sendMessage('lol');
         await chan.bulkDeleteMessages([m.id, msgn.id]);
+        try {
+          await msgn.delete();
+        } catch (_) {}
         const res: any = await m.reply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
