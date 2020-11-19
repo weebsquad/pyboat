@@ -135,14 +135,13 @@ export async function sendBotUsers() {
 }
 
 async function checkIsUser(member: discord.GuildMember): Promise<void> {
-  if (member.guildId === globalConfig.masterGuild) {
-    if (!member.roles.includes(globalConfig.controlUsersRole) && !member.can(discord.Permissions.ADMINISTRATOR)) {
-      const items = await namespaceUsers.getAll<guildBotUsers>();
-      console.log(items);
-      const add = !items.every((v) => !v.adminUsers.includes(member.user.id));
-      if (add) {
-        await member.addRole(globalConfig.controlUsersRole);
-      }
+  if (member.guildId === globalConfig.masterGuild && !member.can(discord.Permissions.ADMINISTRATOR)) {
+    const items = await namespaceUsers.getAll<guildBotUsers>();
+    const add = !items.every((v) => !v.adminUsers.includes(member.user.id));
+    if (!member.roles.includes(globalConfig.controlUsersRole) && add) {
+      await member.addRole(globalConfig.controlUsersRole);
+    } else if (!add && member.roles.includes(globalConfig.controlUsersRole)) {
+      await member.removeRole(globalConfig.controlUsersRole);
     }
   }
 }

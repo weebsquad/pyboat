@@ -12,12 +12,14 @@ const Permissions = require('./permissions');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
 const lengthShorten = 5;
-const isGh = process.env.GITHUB !== undefined;
+// const isGh = process.env.GITHUB !== undefined;
+const isGh = true;
 const wh = process.env.WEBHOOK_URL;
 const pylonApiBase = 'https://pylon.bot/api/';
 const pylonToken = process.env.API_TOKEN;
 
-const isDebug = typeof process.env.TEST_GUILD === 'string';
+// const isDebug = typeof process.env.TEST_GUILD === 'string';
+const isDebug = false;
 const toPost = [];
 
 async function getPyBoatGlobalConf() {
@@ -49,6 +51,9 @@ async function getNonActivePylonGuilds() {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
+  if (txt === 'unauthorized') {
+    throw new Error('Pylon Token Unauthorized');
+  }
   //  console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
@@ -106,6 +111,9 @@ async function getDeploymentIds() {
   const whitelist = gconf.whitelistedGuilds;
   // await getActivePylonGuilds(); // pylon api bug where it doesnt cache our perms on the first request
   const nonactive = await getNonActivePylonGuilds();
+  if (!nonactive) {
+    return null;
+  }
   sleep(1);
   const toadd = nonactive.filter((v) => whitelist.includes(v.id)).map((v) => v.id);
   if (toadd.length > 0) {
@@ -135,7 +143,7 @@ async function getDeploymentIds() {
   sleep(1);
   let validGuilds = await getValidGuilds();
   validGuilds = validGuilds.filter((val) => whitelist.includes(val.id)).map((v) => v.id);
-  const notFound = whitelist.filter((v) => validGuilds.find((val) => val === v) === undefined);
+  const notFound = whitelist.filter((v) => validGuilds.find((val) => val === v) === undefined && !toRet.failed.includes(v));
   if (notFound.length > 0) {
     toRet.skipped.push(...notFound);
     // console.log(`Could not find **${notFound.length}** guilds (from whitelist) : \`${notFound.join(', ')}\``);
@@ -223,6 +231,9 @@ function sendWebhook(txt) {
 
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
+  if (!objDeps) {
+    throw new Error('Failed to fetch deployment IDs, closing');
+  }
   const { deployments: ids, skipped, failed, added } = objDeps;
   if (!isGh) {
     console.log(ids, skipped, failed, added);
@@ -237,10 +248,10 @@ getDeploymentIds().then((objDeps) => {
       txt += `\n✅ Publishing PyBoat to **${ids.length}** guilds..`;
     }
     if (skipped.length > 0) {
-      txt += `\n🟡 Skipping **${skipped.length}** guilds \`${skipped.join(', ')}\``;
+      txt += `\n🟡 Skipping **${skipped.length}** guild${skipped.length > 1 ? 's' : ''} ${skipped.map((e) => `\`${e}\``).join(', ')}`;
     }
     if (failed.length > 0) {
-      txt += `\n🔴 Failed for **${failed.length}** guilds: \`${failed.join(', ')}\``;
+      txt += `\n🔴 Failed for **${failed.length}** guild${failed.length > 1 ? 's' : ''}: ${failed.map((e) => `\`${e}\``).join(', ')}`;
     }
     sendWebhook(txt);
     console.info(txt);
@@ -315,4 +326,9 @@ getDeploymentIds().then((objDeps) => {
         process.exit(1);
       });
   });
+}).catch((e) => {
+  if (isGh && !isDebug) {
+    sendWebhook(`Deploy error:\n${e}`);
+  }
+  throw new Error(e);
 });
