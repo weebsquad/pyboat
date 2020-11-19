@@ -508,6 +508,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
     24: (dt: any, log: discord.AuditLogEntry.MemberUpdate) => {
       const voiceState: discord.VoiceState = dt[0];
       const oldVoiceState: discord.VoiceState = dt[1];
+      if(log.userId === voiceState.userId) return false;
       if (voiceState.channelId === null) {
         return false;
       }
@@ -544,6 +545,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
     ) => {
       const voiceState: discord.VoiceState = dt[0];
       const oldVoiceState: discord.VoiceState = dt[1];
+      if(log.userId === voiceState.userId) return false;
       if (
         voiceState.channelId === oldVoiceState.channelId
         || voiceState.channelId !== log.options.channelId
@@ -569,6 +571,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
     ) => {
       const voiceState: discord.VoiceState = dt[0];
       const oldVoiceState: discord.VoiceState = dt[1];
+      if(log.userId === voiceState.userId) return false;
       if (
         voiceState.channelId === oldVoiceState.channelId
         || voiceState.channelId !== null

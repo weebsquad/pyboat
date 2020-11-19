@@ -94,7 +94,8 @@ export function isAuditLog(
   if (key === 'channelJoined') {
     return false;
   }
-  return log instanceof discord.AuditLogEntry;
+ if(!(log instanceof discord.AuditLogEntry)) return false;
+ if(log.userId === args[0].userId) return false;
 }
 
 export const messages = {
