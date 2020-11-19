@@ -852,7 +852,20 @@ export function InitializeCommands() {
       'ratelimit', async (m) => {
         const now = Date.now();
         const res1 = ratelimit.poolGlob;
-        const res: any = await m.reply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
+      },
+    );
+    sub.raw(
+      'auditlogmsgdeletes', async (m) => {
+        const chan = await m.getChannel();
+        const guild = await m.getGuild();
+        const randchan: Array<discord.GuildTextChannel> = <any>(await guild.getChannels()).filter((v) => v.type === discord.Channel.Type.GUILD_TEXT);
+        if (randchan.length < 1) {
+          throw new Error('no channels to post bot msg to');
+        }
+
+        const msgn = await randchan[0].sendMessage('lol');
+        await chan.bulkDeleteMessages([m.id, msgn.id]);
+        const res: any = await m.reply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
     );
