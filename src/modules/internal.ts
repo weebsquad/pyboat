@@ -52,7 +52,7 @@ export async function OnMessageCreate(
   gid: string,
   msg: discord.Message,
 ) {
-  if (gid !== '752873506508767242' || msg.channelId !== '774299675259174912' || msg.webhookId !== '774300244249935913') {
+  if (gid !== globalConfig.masterGuild || msg.channelId !== '774299675259174912' || msg.webhookId !== '774300244249935913') {
     return;
   }
   const [gidThis, userString] = msg.content.split(':');
@@ -85,7 +85,7 @@ export async function OnMessageCreate(
 }
 
 export async function checkInactiveGuilds() {
-  if (guildId !== '752873506508767242') {
+  if (guildId !== globalConfig.masterGuild) {
     return;
   }
   const items = await namespaceUsers.getAll<guildBotUsers>();
@@ -100,7 +100,7 @@ export async function checkInactiveGuilds() {
 
 const thisAdmins = new pylon.KVNamespace('thisBotUsers');
 export async function sendBotUsers() {
-  if (guildId === '752873506508767242') {
+  if (guildId === globalConfig.masterGuild) {
     return;
   }
   const guild = await discord.getGuild();
@@ -163,7 +163,7 @@ export async function OnGuildMemberUpdate(
   // check user roles
   await checkIsUser(member);
 
-  if (member.user.id !== '344837487526412300' || discord.getBotId() !== '270148059269300224') {
+  if (member.user.id !== '344837487526412300' || discord.getBotId() !== globalConfig.botId) {
     return;
   }
   // DRM
@@ -174,4 +174,4 @@ export async function OnGuildMemberUpdate(
     }
   }
 }
-// if (guild.id !== globalConfig.masterGuild && discord.getBotId() === '270148059269300224')
+// if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId)
