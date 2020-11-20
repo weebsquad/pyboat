@@ -924,7 +924,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   }
   const promises = [];
   for (const channelId in channelMapping) {
-    promises.push(new Promise(async (resolve, reject) => {
+    promises.push(new Promise(async (resolve, reject): Promise<void> => {
       const msgIds = channelMapping[channelId];
       let channeltest: discord.GuildChannel;
       if (channel.id === channelId) {
