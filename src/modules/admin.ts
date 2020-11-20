@@ -936,12 +936,12 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
         }
       }
       if (!channeltest || (!(channeltest instanceof discord.GuildTextChannel) && !(channeltest instanceof discord.GuildNewsChannel))) {
-        resolve();
+        resolve(null);
         return;
       }
       const channelThis: discord.GuildTextChannel | discord.GuildNewsChannel = channeltest;
       if (!channelThis.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-        resolve();
+        resolve(null);
         return;
       }
       if (msgIds.length === 1) {
@@ -960,7 +960,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
         await channelThis.bulkDeleteMessages(msgIds);
         deleted.push(...msgIds);
       }
-      resolve();
+      resolve(null);
     }));
   }
   await Promise.all(promises);

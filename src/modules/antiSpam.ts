@@ -412,11 +412,11 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
               promises.push(new Promise(async (resolve?, reject?): Promise<void> => {
                 const thisChan = await discord.getChannel(channelId);
                 if (thisChan.type !== discord.Channel.Type.GUILD_TEXT && thisChan.type !== discord.Channel.Type.GUILD_NEWS) {
-                  resolve();
+                  resolve(null);
                   return;
                 }
                 if (!thisChan.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-                  resolve();
+                  resolve(null);
                   return;
                 }
                 const mIds = channelMapping[channelId];
@@ -441,7 +441,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
                     }
                   } catch (e) {}
                 }
-                resolve();
+                resolve(null);
               }));
             }
             await Promise.all(promises);
