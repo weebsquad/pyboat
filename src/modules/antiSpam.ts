@@ -409,7 +409,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
           if (me !== null) {
             const promises = [];
             for (const channelId in channelMapping) {
-              promises.push(new Promise(async (resolve, reject): Promise<void> => {
+              promises.push(new Promise(async (resolve?, reject?): Promise<void> => {
                 const thisChan = await discord.getChannel(channelId);
                 if (thisChan.type !== discord.Channel.Type.GUILD_TEXT && thisChan.type !== discord.Channel.Type.GUILD_NEWS) {
                   resolve();
