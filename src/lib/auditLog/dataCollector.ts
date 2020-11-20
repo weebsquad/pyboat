@@ -537,7 +537,7 @@ export const auditLogDefinitions: {[key: string]: any} = {
       }
       if (
         voiceState.mute !== oldVoiceState.mute
-        && log.changes.mute
+        && typeof log.changes.mute === 'object'
         && log.changes.mute.newValue === voiceState.mute
         && log.changes.mute.oldValue === oldVoiceState.mute
       ) {

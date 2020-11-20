@@ -203,11 +203,11 @@ async function parseChannelsData(
       const res = await ev.data.messages[el](ev.auditLogEntry, ...ev.payload);
       if (res instanceof Map) {
         res.set('_KEY_', el);
-        k2.push({id: ev.keys.indexOf(el), val: res});
+        k2.push({ id: ev.keys.indexOf(el), val: res });
       }
     }),
   );
-  k2 = k2.sort((a,b) => a.id - b.id).map((v) => v.val);
+  k2 = k2.sort((a, b) => a.id - b.id).map((v) => v.val);
   k2 = k2.filter((el: any) => el instanceof Map && el.has('_TYPE_'));
   k2.map((el: Map<string, any>) => {
     if (!el.has('_TYPE_') || !el.has('_KEY_')) {

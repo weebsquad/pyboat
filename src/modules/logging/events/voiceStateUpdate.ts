@@ -100,6 +100,7 @@ export function isAuditLog(
   if (log.userId === args[0].userId) {
     return false;
   }
+  return true;
 }
 
 export const messages = {
