@@ -732,6 +732,58 @@ export function InitializeCommands() {
         admin.saveMessage(res);
       },
     );
+    sub.on(
+      'movehighest',
+      (ctx) => ({ roleid: ctx.string() }),
+      async (m, { roleid }) => {
+        const res: any = await m.reply(async () => {
+          const guild = await m.getGuild();
+          const botMember = await guild.getMember(discord.getBotId());
+          if (!botMember) {
+            return 'Bot not found';
+          }
+          const highestBot = await utils.getMemberHighestRole(botMember);
+          const roles = await guild.getRoles();
+          const thisRole = roles.find((v) => v.id === roleid);
+          if (!thisRole) {
+            return 'Role not found';
+          }
+          if (thisRole.position >= highestBot.position) {
+            return 'Bot can\'t move this role';
+          }
+          if(thisRole.position === highestBot.position-1) return 'Role already at max highness'
+          await guild.editRolePositions([{ id: thisRole.id, position: highestBot.position }, {id: highestBot.id, position: highestBot.position+1}]);
+          return 'Done';
+        });
+        admin.saveMessage(res);
+      },
+    );
+    sub.on(
+      'movelowest',
+      (ctx) => ({ roleid: ctx.string() }),
+      async (m, { roleid }) => {
+        const res: any = await m.reply(async () => {
+          const guild = await m.getGuild();
+          const botMember = await guild.getMember(discord.getBotId());
+          if (!botMember) {
+            return 'Bot not found';
+          }
+          const highestBot = await utils.getMemberHighestRole(botMember);
+          const roles = await guild.getRoles();
+          const thisRole = roles.find((v) => v.id === roleid);
+          if (!thisRole) {
+            return 'Role not found';
+          }
+          if (thisRole.position >= highestBot.position) {
+            return 'Bot can\'t move this role';
+          }
+          if(thisRole.position === 0) return 'Role already at lowest'
+          await guild.editRolePositions([{ id: thisRole.id, position: 0 }]);
+          return 'Done';
+        });
+        admin.saveMessage(res);
+      },
+    );
     sub.raw(
       'embed', async (m) => {
         const embed = new discord.Embed();
