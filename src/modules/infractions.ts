@@ -142,7 +142,7 @@ export async function every5Min() {
       await Promise.all(promises2);
     }
   } catch (e) {
-    await utils.logError(e);
+    utils.logError(e);
   }
 }
 export async function clearInfractions() {

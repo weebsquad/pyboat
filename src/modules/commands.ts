@@ -98,6 +98,8 @@ export async function OnMessageCreate(
     } else {
       // original cmd errored!
       const _e: ApiError = cmdExec;
+      utils.logError(_e);
+
       if (_e.messageExtended && typeof _e.messageExtended === 'string') {
         try {
           const emsg: any = JSON.parse(_e.messageExtended).message;
@@ -106,7 +108,6 @@ export async function OnMessageCreate(
           }
         } catch (e) {}
       }
-      await utils.logError(_e);
 
       logDebug(
         'BOT_ERROR',

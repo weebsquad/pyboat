@@ -397,7 +397,7 @@ export async function getAuditLogData(
         continue;
       }
     } catch (e) {
-      await utils.logError(e);
+      utils.logError(e);
     }
 
     if (typeof def.store === 'object') {

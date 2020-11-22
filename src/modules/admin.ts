@@ -340,7 +340,7 @@ export async function every5Min() {
       await actionPool.editPools<Action>(actsClear.map((val) => val.id), () => null);
     }
   } catch (e) {
-    await utils.logError(e);
+    utils.logError(e);
   }
 }
 
@@ -403,6 +403,9 @@ export async function getRoleIdByText(txt: string): Promise<string | null> {
   // check full matches first in config
   for (const key in config.modules.admin.roleAliases) {
     const obj = config.modules.admin.roleAliases[key];
+    if (typeof obj !== 'string') {
+      continue;
+    }
     if (key === txt || obj.toLowerCase() === txt) {
       return key;
     }
@@ -410,6 +413,9 @@ export async function getRoleIdByText(txt: string): Promise<string | null> {
   // check partial matches now
   for (const key in config.modules.admin.roleAliases) {
     const obj = config.modules.admin.roleAliases[key];
+    if (typeof obj !== 'string') {
+      continue;
+    }
     if (obj.toLowerCase().includes(txt)) {
       return key;
     }
@@ -1735,7 +1741,7 @@ export function InitializeCommands() {
     );
 
     subCommandGroup.on(
-      { name: 'remove', aliases: ['rm', 'take'], filters: c2.getFilters('admin.role.add', Ranks.Administrator) },
+      { name: 'remove', aliases: ['rm', 'take'], filters: c2.getFilters('admin.role.remove', Ranks.Administrator) },
       (ctx) => ({ member: ctx.guildMember(), roleText: ctx.text() }),
       async (msg, { member, roleText }) => {
         const res = await Role(msg.member, member, roleText, false);

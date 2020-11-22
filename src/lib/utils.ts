@@ -177,10 +177,8 @@ escapeList.forEach((char) => {
   return string;
 }
 
-export async function logError(...args: any) {
-  if(guildId !== '307927177154789386') {
-  if(typeof globalConfig !== 'object' || typeof globalConfig.showErrors !== 'boolean' || globalConfig.showErrors !== true) return;
-  }
+export function logError(...args: any) {
+  if(!globalConfig.showErrors) return;
   console.error(...args);
 }
 

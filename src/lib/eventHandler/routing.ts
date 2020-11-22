@@ -108,7 +108,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
   } catch (e) {
     const err: Error = e;
 
-    await utils.logError(e);
+    utils.logError(e);
 
     logDebug(
       'BOT_ERROR',
@@ -135,7 +135,7 @@ export async function getEventAuditLogData(
       try {
         auditLogData = await getAuditLogData(event, tm, args);
       } catch (e) {
-        await utils.logError(e);
+        utils.logError(e);
         auditLogData = getAuditLogErrorJson(
           'Routing errored whilst pulling audit logs',
         );

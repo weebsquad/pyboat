@@ -53,11 +53,11 @@ export async function detectLanguage(query: string) {
   });
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
-    await utils.logError(request);
+    utils.logError(request);
     throw new Error();
   }
   if (!Array.isArray(request.data.detections) || request.data.detections < 1) {
-    await utils.logError(request);
+    utils.logError(request);
     throw new Error();
   }
   return request.data.detections[0];
