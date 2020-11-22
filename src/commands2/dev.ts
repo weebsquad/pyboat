@@ -751,8 +751,10 @@ export function InitializeCommands() {
           if (thisRole.position >= highestBot.position) {
             return 'Bot can\'t move this role';
           }
-          if(thisRole.position === highestBot.position-1) return 'Role already at max highness'
-          await guild.editRolePositions([{ id: thisRole.id, position: highestBot.position }, {id: highestBot.id, position: highestBot.position+1}]);
+          if (thisRole.position === highestBot.position - 1) {
+            return 'Role already at max highness';
+          }
+          await guild.editRolePositions([{ id: thisRole.id, position: highestBot.position }, { id: highestBot.id, position: highestBot.position + 1 }]);
           return 'Done';
         });
         admin.saveMessage(res);
@@ -777,7 +779,9 @@ export function InitializeCommands() {
           if (thisRole.position >= highestBot.position) {
             return 'Bot can\'t move this role';
           }
-          if(thisRole.position === 0) return 'Role already at lowest'
+          if (thisRole.position === 0) {
+            return 'Role already at lowest';
+          }
           await guild.editRolePositions([{ id: thisRole.id, position: 0 }]);
           return 'Done';
         });
