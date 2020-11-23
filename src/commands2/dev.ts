@@ -15,7 +15,6 @@ import * as github from '../lib/github';
 import { handleEvent } from '../modules/logging/main';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 
-
 type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
 type Teardown<T> = (setup: T) => Promise<void>;
