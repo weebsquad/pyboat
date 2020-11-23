@@ -1,4 +1,4 @@
-import typescript from 'rollup-plugin-typescript2';
+import typescript from 'rollup-plugin-typescript';
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -30,7 +30,7 @@ module.exports = () => ({
     nodeResolve(),
     typescript({ lib: ['es2020'], target: 'es2020' }),
     strip({
-      functions: ['console.*', 'pylon.getCpuTime'],
+      functions: ['console.*'],
       sourceMap: true,
       include: ['**/*.ts'],
     }),
