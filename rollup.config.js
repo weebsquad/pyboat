@@ -1,4 +1,4 @@
-import typescript from 'rollup-plugin-typescript';
+import typescript from '@rollup/plugin-typescript';
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
