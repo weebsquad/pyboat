@@ -173,6 +173,8 @@ export class StoragePool {
         const _res = await this.editPool(newObj[this.uniqueId], newObj);
         return _res;
       }
+      // @ts-ignore
+      const cpuinitial = await pylon.getCpuTime();
       let saveTo: string | undefined;
       items.every((item: any) => {
         if (!Array.isArray(item.value)) {
@@ -211,6 +213,11 @@ export class StoragePool {
           newArr.push(newObj);
           return newArr;
         });
+        // @ts-ignore
+        const cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
+        if (cputnow >= 5) {
+          console.warn(`Saved item to [${this.kvName}] : Took ${cputnow}ms`);
+        }
         return true;
       } catch (e) {
         utils.logError('[StoragePools] Transact:', e);

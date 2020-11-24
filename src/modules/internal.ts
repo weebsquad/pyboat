@@ -107,7 +107,7 @@ export async function sendBotUsers() {
   const admins: string[] = [];
   // @ts-ignore
   const startedAt = Math.floor(await pylon.getCpuTime());
-  console.log(`Started botuser fetch at ${startedAt}ms`);
+  console.log(`Started botuser fetch @ ${startedAt}ms`);
   for await (const member of guild.iterMembers()) {
     if (!member.user.bot && member.can(discord.Permissions.ADMINISTRATOR)) {
       admins.push(member.user.id);
@@ -115,8 +115,8 @@ export async function sendBotUsers() {
   }
   // @ts-ignore
   const cpuEnded = Math.floor(await pylon.getCpuTime());
-  console.log(`Done botuser fetch at ${cpuEnded}ms == ${cpuEnded - startedAt}ms CPU`);
-  console.log('Admins: ', admins);
+  console.log(`Done botuser fetch in ${cpuEnded - startedAt}ms CPU`);
+  // console.log('Admins: ', admins);
   const { result } = await thisAdmins.transactWithResult<Array<string>, boolean>(guildId, (prev) => {
     if (!prev) {
       return { next: admins, result: true };

@@ -373,7 +373,6 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   }
   lastTry = Date.now();
   loadingConf = true;
-  console.info('Initializing config');
   try {
     const globs = await (await fetch('https://pyboat.i0.tf/globalconf.json')).json();
     for (const k in globs) {
@@ -437,7 +436,6 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
     await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
     await pylon.kv.put('__botVersion', globalConfig.version);
   }
-  console.info('Fetched version');
   const items = await configKv.items();
   let cfg: any;
   if (items.length > 0) {
@@ -450,14 +448,12 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   if (typeof cfg !== 'object') {
     console.warn('No config');
     cfg = JSON.parse(JSON.stringify(defaultConfig));
-  } else {
-    console.info('Fetched config');
   }
 
   config = loadConfigDefaults(cfg);
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
-  console.info(`Initialized! Cpu time so far: ${cput}ms`);
+  console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
   return true;
 }
 

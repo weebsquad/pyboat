@@ -53,16 +53,25 @@ export async function updateSubs(): Promise<void> {
   if (subs.length > 3) {
     return;
   }
+  // @ts-ignore
+  const cpunow = Math.floor(await pylon.getCpuTime());
+  console.log(`[REDDIT] CPU @ TRIM : ${cpunow}ms`);
   const times = await kv.get('lastUpdated') || {};
   const timesNew = JSON.parse(JSON.stringify(times));
   await Promise.all(subs.map(async (sub) => {
+    const jsonmeas = await pylon.getCpuTime();
     const req = await fetch(`https://www.reddit.com/r/${sub.name}/new.json`);
     if (req.status !== 200) {
       return;
     }
+
     const json: any = await req.json();
     if (!json.data || !json.data.children) {
       return;
+    }
+    const jsonmeasend = Math.floor(await pylon.getCpuTime() - jsonmeas);
+    if (jsonmeasend > 5) {
+      console.log(`[REDDIT] CPU @ ONE FETCH TOOK ${jsonmeasend}ms`);
     }
     const data: Array<any> = json.data.children;
     const posts = data.map((v) => v.data).reverse();

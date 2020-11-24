@@ -297,6 +297,18 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
+      'cpu', async (m) => {
+        // @ts-ignore
+        const cpuinitial = await pylon.getCpuTime();
+        const res: any = await m.reply('<a:loading:735794724480483409>');
+        await InitializeConfig(true);
+        // @ts-ignore
+        const cfgafter = Math.floor(await pylon.getCpuTime() - cpuinitial);
+        await res.edit(`**Command Handler Reached:** ${Math.floor(cpuinitial)}ms\n**Reload:** ${cfgafter}ms`);
+        admin.saveMessage(res);
+      },
+    );
+    sub.raw(
       'kv', async (m, filter) => {
         const res: any = await m.reply(async () => {
           const start = Date.now();

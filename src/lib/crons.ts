@@ -25,6 +25,8 @@ const _cr: {[key: string]: any} = {
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
+      // @ts-ignore
+      const cput = await pylon.getCpuTime();
       try {
         await pylon.requestCpuBurst(async () => {
           await ratelimit.clean();
@@ -36,19 +38,27 @@ const _cr: {[key: string]: any} = {
           await antiPing.periodicDataClear();
           await utilities.checkReminders();
           await utilities.checkAllCustomRoles();
+          // @ts-ignore
+          const redditmeas = await pylon.getCpuTime();
           await reddit.updateSubs();
+          // @ts-ignore
+          console.log(`Started Reddit update @${Math.floor(redditmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - redditmeas)}ms to complete.`);
           await internal.checkInactiveGuilds();
           await internal.sendBotUsers();
+          // @ts-ignore
+          const poolmeas = await pylon.getCpuTime();
+          console.log('Cron about to clean pools, at ', Math.floor(await pylon.getCpuTime()), 'ms');
           if (InitializedPools.length > 0) {
             await Promise.all(InitializedPools.map(async (pool) => {
               await pool.clean();
             }));
           }
-          throw new Error('');
-        }, 300);
+          console.log(`Done pool cleaning @${Math.floor(poolmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - poolmeas)}ms to complete.`);
+          // throw new Error('');
+        }, 500);
       } catch (e) {
         if (e.message !== '') {
-          await logError(e);
+          logError(e);
         }
       }
     },
@@ -63,7 +73,6 @@ export async function onCron(name: string) {
       return;
     }
   }
-  await routing._Initialize();
   for (const key in _cr) {
     if (_cr[key].name !== name) {
       continue;
@@ -88,6 +97,7 @@ export function InitializeCrons() {
     }
     obj.started = true;
     pylon.tasks.cron(nm, key, async () => {
+      console.log(`Native cron function executed for [${nm}] (${key})`);
       await onCron(nm);
     });
   }
