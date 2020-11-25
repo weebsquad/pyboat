@@ -30,4 +30,5 @@ jobs:
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
         WEBHOOK_URL: ${{secrets.WEBHOOK_URL}}
         GITHUB: true
-        TARGET: ${{ inputs.target }}
+      with:
+        target: 'test123'
