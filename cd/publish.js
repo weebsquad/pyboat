@@ -16,7 +16,6 @@ const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
 const pylonApiBase = 'https://pylon.bot/api/';
 const pylonToken = process.env.API_TOKEN;
-const target = process.env.TARGET;
 
 const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
@@ -97,7 +96,7 @@ async function getValidGuilds() {
 
 async function getDeploymentIds() {
   const toRet = { deployments: [], skipped: [], added: [], failed: [] };
-  if (isDebug === true || (!isDebug && isGh && typeof target === 'string' && target !== '*')) {
+  if (isDebug === true) {
     const dept = await getDeployment(process.env.TEST_GUILD);
     const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
     if (correctDep !== undefined) {
@@ -259,12 +258,8 @@ getDeploymentIds().then((objDeps) => {
       return;
     }
     doneGuilds.push(deployment_id);
-    let bundle;
-    if (!isGh) {
-      bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
-    } else {
-      // fetch it from artifacts
-    }
+    const bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
+
     if (!bundle) {
       console.error('Failed to fetch bundle, exiting...');
       process.exit(1);
