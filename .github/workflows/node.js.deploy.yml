@@ -3,7 +3,13 @@
 
 name: Deploy
 
-on: [workflow_dispatch]
+on: 
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Targets to deploy to (* = all)
+        default: *
+        required: true
 
 jobs:
   build:
@@ -19,20 +25,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install node_modules
       run: npm i
-    - name: Lint js/ts
-      run: npm run lint --if-present
-    - name: Build Rollup
-      run: npm run build --if-present
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    - name: Upload bundle
-      uses: actions/upload-artifact@v2
-      with:
-        name: bundle.js
-        path: dist/bundle.js
     - name: Publish to all guilds
       run: npm run publish --if-present
       env:
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
         WEBHOOK_URL: ${{secrets.WEBHOOK_URL}}
         GITHUB: true
+        TARGET: ${{ inputs.target }}

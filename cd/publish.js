@@ -16,6 +16,7 @@ const isGh = process.env.GITHUB !== undefined;
 const wh = process.env.WEBHOOK_URL;
 const pylonApiBase = 'https://pylon.bot/api/';
 const pylonToken = process.env.API_TOKEN;
+const target = process.env.TARGET;
 
 const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
@@ -96,7 +97,7 @@ async function getValidGuilds() {
 
 async function getDeploymentIds() {
   const toRet = { deployments: [], skipped: [], added: [], failed: [] };
-  if (isDebug === true) {
+  if (isDebug === true || (!isDebug && isGh && typeof target === 'string' && target !== '*')) {
     const dept = await getDeployment(process.env.TEST_GUILD);
     const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
     if (correctDep !== undefined) {
@@ -226,7 +227,7 @@ function sendWebhook(txt) {
     }),
   });
 }
-
+console.log('target',target);
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   if (!objDeps) {
@@ -259,7 +260,16 @@ getDeploymentIds().then((objDeps) => {
       return;
     }
     doneGuilds.push(deployment_id);
-    const bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
+    let bundle;
+    if (!isGh) {
+      fs.readFileSync('./dist/bundle.js', 'utf8');
+    } else {
+      // fetch it from artifacts
+    }
+    if (!bundle) {
+      console.error('Failed to fetch bundle, exiting...');
+      process.exit(1);
+    }
     const data = {
       method: 'POST',
       headers: {
@@ -299,6 +309,8 @@ getDeploymentIds().then((objDeps) => {
         } else {
           if (!isGh) {
             console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
+          } else {
+            console.info('Published successfully');
           }
 
           if (typeof (wh) === 'string' && isGh && !isDebug) {
