@@ -227,7 +227,6 @@ function sendWebhook(txt) {
     }),
   });
 }
-console.log('target',target);
 const doneGuilds = [];
 getDeploymentIds().then((objDeps) => {
   if (!objDeps) {
@@ -262,7 +261,7 @@ getDeploymentIds().then((objDeps) => {
     doneGuilds.push(deployment_id);
     let bundle;
     if (!isGh) {
-      fs.readFileSync('./dist/bundle.js', 'utf8');
+      bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
     } else {
       // fetch it from artifacts
     }

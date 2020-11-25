@@ -296,6 +296,18 @@ export function InitializeCommands() {
         throw new Error('testing pls ignore');
       },
     );
+    // http://i0.tf/q261q.zip
+    sub.raw(
+      'zip', async (m) => {
+        // @ts-ignore
+        const cpuinitial = await pylon.getCpuTime();
+        const request = new Request('http://i0.tf/q261q.zip', {
+          method: 'GET',
+          headers: {},
+
+        });
+      },
+    );
     sub.raw(
       'cpu', async (m) => {
         // @ts-ignore
