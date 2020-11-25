@@ -942,6 +942,28 @@ export function InitializeCommands() {
       },
     );
     sub.raw(
+      'auditlogmsgdeletes2', async (m) => {
+        const chan = await m.getChannel();
+        const guild = await m.getGuild();
+        const randchan: Array<discord.GuildTextChannel> = <any>(await guild.getChannels()).filter((v) => v.type === discord.Channel.Type.GUILD_TEXT);
+        if (randchan.length < 1) {
+          throw new Error('no channels to post bot msg to');
+        }
+
+        const msgn = await randchan[0].sendMessage('lol');
+        const msgn2 = await randchan[1].sendMessage('lol');
+        await chan.bulkDeleteMessages([m.author.id, msgn2.id, msgn.id]);
+        try {
+          await msgn.delete();
+        } catch (_) {}
+        try {
+          await msgn2.delete();
+        } catch (_) {}
+        const res: any = await m.reply('Done - Check audit logs.');
+        admin.saveMessage(res);
+      },
+    );
+    sub.raw(
       'queue', async (m) => {
         const now = Date.now();
         const res1 = queue.queue;
