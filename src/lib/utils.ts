@@ -137,13 +137,23 @@ export function convertEmoji(str) {
     String.fromCodePoint(Number.parseInt(hex, 16))
   );
 }
-const blacklist = ['\t', '\u200F', '\u008D', '\u202E'];
+function toUnicode(str: string) {
+  var result = "";
+    for(var i = 0; i < str.length; i++){
+        // Assumption: all characters are < 0xffff
+        result += "\\u" + ("000" + str[i].charCodeAt(0).toString(16)).substr(-4);
+    }
+    return result;
+}
+
+const blacklist = ['\t', '\u200F', '\u008D', '\u202E', '\u202D', '\u0674'];
 const escapeGeneral = ['*', '_', '||', '`', '@everyone', '@here', '~~'];
 const escapeCodeblock = ['```'];
 const escapeQuote = ['`']
 export function escapeString(string: string, inQuote: boolean = false, inBlock: boolean = false) {
+  // console.log('toUnicode', '\n', string, '\n=\n', toUnicode(string));
   blacklist.forEach((vl) => {
-    string = string.split(vl).join('');
+    string = string.split(vl.toLowerCase()).join('');
   });
   let escapeList: Array<string> = [];
   if(!inQuote && !inBlock) {
@@ -174,6 +184,7 @@ escapeList.forEach((char) => {
     string = string.split(char).join(escape);
   }
 })
+  if(string.length === 0) string = '\u200c'
   return string;
 }
 
