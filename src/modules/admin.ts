@@ -562,9 +562,6 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   if (reason.length > 101) {
     reason = reason.substr(0, 100);
   }
-  if (actor !== null) {
-    reason = utils.escapeString(reason);
-  }
   if (!(channel instanceof discord.GuildTextChannel)) {
     return 'Invalid channel';
   }
@@ -582,8 +579,9 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
     placeholders.set('_ACTORTAG_', getActorTag(actor));
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
+  console.log('reason:', [reason]);
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
@@ -651,7 +649,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
@@ -717,7 +715,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', type, placeholders);
   return true;
@@ -766,7 +764,7 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', 'TEMPROLE', placeholders);
   return true;
@@ -816,7 +814,7 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   const type = state === true ? 'ROLE_ADDED' : 'ROLE_REMOVED';
   logCustom('ADMIN', type, placeholders);
@@ -853,7 +851,7 @@ export async function Nick(actor: discord.GuildMember | null, target: discord.Gu
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${reason}\``);
+    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
 
   logCustom('ADMIN', 'NICKNAME', placeholders);
