@@ -47,12 +47,14 @@ const _cr: {[key: string]: any} = {
           await internal.sendBotUsers();
           // @ts-ignore
           const poolmeas = await pylon.getCpuTime();
+          // @ts-ignore
           console.log('Cron about to clean pools, at ', Math.floor(await pylon.getCpuTime()), 'ms');
           if (InitializedPools.length > 0) {
             await Promise.all(InitializedPools.map(async (pool) => {
               await pool.clean();
             }));
           }
+          // @ts-ignore
           console.log(`Done pool cleaning @${Math.floor(poolmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - poolmeas)}ms to complete.`);
           // throw new Error('');
         }, 500);
