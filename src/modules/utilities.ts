@@ -73,7 +73,7 @@ export async function checkReminders() {
 }
 
 export async function addReminder(msg: discord.GuildMemberMessage, when: string, text: string) {
-  const res: any = await msg.reply(async () => {
+  const res: any = await msg.inlineReply(async () => {
     const dur = utils.timeArgumentToMs(when);
     if (dur === 0) {
       return `${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`;
@@ -98,7 +98,7 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
 }
 
 export async function clearReminders(msg: discord.GuildMemberMessage) {
-  const res: any = await msg.reply(async () => {
+  const res: any = await msg.inlineReply(async () => {
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length === 0) {
       return `${discord.decor.Emojis.X} You don't have any active reminders!`;
@@ -287,7 +287,7 @@ export function InitializeCommands() {
     cmdGroup.subcommand({ name: 'cur', filters: c2.getFilters('utilities.cur', Ranks.Guest) }, (subCommandGroup) => {
       subCommandGroup.defaultRaw(
         async (msg) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
             if (!checkrole) {
               return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
@@ -302,7 +302,7 @@ export function InitializeCommands() {
         { name: 'name', filters: c2.getFilters('utilities.cur.name', Ranks.Guest) },
         (ctx) => ({ name: ctx.text() }),
         async (msg, { name }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
             if (!checkrole) {
               return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
@@ -325,7 +325,7 @@ export function InitializeCommands() {
         { name: 'color', filters: c2.getFilters('utilities.cur.color', Ranks.Guest) },
         (ctx) => ({ color: ctx.textOptional() }),
         async (msg, { color }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
             if (!checkrole) {
               return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
@@ -352,7 +352,7 @@ export function InitializeCommands() {
         { name: 'set', filters: c2.getFilters('utilities.cur.set', Ranks.Administrator) },
         (ctx) => ({ target: ctx.guildMember(), roleText: ctx.text() }),
         async (msg, { target, roleText }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const rlid = await getRoleIdByText(roleText);
             if (!rlid) {
               return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
@@ -385,7 +385,7 @@ export function InitializeCommands() {
         { name: 'clear', filters: c2.getFilters('utilities.cur.clear', Ranks.Administrator) },
         (ctx) => ({ target: ctx.guildMember() }),
         async (msg, { target }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const kvc = await customUserRoles.getById<UserRole>(target.user.id);
             if (!kvc) {
               return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member has no custom role!` };
@@ -406,7 +406,7 @@ export function InitializeCommands() {
         { name: 'delete', filters: c2.getFilters('utilities.cur.delete', Ranks.Administrator) },
         (ctx) => ({ target: ctx.guildMember() }),
         async (msg, { target }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const kvc = await customUserRoles.getById<UserRole>(target.user.id);
             if (!kvc) {
               return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member has no custom role!` };
@@ -430,7 +430,7 @@ export function InitializeCommands() {
   if (typeof config.modules.utilities.snipe === 'object' && config.modules.utilities.snipe.enabled === true) {
     cmdGroup.raw(
       { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           let _sn: any = await snipekvs.get(msg.channelId);
           if (typeof _sn === 'string') {
             _sn = JSON.parse(_sn);
@@ -480,7 +480,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'coin', filters: c2.getFilters('utilities.random.coin', Ranks.Guest) },
       async (msg) => {
-        await msg.reply(async () => {
+        await msg.inlineReply(async () => {
           const ret = utils.getRandomInt(1, 2);
           return `The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`;
         });
@@ -490,7 +490,7 @@ export function InitializeCommands() {
       { name: 'number', filters: c2.getFilters('utilities.random.number', Ranks.Guest) },
       (ctx) => ({ minimum: ctx.integer({ maxValue: 1000000000, minValue: 0 }), maximum: ctx.integer({ maxValue: 1000000000, minValue: 1 }) }),
       async (msg, { minimum, maximum }) => {
-        await msg.reply(async () => {
+        await msg.inlineReply(async () => {
           if (minimum >= maximum) {
             return 'Error: Minimum value must be lower than the maximum value!';
           }
@@ -508,7 +508,7 @@ export function InitializeCommands() {
       const now = new Date();
       const baseId = snowflakee;
       const normalTs = utils.getSnowflakeDate(baseId);
-      const res: any = await msg.reply(
+      const res: any = await msg.inlineReply(
         `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
       );
       saveMessage(res);
@@ -519,7 +519,7 @@ export function InitializeCommands() {
     { name: 'avatar', filters: c2.getFilters('utilities.avatar', Ranks.Guest) },
     (ctx) => ({ user: ctx.userOptional() }),
     async (msg, { user }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         if (user === null) {
           user = msg.author;
         }
@@ -585,7 +585,7 @@ export function InitializeCommands() {
   cmdGroup.raw(
     { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) },
     async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('http://aws.random.cat/meow')).json();
         const catpic = await (await fetch(file.file)).arrayBuffer();
         const ext = file.file.split('.')[file.file.split('.').length - 1];
@@ -602,7 +602,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://random.dog/woof.json')).json();
         const pic = await (await fetch(file.url)).arrayBuffer();
         const ext = file.url.split('.')[file.url.split('.').length - 1];
@@ -620,7 +620,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'doge', aliases: ['shibe'], filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
         const pic = await (await fetch(file.message)).arrayBuffer();
         const ext = file.message.split('.')[file.message.split('.').length - 1];
@@ -639,7 +639,7 @@ export function InitializeCommands() {
 
   cmdGroup.raw(
     { name: 'fox', filters: c2.getFilters('utilities.fox', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://randomfox.ca/floof/')).json();
         const pic = await (await fetch(file.image)).arrayBuffer();
         const ext = file.image.split('.')[file.image.split('.').length - 1];
@@ -657,7 +657,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'pikachu', filters: c2.getFilters('utilities.pikachu', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -675,7 +675,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'koala', filters: c2.getFilters('utilities.koala', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -693,7 +693,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'pat', filters: c2.getFilters('utilities.pat', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -711,7 +711,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'hug', filters: c2.getFilters('utilities.hug', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -729,7 +729,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.birb', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -747,7 +747,7 @@ export function InitializeCommands() {
   );
   cmdGroup.raw(
     { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.panda', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
         const ext = file.link.split('.')[file.link.split('.').length - 1];
@@ -767,7 +767,7 @@ export function InitializeCommands() {
     { name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) },
     (ctx) => ({ gid: ctx.stringOptional() }),
     async (message, { gid }) => {
-      const res: any = await message.reply(async () => {
+      const res: any = await message.inlineReply(async () => {
         const embed = new discord.Embed();
         if (gid === null) {
           gid = guildId;
@@ -1084,7 +1084,7 @@ export function InitializeCommands() {
     { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
     (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'user' }) }),
     async (msg, { user }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         let usr: discord.User | BetterUser;
         if (user === null) {
           usr = msg.author;

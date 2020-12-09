@@ -28,13 +28,13 @@ export function InitializeCommands() {
       newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
       newemb.setColor(0xFF0000);
       newemb.setThumbnail({ url: conf.globalConfig.botUser.getAvatarUrl() });
-      const res: any = await msg.reply({ allowedMentions: {}, content: '', embed: newemb });
+      const res: any = await msg.inlineReply({ allowedMentions: {}, content: '', embed: newemb });
       admin.saveMessage(res);
     },
   );
   cmdGroup.raw(
     { name: 'docs', filters: c2.getFilters('commands.docs', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.reply({ allowedMentions: {}, content: '<https://docs.pyboat.i0.tf/>' });
+      const res: any = await msg.inlineReply({ allowedMentions: {}, content: '<https://docs.pyboat.i0.tf/>' });
       admin.saveMessage(res);
     },
   );
@@ -42,7 +42,7 @@ export function InitializeCommands() {
   cmdGroup.raw(
     { name: 'mylevel', filters: c2.getFilters('commands.mylevel', Ranks.Guest) },
     async (msg) => {
-      const res: any = await msg.reply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+      const res: any = await msg.inlineReply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
       admin.saveMessage(res);
     },
   );
@@ -51,7 +51,7 @@ export function InitializeCommands() {
     { name: 'ping', filters: c2.getFilters('commands.ping', Ranks.Guest) }, async (msg) => {
       const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
       const msgd = new Date();
-      const edmsg: any = await msg.reply('<a:loading:735794724480483409>');
+      const edmsg: any = await msg.inlineReply('<a:loading:735794724480483409>');
       const td = new Date().getTime() - msgd.getTime();
       await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
       admin.saveMessage(edmsg);
@@ -62,7 +62,7 @@ export function InitializeCommands() {
     { name: 'nickme', filters: c2.getFilters('commands.nickme', Ranks.Owner) },
     (ctx) => ({ nick: ctx.textOptional() }),
     async (msg, { nick }) => {
-      const res:any = await msg.reply(async () => {
+      const res:any = await msg.inlineReply(async () => {
         const guild = await msg.getGuild();
         const me = await guild.getMember(discord.getBotId());
         if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
@@ -83,7 +83,7 @@ export function InitializeCommands() {
 
   /* export const rolelb = discord.command.rawHandler(
   async (message) => {
-    await message.reply(async () => {
+    await message.inlineReply(async () => {
       const ms = new Date();
       const guild = await message.getGuild();
       let board = `**ROLE COUNT LEADERBOARD FOR ${guild.name}**\n\`\`\``;
@@ -148,7 +148,7 @@ export function InitializeCommands() {
       })`
     });
     richEmbed.setTimestamp(new Date().toISOString());
-    await message.reply(async () => {
+    await message.inlineReply(async () => {
       return { embed: richEmbed };
     });
   }

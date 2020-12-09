@@ -523,13 +523,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       let data: any;
       data = await fetch(message.attachments[0].url);
       if (!data.ok) {
-        await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
+        await message.inlineReply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
       }
 
       try {
         await message.delete();
       } catch (e) {
-        await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
+        await message.inlineReply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
       }
       // data = await data.arrayBuffer();
       data = await data.text();
@@ -558,10 +558,10 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       split = split.filter((val) => typeof val === 'string' && val.length > 0);
       data = split.join('');
 
-      // await message.reply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
+      // await message.inlineReply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
       if (typeof check.guildId !== 'string' || check.guildId !== guildId) {
-        await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
+        await message.inlineReply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
         return;
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
@@ -575,9 +575,9 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
-      await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
+      await message.inlineReply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
     } catch (e) {
-      await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
+      await message.inlineReply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
   } else if (isCfg === 'check') {
     try {
@@ -608,7 +608,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       cfg.modules.logging.messagesAuditLogs = undefined;
     } */
     const cfgToRet = typeof cfg !== 'string' ? JSON.stringify(cfg, null, 2) : cfg;
-    const returnedMsg = await message.reply({
+    const returnedMsg = await message.inlineReply({
       content: `${message.author.toMention()} here you go!\n${isDefaultConfig === true ? '\n**WARNING**: This is the default config, you did not have a config previously saved!\n**It is HIGHLY RECOMMENDED to start from a empty config instead!**\n' : ''}\n*This message will self-destruct in 15 seconds*`,
       attachments: [{
         name: 'config.json',
@@ -623,6 +623,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } catch (e) {
     }
     await configKv.clear();
-    await message.reply(`${message.author.toMention()} done!\n\nFeel free to request a new config by typing \`.config.\``);
+    await message.inlineReply(`${message.author.toMention()} done!\n\nFeel free to request a new config by typing \`.config.\``);
   }
 });

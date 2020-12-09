@@ -147,7 +147,7 @@ export function InitializeCommands() {
     'override',
     (ctx) => ({ txt: ctx.textOptional() }),
     async (msg, { txt }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const hasActiveOv = await utils.isGAOverride(msg.author.id);
         if (typeof (txt) === 'string' && txt.length > 0) {
           if (hasActiveOv) {
@@ -228,7 +228,7 @@ export function InitializeCommands() {
         // deaf: false
         channelId: null,
       });
-      const res: any = await msg.reply('done');
+      const res: any = await msg.inlineReply('done');
       admin.saveMessage(res);
     },
   );
@@ -240,7 +240,7 @@ export function InitializeCommands() {
       if (!cfgres) {
         txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
       }
-      const res: any = await msg.reply(txt);
+      const res: any = await msg.inlineReply(txt);
       admin.saveMessage(res);
     },
   );
@@ -253,7 +253,7 @@ export function InitializeCommands() {
       if (!globalConfig.github.deployments[repo.toLowerCase()]) {
         return 'Invalid repo name';
       }
-      const res = await msg.reply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
+      const res = await msg.inlineReply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
       if (res instanceof discord.GuildMemberMessage) {
         admin.saveMessage(res);
       }
@@ -278,7 +278,7 @@ export function InitializeCommands() {
       'override',
       (ctx) => ({ level: ctx.number(), string: ctx.string() }),
       async (m, { string, level }) => {
-        const res: any = await m.reply(async () => {
+        const res: any = await m.inlineReply(async () => {
           const newlvl = c2.checkOverrides(level, string);
           if (newlvl.level === level) {
             return { content: 'Nothing changed.' };
@@ -301,7 +301,7 @@ export function InitializeCommands() {
       'cpu', async (m) => {
         // @ts-ignore
         const cpuinitial = await pylon.getCpuTime();
-        const res: any = await m.reply('<a:loading:735794724480483409>');
+        const res: any = await m.inlineReply('<a:loading:735794724480483409>');
         await InitializeConfig(true);
         // @ts-ignore
         const cfgafter = Math.floor(await pylon.getCpuTime() - cpuinitial);
@@ -311,7 +311,7 @@ export function InitializeCommands() {
     );
     sub.raw(
       'kv', async (m, filter) => {
-        const res: any = await m.reply(async () => {
+        const res: any = await m.inlineReply(async () => {
           const start = Date.now();
           const results = await runTests(
             (test) => {
@@ -626,7 +626,7 @@ export function InitializeCommands() {
       'kvmkeys', async (m) => {
         const keys = await utils.KVManager.listKeys();
         console.log(keys);
-        const res: any = await m.reply(`Found ${keys.length} keys!`);
+        const res: any = await m.inlineReply(`Found ${keys.length} keys!`);
         admin.saveMessage(res);
       },
     );
@@ -637,7 +637,7 @@ export function InitializeCommands() {
           throw new Error('no user found');
         }
         const flags = new utils.UserFlags(resUsr.public_flags);
-        const res: any = await m.reply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
+        const res: any = await m.inlineReply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
         admin.saveMessage(res);
       },
     );
@@ -645,7 +645,7 @@ export function InitializeCommands() {
       'clearkvm', async (m) => {
         const dt = Date.now();
         await utils.KVManager.clear();
-        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -655,7 +655,7 @@ export function InitializeCommands() {
         await Promise.all(pools.InitializedPools.map(async (pool) => {
           await pool.clean();
         }));
-        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -665,7 +665,7 @@ export function InitializeCommands() {
       async (m, { key }) => {
         const dt = Date.now();
         await crons.onCron(key);
-        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -692,7 +692,7 @@ export function InitializeCommands() {
       async (m, { text }) => {
         const len = text.length;
         const parsed = utils.escapeString(text);
-        await m.reply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
+        await m.inlineReply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
       },
     );
     sub.on(
@@ -702,7 +702,7 @@ export function InitializeCommands() {
         const dt = Date.now();
         const keys = await utils.KVManager.get(key);
         console.log(keys);
-        const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+        const res: any = await m.inlineReply(`Done, check console (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -713,7 +713,7 @@ export function InitializeCommands() {
         const dt = Date.now();
         const pool = pools.InitializedPools.find((v) => v.kvName === key);
         if (!pool) {
-          const res: any = await m.reply('Couldnt find that key');
+          const res: any = await m.inlineReply('Couldnt find that key');
           admin.saveMessage(res);
           return;
         }
@@ -721,11 +721,11 @@ export function InitializeCommands() {
         const json = `\`\`\`json\n${JSON.stringify(items)}\n\`\`\``;
         if (json.length > 1990) {
           console.log(items);
-          const res: any = await m.reply(`Done, check console (${Date.now() - dt}ms)`);
+          const res: any = await m.inlineReply(`Done, check console (${Date.now() - dt}ms)`);
           admin.saveMessage(res);
           return;
         }
-        const res: any = await m.reply(json);
+        const res: any = await m.inlineReply(json);
         admin.saveMessage(res);
       },
     );
@@ -736,12 +736,12 @@ export function InitializeCommands() {
         const dt = Date.now();
         const pool = pools.InitializedPools.find((v) => v.kvName === key);
         if (!pool) {
-          const res: any = await m.reply('Couldnt find that key');
+          const res: any = await m.inlineReply('Couldnt find that key');
           admin.saveMessage(res);
           return;
         }
         await pool.clear();
-        const res: any = await m.reply(`Done (${Date.now() - dt}ms)`);
+        const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -749,7 +749,7 @@ export function InitializeCommands() {
       'movehighest',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
-        const res: any = await m.reply(async () => {
+        const res: any = await m.inlineReply(async () => {
           const guild = await m.getGuild();
           const botMember = await guild.getMember(discord.getBotId());
           if (!botMember) {
@@ -777,7 +777,7 @@ export function InitializeCommands() {
       'movelowest',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
-        const res: any = await m.reply(async () => {
+        const res: any = await m.inlineReply(async () => {
           const guild = await m.getGuild();
           const botMember = await guild.getMember(discord.getBotId());
           if (!botMember) {
@@ -813,7 +813,7 @@ export function InitializeCommands() {
         embed.setFooter({ text: txt });
         embed.setTimestamp(new Date().toISOString());
 
-        const res: any = await m.reply({ embed });
+        const res: any = await m.inlineReply({ embed });
         admin.saveMessage(res);
       },
     );
@@ -829,7 +829,7 @@ export function InitializeCommands() {
         for (let i = 0; i < count; i++) {
           AL_OnMessageDelete(utils.composeSnowflake(), m.guildId, {}, ev, m);
         }
-        const res: any = await m.reply(`Done sending ${count} message delete logs`);
+        const res: any = await m.inlineReply(`Done sending ${count} message delete logs`);
         admin.saveMessage(res);
       },
     );
@@ -845,7 +845,7 @@ export function InitializeCommands() {
       'clearsb', async (m) => {
         const now = Date.now();
         await starboard.clearData();
-        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -854,7 +854,7 @@ export function InitializeCommands() {
       'asclear', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('antiSpam').clear();
-        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -862,7 +862,7 @@ export function InitializeCommands() {
       'asget', async (m) => {
         const now = Date.now();
         const res1 = await antiSpam.pools.getAll();
-        const res: any = await m.reply(`Done - ${res1.length} - (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done - ${res1.length} - (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -870,7 +870,7 @@ export function InitializeCommands() {
       'getinfs', async (m) => {
         const now = Date.now();
         const infs = await infractions.infsPool.getAll();
-        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
         console.log(infs);
       },
@@ -878,13 +878,13 @@ export function InitializeCommands() {
     sub.raw(
       'clearinfs', async (m) => {
         await infractions.clearInfractions();
-        const res: any = await m.reply('Done');
+        const res: any = await m.inlineReply('Done');
         admin.saveMessage(res);
       },
     );
     sub.raw(
       'modules', async (m) => {
-        const res: any = await m.reply(async () => {
+        const res: any = await m.inlineReply(async () => {
           const mods = [];
           for (const key in config.modules) {
             if (typeof config.modules[key] === 'object' && typeof config.modules[key].enabled === 'boolean') {
@@ -913,7 +913,7 @@ export function InitializeCommands() {
           c++;
           txt += `\n${c} => ${item.value.length}`;
         });
-        const res: any = await m.reply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
+        const res: any = await m.inlineReply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
         admin.saveMessage(res);
       },
     );
@@ -937,7 +937,7 @@ export function InitializeCommands() {
         try {
           await msgn.delete();
         } catch (_) {}
-        const res: any = await m.reply('Done - Check audit logs.');
+        const res: any = await m.inlineReply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
     );
@@ -959,7 +959,7 @@ export function InitializeCommands() {
         try {
           await msgn2.delete();
         } catch (_) {}
-        const res: any = await m.reply('Done - Check audit logs.');
+        const res: any = await m.inlineReply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
     );
@@ -967,7 +967,7 @@ export function InitializeCommands() {
       'queue', async (m) => {
         const now = Date.now();
         const res1 = queue.queue;
-        const res: any = await m.reply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -975,7 +975,7 @@ export function InitializeCommands() {
       'cleartracking', async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('admin').clear();
-        const res: any = await m.reply(`Done (Took ${Date.now() - now}ms)`);
+        const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
     );
@@ -986,7 +986,7 @@ export function InitializeCommands() {
           return;
         }
         await ch.voiceConnect();
-        const res: any = await m.reply('done');
+        const res: any = await m.inlineReply('done');
         admin.saveMessage(res);
       },
     );
@@ -1001,7 +1001,7 @@ export function InitializeCommands() {
             delete mp[k];
           }
         }
-        const res: any = await m.reply(
+        const res: any = await m.inlineReply(
           `Test: \`${permsVal}n\`\n\`\`\`json\n${JSON.stringify(mp)}\n\`\`\``,
         );
         admin.saveMessage(res);
@@ -1015,7 +1015,7 @@ export function InitializeCommands() {
     async (msg, { kvep }) => {
       const kve = new pylon.KVNamespace(kvep);
       await kve.clear();
-      const res: any = await msg.reply('done');
+      const res: any = await msg.inlineReply('done');
       admin.saveMessage(res);
     },
   );
@@ -1026,7 +1026,7 @@ export function InitializeCommands() {
     async (msg, { kvep }) => {
       const kve = new pylon.KVNamespace(kvep);
       const items = await kve.items();
-      const res: any = await msg.reply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
+      const res: any = await msg.inlineReply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
       admin.saveMessage(res);
     },
   );
@@ -1037,7 +1037,7 @@ export function InitializeCommands() {
     async (msg, { emj }) => {
       const guild = await msg.getGuild();
       const emoji = await guild.getEmoji(emj);
-      const res: any = await msg.reply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
+      const res: any = await msg.inlineReply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
       admin.saveMessage(res);
     },
   );

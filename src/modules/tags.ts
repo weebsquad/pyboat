@@ -19,7 +19,7 @@ class Tag {
     }
 }
 export async function showTag(msg: discord.GuildMemberMessage, tagName: string) {
-  const res: any = await msg.reply(async () => {
+  const res: any = await msg.inlineReply(async () => {
     const nm = tagName.toLowerCase();
     const obj = await pool.getById<Tag>(nm);
     if (!obj) {
@@ -60,7 +60,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     { name: 'create', aliases: ['set', 'define', 'make', 'edit'], filters: c2.getFilters('tags.tags.create', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string(), content: ctx.text() }),
     async (msg, { tagName, content }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const testalph = tagName.toLowerCase().replace(/[a-zA-Z0-9_]+/g, '');
         const nm = tagName.toLowerCase();
         if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
@@ -96,7 +96,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     { name: 'delete', aliases: ['remove', 'rm', 'del'], filters: c2.getFilters('tags.tags.delete', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const nm = tagName.toLowerCase();
         const ex = await pool.getById<Tag>(nm);
         if (!ex) {
@@ -118,7 +118,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     { name: 'info', aliases: ['inf'], filters: c2.getFilters('tags.tags.info', Ranks.Guest) },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const nm = tagName.toLowerCase();
         const obj = await pool.getById<Tag>(nm);
         if (!obj) {
@@ -139,7 +139,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
   subCmdGroup.raw(
     { name: 'clearall', aliases: ['removeall'], filters: c2.getFilters('tags.tags.removeall', Ranks.Administrator) },
     async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const removed = await pool.getAll<Tag>();
         await pool.clear();
         return `Removed ${removed.length} tags!`;
@@ -150,7 +150,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
   subCmdGroup.raw(
     { name: 'list', aliases: ['all'], filters: c2.getFilters('tags.tags.all', Ranks.Authorized) },
     async (msg) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         const ex = await pool.getAll<Tag>();
         if (ex.length === 0) {
           return { content: 'There are no tags saved!' };

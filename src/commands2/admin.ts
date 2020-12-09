@@ -66,7 +66,7 @@ export function InitializeCommands(): Array<discord.command.CommandGroup> | bool
   });
 
   cmdGroupAdmin.raw('invite', async (message) => {
-    const res: any = await message.reply(async () => {
+    const res: any = await message.inlineReply(async () => {
       const chan = await discord.getGuildTextChannel(GENERAL_CHANNEL);
       if (chan === null) {
         return 'Invalid channel configured';

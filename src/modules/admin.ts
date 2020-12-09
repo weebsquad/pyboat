@@ -1763,7 +1763,7 @@ export function InitializeCommands() {
       async (msg, { role }) => {
         const rlid = await getRoleIdByText(role);
         if (rlid === null) {
-          const res: any = await msg.reply('Role not found!');
+          const res: any = await msg.inlineReply('Role not found!');
           saveMessage(res);
           return;
         }
@@ -1771,33 +1771,33 @@ export function InitializeCommands() {
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          const res: any = await msg.reply('Bot member not found!');
+          const res: any = await msg.inlineReply('Bot member not found!');
           saveMessage(res);
           return;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
-          const res: any = await msg.reply('Role not found!');
+          const res: any = await msg.inlineReply('Role not found!');
           saveMessage(res);
           return;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
-          const res: any = await msg.reply('I can\'t manage that role!');
+          const res: any = await msg.inlineReply('I can\'t manage that role!');
           saveMessage(res);
           return;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
-          const res: any = await msg.reply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          const res: any = await msg.inlineReply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
           saveMessage(res);
           return;
         }
         await roleAllKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.reply({ content: `OK! I will slowly apply ${thisRole.toMention()} to every member of the server that doesn\'t already have it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: `OK! I will slowly apply ${thisRole.toMention()} to every member of the server that doesn\'t already have it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
         saveMessage(res);
       },
     );
@@ -1808,7 +1808,7 @@ export function InitializeCommands() {
       async (msg, { role }) => {
         const rlid = await getRoleIdByText(role);
         if (rlid === null) {
-          const res: any = await msg.reply('Role not found!');
+          const res: any = await msg.inlineReply('Role not found!');
           saveMessage(res);
           return;
         }
@@ -1816,33 +1816,33 @@ export function InitializeCommands() {
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          const res: any = await msg.reply('Bot member not found!');
+          const res: any = await msg.inlineReply('Bot member not found!');
           saveMessage(res);
           return;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
-          const res: any = await msg.reply('Role not found!');
+          const res: any = await msg.inlineReply('Role not found!');
           saveMessage(res);
           return;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
-          const res: any = await msg.reply('I can\'t manage that role!');
+          const res: any = await msg.inlineReply('I can\'t manage that role!');
           saveMessage(res);
           return;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
-          const res: any = await msg.reply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          const res: any = await msg.inlineReply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
           saveMessage(res);
           return;
         }
         await roleNukeKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.reply({ content: `OK! I will slowly remove ${thisRole.toMention()} from every member of the server that has it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: `OK! I will slowly remove ${thisRole.toMention()} from every member of the server that has it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
         saveMessage(res);
       },
     );
@@ -1852,7 +1852,7 @@ export function InitializeCommands() {
     { name: 'join', aliases: ['add'], filters: c2.getFilters('admin.join', Ranks.Guest) },
     (ctx) => ({ roleName: ctx.text() }),
     async (msg, { roleName }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
           return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
         }
@@ -1892,7 +1892,7 @@ export function InitializeCommands() {
     { name: 'leave', aliases: ['remove'], filters: c2.getFilters('admin.leave', Ranks.Guest) },
     (ctx) => ({ roleName: ctx.text() }),
     async (msg, { roleName }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
           return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
         }
@@ -1939,12 +1939,12 @@ export function InitializeCommands() {
     async (msg, { member, duration, roleText }) => {
       const dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        const res: any = await msg.reply('duration malformed (try 1h30m format)');
+        const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
         saveMessage(res);
         return;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-        const res: any = await msg.reply('duration must be between a minute and a month');
+        const res: any = await msg.inlineReply('duration must be between a minute and a month');
         saveMessage(res);
       }
 
@@ -1973,11 +1973,11 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.reply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.reply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
         }
       }
@@ -2020,11 +2020,11 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.reply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.reply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
         }
       }
@@ -2052,11 +2052,11 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.reply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.reply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
         }
       }
@@ -2103,7 +2103,7 @@ export function InitializeCommands() {
       }
       roles = roles.filter((role) => role.id !== guild.id);
       if (roles.length === 0) {
-        const res: any = await msg.reply({ content: 'No roles found' });
+        const res: any = await msg.inlineReply({ content: 'No roles found' });
         saveMessage(res);
         return;
       }
@@ -2142,7 +2142,7 @@ export function InitializeCommands() {
       });
       for (let i = 0; i < dt.length; i += 1) {
         const it = dt[i];
-        const res: any = await msg.reply({ allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\`` });
+        const res: any = await msg.inlineReply({ allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\`` });
         saveMessage(res);
       }
     },
@@ -2152,7 +2152,7 @@ export function InitializeCommands() {
     { name: 'actions', filters: c2.getFilters('infractions.actions', Ranks.Moderator) },
     (ctx) => ({ id: ctx.stringOptional() }),
     async (msg, { id }) => {
-      const res: any = await msg.reply(async () => {
+      const res: any = await msg.inlineReply(async () => {
         if (id === null) {
           const infs = (await actionPool.getByQuery<Action>({ active: true }));
           if (infs.length === 0) {
@@ -2186,7 +2186,7 @@ export function InitializeCommands() {
         { name: 'restore', filters: c2.getFilters('utilities.backup.restore', Ranks.Moderator) },
         (ctx) => ({ member: ctx.guildMember() }),
         async (msg, { member }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const ret = await restorePersistData(member);
             if (ret === true) {
               return {
@@ -2206,7 +2206,7 @@ export function InitializeCommands() {
         { name: 'save', filters: c2.getFilters('utilities.backup.save', Ranks.Moderator) },
         (ctx) => ({ member: ctx.guildMember() }),
         async (msg, { member }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const ret = await savePersistData(member);
             if (ret === true) {
               return {
@@ -2226,7 +2226,7 @@ export function InitializeCommands() {
         { name: 'show', filters: c2.getFilters('utilities.backup.show', Ranks.Moderator) },
         (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
         async (msg, { user }) => {
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const usr = await utils.getUser(user.replace(/\D/g, ''));
             if (!usr) {
               return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
@@ -2254,7 +2254,7 @@ export function InitializeCommands() {
           if (!usr) {
             return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
           }
-          const res: any = await msg.reply(async () => {
+          const res: any = await msg.inlineReply(async () => {
             const thiskv = await persistPool.getById<MemberPersist>(usr.id);
             if (!thiskv) {
               return `${discord.decor.Emojis.X} no backup found for this member`;

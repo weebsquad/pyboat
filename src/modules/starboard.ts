@@ -785,7 +785,7 @@ export function InitializeCommands() {
       { name: 'stats', filters: c2.getFilters('starboard.stars.stats', Ranks.Authorized) },
       (ctx) => ({ user: ctx.userOptional() }),
       async (msg, { user }) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           const emb = new discord.Embed();
           if (user === null) {
           // leaderboard
@@ -853,7 +853,7 @@ export function InitializeCommands() {
       { name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === true) {
             return `${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`;
@@ -873,7 +873,7 @@ export function InitializeCommands() {
       { name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === false) {
             return `${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`;
@@ -892,7 +892,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'lock', filters: c2.getFilters('starboard.stars.lock', Ranks.Administrator) },
       async (msg) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
           if (lock === true) {
             return `${msg.author.toMention()}, the starboard is already locked.`;
@@ -906,7 +906,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'unlock', filters: c2.getFilters('starboard.stars.unlock', Ranks.Administrator) },
       async (msg) => {
-        const res: any = await msg.reply(async () => {
+        const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
           if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
             return `${msg.author.toMention()}, the starboard is not locked.`;

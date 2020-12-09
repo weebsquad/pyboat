@@ -349,7 +349,7 @@ export async function confirmResult(me: discord.GuildMember | undefined | null, 
         if (result === false) {
           emj = discord.decor.Emojis.X;
         }
-        replyMsg = await ogMsg.reply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
+        replyMsg = await ogMsg.inlineReply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
           allowedMentions: {} });
         if (expiry === 0) {
           // @ts-ignore
@@ -848,7 +848,7 @@ export function InitializeCommands() {
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
 
@@ -893,7 +893,7 @@ export function InitializeCommands() {
       ids = [...new Set(ids)]; // remove duplicates
       const reason = reas.join(' ');
       if (ids.length < 2) {
-        const res: any = await msg.reply('Not enough ids specified!');
+        const res: any = await msg.inlineReply('Not enough ids specified!');
         saveMessage(res);
         return;
       }
@@ -924,7 +924,7 @@ export function InitializeCommands() {
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -953,7 +953,7 @@ export function InitializeCommands() {
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -982,7 +982,7 @@ export function InitializeCommands() {
     async (msg, { user, time, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1013,7 +1013,7 @@ export function InitializeCommands() {
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.reply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1039,7 +1039,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
       async (msg) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll<Infraction>(null));
           if (infs.length === 0) {
             return { content: 'There are no infractions' };
@@ -1064,7 +1064,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
       async (msg) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ active: true }));
           if (infs.length === 0) {
             return { content: 'There are no active infractions' };
@@ -1090,7 +1090,7 @@ export function InitializeCommands() {
       { name: 'info', filters: c2.getFilters('infractions.inf.info', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           let infs;
           if (id.toLowerCase() === 'ml') {
             infs = (await infsPool.getByQuery<Infraction>({ actorId: msg.author.id }));
@@ -1117,7 +1117,7 @@ export function InitializeCommands() {
       { name: 'duration', filters: c2.getFilters('infractions.inf.duration', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), duration: ctx.string() }),
       async (msg, { id, duration }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const dur = utils.timeArgumentToMs(duration);
           if (dur === 0) {
             return `${discord.decor.Emojis.X} duration malformed (try 1h30m format)`;
@@ -1164,7 +1164,7 @@ export function InitializeCommands() {
       { name: 'reason', filters: c2.getFilters('infractions.inf.reason', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
       async (msg, { id, reason }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           let infs;
           if (id.toLowerCase() === 'ml') {
             infs = (await infsPool.getByQuery<Infraction>({ actorId: msg.author.id }));
@@ -1202,7 +1202,7 @@ export function InitializeCommands() {
       { name: 'actor', filters: c2.getFilters('infractions.inf.actor', Ranks.Moderator) },
       (ctx) => ({ id: ctx.string(), actor: ctx.user() }),
       async (msg, { id, actor }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           let infs;
           if (id.toLowerCase() === 'ml') {
             infs = (await infsPool.getByQuery<Infraction>({ actorId: msg.author.id }));
@@ -1241,7 +1241,7 @@ export function InitializeCommands() {
       { name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           let infs;
           if (id.toLowerCase() === 'ml') {
             infs = (await infsPool.getByQuery<Infraction>({ actorId: msg.author.id }));
@@ -1275,7 +1275,7 @@ export function InitializeCommands() {
       { name: 'clearuser', filters: c2.getFilters('infractions.inf.clearuser', Ranks.Administrator) },
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ memberId: user.id }));
           if (!infs || infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
@@ -1290,7 +1290,7 @@ export function InitializeCommands() {
       { name: 'clearactor', filters: c2.getFilters('infractions.inf.clearactor', Ranks.Administrator) },
       (ctx) => ({ actor: ctx.user() }),
       async (msg, { actor }) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
           if (!infs || infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
@@ -1304,7 +1304,7 @@ export function InitializeCommands() {
     subCommandGroup.raw(
       { name: 'clearall', filters: c2.getFilters('infractions.inf.clearall', Ranks.Owner) },
       async (msg) => {
-        const res:any = await msg.reply(async () => {
+        const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll(null));
           if (infs.length === 0) {
             return `${discord.decor.Emojis.X} Could not find any infractions`;
@@ -1320,7 +1320,7 @@ export function InitializeCommands() {
         { name: 'actor', filters: c2.getFilters('infractions.inf search.actor', Ranks.Moderator) },
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
-          const res:any = await msg.reply(async () => {
+          const res:any = await msg.inlineReply(async () => {
             const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
             if (infs.length === 0) {
               return { content: 'There are no infractions by this actor' };
@@ -1350,7 +1350,7 @@ export function InitializeCommands() {
       subCommandGroup2.raw(
         { name: 'system', filters: c2.getFilters('infractions.inf search.system', Ranks.Moderator) },
         async (msg) => {
-          const res:any = await msg.reply(async () => {
+          const res:any = await msg.inlineReply(async () => {
             const infs = (await infsPool.getByQuery<Infraction>({ actorId: 'SYSTEM' }));
             if (infs.length === 0) {
               return { content: 'There are no infractions by system' };
@@ -1381,7 +1381,7 @@ export function InitializeCommands() {
         { name: 'user', filters: c2.getFilters('infractions.inf search.user', Ranks.Moderator) },
         (ctx) => ({ user: ctx.user() }),
         async (msg, { user }) => {
-          const res:any = await msg.reply(async () => {
+          const res:any = await msg.inlineReply(async () => {
             const infs = await infsPool.getByQuery<Infraction>({ memberId: user.id });
             if (infs.length === 0) {
               return { content: 'There are no infractions applied to this user' };
@@ -1412,7 +1412,7 @@ export function InitializeCommands() {
         { name: 'type', filters: c2.getFilters('infractions.inf search.type', Ranks.Moderator) },
         (ctx) => ({ type: ctx.string() }),
         async (msg, { type }) => {
-          const res:any = await msg.reply(async () => {
+          const res:any = await msg.inlineReply(async () => {
             const infs = await infsPool.getByQuery<Infraction>({ type: type.toUpperCase() });
             if (infs.length === 0) {
               return { content: 'There are no infractions of this type' };
