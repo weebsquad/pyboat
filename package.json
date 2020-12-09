@@ -14,7 +14,7 @@
   "author": "weebsquad",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-strip": "^2.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
