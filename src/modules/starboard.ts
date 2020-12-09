@@ -257,6 +257,10 @@ export class StarredMessage {
       }
     }
     async finalize() {
+      const boardCfg = getBoardCfg(this.publishData.channelId!);
+      if (boardCfg.noStats === true) {
+        return;
+      }
       await this.awardStats();
     }
     async check() {

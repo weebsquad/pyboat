@@ -3364,6 +3364,13 @@
                                         "default": true,
                                         "format": "checkbox"
                                     },
+                                    "noStats": {
+                                        "title": "Don't award stats",
+                                        "description": "Prevents messages in this board from affecting a user's global star stats",
+                                        "type": "boolean",
+                                        "default": false,
+                                        "format": "checkbox"
+                                    },
                                     "sources": {
                                         "title": "Sources",
                                         "description": "Channel IDs in which to allow starred messages to originate from. If this is not set, any channel will be allowed.",
