@@ -579,7 +579,6 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
     placeholders.set('_ACTORTAG_', getActorTag(actor));
     placeholders.set('_ACTOR_ID_', actor.user.id);
   }
-  console.log('reason:', [reason]);
   if (reason.length > 0) {
     placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
