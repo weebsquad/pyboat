@@ -234,19 +234,19 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     USER_UPDATED: `${discord.decor.Emojis.GEAR} bot user was updated _USERTAG_`,
   },
   'VOICE_STATE_UPDATE': {
-    SERVER_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ was server deafened in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SERVER_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ was server undeafened in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SERVER_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server muted in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SERVER_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server unmuted in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SELF_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ deafened themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SELF_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ undeafened themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SELF_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ muted themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    SELF_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ unmuted themselves in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    START_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ started streaming in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    STOP_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ stopped streaming in \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    ENTERED_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ joined \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    LEFT_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ left \`_CHANNEL_NAME_\` **[**||\`_CHANNEL_ID_\`||**]**`,
-    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from \`_OLD_CHANNEL_NAME_\` **[**||\`_OLD_CHANNEL_ID_\`||**]** to \`_NEW_CHANNEL_NAME_\` **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
+    SERVER_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ was server deafened in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ was server undeafened in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server muted in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SERVER_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ was server unmuted in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_DEAFENED: `${discord.decor.Emojis.MUTE} _USERTAG_ deafened themselves in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_UNDEAFENED: `${discord.decor.Emojis.SPEAKER} _USERTAG_ undeafened themselves in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_MUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ muted themselves in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    SELF_UNMUTED: `${discord.decor.Emojis.MICROPHONE2} _USERTAG_ unmuted themselves in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    START_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ started streaming in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    STOP_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ stopped streaming in \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    ENTERED_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ joined \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    LEFT_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ left \`_CHANNEL_MENTION_\` **[**||\`_CHANNEL_ID_\`||**]**`,
+    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from \`_OLD_CHANNEL_MENTION_\` **[**||\`_OLD_CHANNEL_ID_\`||**]** to \`_NEW_CHANNEL_MENTION_\` **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
   },
   'VOICE_SERVER_UPDATE': {
     CONNECTED: 'connected to voice @`_ENDPOINT_` with token ||`_TOKEN_`||',
@@ -395,21 +395,21 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   VOICE_STATE_UPDATE: {
     SERVER_DEAFENED:
       `${discord.decor.Emojis.MUTE
-      } _ACTORTAG_ server deafened _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server deafened _USERTAG_ in \`_CHANNEL_MENTION_\``,
     SERVER_UNDEAFENED:
       `${discord.decor.Emojis.SPEAKER
-      } _ACTORTAG_ server undeafened _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server undeafened _USERTAG_ in \`_CHANNEL_MENTION_\``,
     SERVER_MUTED:
       `${discord.decor.Emojis.MICROPHONE2
-      } _ACTORTAG_ server muted _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server muted _USERTAG_ in \`_CHANNEL_MENTION_\``,
     SERVER_UNMUTED:
       `${discord.decor.Emojis.MICROPHONE2
-      } _ACTORTAG_ server unmuted _USERTAG_ in \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ server unmuted _USERTAG_ in \`_CHANNEL_MENTION_\``,
     LEFT_CHANNEL:
       `${discord.decor.Emojis.TELEPHONE
-      } _ACTORTAG_ disconnected _USERTAG_ from \`_CHANNEL_NAME_\``,
+      } _ACTORTAG_ disconnected _USERTAG_ from \`_CHANNEL_MENTION_\``,
     MOVED_CHANNEL:
       `${discord.decor.Emojis.ARROW_RIGHT
-      } _ACTORTAG_ moved _USERTAG_ from \`_OLD_CHANNEL_NAME_\` to \`_NEW_CHANNEL_NAME_\``,
+      } _ACTORTAG_ moved _USERTAG_ from \`_OLD_CHANNEL_MENTION_\` to \`_NEW_CHANNEL_MENTION_\``,
   },
 };

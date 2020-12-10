@@ -1,4 +1,4 @@
-import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser } from '../main';
+import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser, getChannelEmoji } from '../main';
 import * as utils from '../../../lib/utils';
 
 export function getKeys(
@@ -112,6 +112,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -122,6 +123,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -133,6 +135,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -143,6 +146,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -154,6 +158,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -164,6 +169,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -175,6 +181,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -185,6 +192,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -196,6 +204,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -206,6 +215,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -217,6 +227,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -227,6 +238,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -238,6 +250,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -248,6 +261,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -259,6 +273,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -269,6 +284,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -280,6 +296,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -290,6 +307,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -301,6 +319,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -311,6 +330,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -322,6 +342,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -332,6 +353,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -344,6 +366,7 @@ export const messages = {
     if (_chan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -354,6 +377,7 @@ export const messages = {
         '_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
       ],
+      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
@@ -367,6 +391,8 @@ export const messages = {
     if (_chan === null || oldChan === null) {
       return;
     }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const oldParent = typeof oldChan.parentId === 'string' ? await discord.getGuildCategory(oldChan.parentId) : null;
     const mp = new Map([
       ['_USERTAG_', getMemberTag(voiceState.member)],
       ['_USER_ID_', voiceState.userId],
@@ -382,6 +408,8 @@ export const messages = {
         '_OLD_CHANNEL_NAME_',
         `${discord.decor.Emojis.SPEAKER}${utils.escapeString(oldChan.name, true)}`,
       ],
+      ['_OLD_CHANNEL_MENTION_', `${oldParent !== null ? `${getChannelEmoji(oldParent)}\`${utils.escapeString(oldParent.name, true)}\`**>**` : ''}${getChannelEmoji(oldChan)}\`${utils.escapeString(oldChan.name, true)}\``],
+      ['_NEW_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },
