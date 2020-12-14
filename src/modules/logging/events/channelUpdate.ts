@@ -238,7 +238,12 @@ export const messages = {
     allIds.forEach((e) => {
       const oldV = oldChan.permissionOverwrites.find((obj) => obj.id === e);
       const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
-      const _type = newV !== undefined ? newV.type : oldV.type;
+      let _type: string | discord.Channel.PermissionOverwriteType = newV !== undefined ? newV.type : oldV.type;
+      if (_type === discord.Channel.PermissionOverwriteType.MEMBER) {
+        _type = 'member';
+      } else {
+        _type = 'role';
+      }
       const _id = newV !== undefined ? newV.id : oldV.id;
       let objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
       if (_type === 'role' && _id === guild.id) {
