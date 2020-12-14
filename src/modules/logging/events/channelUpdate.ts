@@ -238,6 +238,7 @@ export const messages = {
     allIds.forEach((e) => {
       const oldV = oldChan.permissionOverwrites.find((obj) => obj.id === e);
       const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
+
       let _type: string | discord.Channel.PermissionOverwriteType = newV !== undefined ? newV.type : oldV.type;
       if (_type === discord.Channel.PermissionOverwriteType.MEMBER) {
         _type = 'member';
@@ -255,11 +256,11 @@ export const messages = {
       const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize(false) : new utils.Permissions(0).serialize();
       const permsDenyNew = newV !== undefined ? new utils.Permissions(newV.deny).serialize(false) : new utils.Permissions(0).serialize();
       if (!oldV && newV) { // Added!
-        txt += `\nAdded ${newV.type} ${objectPing}`;
+        txt += `\nAdded ${_type} ${objectPing}`;
       } else if (oldV && !newV) {
-        txt += `\nRemoved ${oldV.type} ${oldV.type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
+        txt += `\nRemoved ${_type} ${_type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
       } else if (oldV && newV) {
-        txt += `\nChanged ${newV.type} ${objectPing}`;
+        txt += `\nChanged ${_type} ${objectPing}`;
       }
       const serOld: {[key: string]: number} = {};
       const serNew: {[key: string]: number} = {};

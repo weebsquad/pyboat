@@ -56,7 +56,7 @@ const _cr: {[key: string]: any} = {
           }
           // @ts-ignore
           console.log(`Done pool cleaning @${Math.floor(poolmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - poolmeas)}ms to complete.`);
-          // throw new Error('');
+          throw new Error('');
         }, 500);
       } catch (e) {
         if (e.message !== '') {
