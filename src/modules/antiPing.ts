@@ -692,6 +692,9 @@ export async function AL_OnGuildMemberRemove(id: string,
                                              member: discord.Event.IGuildMemberRemove) {
   // If they leave after memeing us
   const data = await kv.get(kvDataKey);
+  if (!data) {
+    return;
+  }
   const { user } = member;
   const guild = await discord.getGuild(member.guildId);
   if (typeof data[user.id] !== 'object' || guild === null) {
