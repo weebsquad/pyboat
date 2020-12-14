@@ -238,6 +238,9 @@ async function messagesDeleted(messageIds: Array<string>) {
 
 export async function periodicDataClear() {
   const data:any = await kv.get(kvDataKey);
+  if (!data) {
+    return;
+  }
   const toRem = [];
   for (const userId in data) {
     for (const mId in data[userId]) {
@@ -294,6 +297,9 @@ async function clearUserData(userId: string) {
 
 async function wipeAllUserMessages(userId: string, allMessages = false) {
   const data = await kv.get(kvDataKey);
+  if (!data) {
+    return;
+  }
   // let guild;
   for (const mid in data[userId]) {
     for (const msgkey in data[userId][mid]) {
@@ -596,6 +602,9 @@ export async function OnMessageReactionAdd(id: string,
     return;
   }
   const data: any = await kv.get(kvDataKey);
+  if (!data) {
+    return;
+  }
   let thisData;
   for (const userId in data) {
     if (typeof thisData === 'object') {
