@@ -249,7 +249,7 @@ export const messages = {
       let objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
       if (_type === 'role' && _id === guild.id) {
         // everyone role
-        objectPing = '@everyone';
+        objectPing = utils.escapeString('@everyone');
       }
       const permsAllowOld = oldV !== undefined ? new utils.Permissions(oldV.allow).serialize(false) : new utils.Permissions(0).serialize();
       const permsDenyOld = oldV !== undefined ? new utils.Permissions(oldV.deny).serialize(false) : new utils.Permissions(0).serialize();

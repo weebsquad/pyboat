@@ -44,6 +44,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'NAME_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set('_OLD_NAME_', utils.escapeString(oldRole.name, true));
     mp.set('_NEW_NAME_', utils.escapeString(role.name, true));
@@ -57,6 +58,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'COLOR_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set('_OLD_COLOR_', oldRole.color.toString(16));
     mp.set('_NEW_COLOR_', role.color.toString(16));
@@ -70,6 +72,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'HOIST_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set('_OLD_HOIST_', oldRole.hoist === true ? 'Enabled' : 'Disabled');
     mp.set('_NEW_HOIST_', role.hoist === true ? 'Enabled' : 'Disabled');
@@ -83,6 +86,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'MENTIONABLE_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set(
       '_OLD_MENTIONABLE_',
@@ -102,6 +106,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'POSITION_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set('_OLD_POSITION_', oldRole.position.toString());
     mp.set('_NEW_POSITION_', role.position.toString());
@@ -115,6 +120,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'MANAGED_CHANGED'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set(
       '_OLD_MANAGED_',
@@ -186,6 +192,7 @@ export const messages = {
       return;
     }
     mp.set('_TYPE_', type);
+    mp.set('_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone'));
     return mp;
   },
 };

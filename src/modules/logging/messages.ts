@@ -191,18 +191,18 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     FEATURES_ADDED: 'server features added `_ADDED_FEATURES_`',
   },
   'GUILD_ROLE_CREATE': {
-    NEW_ROLE: `${discord.decor.Emojis.GEAR} new role created **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** `,
+    NEW_ROLE: `${discord.decor.Emojis.GEAR} new role created **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** `,
   },
   'GUILD_ROLE_UPDATE': {
-    NAME_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** name was changed:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
-    COLOR_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** color was changed: \`#_OLD_COLOR_\` ${discord.decor.Emojis.ARROW_RIGHT} \`#_NEW_COLOR_\``,
-    HOIST_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** hoist state was changed to \`_NEW_HOIST_\` `,
-    MENTIONABLE_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** mentionable state was changed to \`_NEW_MENTIONABLE_\` `,
-    POSITION_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** position was changed: \`_OLD_POSITION_\` ${discord.decor.Emojis.ARROW_RIGHT} \`_NEW_POSITION_\``,
-    MANAGED_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** managed role status was changed to \`_NEW_MANAGED_\``,
-    PERMS_ADDED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions granted: _ADDED_PERMS_`,
-    PERMS_REMOVED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions revoked: _REMOVED_PERMS_`,
-    PERMS_CHANGED: `${discord.decor.Emojis.GEAR} role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions edited: _CHANGED_PERMS_`,
+    NAME_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** name was changed:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
+    COLOR_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** color was changed: \`#_OLD_COLOR_\` ${discord.decor.Emojis.ARROW_RIGHT} \`#_NEW_COLOR_\``,
+    HOIST_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** hoist state was changed to \`_NEW_HOIST_\` `,
+    MENTIONABLE_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** mentionable state was changed to \`_NEW_MENTIONABLE_\` `,
+    POSITION_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** position was changed: \`_OLD_POSITION_\` ${discord.decor.Emojis.ARROW_RIGHT} \`_NEW_POSITION_\``,
+    MANAGED_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** managed role status was changed to \`_NEW_MANAGED_\``,
+    PERMS_ADDED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions granted: _ADDED_PERMS_`,
+    PERMS_REMOVED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions revoked: _REMOVED_PERMS_`,
+    PERMS_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions edited: _CHANGED_PERMS_`,
   },
   'GUILD_ROLE_DELETE': {
     REMOVED_ROLE: `${discord.decor.Emojis.GEAR} role \`_NAME_\` **[**||\`_ROLE_ID_\`||**]** was deleted`,
@@ -351,30 +351,30 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
     WIDGET_CHANNEL_CHANGED: '_ACTORTAG_ changed server widget channel from <#_OLD_CHANNEL_> to <#_NEW_CHANNEL_>',
   },
   GUILD_ROLE_CREATE: {
-    NEW_ROLE: `${discord.decor.Emojis.GEAR} _ACTORTAG_ created new role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** `,
+    NEW_ROLE: `${discord.decor.Emojis.GEAR} _ACTORTAG_ created new role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** `,
   },
   GUILD_ROLE_UPDATE: {
-    NAME_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** name:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
-    COLOR_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** color: \`#_OLD_COLOR_\` ${discord.decor.Emojis.ARROW_RIGHT} \`#_NEW_COLOR_\``,
-    HOIST_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** hoist state to \`_NEW_HOIST_\` `,
-    MENTIONABLE_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** mentionable state to \`_NEW_MENTIONABLE_\` `,
+    NAME_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** name:  \n**•** __Before__: \`_OLD_NAME_\`\n**•** __After__:   \`_NEW_NAME_\``,
+    COLOR_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** color: \`#_OLD_COLOR_\` ${discord.decor.Emojis.ARROW_RIGHT} \`#_NEW_COLOR_\``,
+    HOIST_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** hoist state to \`_NEW_HOIST_\` `,
+    MENTIONABLE_CHANGED: `${discord.decor.Emojis.GEAR} _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** mentionable state to \`_NEW_MENTIONABLE_\` `,
     POSITION_CHANGED:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** position: \`_OLD_POSITION_\` ${
+      } _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** position: \`_OLD_POSITION_\` ${
         discord.decor.Emojis.ARROW_RIGHT
       } \`_NEW_POSITION_\``,
     MANAGED_CHANGED:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ changed role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** managed status to \`_NEW_MANAGED_\``,
+      } _ACTORTAG_ changed role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** managed status to \`_NEW_MANAGED_\``,
     PERMS_ADDED:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ granted role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions: _ADDED_PERMS_`,
+      } _ACTORTAG_ granted role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions: _ADDED_PERMS_`,
     PERMS_REMOVED:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ revoked role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions: _REMOVED_PERMS_`,
+      } _ACTORTAG_ revoked role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions: _REMOVED_PERMS_`,
     PERMS_CHANGED:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ edited role **(**<@&_ROLE_ID_>**)** **[**||\`_ROLE_ID_\`||**]** permissions: _CHANGED_PERMS_`,
+      } _ACTORTAG_ edited role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions: _CHANGED_PERMS_`,
   },
   GUILD_ROLE_DELETE: {
     REMOVED_ROLE:
