@@ -334,5 +334,5 @@ getDeploymentIds().then((objDeps) => {
   if (isGh && !isDebug) {
     sendWebhook(`Deploy error:\n${e}`);
   }
-  throw new Error(e);
+  process.exit(1);
 });
