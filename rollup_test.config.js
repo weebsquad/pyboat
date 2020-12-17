@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
+import commonjs from '@rollup/plugin-commonjs';
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -26,6 +27,7 @@ module.exports = () => ({
     replace(opts),
 
     nodeResolve(),
+    commonjs({ignoreGlobal: true, sourceMap: false, transformMixedEsModules: true}),
     typescript({ lib: ['es2020'], target: 'es2020' }),
     terser(),
   ],
