@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { globalConfig, InitializeConfig, config } from '../config';
-import {Image} from '../lib/imageScript/ImageScript';
+import { Image } from '../lib/imageScript/ImageScript';
 import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import * as infractions from '../modules/infractions';
@@ -654,14 +654,14 @@ export function InitializeCommands() {
       'is', async (m) => {
         // @ts-ignore
         const initial = await pylon.getCpuTime();
-        const newimg = new Image(24,24);
+        const newimg = new Image(24, 24);
         console.log('newimg', newimg);
         const img = await newimg.load(m.author.getAvatarUrl());
         console.log('img', img);
-        const msg = await m.inlineReply({content: 'hhh', attachments: [{name: 'image.jpg', data: img.encode()}]});
+        const msg = await m.inlineReply({ content: 'hhh', attachments: [{ name: 'image.jpg', data: img.encode() }] });
         // @ts-ignore
         const cpudiff = Math.floor(await pylon.getCpuTime() - initial);
-        await msg.edit({content: `Took ${cpudiff}ms cpu`});
+        await msg.edit({ content: `Took ${cpudiff}ms cpu` });
       },
     );
     sub.raw(
