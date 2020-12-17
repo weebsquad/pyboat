@@ -659,6 +659,20 @@ export function InitializeCommands() {
         admin.saveMessage(res);
       },
     );
+    sub.raw(
+      'avatar', async (m) => {
+        // @ts-ignore
+        const initial = await pylon.getCpuTime();
+        const url = m.author.getAvatarUrl();
+        const ext = url.split('.').slice(-1)[0];
+        const avatar = await fetch(url);
+        const data = await avatar.arrayBuffer();
+         // @ts-ignore
+         const diff = Math.floor(await pylon.getCpuTime() - initial);
+                const res: any = await m.inlineReply({content: `Done, took ${diff}ms cpu`, attachments: [{name: `avatar.${ext}`, data: data}]});
+        admin.saveMessage(res);
+      },
+    );
     sub.on(
       'cron',
       (ctx) => ({ key: ctx.string() }),
