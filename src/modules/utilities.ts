@@ -27,12 +27,13 @@ class Reminder {
   authorId: string;
   channelId: string;
   content: string;
-  constructor(exp: number, author: string, channelId: string, content: string) {
+  constructor(id: string, exp: number, author: string, channelId: string, content: string) {
     this.expires = exp;
-    this.id = utils.composeSnowflake();
+    this.id = id;
     this.authorId = author;
     this.channelId = channelId;
     this.content = content;
+    return this;
   }
 }
 
@@ -57,7 +58,7 @@ export async function checkReminders() {
       }
       const chan = await discord.getChannel(remi.channelId);
       if (!chan || chan === null || (!(chan instanceof discord.GuildTextChannel) && !(chan instanceof discord.GuildNewsChannel))) {
-        // todo: dm the user instead
+        // TODO: dm the user instead
         return;
       }
       const ts = utils.decomposeSnowflake(remi.id).timestamp;
@@ -66,7 +67,14 @@ export async function checkReminders() {
         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'De',
       ];
       const timestamptext = `${(`0${dt.getDate()}`).substr(-2)}-${monthNames[dt.getMonth()]}-${dt.getFullYear().toString().substr(-2)} @ ${(`0${dt.getHours()}`).substr(-2)}:${(`0${dt.getMinutes()}`).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}`;
-      await chan.sendMessage({ allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\`` });
+      let msgExists = false;
+      try {
+        const msgcheck = await chan.getMessage(remi.id);
+        if (msgcheck && msgcheck instanceof discord.Message) {
+          msgExists = true;
+        }
+      } catch (_) {}
+      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\`` });
       await reminders.editPool(remi.id, null);
     }
   }));
@@ -78,7 +86,7 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
     if (dur === 0) {
       return `${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`;
     }
-    if (dur < 2000 || dur > 32 * 24 * 60 * 60 * 1000) {
+    if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
       return `${discord.decor.Emojis.X} Time must be between 2 minutes and a month`;
     }
     const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
@@ -89,9 +97,9 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
     text = utils.escapeString(text);
     text = text.split('\n').join(' ').split('\t').join(' ');
     if (text.length > 1000) {
-      return 'Reminder is too large!';
+      return 'Reminder content is too large!';
     }
-    await reminders.saveToPool(new Reminder(Date.now() + dur, msg.author.id, msg.channelId, text));
+    await reminders.saveToPool(new Reminder(msg.id, Date.now() + dur, msg.author.id, msg.channelId, text));
     return `${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`;
   });
   saveMessage(res);
