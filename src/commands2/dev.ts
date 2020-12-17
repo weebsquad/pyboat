@@ -654,9 +654,11 @@ export function InitializeCommands() {
       'is', async (m) => {
         // @ts-ignore
         const initial = await pylon.getCpuTime();
-        const newimg = new Image(24, 24);
+        const newimg = new Image(20,20);
+        const avatar = await fetch(m.author.getAvatarUrl());
+        const data = await avatar.arrayBuffer();
         console.log('newimg', newimg);
-        const img = await newimg.load(m.author.getAvatarUrl());
+        const img = await newimg.decode(data);
         console.log('img', img);
         const msg = await m.inlineReply({ content: 'hhh', attachments: [{ name: 'image.jpg', data: img.encode() }] });
         // @ts-ignore
