@@ -270,7 +270,7 @@ export async function parseMessageContent(
     cont += '\n[...]';
   }
   if (cont.length > 0) {
-    if (cont.includes('\n') || cont.length >= LEN_CODEBLOCKS) {
+    if ((cont.includes('\n') || (!cont.includes('\n') && cont.length >= MAXLENSINGLELINE)) || cont.length >= LEN_CODEBLOCKS) {
       cont = `\`\`\`\n${cont}\n\`\`\``;
     } else {
       if (!cutVertical && cont.length > MAXLENSINGLELINE) {

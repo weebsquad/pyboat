@@ -667,9 +667,9 @@ export function InitializeCommands() {
         const ext = url.split('.').slice(-1)[0];
         const avatar = await fetch(url);
         const data = await avatar.arrayBuffer();
-         // @ts-ignore
-         const diff = Math.floor(await pylon.getCpuTime() - initial);
-                const res: any = await m.inlineReply({content: `Done, took ${diff}ms cpu`, attachments: [{name: `avatar.${ext}`, data: data}]});
+        // @ts-ignore
+        const diff = Math.floor(await pylon.getCpuTime() - initial);
+        const res: any = await m.inlineReply({ content: `Done, took ${diff}ms cpu`, attachments: [{ name: `avatar.${ext}`, data }] });
         admin.saveMessage(res);
       },
     );
