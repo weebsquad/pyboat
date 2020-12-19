@@ -1137,7 +1137,7 @@ export function InitializeCommands() {
           if (infs.length !== 1) {
             return `${discord.decor.Emojis.X} No infraction found`;
           }
-          const inf: Infraction = infs[0];
+          const inf: Infraction = utils.makeFake(infs[0], Infraction);
           if (!inf.active) {
             return `${discord.decor.Emojis.X} This infraction is not active.`;
           }
@@ -1177,7 +1177,7 @@ export function InitializeCommands() {
           if (infs.length !== 1) {
             return `${discord.decor.Emojis.X} No infraction found`;
           }
-          const inf: Infraction = infs[0];
+          const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
@@ -1215,7 +1215,7 @@ export function InitializeCommands() {
           if (infs.length !== 1) {
             return `${discord.decor.Emojis.X} No infraction found`;
           }
-          const inf: Infraction = infs[0];
+          const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
           if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
             return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
