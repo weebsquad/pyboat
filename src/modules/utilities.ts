@@ -74,7 +74,94 @@ export async function checkReminders() {
           msgExists = true;
         }
       } catch (_) {}
-      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${remi.content}\`` });
+      const usrIds = new Map<string, string>();
+      const channelIds = new Map<string, discord.GuildChannel>();
+      const roleIds = new Map<string, string>();
+      let newContent = remi.content;
+      let usr1 = newContent.match(/<@![0-9]{18}>/g);
+      if (usr1) {
+        usr1 = usr1.map((e) => {
+          e = e.split(' ').join('');
+          e = e.substr(3).slice(0, -1);
+          return e;
+        });
+      } else {
+        usr1 = [];
+      }
+      let usr2 = newContent.match(/<@[0-9]{18}>/g);
+      if (usr2) {
+        usr2 = usr2.map((e) => {
+          e = e.split(' ').join('');
+          e = e.substr(2).slice(0, -1);
+          return e;
+        });
+      } else {
+        usr2 = [];
+      }
+      const users = [...usr1, ...usr2];
+      let roles = newContent.match(/<@&[0-9]{18}>/g);
+      if (Array.isArray(roles)) {
+        roles = roles.map((e) => {
+          e = e.split(' ').join('');
+          e = e.substr(3).slice(0, -1);
+          return e;
+        });
+      }
+
+      let channels = newContent.match(/<#[0-9]{18}>/g);
+      if (Array.isArray(channels)) {
+        channels = channels.map((e) => {
+          e = e.split(' ').join('');
+          e = e.substr(2).slice(0, -1);
+          return e;
+        });
+      }
+
+      if (users.length > 0) {
+        await Promise.allSettled(
+          users.map(async (u) => {
+            if (!usrIds.has(u)) {
+              const _usr = await discord.getUser(u);
+              if (!_usr) {
+                return;
+              }
+              usrIds.set(u, _usr.getTag());
+            }
+          }),
+        );
+        for (const [id, tag] of usrIds) {
+          newContent = newContent.replace(`<@!${id}>`, `@${tag}`);
+          newContent = newContent.replace(`<@${id}>`, `@${tag}`);
+        }
+      }
+
+      if (Array.isArray(channels)) {
+        await Promise.all(
+          channels.map(async (u) => {
+            if (!channelIds.has(u) && u !== discord.getBotId()) {
+              const chan2 = (await discord.getChannel(u));
+              if (chan2 instanceof discord.DmChannel) {
+                return;
+              }
+              if (!chan2) {
+                return;
+              }
+              channelIds.set(u, chan2);
+            }
+          }),
+        );
+        for (const [id, ch] of channelIds) {
+          let ico = '#';
+          if (ch.type === discord.Channel.Type.GUILD_VOICE) {
+            ico = '🔊';
+          }
+          if (ch.type === discord.Channel.Type.GUILD_CATEGORY) {
+            ico = '‣';
+          }
+          newContent = newContent.split(`<#${ch.id}>`).join(ico + ch.name);
+        }
+      }
+      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${newContent}\`` });
       await reminders.editPool(remi.id, null);
     }
   }));
