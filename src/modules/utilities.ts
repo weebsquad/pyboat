@@ -1296,11 +1296,11 @@ export function InitializeCommands() {
                   case 'BUG_HUNTER':
                     return '<:bughunter:735780703920324762> Bug Hunter';
                   case 'HYPESQUAD_BRAVERY':
-                    return '<:bravery:735780704159531089> Bravery';
+                    return '<:bravery:735780704100679720> Bravery'; 
                   case 'HYPESQUAD_BRILLIANCE':
                     return '<:brilliance:735780703878512711> Brilliance';
                   case 'HYPESQUAD_BALANCE':
-                    return '<:balance:735780704100679720> Balance';
+                    return '<:balance:735780704159531089> Balance';
                   case 'EARLY_SUPPORTER':
                     return '<:earlysupporter:735780703631048786> Early Supporter';
                   case 'TEAM_USER':
