@@ -710,6 +710,44 @@ export function InitializeCommands() {
       },
     );
     sub.on(
+      'invisrole',
+      (ctx) => ({ roleid: ctx.string() }),
+      async (m, { roleid }) => {
+        const res: any = await m.inlineReply(async () => {
+          const guild = await m.getGuild();
+          const botMember = await guild.getMember(discord.getBotId());
+          if (!botMember) {
+            return 'Bot not found';
+          }
+          const roles = await guild.getRoles();
+          const thisRole = roles.find((v) => v.id === roleid);
+          if (!thisRole) {
+            return 'Role not found';
+          }
+          await thisRole.edit({ name: '\u200b' });
+          return 'Done';
+        });
+        admin.saveMessage(res);
+      },
+    );
+    sub.on(
+      'invisrole2',
+      (ctx) => ({ roleid: ctx.string() }),
+      async (m, { roleid }) => {
+        const res: any = await m.inlineReply(async () => {
+          const guild = await m.getGuild();
+          const roles = await guild.getRoles();
+          const thisRole = roles.find((v) => v.id === roleid);
+          if (!thisRole) {
+            return 'Role not found';
+          }
+          await thisRole.edit({ name: ' ឵឵ ' });
+          return 'Done';
+        });
+        admin.saveMessage(res);
+      },
+    );
+    sub.on(
       'getkvm',
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
