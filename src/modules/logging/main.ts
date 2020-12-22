@@ -7,10 +7,11 @@ import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { eventData } from './tracking';
 import { logDebug } from './events/custom';
 import * as queue from './queue';
+import {ParsedAttachment} from './classes';
 
 const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
-
+const imageTypes = ['png', 'jpg', 'jpeg', 'svg', 'bmp'];
 class Event {
   id: string;
   eventName: string;
@@ -184,7 +185,7 @@ export async function sendInLogChannel(
         if (opt.content === '' && !(opt.embed instanceof discord.Embed)) {
           continue;
         }
-        await channel.sendMessage(opt);
+        await channel.sendMessage({...opt, allowedMentions: {}});
       }
     }
   }
@@ -285,13 +286,6 @@ async function getMessages(
   ev: Event,
 ) {
   const msgs = new Map<string, Array<discord.Message.OutgoingMessageOptions>>();
-  /* if (!msgs.has(guildId))
-    msgs.set(
-      guildId,
-      new Map<string, Array<discord.Message.OutgoingMessageOptions>>()
-    );
-  let guild = msgs.get(guildId);
-  if (!guild) throw new Error('h'); */
   const date = new Date(utils2.decomposeSnowflake(ev.id).timestamp);
   for (const [chId, v] of chans) {
     /* Parse Messages */
@@ -315,6 +309,7 @@ async function getMessages(
       if (typeof ts !== 'string' || ts === '') {
         throw new Error('logging timestamps improperly formatted!');
       }
+      const atts: Array<ParsedAttachment> = [];
       v.forEach((map) => {
         if (map === undefined || map === null) {
           return;
@@ -322,6 +317,10 @@ async function getMessages(
         const type = `${map.get('_TYPE_')}`;
         let isAuditLog = false;
         const isAl: any = map.get('isAuditLog');
+        if(map.has('_ATTACHMENTS_')) {
+          const thisAtts = map.get('_ATTACHMENTS_');
+          atts.push(...thisAtts);
+        }
         if (
           isAl === 'true'
             || isAl === true
@@ -368,19 +367,15 @@ async function getMessages(
 
         txt += `${final}`;
       });
-      /*
-      if (!guild.has(chId)) {
-        guild.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
-        msgs.set(guildId, guild);
-      }
-      let _act = guild.get(chId); */
       if (txt !== '' && txt.length > 0) {
         if (!msgs.has(chId)) {
           msgs.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
         }
         const _chan = msgs.get(chId);
         if (_chan) {
-          _chan.push({ content: txt, allowedMentions: {} });
+          let _objn: discord.Message.OutgoingMessageOptions = { content: txt };
+          if(atts.length > 0) _objn.attachments = atts.map((v) => { return {name: v.name, data: v.data}});
+          _chan.push(_objn);
           msgs.set(chId, _chan);
         }
         /* guild.set(chId, _act);
@@ -504,8 +499,9 @@ async function getMessages(
               }
             }
           }
-
+          
           let msg = utils.replacePlaceholders(temp, map);
+          
           const _urls = msg.match(regexUrls);
           if (Array.isArray(_urls)) {
             const cdnLink = _urls.filter((url) => url.includes('cdn.discordapp.com'));
@@ -517,7 +513,17 @@ async function getMessages(
               em.setThumbnail({ url: cdnLink[0] });
             }
           }
-
+          if(!em.thumbnail || !em.thumbnail.url) {
+            // check sent attachments
+            const atts = map.get('_ATTACHMENTS_');
+            if(atts && Array.isArray(atts)) {
+              const firstShowable: ParsedAttachment | undefined = atts.find((v: ParsedAttachment) => imageTypes.includes(v.name.split('.').slice(-1)[0]));
+              if(firstShowable) {
+                em.setThumbnail({url: firstShowable.url});
+              }
+            }
+          }
+         
           const jumps = msg.match(regexClickableMarkdown);
           if (
             jumps !== null
@@ -635,19 +641,6 @@ async function getMessages(
       );
 
       embeds.forEach(async (em) => {
-        /* if (!guild) return;
-        if (!guild.has(chId))
-          guild.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
-        let _act = guild.get(chId);
-        if (_act) {
-          _act.push({
-            content: '',
-            embed: em,
-            allowedMentions: {}
-          });
-          guild.set(chId, _act);
-          msgs.set(guildId, guild);
-        } */
 
         if (!msgs.has(chId)) {
           msgs.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
@@ -655,8 +648,7 @@ async function getMessages(
         const _chan = msgs.get(chId);
         if (_chan) {
           _chan.push({
-            embed: em,
-            allowedMentions: {},
+            embed: em
           });
           msgs.set(chId, _chan);
         }
@@ -684,6 +676,8 @@ export function combineMessages(
         if (typeof op.content === 'string') {
           op.content = undefined;
         }
+        newarr.push(op);
+      } else if((Array.isArray(op.attachments) && op.attachments.length > 0)) {
         newarr.push(op);
       } else {
         contents += `${op.content}\n`;
@@ -726,7 +720,7 @@ export function combineMessages(
         if (currl > 1985 && i !== lines.length - 1) {
           let thism = accum.join('\n');
           thism += '\n';
-          newarr.push({ content: thism, allowedMentions: {} });
+          newarr.push({ content: thism });
           accum = [];
         } else if (i === lines.length - 1) {
           if (currl < 1985) {
@@ -735,7 +729,7 @@ export function combineMessages(
 
           let thism = accum.join('\n');
           thism += '\n';
-          newarr.push({ content: thism, allowedMentions: {} });
+          newarr.push({ content: thism });
           accum = [];
           if (currl >= 1985) {
             newarr.push({ content: `\n${lines[i]}\n` });
@@ -746,7 +740,7 @@ export function combineMessages(
         }
       }
     } else if (contents.length > 0) {
-      newarr.push({ content: contents, allowedMentions: {} });
+      newarr.push({ content: contents });
     }
     if (newarr.length === 0) {
       continue;

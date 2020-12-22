@@ -196,13 +196,14 @@ export const messages = {
       ['_NEW_LEVEL_', levels[guild.verificationLevel]],
     ]);
   },
-  banner(
+  async banner(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
     const oldBanner = oldGuild.banner !== null ? '' : null;
     const newBanner = guild.banner !== null ? guild.getBannerUrl() : null;
+    const newData = newBanner ? await (await fetch(newBanner)).arrayBuffer() : null;
     let type = '';
     if (oldBanner !== null && newBanner !== null) {
       type = 'BANNER_CHANGED';
@@ -214,19 +215,21 @@ export const messages = {
     if (type === '') {
       return null;
     }
-    return new Map([
+    return new Map<string, any>([
       ['_TYPE_', type],
       ['_OLD_BANNER_', oldBanner],
       ['_NEW_BANNER_', newBanner],
+      ['_ATTACHMENTS_', newData ? [{name: `banner.${newBanner.split('.').slice(-1)[0]}`, data: newData, url: newBanner}] : []]
     ]);
   },
-  icon(
+  async icon(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
     const oldIcon = oldGuild.icon !== null ? '' : null;
     const newIcon = guild.icon !== null ? guild.getIconUrl() : null;
+    const newData = newIcon ? await (await fetch(newIcon)).arrayBuffer() : null;
     let type = '';
     if (oldIcon !== null && newIcon !== null) {
       type = 'ICON_CHANGED';
@@ -238,10 +241,11 @@ export const messages = {
     if (type === '') {
       return null;
     }
-    return new Map([
+    return new Map<string, any>([
       ['_TYPE_', type],
       ['_OLD_ICON_', oldIcon],
       ['_NEW_ICON_', newIcon],
+      ['_ATTACHMENTS_', newData ? [{name: `icon.${newIcon.split('.').slice(-1)[0]}`, data: newData, url: newIcon}] : []]
     ]);
   },
   maxPresences(
@@ -349,13 +353,14 @@ export const messages = {
       ['_NEW_LOCALE_', guild.preferredLocale],
     ]);
   },
-  splash(
+  async splash(
     log: discord.AuditLogEntry,
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
     const oldSplash = oldGuild.splash !== null ? '' : null;
     const newSplash = guild.splash !== null ? guild.getSplashUrl() : null;
+    const newData = newSplash ? await (await fetch(newSplash)).arrayBuffer() : null;
     let type = '';
     if (oldSplash !== null && newSplash !== null) {
       type = 'SPLASH_CHANGED';
@@ -367,10 +372,11 @@ export const messages = {
     if (type === '') {
       return null;
     }
-    return new Map([
+    return new Map<string, any>([
       ['_TYPE_', type],
       ['_OLD_SPLASH_', oldSplash],
       ['_NEW_SPLASH_', newSplash],
+      ['_ATTACHMENTS_', newData ? [{name: `splash.${newSplash.split('.').slice(-1)[0]}`, data: newData, url: newSplash}] : []]
     ]);
   },
   systemChannelId(

@@ -32,6 +32,9 @@ export const messages = {
     let mention = emj.toMention();
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
+      const data = await (await fetch(mention)).arrayBuffer();
+      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mention = '';
     }
     mp.set('_TYPE_', 'REMOVED_REACTION');
     mp.set('_CHANNEL_ID_', ev.channelId);
@@ -53,6 +56,9 @@ export const messages = {
     const _usr = await utils.getUser(ev.userId);
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
+      const data = await (await fetch(mention)).arrayBuffer();
+      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mention = '';
     }
     mp.set('_TYPE_', 'REMOVED_REACTION');
     mp.set('_CHANNEL_ID_', ev.channelId);

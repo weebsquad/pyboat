@@ -7,6 +7,10 @@ export class ChannelScopes {
     }
 }
 
+export interface ParsedAttachment extends discord.Message.IOutgoingMessageAttachment {
+  url: string;
+}
+
 export class ChannelConfig {
     description = '';
     scopes: ChannelScopes;
