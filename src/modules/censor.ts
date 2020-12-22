@@ -4,7 +4,6 @@ import * as utils from '../lib/utils';
 import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/main';
 import * as infractions from './infractions';
-import { Permissions } from '../lib/utils';
 import * as admin from './admin';
 
 const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];

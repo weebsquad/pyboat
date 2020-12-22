@@ -4,7 +4,6 @@ import * as conf from '../config';
 import { pad, swapKV, logError, makeFake } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
 // import { bigInt } from './bigint';
-import { Permissions } from './bitField';
 
 const { config } = conf;
 

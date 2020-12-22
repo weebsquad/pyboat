@@ -1,6 +1,5 @@
 import * as utils from '../lib/utils';
 import { config, guildId, globalConfig, InitializeConfig } from '../config';
-import { Permissions } from '../lib/utils';
 
 class Entry {
     id: string; // the id
