@@ -15,6 +15,7 @@ export const messages = {
     const mp = new Map([
       ['_ROLE_ID_', role.id],
       ['_TYPE_', 'NEW_ROLE'],
+      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     return mp;
   },

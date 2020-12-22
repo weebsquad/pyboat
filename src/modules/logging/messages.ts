@@ -205,7 +205,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     PERMS_CHANGED: `${discord.decor.Emojis.GEAR} role **(**_ROLE_MENTION_**)** **[**||\`_ROLE_ID_\`||**]** permissions edited: _CHANGED_PERMS_`,
   },
   'GUILD_ROLE_DELETE': {
-    REMOVED_ROLE: `${discord.decor.Emojis.GEAR} role \`_NAME_\` **[**||\`_ROLE_ID_\`||**]** was deleted`,
+    REMOVED_ROLE: `${discord.decor.Emojis.GEAR} role \`_ROLE_NAME_\` **[**||\`_ROLE_ID_\`||**]** was deleted`,
   },
   'MESSAGE_UPDATE': {
     MESSAGE_CONTENT_UPDATED_GUILD: `${discord.decor.Emojis.PENCIL} _USERTAG_ edited their message **[**||\`_MESSAGE_ID_\`||**]** in <#_CHANNEL_ID_>: \n**•** __Before__: _CONTENT_BEFORE_\n**•** __After__:   _CONTENT_AFTER_ ${messageJump}`,
@@ -379,7 +379,7 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
   GUILD_ROLE_DELETE: {
     REMOVED_ROLE:
       `${discord.decor.Emojis.GEAR
-      } _ACTORTAG_ deleted role \`_NAME_\` **[**||\`_ROLE_ID_\`||**]** `,
+      } _ACTORTAG_ deleted role \`_ROLE_NAME_\` **[**||\`_ROLE_ID_\`||**]** `,
   },
 
   MESSAGE_DELETE: {
