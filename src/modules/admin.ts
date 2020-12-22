@@ -427,9 +427,11 @@ export async function getRoleIdByText(txt: string): Promise<string | null> {
     if (roles[key].id === txt || roles[key].name.toLowerCase() === txt) {
       return roles[key].id;
     }
-    const toRemove = ['<','>', '&', '@'];
+    const toRemove = ['<', '>', '&', '@'];
     const _testMention = txt.split('').filter((v) => !toRemove.includes(v)).join('');
-    if(roles[key].id === _testMention) return roles[key].id;
+    if (roles[key].id === _testMention) {
+      return roles[key].id;
+    }
   }
   // partial
   for (const key in roles) {
