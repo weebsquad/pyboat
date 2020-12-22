@@ -375,7 +375,7 @@ async function getMessages(
         if (_chan) {
           const _objn: discord.Message.OutgoingMessageOptions = { content: txt };
           if (atts.length > 0) {
-            _objn.attachments = atts.map((v) => ({ name: v.name, data: v.data }));
+            _objn.attachments = atts.map((vv) => ({ name: vv.name, data: vv.data }));
           }
           _chan.push(_objn);
           msgs.set(chId, _chan);
@@ -519,7 +519,7 @@ async function getMessages(
             // check sent attachments
             const atts = map.get('_ATTACHMENTS_');
             if (atts && Array.isArray(atts)) {
-              const firstShowable: ParsedAttachment | undefined = atts.find((v: ParsedAttachment) => imageTypes.includes(v.name.split('.').slice(-1)[0]));
+              const firstShowable: ParsedAttachment | undefined = atts.find((vv: ParsedAttachment) => imageTypes.includes(vv.name.split('.').slice(-1)[0]));
               if (firstShowable) {
                 em.setThumbnail({ url: firstShowable.url });
               }
