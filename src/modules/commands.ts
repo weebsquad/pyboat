@@ -3,7 +3,7 @@ import * as conf from '../config';
 import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
-import { isIgnoredChannel, isIgnoredUser } from './logging/main';
+import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 
 interface ApiError extends discord.ApiError {
   messageExtended: string | undefined;
@@ -75,11 +75,12 @@ export async function OnMessageCreate(
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
       if (!isDevCmd) {
         if (!isIgnoredChannel(msg.channelId) && !isIgnoredUser(msg.member)) {
+          const parsedTxt = await utils.parseMentionables(msg.content);
           logCustom(
             'COMMANDS',
             'COMMAND_USED',
             new Map<string, any>([
-              ['_COMMAND_NAME_', utils.escapeString(msg.content)],
+              ['_COMMAND_NAME_', utils.escapeString(parsedTxt, true)],
               ['_AUTHOR_', msg.author],
               ['_USER_', msg.author],
               ['_USER_ID_', msg.author.id],

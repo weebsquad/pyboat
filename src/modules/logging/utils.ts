@@ -163,79 +163,6 @@ export async function parseMessageContent(
   }
   cont = utils.escapeString(test.join('\n'), false, true);
 
-  const usrIds = new Map<string, string>();
-  const channelIds = new Map<string, discord.GuildChannel>();
-  const roleIds = new Map<string, string>();
-  /*
-  let users = cont.match(/<@![0-9]{18}>/g)?.map(function(e) {
-    e = e.split(' ').join('');
-    e = e.substr(3).slice(0, -1);
-    return e;
-  });
-  let usr2 = cont.match(/<@[0-9]{18}>/g)?.map(function(e) {
-    e = e.split(' ').join('');
-    e = e.substr(2).slice(0, -1);
-    return e;
-  });
-  if (!Array.isArray(users) && Array.isArray(usr2))
-    users = new Array().concat(usr2); */
-  let roles = cont.match(/<@&[0-9]{18}>/g);
-  if (Array.isArray(roles)) {
-    roles = roles.map((e) => {
-      e = e.split(' ').join('');
-      e = e.substr(3).slice(0, -1);
-      return e;
-    });
-  }
-
-  let channels = cont.match(/<#[0-9]{18}>/g);
-  if (Array.isArray(channels)) {
-    channels = channels.map((e) => {
-      e = e.split(' ').join('');
-      e = e.substr(2).slice(0, -1);
-      return e;
-    });
-  }
-  /*
-
-  if (Array.isArray(users)) {
-    await Promise.allSettled(
-      users.map(async function(u) {
-        if (!usrIds.has(u)) {
-          const _usr = await utils.getUser(u);
-          if (_usr === null) return;
-          usrIds.set(u, _usr.getTag());
-        }
-      })
-    );
-    for (let [id, tag] of usrIds) {
-      cont = cont.replace(`<@!${id}>`, '@' + tag);
-    }
-  }
-*/
-  if (Array.isArray(channels)) {
-    await Promise.all(
-      channels.map(async (u) => {
-        if (!channelIds.has(u) && u !== discord.getBotId()) {
-          const chan = (await discord.getChannel(u));
-          if (chan === null || chan.type !== discord.Channel.Type.GUILD_TEXT) {
-            return;
-          }
-          channelIds.set(u, chan);
-        }
-      }),
-    );
-    for (const [id, ch] of channelIds) {
-      let ico = '#';
-      if (ch.type === discord.Channel.Type.GUILD_VOICE) {
-        ico = '🔊';
-      }
-      if (ch.type === discord.Channel.Type.GUILD_CATEGORY) {
-        ico = '‣';
-      }
-      cont = cont.split(`<#${ch.id}>`).join(ico + ch.name);
-    }
-  }
   if (msg.mentions.length > 0) {
     msg.mentions.forEach((usr) => {
       cont = cont
@@ -245,25 +172,7 @@ export async function parseMessageContent(
         .join(`@${usr.username}#${usr.discriminator}`);
     });
   }
-  if (Array.isArray(roles) && roles.length > 0) {
-    const guild = await msg.getGuild();
-    if (guild !== null) {
-      await Promise.all(
-        roles.map(async (u) => {
-          if (!roleIds.has(u)) {
-            const rl = await guild.getRole(u);
-            if (rl === null) {
-              return;
-            }
-            roleIds.set(u, rl.name);
-          }
-        }),
-      );
-      for (const [id, tag] of roleIds) {
-        cont = cont.split(`<@&${id}>`).join(`@${tag}`);
-      }
-    }
-  }
+  cont = await utils.parseMentionables(cont);
   if (cont.length >= MAXLEN) {
     cont = `${cont.substring(0, Math.min(cont.length, MAXLEN))} [...]`;
   } else if (cutVertical) {

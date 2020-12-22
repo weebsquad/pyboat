@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prefer-destructuring */
 import * as conf from '../config';
-import { pad, swapKV, logError, makeFake } from './utils';
+import { pad, swapKV, logError, makeFake, escapeString } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
 // import { bigInt } from './bigint';
 
@@ -70,6 +70,118 @@ export class FakeConsole {
       this.timeout = _tm;
     }
   }
+}
+
+export async function parseMentionables(txt: string): Promise<string> {
+  const usrIds = new Map<string, string>();
+  const channelIds = new Map<string, discord.GuildChannel>();
+  const roleIds = new Map<string, discord.Role>();
+  let usr1 = txt.match(/<@![0-9]{18}>/g);
+  if (usr1) {
+    usr1 = usr1.map((e) => {
+      e = e.split(' ').join('');
+      e = e.substr(3).slice(0, -1);
+      return e;
+    });
+  } else {
+    usr1 = [];
+  }
+  let usr2 = txt.match(/<@[0-9]{18}>/g);
+  if (usr2) {
+    usr2 = usr2.map((e) => {
+      e = e.split(' ').join('');
+      e = e.substr(2).slice(0, -1);
+      return e;
+    });
+  } else {
+    usr2 = [];
+  }
+  const users = [...usr1, ...usr2];
+  let roles = txt.match(/<@&[0-9]{18}>/g);
+  if (Array.isArray(roles)) {
+    roles = roles.map((e) => {
+      e = e.split(' ').join('');
+      e = e.substr(3).slice(0, -1);
+      return e;
+    });
+  }
+
+  let channels = txt.match(/<#[0-9]{18}>/g);
+  if (Array.isArray(channels)) {
+    channels = channels.map((e) => {
+      e = e.split(' ').join('');
+      e = e.substr(2).slice(0, -1);
+      return e;
+    });
+  }
+
+  if (users.length > 0) {
+    await Promise.allSettled(
+      users.map(async (u) => {
+        if (!usrIds.has(u)) {
+          const _usr = await discord.getUser(u);
+          if (!_usr) {
+            return;
+          }
+          usrIds.set(u, _usr.getTag());
+        }
+      }),
+    );
+    for (const [id, tag] of usrIds) {
+      txt = txt.replace(`<@!${id}>`, `@${tag}`);
+      txt = txt.replace(`<@${id}>`, `@${tag}`);
+    }
+  }
+  if (Array.isArray(channels)) {
+    await Promise.all(
+      channels.map(async (u) => {
+        if (!channelIds.has(u) && u !== discord.getBotId()) {
+          const chan2 = (await discord.getChannel(u));
+          if (chan2 instanceof discord.DmChannel) {
+            return;
+          }
+          if (!chan2) {
+            return;
+          }
+          channelIds.set(u, chan2);
+        }
+      }),
+    );
+    for (const [id, ch] of channelIds) {
+      let ico = '#';
+      if (ch.type === discord.Channel.Type.GUILD_VOICE) {
+        ico = '🔊';
+      }
+      if (ch.type === discord.Channel.Type.GUILD_CATEGORY) {
+        ico = '‣';
+      }
+      txt = txt.split(`<#${ch.id}>`).join(ico + ch.name);
+    }
+  }
+
+  if (Array.isArray(roles)) {
+    const guild = await discord.getGuild();
+    const guildRoles = (await guild.getRoles());
+    roles.map(async (u) => {
+      if (!channelIds.has(u)) {
+        const thisR = guildRoles.find((v) => v.id === u);
+        if (thisR) {
+          roleIds.set(u, thisR);
+        }
+      }
+    });
+    for (const [id, rl] of roleIds) {
+      if (id === guild.id) {
+        txt = txt.split(`<@&${id}>`).join(escapeString('@everyone'));
+        continue;
+      }
+      const ico = '🛡️';
+
+      txt = txt.split(`<@&${id}>`).join(ico + rl.name);
+    }
+  }
+
+  return txt;
 }
 
 export function genTable(data: string[][]) {
