@@ -33,7 +33,7 @@ export const messages = {
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0]}`, data, url: mention }]);
       mention = '';
     }
     mp.set('_TYPE_', 'REMOVED_REACTION');
@@ -57,7 +57,7 @@ export const messages = {
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0]}`, data, url: mention }]);
       mention = '';
     }
     mp.set('_TYPE_', 'REMOVED_REACTION');

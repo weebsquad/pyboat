@@ -33,7 +33,7 @@ export const messages = {
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0]}`, data, url: mention }]);
       mention = '';
     }
     mp.set('_TYPE_', 'ADD_REACTION');
@@ -57,17 +57,17 @@ export const messages = {
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{name: `emoji.${mention.split('.').slice(-1)[0]}`, data: data, url: mention}]);
+      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0]}`, data, url: mention }]);
       mention = '';
     }
-    
+
     mp.set('_TYPE_', 'ADD_REACTION');
     mp.set('_CHANNEL_ID_', ev.channelId);
     mp.set('_MESSAGE_ID_', ev.messageId);
     mp.set('_EMOJI_MENTION_', mention);
     mp.set('_USERTAG_', getUserTag(_usr));
     mp.set('_USER_', _usr);
-    
+
     return mp;
   },
 };

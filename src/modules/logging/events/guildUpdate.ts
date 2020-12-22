@@ -219,7 +219,7 @@ export const messages = {
       ['_TYPE_', type],
       ['_OLD_BANNER_', oldBanner],
       ['_NEW_BANNER_', newBanner],
-      ['_ATTACHMENTS_', newData ? [{name: `banner.${newBanner.split('.').slice(-1)[0]}`, data: newData, url: newBanner}] : []]
+      ['_ATTACHMENTS_', newData ? [{ name: `banner.${newBanner.split('.').slice(-1)[0]}`, data: newData, url: newBanner }] : []],
     ]);
   },
   async icon(
@@ -245,7 +245,7 @@ export const messages = {
       ['_TYPE_', type],
       ['_OLD_ICON_', oldIcon],
       ['_NEW_ICON_', newIcon],
-      ['_ATTACHMENTS_', newData ? [{name: `icon.${newIcon.split('.').slice(-1)[0]}`, data: newData, url: newIcon}] : []]
+      ['_ATTACHMENTS_', newData ? [{ name: `icon.${newIcon.split('.').slice(-1)[0]}`, data: newData, url: newIcon }] : []],
     ]);
   },
   maxPresences(
@@ -376,7 +376,7 @@ export const messages = {
       ['_TYPE_', type],
       ['_OLD_SPLASH_', oldSplash],
       ['_NEW_SPLASH_', newSplash],
-      ['_ATTACHMENTS_', newData ? [{name: `splash.${newSplash.split('.').slice(-1)[0]}`, data: newData, url: newSplash}] : []]
+      ['_ATTACHMENTS_', newData ? [{ name: `splash.${newSplash.split('.').slice(-1)[0]}`, data: newData, url: newSplash }] : []],
     ]);
   },
   systemChannelId(

@@ -7,7 +7,7 @@ import { QueuedEvent } from '../../lib/eventHandler/queue';
 import { eventData } from './tracking';
 import { logDebug } from './events/custom';
 import * as queue from './queue';
-import {ParsedAttachment} from './classes';
+import { ParsedAttachment } from './classes';
 
 const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
@@ -185,7 +185,7 @@ export async function sendInLogChannel(
         if (opt.content === '' && !(opt.embed instanceof discord.Embed)) {
           continue;
         }
-        await channel.sendMessage({...opt, allowedMentions: {}});
+        await channel.sendMessage({ ...opt, allowedMentions: {} });
       }
     }
   }
@@ -317,7 +317,7 @@ async function getMessages(
         const type = `${map.get('_TYPE_')}`;
         let isAuditLog = false;
         const isAl: any = map.get('isAuditLog');
-        if(map.has('_ATTACHMENTS_')) {
+        if (map.has('_ATTACHMENTS_')) {
           const thisAtts = map.get('_ATTACHMENTS_');
           atts.push(...thisAtts);
         }
@@ -373,8 +373,10 @@ async function getMessages(
         }
         const _chan = msgs.get(chId);
         if (_chan) {
-          let _objn: discord.Message.OutgoingMessageOptions = { content: txt };
-          if(atts.length > 0) _objn.attachments = atts.map((v) => { return {name: v.name, data: v.data}});
+          const _objn: discord.Message.OutgoingMessageOptions = { content: txt };
+          if (atts.length > 0) {
+            _objn.attachments = atts.map((v) => ({ name: v.name, data: v.data }));
+          }
           _chan.push(_objn);
           msgs.set(chId, _chan);
         }
@@ -499,9 +501,9 @@ async function getMessages(
               }
             }
           }
-          
+
           let msg = utils.replacePlaceholders(temp, map);
-          
+
           const _urls = msg.match(regexUrls);
           if (Array.isArray(_urls)) {
             const cdnLink = _urls.filter((url) => url.includes('cdn.discordapp.com'));
@@ -513,17 +515,17 @@ async function getMessages(
               em.setThumbnail({ url: cdnLink[0] });
             }
           }
-          if(!em.thumbnail || !em.thumbnail.url) {
+          if (!em.thumbnail || !em.thumbnail.url) {
             // check sent attachments
             const atts = map.get('_ATTACHMENTS_');
-            if(atts && Array.isArray(atts)) {
+            if (atts && Array.isArray(atts)) {
               const firstShowable: ParsedAttachment | undefined = atts.find((v: ParsedAttachment) => imageTypes.includes(v.name.split('.').slice(-1)[0]));
-              if(firstShowable) {
-                em.setThumbnail({url: firstShowable.url});
+              if (firstShowable) {
+                em.setThumbnail({ url: firstShowable.url });
               }
             }
           }
-         
+
           const jumps = msg.match(regexClickableMarkdown);
           if (
             jumps !== null
@@ -641,14 +643,13 @@ async function getMessages(
       );
 
       embeds.forEach(async (em) => {
-
         if (!msgs.has(chId)) {
           msgs.set(chId, new Array<discord.Message.OutgoingMessageOptions>());
         }
         const _chan = msgs.get(chId);
         if (_chan) {
           _chan.push({
-            embed: em
+            embed: em,
           });
           msgs.set(chId, _chan);
         }
@@ -677,7 +678,7 @@ export function combineMessages(
           op.content = undefined;
         }
         newarr.push(op);
-      } else if((Array.isArray(op.attachments) && op.attachments.length > 0)) {
+      } else if ((Array.isArray(op.attachments) && op.attachments.length > 0)) {
         newarr.push(op);
       } else {
         contents += `${op.content}\n`;
