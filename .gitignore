@@ -6,4 +6,3 @@ work.code-workspace
 .env
 .npmrc
 cloc-1.86.exe
-typings/

@@ -1,8 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts",
-    "raw": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts",
-    "typings": "https://pylon.bot/runtime-typings/0.0.1/pylon-runtime.d.ts"
-  }
-}
