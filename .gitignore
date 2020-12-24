@@ -7,4 +7,3 @@ work.code-workspace
 .npmrc
 cloc-1.86.exe
 typings/
-typings/globals/discord/index.d.ts
