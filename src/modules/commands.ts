@@ -9,9 +9,69 @@ interface ApiError extends discord.ApiError {
   messageExtended: string | undefined;
 }
 
-async function HandleDM(msg: discord.Message) {
-  //
+type SlashPermissionsCheck = {
+  overrideableInfo: string;
+  level: number;
+  owner?: boolean;
+  globalAdmin?: boolean;
 }
+
+type SlashExtras = {
+  permissions?: SlashPermissionsCheck;
+};
+
+function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras?: SlashExtras) {
+  discord.interactions.commands.register(sconf, async (interaction, ...args: any) => {
+    console.log(`Executing slash command [${sconf.name}]`);
+    if (extras.permissions) {
+      const perms = await commands2.checkSlashPerms(interaction, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
+      if (!perms.access) {
+        await interaction.acknowledge(false);
+        await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
+        return;
+      }
+    }
+    console.log('executing callback');
+    try {
+    // @ts-ignore
+      await callback(interaction, ...args);
+    } catch (e) {
+
+    } finally {
+      /*
+      if (!isIgnoredChannel(interaction.channelId) && !isIgnoredUser(interaction.member)) {
+        const parsedTxt = await utils.parseMentionables(msg.content);
+        logCustom(
+          'COMMANDS',
+          'COMMAND_USED',
+          new Map<string, any>([
+            ['_COMMAND_NAME_', utils.escapeString(parsedTxt, true)],
+            ['_AUTHOR_', msg.author],
+            ['_USER_', msg.author],
+            ['_USER_ID_', msg.author.id],
+            ['_MEMBER_', msg.member],
+            ['_CHANNEL_ID_', msg.channelId],
+          ]),
+        );
+      } */
+    }
+  });
+}
+
+registerSlash(
+  {
+    description: 'ping pong',
+    name: 'ping',
+    /* options: (ctx) => ({
+      one: ctx.string('test arg!')
+    }) */
+  },
+  async (inter, { one }) => {
+    await inter.acknowledge(true);
+    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} Pong! [\`${one}\`]`);
+  }, { permissions: { level: 500, overrideableInfo: 'commands.ping', owner: true } },
+);
+
 const cooldowns: any = {};
 export async function OnMessageCreate(
   id: string,
@@ -31,7 +91,7 @@ export async function OnMessageCreate(
 
   if (!msg.member) {
     // is a DM
-    await HandleDM(msg);
+
   } else {
     if (msg.author.bot && !utils.isCommandsAuthorized(msg.member)) {
       return;

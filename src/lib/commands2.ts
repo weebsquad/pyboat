@@ -217,6 +217,97 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
   }
 }
 
+type SlashExecutionPermission = {
+  access: boolean;
+  errors?: string[];
+}
+export async function checkSlashPerms(interaction: discord.interactions.commands.SlashCommandInteraction, overrideableInfo: string | null, level: number, owner = false, ga = false): Promise<SlashExecutionPermission> {
+  const retVal: SlashExecutionPermission = { access: false, errors: [] };
+  const guild = await interaction.getGuild();
+  const member = interaction.member;
+  const isOverridingGlobalAdmin = await utils.isGAOverride(member.user.id);
+  // the non-async check is after because the first one will force a preload of the admins config
+  const isGlobalAdmin = utils.isGlobalAdmin(member.user.id);
+  const isOwner = guild.ownerId === member.user.id;
+  const theirLevel = utils.getUserAuth(member);
+  if (ga === true) {
+    retVal.access = isGlobalAdmin;
+    return retVal;
+  }
+  if (owner === true) {
+    retVal.access = isOverridingGlobalAdmin || isOwner;
+    retVal.errors.push('Must be the server owner');
+    return retVal;
+  }
+  let ov: undefined | CmdOverride;
+  if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1 && typeof config.modules.commands.overrides === 'object') {
+    ov = checkOverrides(level, overrideableInfo);
+    level = ov.level;
+  }
+
+  if (ov && ov.disabled === true) {
+    if (isOwner || isOverridingGlobalAdmin || (typeof ov.bypassLevel === 'number' && theirLevel >= ov.bypassLevel)) {
+      retVal.access = true;
+    } else {
+      retVal.access = false;
+      retVal.errors.push('This command is disabled');
+    }
+  } else {
+    const checkAccess: any = () => {
+      const val = theirLevel >= level;
+      if (isOwner || isOverridingGlobalAdmin) {
+        return true;
+      }
+
+      if (!ov) {
+        if (!val) {
+          return `Must be bot level ${level}`;
+        }
+        return true;
+      }
+      if (typeof ov.bypassLevel === 'number') {
+        if (theirLevel >= ov.bypassLevel) {
+          return true;
+        }
+      }
+      /* if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
+          return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
+        }
+        if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(interaction.channelId)) {
+          let chs = ov.channelsWhitelist;
+          if (Array.isArray(ov.channelsBlacklist)) {
+            chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
+          }
+          return `Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`;
+        }
+        if (Array.isArray(ov.rolesBlacklist)) {
+          const matches = member.roles.find((rlid) => ov.rolesBlacklist.includes(rlid));
+          if (typeof matches !== 'undefined') {
+            return `Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`;
+          }
+        }
+        if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
+          const matches = member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
+          if (typeof matches === 'undefined') {
+            let rls = ov.rolesWhitelist;
+            if (Array.isArray(ov.rolesBlacklist)) {
+              rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
+            }
+            return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
+          }
+        } */
+      return val;
+    };
+    if (checkAccess === true) {
+      retVal.access = true;
+    } else {
+      retVal.access = false;
+      retVal.errors.push(checkAccess);
+    }
+  }
+  return retVal;
+}
+
 export function getOpts(curr: any): discord.command.ICommandGroupOptions {
   const F = discord.command.filters;
   // const filterNoCmds = F.silent(F.not(F.or(F.isAdministrator(), F.channelIdIn(getCmdChannels()))));

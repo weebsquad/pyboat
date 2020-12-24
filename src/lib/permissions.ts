@@ -1,5 +1,5 @@
 import { logDebug, logCustom } from '../modules/logging/events/custom';
-import { config, globalConfig, guildId } from '../config';
+import { config, globalConfig, guildId, InitializeConfig } from '../config';
 import { getMemberTag } from '../modules/logging/main';
 
 export function getUserAuth(mem: discord.GuildMember | string) {
@@ -65,6 +65,9 @@ export async function canMemberRun(neededLevel: number, member: discord.GuildMem
 }
 
 export function isGlobalAdmin(userid: string) {
+  if (Array.isArray(globalConfig.admins)) {
+    return false;
+  }
   return globalConfig.admins.includes(userid);
 }
 
@@ -98,6 +101,9 @@ export async function deleteGaOverride(uid: string) {
   return true;
 }
 export async function isGAOverride(userId: string) {
+  if (!Array.isArray(globalConfig.admins)) {
+    await InitializeConfig();
+  }
   if (!isGlobalAdmin(userId)) {
     return false;
   }
