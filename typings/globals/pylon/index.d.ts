@@ -31,8 +31,8 @@ declare function setTimeout(
   timeout?: number,
   ...arguments: any[]
 ): number;
-declare function clearInterval(handle?: number): void;
-declare function clearTimeout(handle?: number): void;
+declare function clearInterval(handle: number): void;
+declare function clearTimeout(handle: number): void;
 declare function sleep(timeout: number): Promise<void>;
 
 /*
@@ -220,7 +220,7 @@ declare module pylon {
     [property: string]: Json;
   }
 
-  interface JsonArray extends Array<Json> { }
+  interface JsonArray extends Array<Json> {}
 
   type Json = string | number | boolean | null | JsonObject | JsonArray;
 

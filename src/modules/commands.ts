@@ -69,7 +69,7 @@ registerSlash(
   async (inter, { one }) => {
     await inter.acknowledge(true);
     await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} Pong! [\`${one}\`]`);
-  }, { permissions: { level: 500, overrideableInfo: 'commands.ping', owner: true } },
+  }, { permissions: { level: 500, overrideableInfo: 'commands.ping', globalAdmin: true } },
 );
 
 const cooldowns: any = {};
