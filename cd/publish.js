@@ -227,7 +227,7 @@ function sendWebhook(txt) {
   });
 }
 const doneGuilds = [];
-getDeploymentIds().then((objDeps) => {
+getDeploymentIds().then(async (objDeps) => {
   if (!objDeps) {
     throw new Error('Failed to fetch deployment IDs, closing');
   }
@@ -253,10 +253,15 @@ getDeploymentIds().then((objDeps) => {
     sendWebhook(txt);
     console.info(txt);
   }
+  let delay = 0;
   ids.forEach((deployment_id) => {
     if (doneGuilds.includes(deployment_id)) {
       return;
     }
+    if (delay > 0) {
+      sleep(delay);
+    }
+    delay += 0.5;
     doneGuilds.push(deployment_id);
     const bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
 
