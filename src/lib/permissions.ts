@@ -65,7 +65,7 @@ export async function canMemberRun(neededLevel: number, member: discord.GuildMem
 }
 
 export function isGlobalAdmin(userid: string) {
-  if (Array.isArray(globalConfig.admins)) {
+  if (!Array.isArray(globalConfig.admins)) {
     return false;
   }
   return globalConfig.admins.includes(userid);
