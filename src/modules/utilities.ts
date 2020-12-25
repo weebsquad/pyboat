@@ -1399,7 +1399,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snipe', level: Ranks.Authorized } },
 );
-
+/*
 registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
@@ -1409,7 +1409,7 @@ registerSlash(
     );
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
-);
+);*/
 
 registerSlash(
   { name: 'avatar', description: 'Gets a user\'s avatar', options: (ctx) => ({ user: ctx.guildMember({ description: 'User', required: false }) }) },
@@ -1441,7 +1441,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.cat', level: Ranks.Guest } },
 );
-
+/*
 registerSlash(
   { name: 'dog', description: 'Gets a random dog image' },
   async (inter) => {
@@ -1452,7 +1452,7 @@ registerSlash(
     await inter.respond({ embeds: [emb] });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.dog', level: Ranks.Guest } },
-);
+);*/
 
 registerSlash(
   { name: 'doge', description: 'Gets a random shiba inu image' },
@@ -1465,7 +1465,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.doge', level: Ranks.Guest } },
 );
-
+/*
 registerSlash(
   { name: 'fox', description: 'Gets a random fox image' },
   async (inter) => {
@@ -1549,7 +1549,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.panda', level: Ranks.Guest } },
 );
-
+*/
 registerSlash(
   { name: 'server', description: 'Shows server info' },
   async (inter) => {
