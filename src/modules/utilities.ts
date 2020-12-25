@@ -1409,7 +1409,7 @@ registerSlash(
     );
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
-);*/
+); */
 
 registerSlash(
   { name: 'avatar', description: 'Gets a user\'s avatar', options: (ctx) => ({ user: ctx.guildMember({ description: 'User', required: false }) }) },
@@ -1452,7 +1452,7 @@ registerSlash(
     await inter.respond({ embeds: [emb] });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.dog', level: Ranks.Guest } },
-);*/
+); */
 
 registerSlash(
   { name: 'doge', description: 'Gets a random shiba inu image' },
