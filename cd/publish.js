@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable guard-for-in */
 /* eslint-disable no-plusplus */
 
 /* eslint-disable no-console */
@@ -253,15 +255,12 @@ getDeploymentIds().then(async (objDeps) => {
     sendWebhook(txt);
     console.info(txt);
   }
-  let delay = 0;
-  ids.forEach((deployment_id) => {
+  for (const k in ids) {
+    const deployment_id = ids[k];
     if (doneGuilds.includes(deployment_id)) {
       return;
     }
-    if (delay > 0) {
-      sleep(delay);
-    }
-    delay += 0.5;
+
     doneGuilds.push(deployment_id);
     const bundle = fs.readFileSync('./dist/bundle.js', 'utf8');
 
@@ -285,56 +284,47 @@ getDeploymentIds().then(async (objDeps) => {
         },
       }),
     };
-
+    sleep(2);
     // eslint-disable-next-line consistent-return
-    fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data).then(async (r) => {
-      try {
-        const txtJson = r.json();
-        return txtJson;
-      } catch (e) {
-        console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
+    try {
+      const r = await fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data);
+      const obj = await r.json();
+      if (typeof (obj.msg) === 'string') {
+        console.error(`Publish error: ${obj.msg}`);
+        process.exit(1);
+      } else {
         if (!isGh) {
-          console.error(`Publish error: ${r}`);
-          const txt = await r.text();
-          console.error(txt);
-        }
-        process.exit(1);
-      }
-    })
-      .then((obj) => {
-        if (typeof (obj.msg) === 'string') {
-          console.error(`Publish error: ${obj.msg}`);
-          process.exit(1);
+          console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
         } else {
-          if (!isGh) {
-            console.log(`Published to ${obj.guild.name}${isGh === false ? ` (${obj.guild.id}) ` : ' '}successfully (Revision ${obj.revision})! `);
-          } else {
-            console.info('Published successfully');
-          }
+          console.info('Published successfully');
+        }
 
-          if (typeof (wh) === 'string' && isGh && !isDebug) {
-            if (ids.length >= lengthShorten) {
-              toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
-            } else {
-              toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - #${obj.revision}\nGID:[||\`${obj.guild.id}\`||]\nSID:[||\`${obj.script.id}\`||]\nDID:[||\`${deployment_id}\`||]`);
-            }
-          }
-          if (isDebug && !isGh) {
-            workbenchWs(obj.workbench_url);
+        if (typeof (wh) === 'string' && isGh && !isDebug) {
+          if (ids.length >= lengthShorten) {
+            toPost.push(`✅ \`${obj.guild.name}\` [||\`${obj.guild.id}\`||] (<@!${obj.bot_id}>) #${obj.revision}`);
+          } else {
+            toPost.push(`✅ \`${obj.guild.name}\` (<@!${obj.bot_id}>) - #${obj.revision}\nGID:[||\`${obj.guild.id}\`||]\nSID:[||\`${obj.script.id}\`||]\nDID:[||\`${deployment_id}\`||]`);
           }
         }
-      }).then(() => {
-        if (toPost.length === ids.length) {
-          console.info('Done deploying!');
-          sendWebhook(toPost.join(`${ids.length >= lengthShorten ? '\n' : '\n\n'}`));
+        if (isDebug && !isGh) {
+          workbenchWs(obj.workbench_url);
         }
-      })
-      .catch((e) => {
-        console.error('Deploy Error!');
-        console.error(e);
-        process.exit(1);
-      });
-  });
+      }
+    } catch (e) {
+      console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
+      if (!isGh) {
+        console.error(`Publish error: ${r}`);
+        const txt = await r.text();
+        console.error(txt);
+      }
+      process.exit(1);
+    }
+
+    if (toPost.length === ids.length) {
+      console.info('Done deploying!');
+      sendWebhook(toPost.join(`${ids.length >= lengthShorten ? '\n' : '\n\n'}`));
+    }
+  }
 }).catch((e) => {
   if (isGh && !isDebug) {
     sendWebhook(`Deploy error:\n${e}`);
