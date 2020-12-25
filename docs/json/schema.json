@@ -2556,6 +2556,17 @@
                                 }
                             }
                         },
+                        "duplicateRegistry": {
+                            "type": "boolean",
+                            "format": "checkbox",
+                            "title": "Register existing slash commands as chat commands",
+                            "default": true,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        },
                         "overrides": {
                             "type": "array",
                             "title": "Command Overrides",

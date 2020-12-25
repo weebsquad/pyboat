@@ -97,6 +97,7 @@ const defaultConfig = { // for non-defined configs!
       // seperator: ' ',
       // prefixParameters: ['--', '-'], // -- has to be first actually due to indexOf detection
       hideNoAccess: false,
+      duplicateRegistry: true,
       overrides: {
         /* 'module.utilities': {
           level: 0,

@@ -1,6 +1,7 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
+import { registeredSlashCommands } from '../modules/commands';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
@@ -55,6 +56,31 @@ class CmdOverride {
   rolesBlacklist: Array<string> | undefined;
   bypassLevel: number | undefined;
 }
+
+export function cleanDuplicates() {
+  const individualCommandNames: string[] = registeredSlashCommands.map((v) => v.name);
+  if(config.modules.commands.duplicateRegistry !== false) {
+    return;
+  }
+  cmdgroups = cmdgroups.map((v: discord.command.CommandGroup) => {
+    let copyCmdGroup = {};
+    for(const key in v) {
+      if(key === 'commandExecutors') {
+        const newM = new Map<string, any>();
+        for(const [name, opts] of v[key]) {
+          if(individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
+            continue;
+          }
+          newM.set(name, opts)
+        }
+        copyCmdGroup[key] = newM;
+        continue;
+      }
+      copyCmdGroup[key] = v[key];
+    }
+    return utils.makeFake(copyCmdGroup, discord.command.CommandGroup);
+  })
+}
 export function checkOverrides(level: number, ovtext: string) {
   const retVal = new CmdOverride();
   let disabled = false;
@@ -75,7 +101,6 @@ export function checkOverrides(level: number, ovtext: string) {
   } else {
     modName = ovtext;
   }
-  // console.log(`ovtext = ${ovtext}`, `cmdname: ${cmdName}, modName: ${modName}, groupName: ${groupName}`)
   const checkStrings = [`module.${modName}`, `group.${groupName}`, `command.${cmdName}`];
   for (let i = 0; i < checkStrings.length; i++) {
     const obj = config.modules.commands.overrides[checkStrings[i]];
@@ -253,7 +278,7 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
       retVal.errors.push('This command is disabled');
     }
   } else {
-    const checkAccess: any = () => {
+    const accessFunc: any = () => {
       const val = theirLevel >= level;
       if (isOwner || isOverridingGlobalAdmin) {
         return true;
@@ -270,7 +295,7 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
           return true;
         }
       }
-      /* if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
+       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
           return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
         }
         if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(interaction.channelId)) {
@@ -295,9 +320,10 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
             }
             return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
           }
-        } */
+        } 
       return val;
     };
+    const checkAccess = accessFunc();
     if (checkAccess === true) {
       retVal.access = true;
     } else {
@@ -473,4 +499,5 @@ export function InitializeCommands2() {
       }
     }
   }
+  cleanDuplicates();
 }

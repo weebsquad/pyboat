@@ -52,7 +52,8 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     BLACKLISTED_USER_ACTION: `${discord.decor.Emojis.NO_ENTRY} blacklisted user _USERTAG_ tried to perform _ACTION_`,
   },
   '|COMMANDS': {
-    COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
+    CHAT_COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used chat command in <#_CHANNEL_ID_> : \`_COMMAND_NAME_\``,
+    SLASH_COMMAND_USED: `${discord.decor.Emojis.TOOLS} _USERTAG_ used slash command in <#_CHANNEL_ID_> : **/**\`_COMMAND_NAME_\`_ARGUMENTS_`,
   },
   '|ADMIN': {
     CLEAN: `${discord.decor.Emojis.WASTEBASKET} _ACTORTAG_ cleaned **_MESSAGES_** messages_CHANNEL__USERTAG_`,
