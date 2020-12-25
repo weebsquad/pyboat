@@ -284,7 +284,9 @@ getDeploymentIds().then(async (objDeps) => {
         },
       }),
     };
-    sleep(2);
+    if (!isDebug) {
+      sleep(2);
+    }
     // eslint-disable-next-line consistent-return
     try {
       const r = await fetch(`https://pylon.bot/api/deployments/${deployment_id}`, data);
