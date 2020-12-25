@@ -5,6 +5,7 @@ import * as utils from '../lib/utils';
 import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
+
 export const registeredSlashCommands: discord.interactions.commands.ICommandConfig<any>[] = [];
 interface ApiError extends discord.ApiError {
   messageExtended: string | undefined;
@@ -23,13 +24,16 @@ type SlashExtras = {
   module: string;
 };
 
-function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras?: SlashExtras) {
+export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras?: SlashExtras) {
+  if (registeredSlashCommands.length >= 10) {
+    return;
+  }
   discord.interactions.commands.register(sconf, async (interaction, ...args: any) => {
-    if(typeof conf.config !== 'object' || conf.config === null || typeof conf.config === 'undefined') {
-        const ret = await conf.InitializeConfig();
-        if (!ret) {
-          return;
-        }
+    if (typeof conf.config !== 'object' || conf.config === null || typeof conf.config === 'undefined') {
+      const ret = await conf.InitializeConfig();
+      if (!ret) {
+        return;
+      }
     }
     console.log(`Executing slash command [${sconf.name}]`);
     if (extras.module) {
@@ -39,6 +43,20 @@ function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>,
         } catch (_) {}
         await interaction.respondEphemeral('**This command is disabled**');
       }
+    }
+    if (typeof cooldowns[interaction.member.user.id] === 'number') {
+      const diff = Date.now() - cooldowns[interaction.member.user.id];
+      // global cmd cooldown!
+      if (diff < 750) {
+        return;
+      }
+    }
+    if (interaction.member.user.bot && !utils.isCommandsAuthorized(interaction.member)) {
+      return;
+    }
+    if (!utils.isCommandsAuthorized(interaction.member)) {
+      await utils.reportBlockedAction(interaction.member, `slash command execution: \`${sconf.name}\``);
+      return;
     }
     if (extras.permissions) {
       const perms = await commands2.checkSlashPerms(interaction, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
@@ -54,13 +72,13 @@ function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>,
     }
     console.log('executing callback');
     try {
+      // @ts-ignore
+      await callback(interaction, ...args);
       if (typeof extras.staticAck === 'boolean') {
         try {
           await interaction.acknowledge(extras.staticAck);
         } catch (_) {}
       }
-      // @ts-ignore
-      await callback(interaction, ...args);
     } catch (_e) {
       try {
         await interaction.acknowledge(false);
@@ -76,7 +94,7 @@ function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>,
           }
         } catch (e) {}
       }
-      await interaction.respondEphemeral('**There has been an error executing this command**This has been logged and the bot developer will look into it shortly.');
+      await interaction.respondEphemeral('**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.');
       logDebug(
         'BOT_ERROR',
         new Map<string, any>([
@@ -87,71 +105,59 @@ function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>,
         ]),
       );
     }
-    
-      if (!isIgnoredChannel(interaction.channelId) && !isIgnoredUser(interaction.member)) {
-        let argsString = ``;
-        if(sconf.options && args.length > 0) {
-          for(const i in args) {
-            for(const key in args[i]) {
-              const val = args[key];
-              console.log('args', i, key, val);
-              let valOutput = '';
-              if(typeof val === 'string') {
-                valOutput = val;
-              } else if(typeof val === 'boolean') {
-                valOutput = val === true ? 'true' : 'false';
-              } else if(typeof val === 'number') {
-                valOutput = `${val}`;
-              } else if(val instanceof discord.GuildMember) {
-                valOutput = val.user.getTag();
-              } else if(val instanceof discord.Role) {
-                valOutput = val.name;
-              } else if(val instanceof discord.GuildChannel) {
-                valOutput = val.name;
-              } else {
-                console.warn(`Argument ${key} typing not found??`);
+    cooldowns[interaction.member.user.id] = Date.now();
+
+    if (!isIgnoredChannel(interaction.channelId) && !isIgnoredUser(interaction.member)) {
+      let argsString = '';
+      if (sconf.options && args.length > 0) {
+        for (const i in args) {
+          for (const key in args[i]) {
+            const val = args[i][key];
+            let valOutput = '';
+            if (typeof val === 'string') {
+              valOutput = val;
+            } else if (typeof val === 'boolean') {
+              valOutput = val === true ? 'true' : 'false';
+            } else if (typeof val === 'number') {
+              valOutput = `${val}`;
+            } else if (val instanceof discord.GuildMember) {
+              valOutput = val.user.getTag();
+            } else if (val instanceof discord.Role) {
+              valOutput = val.name;
+            } else if (val instanceof discord.GuildChannel) {
+              valOutput = val.name;
+            } else {
+              console.warn(`Argument ${key} typing not found??`);
+            }
+            if (valOutput !== '') {
+              if (argsString !== '') {
+                argsString += ' , ';
               }
-              if(valOutput !== '') {
-                if(argsString !== '') argsString += ' , ';
-                argsString += `\`${key}\`:\`${utils.escapeString(valOutput, true)}\``;
-              }
+              argsString += `\`${key}\`:\`${utils.escapeString(valOutput, true)}\``;
             }
           }
         }
-        if(argsString !== '') {
-          argsString = ' with arguments ' + argsString;
-        }
-        logCustom(
-          'COMMANDS',
-          'SLASH_COMMAND_USED',
-          new Map<string, any>([
-            ['_COMMAND_NAME_', sconf.name],
-            ['_AUTHOR_', interaction.member.user],
-            ['_USER_', interaction.member.user],
-            ['_USER_ID_', interaction.member.user.id],
-            ['_MEMBER_', interaction.member],
-            ['_CHANNEL_ID_', interaction.channelId],
-            ['_ARGUMENTS_', argsString]
-          ]),
-        );
-      } 
+      }
+      if (argsString !== '') {
+        argsString = ` with arguments ${argsString}`;
+      }
+      logCustom(
+        'COMMANDS',
+        'SLASH_COMMAND_USED',
+        new Map<string, any>([
+          ['_COMMAND_NAME_', sconf.name],
+          ['_AUTHOR_', interaction.member.user],
+          ['_USER_', interaction.member.user],
+          ['_USER_ID_', interaction.member.user.id],
+          ['_MEMBER_', interaction.member],
+          ['_CHANNEL_ID_', interaction.channelId],
+          ['_ARGUMENTS_', argsString],
+        ]),
+      );
+    }
   });
   registeredSlashCommands.push(sconf);
 }
-
-registerSlash(
-  {
-    description: 'ping pong',
-    name: 'ping',
-     options: (ctx) => ({
-      one: ctx.guildMember('test arg!')
-    }) 
-  },
-  async (inter, { one }) => {
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} Pong! [\`${one}\`]`);
-  }, 
-  { module: 'commands', staticAck: true, permissions: { level: 500, overrideableInfo: 'commands.ping' } },
-);
 
 const cooldowns: any = {};
 export async function OnMessageCreate(

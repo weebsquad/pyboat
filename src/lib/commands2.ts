@@ -59,19 +59,19 @@ class CmdOverride {
 
 export function cleanDuplicates() {
   const individualCommandNames: string[] = registeredSlashCommands.map((v) => v.name);
-  if(config.modules.commands.duplicateRegistry !== false) {
+  if (config.modules.commands.duplicateRegistry !== false) {
     return;
   }
   cmdgroups = cmdgroups.map((v: discord.command.CommandGroup) => {
-    let copyCmdGroup = {};
-    for(const key in v) {
-      if(key === 'commandExecutors') {
+    const copyCmdGroup = {};
+    for (const key in v) {
+      if (key === 'commandExecutors') {
         const newM = new Map<string, any>();
-        for(const [name, opts] of v[key]) {
-          if(individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
+        for (const [name, opts] of v[key]) {
+          if (individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
             continue;
           }
-          newM.set(name, opts)
+          newM.set(name, opts);
         }
         copyCmdGroup[key] = newM;
         continue;
@@ -79,7 +79,7 @@ export function cleanDuplicates() {
       copyCmdGroup[key] = v[key];
     }
     return utils.makeFake(copyCmdGroup, discord.command.CommandGroup);
-  })
+  });
 }
 export function checkOverrides(level: number, ovtext: string) {
   const retVal = new CmdOverride();
@@ -295,32 +295,32 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
           return true;
         }
       }
-       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
-          return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
+      if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
+        return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
+      }
+      if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(interaction.channelId)) {
+        let chs = ov.channelsWhitelist;
+        if (Array.isArray(ov.channelsBlacklist)) {
+          chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
         }
-        if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(interaction.channelId)) {
-          let chs = ov.channelsWhitelist;
-          if (Array.isArray(ov.channelsBlacklist)) {
-            chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
-          }
-          return `Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`;
+        return `Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`;
+      }
+      if (Array.isArray(ov.rolesBlacklist)) {
+        const matches = member.roles.find((rlid) => ov.rolesBlacklist.includes(rlid));
+        if (typeof matches !== 'undefined') {
+          return `Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`;
         }
-        if (Array.isArray(ov.rolesBlacklist)) {
-          const matches = member.roles.find((rlid) => ov.rolesBlacklist.includes(rlid));
-          if (typeof matches !== 'undefined') {
-            return `Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`;
+      }
+      if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
+        const matches = member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
+        if (typeof matches === 'undefined') {
+          let rls = ov.rolesWhitelist;
+          if (Array.isArray(ov.rolesBlacklist)) {
+            rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
           }
+          return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
         }
-        if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
-          const matches = member.roles.find((rlid) => ov.rolesWhitelist.includes(rlid));
-          if (typeof matches === 'undefined') {
-            let rls = ov.rolesWhitelist;
-            if (Array.isArray(ov.rolesBlacklist)) {
-              rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
-            }
-            return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
-          }
-        } 
+      }
       return val;
     };
     const checkAccess = accessFunc();

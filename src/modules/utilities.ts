@@ -10,6 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
+import { registerSlash } from './commands';
 
 class UserRole {
   memberId: string;
@@ -512,13 +513,11 @@ export function InitializeCommands() {
   // snowflake
   cmdGroup.on(
     { name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },
-    (ctx) => ({ snowflakee: ctx.string() }),
-    async (msg, { snowflakee }) => {
-      const now = new Date();
-      const baseId = snowflakee;
-      const normalTs = utils.getSnowflakeDate(baseId);
+    (ctx) => ({ snowflake: ctx.string() }),
+    async (msg, { snowflake }) => {
+      const normalTs = utils.getSnowflakeDate(snowflake);
       const res: any = await msg.inlineReply(
-        `\`\`\`\nID: ${baseId}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
+        `\`\`\`\nID: ${snowflake}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
       );
       saveMessage(res);
     },
@@ -773,7 +772,7 @@ export function InitializeCommands() {
     },
   );
   cmdGroup.on(
-    { name: 'server', filters: c2.getFilters('commands.server', Ranks.Guest) },
+    { name: 'server', filters: c2.getFilters('utilities.server', Ranks.Guest) },
     (ctx) => ({ gid: ctx.stringOptional() }),
     async (message, { gid }) => {
       const res: any = await message.inlineReply(async () => {
@@ -1348,3 +1347,762 @@ export function InitializeCommands() {
   );
   return cmdGroup;
 }
+
+registerSlash(
+  { name: 'snipe', description: 'Snipes the latest user-deleted message' },
+  async (inter) => {
+    let _sn: any = await snipekvs.get(inter.channelId);
+    if (typeof _sn === 'string') {
+      _sn = JSON.parse(_sn);
+    }
+    if (
+      _sn === undefined
+|| typeof _sn.author !== 'object'
+|| typeof _sn.id !== 'string'
+    ) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('Nothing to snipe.');
+      return;
+    }
+    if (
+      _sn.author.id === inter.member.user.id
+&& !inter.member.can(discord.Permissions.ADMINISTRATOR)
+    ) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('Nothing to snipe.');
+      return;
+    }
+    const emb = new discord.Embed();
+    const _usr = await utils.getUser(_sn.author.id);
+    if (!_usr) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('User not found (?)');
+      return;
+    }
+    await inter.acknowledge(true);
+    emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
+    emb.setTimestamp(
+      new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
+    );
+    emb.setFooter({
+      iconUrl: inter.member.user.getAvatarUrl(),
+      text: `Requested by: ${inter.member.user.getTag()}`,
+    });
+    emb.setDescription(_sn.content);
+    emb.setColor(0x03fc52);
+    await snipekvs.delete(inter.channelId);
+    await inter.respond({
+      embeds: [emb],
+      content: `${_usr.toMention()} said ...`,
+      allowedMentions: {},
+    });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.snipe', level: Ranks.Authorized } },
+);
+
+registerSlash(
+  { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
+  async (inter, { id }) => {
+    const normalTs = utils.getSnowflakeDate(id);
+    await inter.respond(
+      `\`\`\`\nID: ${id}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
+    );
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
+);
+
+registerSlash(
+  { name: 'avatar', description: 'Gets a user\'s avatar', options: (ctx) => ({ user: ctx.guildMember({ description: 'User', required: false }) }) },
+  async (inter, { user }) => {
+    if (!user) {
+      user = inter.member.user;
+    } else {
+      user = user.user;
+    }
+    const emb = new discord.Embed();
+    emb.setAuthor({ iconUrl: user.getAvatarUrl(), name: user.getTag() });
+    emb.setDescription(`Avatar of ${user.getTag()}: \n<${user.getAvatarUrl()}>`);
+    emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
+    emb.setTimestamp(new Date().toISOString());
+    emb.setImage({ url: user.getAvatarUrl() });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.avatar', level: Ranks.Guest }, staticAck: true },
+);
+
+registerSlash(
+  { name: 'cat', description: 'Gets a random cat image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('http://aws.random.cat/meow')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.file });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.cat', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'dog', description: 'Gets a random dog image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://random.dog/woof.json')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.url });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.dog', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'doge', description: 'Gets a random shiba inu image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.message });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.doge', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'fox', description: 'Gets a random fox image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://randomfox.ca/floof/')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.image });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.fox', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'pikachu', description: 'Gets a random pikachu image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.pikachu', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'koala', description: 'Gets a random koala image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.koala', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'pat', description: 'Gets a random anime patting gif' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.pat', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'hug', description: 'Gets a random anime hugging gif' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.hug', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'birb', description: 'Gets a random birb image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.birb', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'panda', description: 'Gets a random panda image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.panda', level: Ranks.Guest } },
+);
+
+registerSlash(
+  { name: 'server', description: 'Shows server info' },
+  async (inter) => {
+    const embed = new discord.Embed();
+    const guild = await inter.getGuild();
+    const me = await guild.getMember(discord.getBotId());
+    if (guild === null || !(guild instanceof discord.Guild)) {
+      return { content: 'Guild not found' };
+    }
+    if (me === null) {
+      throw new Error('bot user not found');
+    }
+
+    let icon = guild.getIconUrl();
+    if (icon === null) {
+      icon = '';
+    }
+    embed.setAuthor({
+      name: guild.name,
+      iconUrl: guild.getIconUrl() ?? undefined,
+    });
+    const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
+    const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
+    if (icon !== null) {
+      embed.setThumbnail({ url: icon });
+    }
+    let desc = '';
+    const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })}`;
+
+    const preferredLocale = typeof guild.preferredLocale === 'string'
+  && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
+      ? `\n  󠇰**Preferred Locale**: \`${guild.preferredLocale}\``
+      : '';
+    const boosts = typeof guild.premiumSubscriptionCount === 'number' && guild.premiumSubscriptionCount > 0
+      ? `\n<:booster3:735780703773655102>**Boosts**: ${guild.premiumSubscriptionCount}`
+      : '';
+    const boostTier = guild.premiumTier !== null && guild.premiumTier !== undefined
+      ? `\n  󠇰**Boost Tier**: ${guild.premiumTier}`
+      : '';
+    const systemChannel = typeof guild.systemChannelId === 'string'
+      ? `\n  󠇰**System Channel**: <#${guild.systemChannelId}>`
+      : '';
+    const vanityUrl = typeof guild.vanityUrlCode === 'string'
+      ? `\n  󠇰**Vanity Url**: \`${guild.vanityUrlCode}\``
+      : '';
+    const description = typeof guild.description === 'string'
+      ? `\n  󠇰**Description**: \`${guild.description}\``
+      : '';
+    const widgetChannel = typeof guild.widgetChannelId === 'string'
+      ? `<#${guild.widgetChannelId}>`
+      : 'No channel';
+    const widget = guild.widgetEnabled === true
+      ? `\n  󠇰**Widget**: ${
+        discord.decor.Emojis.WHITE_CHECK_MARK
+      } ( ${widgetChannel} )`
+      : '';
+    const features = guild.features.length > 0 ? guild.features.map((feat) => feat.split('_').map((sp) => `${sp.substr(0, 1).toUpperCase()}${sp.substr(1).toLowerCase()}`).join(' ')).join(', ') : 'None';
+
+    desc += `  **❯ **Information
+<:rich_presence:735781410509684786>**ID**: \`${guild.id}\`
+  󠇰**Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**
+<:owner:735780703903547443>**Owner**: <@!${guild.ownerId}>
+<:voice:735780703928844319>**Voice Region**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
+  󠇰**Features**: \`${features}\`${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
+
+    const chanStats = [];
+    const counts: {[key: string]: number} = {
+      text: 0,
+      category: 0,
+      voice: 0,
+      news: 0,
+      store: 0,
+    };
+    const channels = await guild.getChannels();
+    channels.forEach((ch) => {
+      if (ch.type === discord.GuildChannel.Type.GUILD_TEXT) {
+        counts.text += 1;
+      }
+      if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
+        counts.voice += 1;
+      }
+      if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
+        counts.store += 1;
+      }
+      if (ch.type === discord.GuildChannel.Type.GUILD_CATEGORY) {
+        counts.category += 1;
+      }
+      if (ch.type === discord.GuildChannel.Type.GUILD_NEWS) {
+        counts.news += 1;
+      }
+    });
+    for (const k in counts) {
+      const obj = counts[k];
+      let emj = '';
+      if (k === 'text') {
+        emj = '<:channel:735780703983239218>';
+      }
+      if (k === 'voice') {
+        emj = '<:voice:735780703928844319>';
+      }
+      if (k === 'store') {
+        emj = '<:store:735780704130170880>';
+      }
+      if (k === 'news') {
+        emj = '<:news:735780703530385470>';
+      }
+      if (k === 'category') {
+        emj = '<:category:754241739258069043>';
+      }
+
+      /* if (obj > 0) {
+          chanStats.push(
+            `\n ${
+              emj
+            }**${
+              k.substr(0, 1).toUpperCase()
+            }${k.substr(1)
+            }**: **${
+              obj
+            }**`,
+          );
+        } */
+      if (obj > 0) {
+        chanStats.push(`${emj}: **${obj}**`);
+      }
+    }
+
+    desc += `\n\n**❯ **Channels ⎯ ${channels.length}\n${chanStats.join(' | ')}`;
+
+    const guildEx: any = guild;
+    const roles = await guild.getRoles();
+    const emojis = await guild.getEmojis();
+    let bans = 0;
+    let invites = 0;
+    if (me.can(discord.Permissions.BAN_MEMBERS)) {
+      bans = (await guild.getBans()).length;
+    }
+    if (me.can(discord.Permissions.MANAGE_GUILD)) {
+      invites = (await guild.getInvites()).length;
+    }
+    if (roles.length > 0 || emojis.length > 0 || bans > 0 || invites > 0) {
+      desc += `
+
+
+**❯ **Other Counts`;
+      if (roles.length > 0) {
+        desc += `\n <:settings:735782884836638732> **Roles**: ${roles.length}`;
+      }
+      if (emojis.length > 0) {
+        desc += `\n <:emoji_ghost:735782884862066789> **Emojis**: ${emojis.length}`;
+      }
+      if (bans > 0) {
+        desc += `\n ${discord.decor.Emojis.HAMMER} **Bans**: ${bans}`;
+      }
+      if (invites > 0) {
+        desc += `\n <:memberjoin:754249269665333268> **Invites**: ${invites}`;
+      }
+    }
+      interface presCount {
+        [key: string]: number,
+        streaming: number,
+        game: number,
+        listening: number,
+        watching: number,
+        online: number,
+        dnd: number,
+        idle: number,
+        offline: number
+      }
+      interface memCount {
+        [key: string]: number | presCount,
+        human: number,
+        bot: number,
+        presences: presCount
+      }
+      // type memCount = {[key: string] : number | presCount};
+      const memberCounts: memCount = {
+        human: 0,
+        bot: 0,
+        presences: {
+          streaming: 0,
+          game: 0,
+          listening: 0,
+          watching: 0,
+          online: 0,
+          dnd: 0,
+          idle: 0,
+          offline: 0,
+        },
+      };
+
+      async function calcMembers() {
+        for await (const mem of guild.iterMembers()) {
+          const member: discord.GuildMember = mem;
+          const usr = member.user;
+          if (!usr.bot) {
+            memberCounts.human += 1;
+          } else {
+            memberCounts.bot += 1;
+            continue;
+          }
+          const pres = await member.getPresence();
+          if (
+            pres.activities.find((e) => e.type === discord.Presence.ActivityType.STREAMING)
+          ) {
+            memberCounts.presences.streaming += 1;
+          }
+
+          if (
+            pres.activities.find((e) => e.type === discord.Presence.ActivityType.LISTENING)
+          ) {
+            memberCounts.presences.listening += 1;
+          }
+
+          if (
+            pres.activities.find((e) => e.type === discord.Presence.ActivityType.GAME)
+          ) {
+            memberCounts.presences.game += 1;
+          }
+          if (
+            pres.activities.find((e) => e.type === discord.Presence.ActivityType.WATCHING)
+          ) {
+            memberCounts.presences.watching += 1;
+          }
+
+          memberCounts.presences[pres.status] += 1;
+        }
+      }
+      if (guild.memberCount < 60) {
+        await calcMembers();
+        let prestext = '';
+        let nolb = false;
+        for (const key in memberCounts.presences) {
+          const obj = memberCounts.presences[key];
+          let emj = '';
+          if (key === 'streaming') {
+            emj = '<:streaming:735793095597228034>';
+          }
+          if (key === 'game') {
+            emj = discord.decor.Emojis.VIDEO_GAME;
+          }
+          if (key === 'watching') {
+            emj = '<:watching:735793898051469354>';
+          }
+          if (key === 'listening') {
+            emj = '<:spotify:735788337897406535>';
+          }
+          if (key === 'online') {
+            emj = '<:status_online:735780704167919636>';
+          }
+          if (key === 'dnd') {
+            emj = '<:status_busy:735780703983239168>';
+          }
+          if (key === 'idle') {
+            emj = '<:status_away:735780703710478407>';
+          }
+          if (key === 'offline') {
+            emj = '<:status_offline:735780703802753076>';
+          }
+
+          if (obj > 0) {
+            if (
+              key !== 'streaming'
+      && key !== 'listening'
+      && key !== 'watching'
+      && key !== 'game'
+      && !prestext.includes('  󠇰')
+      && !nolb
+            ) {
+              if (prestext.length === 0) {
+                nolb = true;
+              } else {
+                prestext += '\n  󠇰'; // add linebreak
+              }
+            }
+            prestext += `\n ${emj} **-** ${obj}`;
+          }
+        }
+
+        let bottxt = `\n <:bot:735780703945490542> **-** ${memberCounts.bot}
+  󠇰`;
+        if (memberCounts.bot <= 0) {
+          bottxt = '';
+        }
+        desc += `
+
+
+**❯ **Members ⎯ ${guild.memberCount}${bottxt}${prestext}`;
+      } else {
+        desc += `
+
+
+**❯ **Members ⎯ ${guild.memberCount}`;
+      }
+      embed.setDescription(desc);
+      await inter.respond({ embeds: [embed], allowedMentions: {}, content: '' });
+  },
+
+  { permissions: { overrideableInfo: 'commands.server', level: Ranks.Guest }, module: 'utilities', staticAck: true },
+);
+
+registerSlash(
+  { name: 'info',
+    description: 'Shows user info',
+    options:
+    (ctx) => ({
+      user: ctx.guildMember({ description: 'User to get info on', required: false }) }
+    ) },
+  async (inter, { user }) => {
+    let usr: discord.User | BetterUser = typeof user !== 'undefined' ? user.user : inter.member.user;
+    if (utils.isGlobalAdmin(inter.member.user.id)) {
+      usr = await utils.getUser(usr.id, true);
+    }
+
+    if (!usr) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`${discord.decor.Emojis.X} User not found!`);
+      return;
+    }
+    const emb = new discord.Embed();
+    emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
+    if (typeof usr.avatar === 'string') {
+      emb.setThumbnail({ url: usr.getAvatarUrl() });
+    }
+    let desc = `**❯ ${!usr.bot ? 'User' : 'Bot'} Information**
+    <:rich_presence:735781410509684786> 󠇰**ID**: \`${usr.id}\`
+    ${discord.decor.Emojis.LINK} **Profile**: ${usr.toMention()}`;
+    const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
+    const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, 'second');
+    const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })}`;
+    desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} **Created**: ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`;
+    const guild = await inter.getGuild();
+    const member = await guild.getMember(usr.id);
+    if (member !== null) {
+    // presences
+      const presence = await member.getPresence();
+      const statuses = presence.activities.map((pres) => {
+        let emj = '';
+        if (pres.type === discord.Presence.ActivityType.STREAMING) {
+          emj = '<:streaming:735793095597228034>';
+        }
+        if (pres.type === discord.Presence.ActivityType.GAME) {
+          emj = discord.decor.Emojis.VIDEO_GAME;
+        }
+        if (pres.type === discord.Presence.ActivityType.WATCHING) {
+          emj = '<:watching:735793898051469354>';
+        }
+        if (pres.type === discord.Presence.ActivityType.LISTENING) {
+          emj = '<:spotify:735788337897406535>';
+        }
+        if (pres.type === discord.Presence.ActivityType.CUSTOM) {
+          let emjMention = '';
+          if (pres.emoji !== null) {
+            emjMention = pres.emoji.id === null ? pres.emoji.name : `<${pres.emoji.animated === true ? 'a' : ''}:${pres.emoji.name}:${pres.emoji.id}>`;
+          } else {
+            emjMention = discord.decor.Emojis.NOTEPAD_SPIRAL;
+          }
+          return `${emjMention}${pres.state !== null ? ` \`${utils.escapeString(pres.state, true)}\`` : ''} (Custom Status)`;
+        }
+
+        return `${emj}${pres.name.length > 0 ? ` \`${pres.name}\`` : ''}`;
+      });
+      let emjStatus = '';
+      let embColor;
+      if (presence.status === 'online') {
+        emjStatus = '<:status_online:735780704167919636>';
+        embColor = 0x25c059;
+      }
+      if (presence.status === 'dnd') {
+        emjStatus = '<:status_busy:735780703983239168>';
+        embColor = 0xb34754;
+      }
+      if (presence.status === 'idle') {
+        emjStatus = '<:status_away:735780703710478407>';
+        embColor = 0xe4bf3d;
+      }
+      if (presence.status === 'offline') {
+        emjStatus = '<:status_offline:735780703802753076>';
+        embColor = 0x36393f;
+      }
+      desc += `\n ${emjStatus} **Status**: ${presence.status.substr(0, 1).toUpperCase()}${presence.status.substr(1).toLowerCase()}`;
+      if (statuses.length > 0) {
+        desc += `\n  ${statuses.join('\n  ')}󠇰`;
+      }
+      if (embColor) {
+        emb.setColor(embColor);
+      }
+    }
+    if (emb.color === null) {
+      const clr = (Math.random() * 0xFFFFFF << 0).toString(16);
+      emb.setColor(parseInt(clr, 16));
+    }
+    try {
+      if (typeof usr === 'object' && usr instanceof utils.BetterUser && typeof usr.public_flags === 'number') {
+        let badges = [];
+        const flags = new utils.UserFlags(usr.public_flags).serialize();
+        for (const key in flags) {
+          if (flags[key] === true) {
+            badges.push(key);
+          }
+        }
+        if (badges.length > 0) {
+          desc += '\n\n**❯ Discord Badges**';
+          badges = badges.map((val) => {
+            switch (val) {
+              case 'STAFF':
+                return '<:discordstaff:751155123648069743> Discord Staff';
+              case 'PARTNER':
+                return '<:partner:735780703941165057> Discord Partner';
+              case 'HYPESQUAD_EVENTS':
+                return '<:hypesquad_events:735780703958204446> Hypesquad';
+              case 'BUG_HUNTER':
+                return '<:bughunter:735780703920324762> Bug Hunter';
+              case 'HYPESQUAD_BRAVERY':
+                return '<:bravery:735780704100679720> Bravery';
+              case 'HYPESQUAD_BRILLIANCE':
+                return '<:brilliance:735780703878512711> Brilliance';
+              case 'HYPESQUAD_BALANCE':
+                return '<:balance:735780704159531089> Balance';
+              case 'EARLY_SUPPORTER':
+                return '<:earlysupporter:735780703631048786> Early Supporter';
+              case 'TEAM_USER':
+                return '<:members:735780703559745558> Team User';
+              case 'SYSTEM':
+                return '<:discordstaff:751155123648069743> System';
+              case 'BUG_HUNTER_GOLDEN':
+                return '<:goldenbughunter:751153800693284924> Golden Bug Hunter';
+              case 'VERIFIED_BOT':
+                return '<:verified:735780703874318417> Verified Bot';
+              case 'VERIFIED_BOT_DEVELOPER':
+                return '<:botdev:751154656679559259> Early Bot Developer';
+              default:
+                return val;
+            }
+          }).filter((val) => val !== '').map((val) => `**${val}**`);
+          desc += `\n ${badges.join('\n ')}`;
+        }
+      }
+    } catch (e) {
+      utils.logError(e);
+    }
+
+    // actual server stuff
+    const isAdmin = utils.isGlobalAdmin(usr.id);
+    if (typeof globalConfig.badges === 'object') {
+      if (isAdmin || (typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[usr.id]))) {
+        desc += '\n\n**❯ PyBoat Badges**';
+        if (isAdmin && typeof globalConfig.badges.globaladmin === 'string') {
+          desc += `\n${globalConfig.badges.globaladmin}`;
+        }
+        if ((typeof globalConfig.userBadges === 'object' && Array.isArray(globalConfig.userBadges[usr.id]))) {
+          desc += `\n${globalConfig.userBadges[usr.id].map((bd: string) => (typeof globalConfig.badges[bd] === 'string' ? globalConfig.badges[bd] : 'Unknown')).join('\n')}`;
+        }
+      }
+    }
+    if (member !== null) {
+      const roles = member.roles.map((rl) => `<@&${rl}>`).join(' ');
+      desc += '\n\n**❯ Member Information**';
+      const dtJoin = new Date(member.joinedAt);
+      const tdiffjoin = utils.getLongAgoFormat(dtJoin.getTime(), 2, true, 'second');
+      const formattedDtJoin = `${dtJoin.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })}`;
+      desc += `\n ${discord.decor.Emojis.INBOX_TRAY} **Joined**: ${tdiffjoin} ago **[**\`${formattedDtJoin}\`**]**`;
+      if (member.nick && member.nick !== null && member.nick.length > 0) {
+        desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**Nickname**: \`${utils.escapeString(member.nick, true)}\``;
+      }
+      if (member.premiumSince !== null) {
+        const boostDt = new Date(member.premiumSince);
+        const tdiffboost = utils.getLongAgoFormat(boostDt.getTime(), 2, true, 'second');
+        const formattedDtBoost = `${boostDt.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}`;
+        desc += `\n <:booster:735780703912067160> **Boosting since**: ${tdiffboost} ago **[**\`${formattedDtBoost}\`**]**`;
+      }
+      const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER'];
+      if (member.roles.length > 0) {
+        if (member.roles.length < 20) {
+          desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
+        } else {
+          // only show key roles if those are less than 20
+
+          const theseroles = (await guild.getRoles()).filter((m) => member.roles.includes(m.id));
+          const keyroles: string[] = theseroles.filter((m) => {
+            const perms = new utils.Permissions(m.permissions);
+            const hasPerms: any = perms.serialize();
+
+            for (const key in hasPerms) {
+              if (hasPerms[key] === false || irrelevantPerms.includes(key)) {
+                delete hasPerms[key];
+              }
+            }
+            return Object.keys(hasPerms).length > 0;
+          }).map((v) => v.id);
+          if (keyroles.length < 20) {
+            desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length})\n ${discord.decor.Emojis.SHIELD} **Key Roles** (${keyroles.length}): ${keyroles.map((rl) => `<@&${rl}>`).join(' ')}`;
+          } else {
+            desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length})`;
+          }
+        }
+      }
+      const infsGiven = await infsPool.getByQuery({ actorId: usr.id });
+      const infsReceived = await infsPool.getByQuery({ memberId: usr.id });
+      if (infsGiven.length > 0 || infsReceived.length > 0) {
+        desc += '\n\n**❯ Infractions** (This Server)';
+      }
+      if (infsGiven.length > 0) {
+        desc += `\n ${discord.decor.Emojis.HAMMER} **Applied**: **${infsGiven.length}**`;
+      }
+      if (infsReceived.length > 0) {
+        desc += `\n ${discord.decor.Emojis.NO_ENTRY} **Received**: **${infsReceived.length}**`;
+      }
+      const perms = new utils.Permissions(member.permissions);
+      let hasPerms: any = perms.serialize();
+
+      for (const key in hasPerms) {
+        if (hasPerms[key] === false || irrelevantPerms.includes(key)) {
+          delete hasPerms[key];
+        }
+      }
+      if (hasPerms.ADMINISTRATOR === true) {
+        hasPerms = { ADMINISTRATOR: true };
+      }
+      if (guild.ownerId === usr.id) {
+        hasPerms = { SERVER_OWNER: true };
+      }
+      hasPerms = Object.keys(hasPerms).map((str) => str.split('_').map((upp) => `${upp.substr(0, 1).toUpperCase()}${upp.substr(1).toLowerCase()}`).join(' '));
+      const auth = utils.getUserAuth(member);
+      if ((Number(perms.bitfield) > 0 && hasPerms.length > 0) || auth > 0) {
+        desc += '\n\n**❯ Permissions**';
+      }
+      if (Number(perms.bitfield) > 0 && hasPerms.length > 0) {
+        desc += `\n <:settings:735782884836638732> **Staff**: \`${hasPerms.join(', ')}\``;
+      }
+      if (auth > 0 && !usr.bot) {
+        desc += `\n ${discord.decor.Emojis.CYCLONE} **Bot Level**: **${auth}**`;
+      }
+    }
+
+    emb.setDescription(desc);
+    await inter.respond({ content: '', allowedMentions: {}, embeds: [emb] });
+  },
+  { module: 'utilities', permissions: { overrideableInfo: 'utilities.info', level: Ranks.Guest } },
+);
