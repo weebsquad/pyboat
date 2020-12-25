@@ -415,7 +415,7 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
   if (reason.length > 101) {
     reason = reason.substr(0, 100);
   }
-  if (member.roles.includes(mtRole.id)) {
+  if (isMuted(member)) {
     return `${member.user.toMention()} is already muted`;
   }
   const canT = await canTarget(actor, member, InfractionType.TEMPMUTE);
@@ -449,7 +449,7 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
   if (reason.length > 101) {
     reason = reason.substr(0, 100);
   }
-  if (member.roles.includes(mtRole.id)) {
+  if (isMuted(member)) {
     return `${member.user.toMention()} is already muted`;
   }
   const canT = await canTarget(actor, member, InfractionType.MUTE);

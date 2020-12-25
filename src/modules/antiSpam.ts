@@ -164,9 +164,13 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     return;
   }
   const previous = await pools.getByQuery<MessageEntry>({ authorId: msg.author.id });
-  const thisObj = previous.find((e) => e.id === msg.id);
-  if (!thisObj || previous.length === 0) {
+  let thisObj = previous.find((e) => e.id === msg.id);
+  if (previous.length === 0) {
     return;
+  }
+  if (!thisObj) {
+    previous.push(new MessageEntry(msg));
+    thisObj = previous.find((e) => e.id === msg.id);
   }
   const appConfigs = getApplicableConfigs(member, channel);
   if (appConfigs.length === 0) {
@@ -184,7 +188,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     if (thisCfg._key.includes('antiRaid_')) {
       theseItems = await pools.getAll();
     }
-    theseItems = theseItems.filter((item) => !item.deleted);
+    // theseItems = theseItems.filter((item) => !item.deleted);
     flaggedAntiraid = thisCfg._key.includes('antiRaid');
     flagged = normalKeysCheck.filter((check) => {
       if (typeof thisCfg[check] !== 'string') {
@@ -223,7 +227,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             if (!individuals.includes(item.authorId)) {
               individuals.push(item.authorId);
             }
-            return item.ts > after && item.id !== msg.id;
+            return item.ts >= after;
           });
           individuals = [...new Set(individuals)];
           if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
@@ -246,7 +250,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             if (!individuals.includes(item.authorId)) {
               individuals.push(item.authorId);
             }
-            return item.ts > after && item.id !== msg.id;
+            return item.ts > after;
           });
           individuals = [...new Set(individuals)];
           if (repeatedMessages.length >= count && (!thisCfg._key.includes('antiRaid_') || individuals.length >= needed)) {
@@ -258,12 +262,11 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
     if (flagged.length > 0) {
       flaggedOnce = true;
       const cleanDuration = typeof thisCfg.cleanDuration === 'number' && thisCfg.cleanDuration > 0 ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
-
       if (typeof thisCfg.action === 'string' && (VALID_ACTIONS_INDIVIDUAL.includes(thisCfg.action.toUpperCase()) || (thisCfg._key.includes('antiRaid_') && VALID_ACTIONS_GLOBAL.includes(thisCfg.action)))) {
         const action = thisCfg.action.toUpperCase();
         const actionDuration = typeof thisCfg.actionDuration === 'string' ? thisCfg.actionDuration : undefined;
         if ((action === 'TEMPMUTE' || action === 'TEMPBAN') && actionDuration === undefined) {
-          throw new ConfigError(`config.modules.antiPing.${thisCfg._key}.actionDuration`, 'actionDuration malformed');
+          throw new ConfigError(`config.modules.AntiSpam.${thisCfg._key}.actionDuration`, 'actionDuration malformed');
         }
         let noRun = false;
         let logAct = false;
@@ -315,7 +318,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         }
       }
       if (thisCfg.clean === true) {
-        const messagesToClear = theseItems.filter((item) => {
+        let messagesToClear = theseItems.filter((item) => {
           if (item.deleted === true) {
             return false;
           }
@@ -324,7 +327,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             if (typeof item[key] === 'number' && item[key] > 0) {
               let dur = cleanDuration !== undefined ? cleanDuration : undefined;
               if (dur !== undefined) {
-                return item.ts > (msgTs - (Math.floor(dur * 1000)));
+                return item.ts >= (msgTs - (Math.floor(dur * 1000)));
               }
               const trigger = thisCfg[key];
               if (typeof trigger !== 'string') {
@@ -339,6 +342,19 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
             }
           }
           return false;
+        });
+        const makeDeleted = await pools.editTransactMultiWithResult<MessageEntry>(messagesToClear.map((v) => v.id), (prev) => {
+          if (prev.deleted === true) {
+            return { next: prev, result: false };
+          }
+          prev.deleted = true;
+          return { next: prev, result: true };
+        });
+        messagesToClear = messagesToClear.filter((v) => {
+          if (makeDeleted.has(v.id)) {
+            return makeDeleted.get(v.id);
+          }
+          return true;
         });
         if (messagesToClear.length > 0) {
           messageRemovedCount = messagesToClear.length;
@@ -459,7 +475,9 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
 
   if (flaggedOnce) {
     if (!flaggedAntiraid) {
+      // if (messageRemovedCount > 0) {
       logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+      // }
     } else {
       logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
     }
@@ -508,7 +526,11 @@ export async function OnMessageDelete(
   gid: string,
   messageDelete: discord.Event.IMessageDelete,
 ) {
-  pools.editPool(messageDelete.id, null);
+  // pools.editPool(messageDelete.id, null);
+  pools.editTransact<MessageEntry>(messageDelete.id, (prev) => {
+    prev.deleted = true;
+    return prev;
+  });
 }
 
 export async function OnMessageDeleteBulk(
@@ -517,10 +539,10 @@ export async function OnMessageDeleteBulk(
   messages: discord.Event.IMessageDeleteBulk,
 ) {
   pools.editPools<MessageEntry>(messages.ids, (val) => {
-    if (val === null) {
+    if (!val) {
       return val;
     }
-    if (messages.ids.includes(val.id)) {
+    if (messages.ids.includes(val.id) && !val.deleted) {
       val.deleted = true;
     }
     return val;
