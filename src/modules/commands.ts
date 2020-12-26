@@ -6,7 +6,17 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
-export const registeredSlashCommands: discord.interactions.commands.ICommandConfig<any>[] = [];
+type SlashCommandRegistry = {
+  config: discord.interactions.commands.ICommandConfig<any>;
+  extras: SlashExtras;
+}
+type SlashCommandGroupRegistry = {
+  config: discord.interactions.commands.ICommandConfig<any>;
+  extras?: SlashExtras;
+}
+export const registeredSlashCommands: SlashCommandRegistry[] = [];
+export const registeredSlashCommandGroups: SlashCommandGroupRegistry[] = [];
+
 interface ApiError extends discord.ApiError {
   messageExtended: string | undefined;
 }
@@ -22,142 +32,169 @@ type SlashExtras = {
   permissions?: SlashPermissionsCheck;
   staticAck?: boolean;
   module: string;
+  parent?: string;
 };
 
-export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras?: SlashExtras) {
+function getFullCommandName(name: string, parent?: string) {
+  if(!parent) return name;
+  const parentF = registeredSlashCommandGroups.find((v) => v.config.name === parent);
+  if(!parentF || !parentF.extras) return name;
+  return this(`${parentF.config.name} ${name}`, parentF.extras.parent);
+}
+async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<any>, extras: SlashExtras, callback: discord.interactions.commands.HandlerFunction<any>, interaction: discord.interactions.commands.SlashCommandInteraction, ...args: any) {
+  const fullCmdName = getFullCommandName(sconf.name, extras.parent);
+  if (typeof conf.config !== 'object' || conf.config === null || typeof conf.config === 'undefined') {
+    const ret = await conf.InitializeConfig();
+    if (!ret) {
+      return;
+    }
+  }
+  console.log(`Executing slash command [${fullCmdName}]`);
+  if (extras.module) {
+    if (!isModuleEnabled(extras.module)) {
+      try {
+        await interaction.acknowledge(false);
+      } catch (_) {}
+      await interaction.respondEphemeral('**This command is disabled**');
+      return;
+    }
+  }
+  if (typeof cooldowns[interaction.member.user.id] === 'number') {
+    const diff = Date.now() - cooldowns[interaction.member.user.id];
+    // global cmd cooldown!
+    if (diff < 750) {
+      return;
+    }
+  }
+  if (interaction.member.user.bot && !utils.isCommandsAuthorized(interaction.member)) {
+    return;
+  }
+  if (!utils.isCommandsAuthorized(interaction.member)) {
+    await interaction.acknowledge(false);
+    await utils.reportBlockedAction(interaction.member, `slash command execution: \`${fullCmdName}\``);
+    return;
+  }
+  if (extras.permissions) {
+    const perms = await commands2.checkSlashPerms(interaction, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
+    if (!perms.access) {
+      try {
+        await interaction.acknowledge(false);
+      } catch (_) {}
+      if (perms.errors.length > 0) {
+        await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
+      }
+      return;
+    }
+  }
+  console.log('executing callback');
+  try {
+    if (typeof extras.staticAck === 'boolean') {
+      try {
+        await interaction.acknowledge(extras.staticAck);
+      } catch (_) {}
+    }
+    // @ts-ignore
+    await callback(interaction, ...args);
+  } catch (_e) {
+    try {
+      await interaction.acknowledge(false);
+    } catch (_) {}
+    utils.logError(_e);
+
+    if (_e.messageExtended && typeof _e.messageExtended === 'string') {
+      try {
+        const emsg: any = JSON.parse(_e.messageExtended).message;
+        if (emsg && emsg.toLowerCase() === 'missing permissions') {
+          await interaction.respondEphemeral(`**There has been an error executing this command**\n\n__${emsg}__`);
+          return;
+        }
+      } catch (e) {}
+    }
+    await interaction.respondEphemeral('**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.');
+    logDebug(
+      'BOT_ERROR',
+      new Map<string, any>([
+        [
+          'ERROR',
+          `Slash Command Error on '${fullCmdName}': \n${_e.stack}`,
+        ],
+      ]),
+    );
+  }
+  cooldowns[interaction.member.user.id] = Date.now();
+
+  if (!isIgnoredChannel(interaction.channelId) && !isIgnoredUser(interaction.member)) {
+    let argsString = '';
+    if (sconf.options && args.length > 0) {
+      for (const i in args) {
+        for (const key in args[i]) {
+          const val = args[i][key];
+          let valOutput = '';
+          if (typeof val === 'string') {
+            valOutput = val;
+          } else if (typeof val === 'boolean') {
+            valOutput = val === true ? 'true' : 'false';
+          } else if (typeof val === 'number') {
+            valOutput = `${val}`;
+          } else if (val instanceof discord.GuildMember) {
+            valOutput = val.user.getTag();
+          } else if (val instanceof discord.Role) {
+            valOutput = val.name;
+          } else if (val instanceof discord.GuildChannel) {
+            valOutput = val.name;
+          } else {
+            console.warn(`Argument ${key} typing not found??`);
+          }
+          if (valOutput !== '') {
+            if (argsString !== '') {
+              argsString += ' , ';
+            }
+            argsString += `\`${key}\`:\`${utils.escapeString(valOutput, true)}\``;
+          }
+        }
+      }
+    }
+    if (argsString !== '') {
+      argsString = ` with arguments ${argsString}`;
+    }
+    logCustom(
+      'COMMANDS',
+      'SLASH_COMMAND_USED',
+      new Map<string, any>([
+        ['_COMMAND_NAME_', fullCmdName],
+        ['_AUTHOR_', interaction.member.user],
+        ['_USER_', interaction.member.user],
+        ['_USER_ID_', interaction.member.user.id],
+        ['_MEMBER_', interaction.member],
+        ['_CHANNEL_ID_', interaction.channelId],
+        ['_ARGUMENTS_', argsString],
+      ]),
+    );
+  }
+}
+
+export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
   if (registeredSlashCommands.length >= 10) {
     return;
   }
   discord.interactions.commands.register(sconf, async (interaction, ...args: any) => {
-    if (typeof conf.config !== 'object' || conf.config === null || typeof conf.config === 'undefined') {
-      const ret = await conf.InitializeConfig();
-      if (!ret) {
-        return;
-      }
-    }
-    console.log(`Executing slash command [${sconf.name}]`);
-    if (extras.module) {
-      if (!isModuleEnabled(extras.module)) {
-        try {
-          await interaction.acknowledge(false);
-        } catch (_) {}
-        await interaction.respondEphemeral('**This command is disabled**');
-      }
-    }
-    if (typeof cooldowns[interaction.member.user.id] === 'number') {
-      const diff = Date.now() - cooldowns[interaction.member.user.id];
-      // global cmd cooldown!
-      if (diff < 750) {
-        return;
-      }
-    }
-    if (interaction.member.user.bot && !utils.isCommandsAuthorized(interaction.member)) {
-      return;
-    }
-    if (!utils.isCommandsAuthorized(interaction.member)) {
-      await utils.reportBlockedAction(interaction.member, `slash command execution: \`${sconf.name}\``);
-      return;
-    }
-    if (extras.permissions) {
-      const perms = await commands2.checkSlashPerms(interaction, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
-      if (!perms.access) {
-        try {
-          await interaction.acknowledge(false);
-        } catch (_) {}
-        if (perms.errors.length > 0) {
-          await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
-        }
-        return;
-      }
-    }
-    console.log('executing callback');
-    try {
-      // @ts-ignore
-      await callback(interaction, ...args);
-      if (typeof extras.staticAck === 'boolean') {
-        try {
-          await interaction.acknowledge(extras.staticAck);
-        } catch (_) {}
-      }
-    } catch (_e) {
-      try {
-        await interaction.acknowledge(false);
-      } catch (_) {}
-      utils.logError(_e);
-
-      if (_e.messageExtended && typeof _e.messageExtended === 'string') {
-        try {
-          const emsg: any = JSON.parse(_e.messageExtended).message;
-          if (emsg && emsg.toLowerCase() === 'missing permissions') {
-            await interaction.respondEphemeral(`**There has been an error executing this command**\n\n__${emsg}__`);
-            return;
-          }
-        } catch (e) {}
-      }
-      await interaction.respondEphemeral('**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.');
-      logDebug(
-        'BOT_ERROR',
-        new Map<string, any>([
-          [
-            'ERROR',
-            `Slash Command Error on '${sconf.name}': \n${_e.stack}`,
-          ],
-        ]),
-      );
-    }
-    cooldowns[interaction.member.user.id] = Date.now();
-
-    if (!isIgnoredChannel(interaction.channelId) && !isIgnoredUser(interaction.member)) {
-      let argsString = '';
-      if (sconf.options && args.length > 0) {
-        for (const i in args) {
-          for (const key in args[i]) {
-            const val = args[i][key];
-            let valOutput = '';
-            if (typeof val === 'string') {
-              valOutput = val;
-            } else if (typeof val === 'boolean') {
-              valOutput = val === true ? 'true' : 'false';
-            } else if (typeof val === 'number') {
-              valOutput = `${val}`;
-            } else if (val instanceof discord.GuildMember) {
-              valOutput = val.user.getTag();
-            } else if (val instanceof discord.Role) {
-              valOutput = val.name;
-            } else if (val instanceof discord.GuildChannel) {
-              valOutput = val.name;
-            } else {
-              console.warn(`Argument ${key} typing not found??`);
-            }
-            if (valOutput !== '') {
-              if (argsString !== '') {
-                argsString += ' , ';
-              }
-              argsString += `\`${key}\`:\`${utils.escapeString(valOutput, true)}\``;
-            }
-          }
-        }
-      }
-      if (argsString !== '') {
-        argsString = ` with arguments ${argsString}`;
-      }
-      logCustom(
-        'COMMANDS',
-        'SLASH_COMMAND_USED',
-        new Map<string, any>([
-          ['_COMMAND_NAME_', sconf.name],
-          ['_AUTHOR_', interaction.member.user],
-          ['_USER_', interaction.member.user],
-          ['_USER_ID_', interaction.member.user.id],
-          ['_MEMBER_', interaction.member],
-          ['_CHANNEL_ID_', interaction.channelId],
-          ['_ARGUMENTS_', argsString],
-        ]),
-      );
-    }
+    await executeSlash(sconf, extras, callback, interaction, ...args)
   });
-  registeredSlashCommands.push(sconf);
+  registeredSlashCommands.push({config: sconf, extras: extras});
 }
+
+export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: SlashExtras) {
+  registeredSlashCommandGroups.push({config: sconf, extras: extras});
+  return discord.interactions.commands.registerGroup(sconf);
+}
+
+export function registerSlashSub(parent: discord.interactions.commands.SlashCommandGroup, sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
+  parent.register(sconf, async (interaction, ...args: any) => {
+    await executeSlash(sconf, extras, callback, interaction, ...args)
+  });
+  registeredSlashCommands.push({config: sconf, extras: extras});
+}
+
 
 const cooldowns: any = {};
 export async function OnMessageCreate(

@@ -347,7 +347,21 @@ const configKv = new pylon.KVNamespace('config');
 export let config: any;
 let loadingConf = false;
 let lastTry = Date.now();
+
 export async function InitializeConfig(bypass = false): Promise<boolean> {
+  let res: boolean;
+  /*
+  try {
+  await pylon.requestCpuBurst(async () => {
+    res = await beginLoad(bypass);
+  }, 200);
+  } catch(_) {
+    res = await beginLoad(bypass);
+  }*/
+  res = await beginLoad(bypass);
+  return res;
+}
+async function beginLoad(bypass: boolean): Promise<boolean> {
   if (loadingConf) {
     const diff = Date.now() - lastTry;
     if (diff > 60 * 1000) {
@@ -457,6 +471,7 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
   return true;
 }
+
 
 function str2ab(str: string) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char

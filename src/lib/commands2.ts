@@ -1,7 +1,7 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
-import { registeredSlashCommands } from '../modules/commands';
+import { registeredSlashCommands, registeredSlashCommandGroups } from '../modules/commands';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
@@ -58,7 +58,8 @@ class CmdOverride {
 }
 
 export function cleanDuplicates() {
-  const individualCommandNames: string[] = registeredSlashCommands.map((v) => v.name);
+  const individualCommandNames: string[] = registeredSlashCommands.filter((v) => !v.extras.parent).map((v) => v.config.name);
+  const topGroupNames: string[] = registeredSlashCommandGroups.filter((v) => !v.extras || !v.extras.parent).map((v) => v.config.name);
   if (config.modules.commands.duplicateRegistry !== false) {
     return;
   }
@@ -68,9 +69,16 @@ export function cleanDuplicates() {
       if (key === 'commandExecutors') {
         const newM = new Map<string, any>();
         for (const [name, opts] of v[key]) {
+          const cmdType = opts.executor.constructor.name;
+          if(cmdType === 'Command') {
           if (individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
             continue;
           }
+        } else if(cmdType === 'CommandGroup') {
+          if (topGroupNames.includes(name.toLowerCase()) || (opts.aliasOf && topGroupNames.includes(opts.aliasOf.toLowerCase()))) {
+            continue;
+          }
+        }
           newM.set(name, opts);
         }
         copyCmdGroup[key] = newM;
