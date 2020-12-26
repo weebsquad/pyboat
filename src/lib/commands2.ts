@@ -70,15 +70,15 @@ export function cleanDuplicates() {
         const newM = new Map<string, any>();
         for (const [name, opts] of v[key]) {
           const cmdType = opts.executor.constructor.name;
-          if(cmdType === 'Command') {
-          if (individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
-            continue;
+          if (cmdType === 'Command') {
+            if (individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
+              continue;
+            }
+          } else if (cmdType === 'CommandGroup') {
+            if (topGroupNames.includes(name.toLowerCase()) || (opts.aliasOf && topGroupNames.includes(opts.aliasOf.toLowerCase()))) {
+              continue;
+            }
           }
-        } else if(cmdType === 'CommandGroup') {
-          if (topGroupNames.includes(name.toLowerCase()) || (opts.aliasOf && topGroupNames.includes(opts.aliasOf.toLowerCase()))) {
-            continue;
-          }
-        }
           newM.set(name, opts);
         }
         copyCmdGroup[key] = newM;

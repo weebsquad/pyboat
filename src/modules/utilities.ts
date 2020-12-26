@@ -10,7 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
-import { registerSlash } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
 
 class UserRole {
   memberId: string;
@@ -82,6 +82,32 @@ export async function checkReminders() {
   }));
 }
 
+export async function addReminderSlash(inter: discord.interactions.commands.SlashCommandInteraction, when: string, text: string) {
+  const dur = utils.timeArgumentToMs(when);
+  if (dur === 0) {
+    await inter.respondEphemeral(`${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`);
+    return;
+  }
+  if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
+    await inter.respondEphemeral(`${discord.decor.Emojis.X} Time must be between 2 minutes and a month`);
+    return;
+  }
+  const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+  const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
+  if (bythem.length >= 10) {
+    await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have 10 active reminders, you may not define any more!`);
+    return;
+  }
+  text = utils.escapeString(text);
+  text = text.split('\n').join(' ').split('\t').join(' ');
+  if (text.length > 1000) {
+    await inter.respondEphemeral('Reminder content is too large!');
+    return;
+  }
+  await reminders.saveToPool(new Reminder(utils.composeSnowflake(), Date.now() + dur, inter.member.user.id, inter.channelId, text));
+  await inter.respondEphemeral(`${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`);
+}
+
 export async function addReminder(msg: discord.GuildMemberMessage, when: string, text: string) {
   const res: any = await msg.inlineReply(async () => {
     const dur = utils.timeArgumentToMs(when);
@@ -105,6 +131,17 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
     return `${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`;
   });
   saveMessage(res);
+}
+
+export async function clearRemindersSlash(inter: discord.interactions.commands.SlashCommandInteraction) {
+  const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
+  if (bythem.length === 0) {
+    await inter.respondEphemeral(`${discord.decor.Emojis.X} You don't have any active reminders!`);
+    return;
+  }
+  const ids = bythem.map((val) => val.id);
+  await reminders.editPools<Reminder>(ids, () => null);
+  await inter.respondEphemeral(`${discord.decor.Emojis.WHITE_CHECK_MARK} cleared ${ids.length} reminders!`);
 }
 
 export async function clearReminders(msg: discord.GuildMemberMessage) {
@@ -155,6 +192,10 @@ export async function AL_OnMessageDelete(
   await snipekvs.put(msg.channelId, JSON.stringify(msg), {
     ttl: config.modules.utilities.snipe.delay * 1000,
   });
+}
+
+function isCurEnabled() {
+  return typeof config.modules.utilities.customUserRoles === 'object' && config.modules.utilities.customUserRoles.enabled === true;
 }
 
 async function checkCustomRoleProperties() {
@@ -365,7 +406,7 @@ export function InitializeCommands() {
           const res: any = await msg.inlineReply(async () => {
             const rlid = await getRoleIdByText(roleText);
             if (!rlid) {
-              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(rlid);
@@ -550,23 +591,24 @@ export function InitializeCommands() {
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
       async (msg, { when, text }) => {
         await addReminder(msg, when, text);
-      }, { filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      }, { filters: c2.getFilters('utilities.remind.add', Ranks.Guest) },
     );
 
     subCommandGroup.on(
-      { name: 'add', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      { name: 'add', filters: c2.getFilters('utilities.remind.add', Ranks.Guest) },
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
       async (msg, { when, text }) => {
         await addReminder(msg, when, text);
       },
     );
     subCommandGroup.raw(
-      { name: 'clear', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
+      { name: 'clear', filters: c2.getFilters('utilities.remind.clear', Ranks.Guest) },
       async (msg) => {
         await clearReminders(msg);
       },
     );
   });
+  /*
   cmdGroup.subcommand('r', (subCommandGroup) => {
     subCommandGroup.default(
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
@@ -589,7 +631,7 @@ export function InitializeCommands() {
       },
     );
   });
-
+*/
   cmdGroup.raw(
     { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) },
     async (msg) => {
@@ -1348,6 +1390,232 @@ export function InitializeCommands() {
   return cmdGroup;
 }
 
+const curGroup = registerSlashGroup({ name: 'cur', description: 'Custom user roles' }, { module: 'utilities' });
+if (curGroup) {
+  registerSlashSub(
+    curGroup,
+    { name: 'check', description: 'Checks what your current custom role is' },
+    async (inter) => {
+      if (!isCurEnabled()) {
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
+      if (!checkrole) {
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
+        return;
+      }
+      await inter.respondEphemeral(`Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type **/**\`cur name <name>\`\nTo set the color, type **/**\`cur color <color>\``);
+    },
+    {
+      parent: 'cur',
+      staticAck: false,
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur', level: Ranks.Guest },
+    },
+  );
+
+  registerSlashSub(
+    curGroup,
+    { name: 'name', description: 'Changes the name of your custom role', options: (ctx) => ({ name: ctx.string({ required: true, description: 'New name of the role' }) }) },
+    async (inter, { name }) => {
+      if (!isCurEnabled()) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
+      if (!checkrole) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
+        return;
+      }
+      if (name.length < 2 || name.length > 32) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} New name must be between 2 and 32 characters in size!`);
+      }
+      const guild = await inter.getGuild();
+      const role = await guild.getRole(checkrole.roleId);
+      if (!role) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
+        return;
+      }
+      await role.edit({ name });
+      await inter.acknowledge(true);
+      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name, true)}\`` });
+    },
+    {
+      parent: 'cur',
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur.name', level: Ranks.Guest },
+    },
+  );
+
+  registerSlashSub(
+    curGroup,
+    { name: 'color', description: 'Changes the color of your custom role', options: (ctx) => ({ color: ctx.string({ required: false, description: 'New color of the role (#ffffff format) -- Not passing this argument removes the color of your role' }) }) },
+    async (inter, { color }) => {
+      if (!isCurEnabled()) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
+      if (!checkrole) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
+        return;
+      }
+      if (typeof color === 'string' && color.includes('#')) {
+        color = color.split('#').join('');
+      }
+      if (typeof color === 'string' && color.length !== 6) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Color must be formatted as a hex string! (for example \`#ff0000\`)`);
+        return;
+      }
+
+      const guild = await inter.getGuild();
+      const role = await guild.getRole(checkrole.roleId);
+      if (!role) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
+        return;
+      }
+      await inter.acknowledge(true);
+      await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
+      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` });
+    },
+    {
+      parent: 'cur',
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur.color', level: Ranks.Guest },
+    },
+  );
+
+  registerSlashSub(
+    curGroup,
+    { name: 'set',
+      description: 'Sets a user\'s custom role',
+      options: (ctx) => ({
+        target: ctx.guildMember({ required: true, description: 'User to set the role' }),
+        role: ctx.guildRole({ required: true, description: 'The role to set to this user' }),
+      }) },
+    async (inter, { target, role }) => {
+      if (!isCurEnabled()) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      if (!role || !(role instanceof discord.Role)) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
+        return;
+      }
+      const kvc = await customUserRoles.exists(target.user.id);
+      if (kvc) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} This member already has a custom role!`);
+        return;
+      }
+      const kvcrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
+      if (Array.isArray(kvcrole) && kvcrole.length > 0) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} This role is already assigned to <@!${kvcrole[0].memberId}>`);
+        return;
+      }
+      await inter.acknowledge(true);
+      await setUserRole(target.user.id, role.id);
+      await checkCustomRoleProperties();
+      if (!target.roles.includes(role.id)) {
+        await target.addRole(role.id);
+      }
+      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Set ${target.toMention()}'s role to ${role.toMention()}` });
+    },
+    {
+      parent: 'cur',
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur.set', level: Ranks.Administrator },
+    },
+  );
+
+  registerSlashSub(
+    curGroup,
+    { name: 'clear',
+      description: 'Clear a user\'s assigned custom role',
+      options: (ctx) => ({
+        target: ctx.guildMember({ required: true, description: 'User to clear role from' }),
+      }) },
+    async (inter, { target }) => {
+      if (!isCurEnabled()) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      const kvc = await customUserRoles.getById<UserRole>(target.user.id);
+      if (!kvc) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} This member has no custom role!`);
+        return;
+      }
+      await inter.acknowledge(true);
+      const rlid = kvc.roleId;
+      const guild = await inter.getGuild();
+      const role = await guild.getRole(rlid);
+      await customUserRoles.editPool(target.user.id, null);
+      if (role instanceof discord.Role && target.roles.includes(role.id)) {
+        await target.removeRole(role.id);
+      }
+      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Cleared ${target.toMention()}'s custom role!` });
+    },
+    {
+      parent: 'cur',
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur.clear', level: Ranks.Administrator },
+    },
+  );
+
+  registerSlashSub(
+    curGroup,
+    { name: 'delete',
+      description: 'Delete a user\'s assigned custom role (from the server)',
+      options: (ctx) => ({
+        target: ctx.guildMember({ required: true, description: 'User to delete role from' }),
+      }) },
+    async (inter, { target }) => {
+      if (!isCurEnabled()) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('Custom User Roles are not enabled on this server');
+        return;
+      }
+      const kvc = await customUserRoles.getById<UserRole>(target.user.id);
+      if (!kvc) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} This member has no custom role!`);
+        return;
+      }
+
+      const rlid = kvc.roleId;
+      const guild = await inter.getGuild();
+      const role = await guild.getRole(rlid);
+      if (!(role instanceof discord.Role)) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Role not found`);
+        return;
+      }
+      await inter.acknowledge(true);
+      await deleteCustomRoleOf(target.user.id);
+      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Deleted ${target.toMention()}'s custom role!` });
+    },
+    {
+      parent: 'cur',
+      module: 'utilities',
+      permissions: { overrideableInfo: 'utilities.cur.delete', level: Ranks.Administrator },
+    },
+  );
+}
+
 registerSlash(
   { name: 'snipe', description: 'Snipes the latest user-deleted message' },
   async (inter) => {
@@ -1399,7 +1667,34 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snipe', level: Ranks.Authorized } },
 );
-/*
+
+const randomGroup = registerSlashGroup({ name: 'random', description: 'RNG Commands' }, { module: 'utilities' });
+
+if (randomGroup) {
+  registerSlashSub(randomGroup,
+                   { name: 'coin', description: 'Flips a coin' },
+                   async (inter) => {
+                     const ret = utils.getRandomInt(1, 2);
+                     await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
+                   },
+                   { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' });
+
+  registerSlashSub(randomGroup,
+                   { name: 'number',
+                     description: 'Gets a random number between 2 values',
+                     options: (ctx) => ({ minimum: ctx.integer({ required: true, description: 'The minimum value' }), maximum: ctx.integer({ required: true, description: 'The maximum value' }) }),
+                   },
+                   async (inter, { minimum, maximum }) => {
+                     if (minimum >= maximum) {
+                       await inter.respondEphemeral('Error: Minimum value must be lower than the maximum value!');
+                       return;
+                     }
+                     const ret = utils.getRandomInt(minimum, maximum);
+                     await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
+                   },
+                   { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' });
+}
+
 registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
@@ -1409,7 +1704,7 @@ registerSlash(
     );
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
-); */
+);
 
 registerSlash(
   { name: 'avatar', description: 'Gets a user\'s avatar', options: (ctx) => ({ user: ctx.guildMember({ description: 'User', required: false }) }) },
@@ -1430,6 +1725,35 @@ registerSlash(
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.avatar', level: Ranks.Guest }, staticAck: true },
 );
 
+const reminderGroup = registerSlashGroup({ name: 'remind', description: 'Reminders' }, { module: 'utilities' });
+
+if (reminderGroup) {
+  registerSlashSub(
+    reminderGroup,
+    { name: 'add',
+      description: 'Adds a reminder',
+      options: (ctx) => (
+        {
+          when: ctx.string({ description: 'When to remind you (1h30m format)' }),
+          text: ctx.string({ description: 'The reminder' }),
+        }
+      ) },
+    async (inter, { when, text }) => {
+      await addReminderSlash(inter, when, text);
+    },
+    { parent: 'remind', staticAck: false, permissions: { overrideableInfo: 'utilities.remind.add', level: Ranks.Guest }, module: 'utilities' },
+  );
+
+  registerSlashSub(
+    reminderGroup,
+    { name: 'clear', description: 'Clears all your reminders' },
+    async (inter) => {
+      await clearRemindersSlash(inter);
+    },
+    { parent: 'remind', staticAck: false, permissions: { overrideableInfo: 'utilities.remind.clear', level: Ranks.Guest }, module: 'utilities' },
+  );
+}
+
 registerSlash(
   { name: 'cat', description: 'Gets a random cat image' },
   async (inter) => {
@@ -1441,7 +1765,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.cat', level: Ranks.Guest } },
 );
-/*
+
 registerSlash(
   { name: 'dog', description: 'Gets a random dog image' },
   async (inter) => {
@@ -1452,7 +1776,7 @@ registerSlash(
     await inter.respond({ embeds: [emb] });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.dog', level: Ranks.Guest } },
-); */
+);
 
 registerSlash(
   { name: 'doge', description: 'Gets a random shiba inu image' },
@@ -1465,7 +1789,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.doge', level: Ranks.Guest } },
 );
-/*
+
 registerSlash(
   { name: 'fox', description: 'Gets a random fox image' },
   async (inter) => {
@@ -1549,7 +1873,7 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.panda', level: Ranks.Guest } },
 );
-*/
+
 registerSlash(
   { name: 'server', description: 'Shows server info' },
   async (inter) => {

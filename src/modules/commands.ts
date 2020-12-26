@@ -6,6 +6,9 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
+const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'c';
+const SLASH_COMMANDS_LIMIT = 10;
+
 type SlashCommandRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
   extras: SlashExtras;
@@ -35,11 +38,18 @@ type SlashExtras = {
   parent?: string;
 };
 
+function getTopLevelSlashCommands() {
+  return [...registeredSlashCommands.filter((v) => !v.extras.parent), ...registeredSlashCommandGroups.filter((v) => !v.extras.parent)];
+}
 function getFullCommandName(name: string, parent?: string) {
-  if(!parent) return name;
+  if (!parent) {
+    return name;
+  }
   const parentF = registeredSlashCommandGroups.find((v) => v.config.name === parent);
-  if(!parentF || !parentF.extras) return name;
-  return this(`${parentF.config.name} ${name}`, parentF.extras.parent);
+  if (!parentF || !parentF.extras) {
+    return `${parentF.config.name} ${name}`;
+  }
+  return getFullCommandName(`${parentF.config.name} ${name}`, parentF.extras.parent);
 }
 async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<any>, extras: SlashExtras, callback: discord.interactions.commands.HandlerFunction<any>, interaction: discord.interactions.commands.SlashCommandInteraction, ...args: any) {
   const fullCmdName = getFullCommandName(sconf.name, extras.parent);
@@ -86,7 +96,6 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
       return;
     }
   }
-  console.log('executing callback');
   try {
     if (typeof extras.staticAck === 'boolean') {
       try {
@@ -174,27 +183,44 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
 }
 
 export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
-  if (registeredSlashCommands.length >= 10) {
+  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return;
   }
+  if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
+    return;
+  }
+  // add module name to the comamnd's description
+  /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
+  sconf.description = `[${prettyModule}] ${sconf.description}`; */
   discord.interactions.commands.register(sconf, async (interaction, ...args: any) => {
-    await executeSlash(sconf, extras, callback, interaction, ...args)
+    await executeSlash(sconf, extras, callback, interaction, ...args);
   });
-  registeredSlashCommands.push({config: sconf, extras: extras});
+  registeredSlashCommands.push({ config: sconf, extras });
 }
 
 export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: SlashExtras) {
-  registeredSlashCommandGroups.push({config: sconf, extras: extras});
+  registeredSlashCommandGroups.push({ config: sconf, extras });
+  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
+    return null;
+  }
+  if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
+    return null;
+  }
   return discord.interactions.commands.registerGroup(sconf);
 }
 
 export function registerSlashSub(parent: discord.interactions.commands.SlashCommandGroup, sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
+  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
+    return;
+  }
+  // add module name to the comamnd's description
+  /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
+  sconf.description = `[${prettyModule}] ${sconf.description}`; */
   parent.register(sconf, async (interaction, ...args: any) => {
-    await executeSlash(sconf, extras, callback, interaction, ...args)
+    await executeSlash(sconf, extras, callback, interaction, ...args);
   });
-  registeredSlashCommands.push({config: sconf, extras: extras});
+  registeredSlashCommands.push({ config: sconf, extras });
 }
-
 
 const cooldowns: any = {};
 export async function OnMessageCreate(

@@ -349,7 +349,7 @@ let loadingConf = false;
 let lastTry = Date.now();
 
 export async function InitializeConfig(bypass = false): Promise<boolean> {
-  let res: boolean;
+  const resC = await beginLoad(bypass);
   /*
   try {
   await pylon.requestCpuBurst(async () => {
@@ -357,9 +357,8 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   }, 200);
   } catch(_) {
     res = await beginLoad(bypass);
-  }*/
-  res = await beginLoad(bypass);
-  return res;
+  } */
+  return resC;
 }
 async function beginLoad(bypass: boolean): Promise<boolean> {
   if (loadingConf) {
@@ -471,7 +470,6 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
   return true;
 }
-
 
 function str2ab(str: string) {
   const buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
