@@ -36,8 +36,8 @@
 			"embedColor": 2263842,
 			"footerAvatar": "",
 			"webhookUrl": "",
-			"showEventName": true,
-			"showTimestamps": false,
+			"showEventName": false,
+			"showTimestamps": true,
 			"scopes": {
 				"include": [
 					"DEBUG"
