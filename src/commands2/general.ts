@@ -6,6 +6,7 @@ import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as admin from '../modules/admin';
 import { SaveData } from '../modules/disabled/cur';
+import { registerSlash, registerSlashGroup, registerSlashSub } from '../modules/commands';
 
 const { config, Ranks } = conf;
 const F = discord.command.filters;
@@ -156,3 +157,93 @@ export function InitializeCommands() {
 
   return cmdGroup;
 }
+
+registerSlash(
+  { name: 'help', description: 'Shows the bot\'s help explanation' },
+  async (inter) => {
+    await inter.respondEphemeral('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
+  }, {
+    staticAck: false,
+    permissions: {
+      overrideableInfo: 'commands.help',
+      level: Ranks.Guest,
+    },
+    module: 'commands',
+  },
+);
+
+registerSlash(
+  { name: 'docs', description: 'Shows the bot\'s documentation link' },
+  async (inter) => {
+    await inter.respondEphemeral('<https://docs.pyboat.i0.tf/>');
+  }, {
+    staticAck: false,
+    permissions: {
+      overrideableInfo: 'commands.docs',
+      level: Ranks.Guest,
+    },
+    module: 'commands',
+  },
+);
+
+registerSlash(
+  { name: 'mylevel', description: 'Shows your bot access level' },
+  async (inter) => {
+    await inter.respondEphemeral(`${inter.member.user.toMention()} you are bot access level **${utils.getUserAuth(inter.member)}**${utils.isGlobalAdmin(inter.member.user.id) ? ' and a global admin!' : ''}`);
+  }, {
+    staticAck: false,
+    permissions: {
+      overrideableInfo: 'commands.mylevel',
+      level: Ranks.Guest,
+    },
+    module: 'commands',
+  },
+);
+
+registerSlash(
+  { name: 'ping', description: 'Ping pong' },
+  async (inter) => {
+    const msgdiff = new Date().getTime() - utils.decomposeSnowflake(inter.id).timestamp;
+    const msgd = new Date();
+    const edmsg = await inter.respond('<a:loading:735794724480483409>');
+    const td = new Date().getTime() - msgd.getTime();
+    await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+  }, {
+    staticAck: true,
+    permissions: {
+      overrideableInfo: 'commands.ping',
+      level: Ranks.Guest,
+    },
+    module: 'commands',
+  },
+);
+
+registerSlash(
+  { name: 'nickme', description: 'Changes the bot\'s nickname on the server', options: (ctx) => ({ nick: ctx.string({ required: true, description: 'The nick to change to. Use "invisible" to set the bot\'s nickname to invisible.' }) }) },
+  async (inter, { nick }) => {
+    const guild = await inter.getGuild();
+    const me = await guild.getMember(discord.getBotId());
+    if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('I don\'t have permissions to change my nickname!');
+      return;
+    }
+    if (nick === me.nick) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('I already have that nickname!');
+      return;
+    }
+    if (nick === 'invisible') {
+      nick = ' ឵឵ ';
+    } // invis chars
+    await inter.acknowledge(true);
+    await me.edit({ nick });
+    await inter.respond('Done!');
+  }, {
+    permissions: {
+      overrideableInfo: 'commands.nickme',
+      level: Ranks.Owner,
+    },
+    module: 'commands',
+  },
+);
