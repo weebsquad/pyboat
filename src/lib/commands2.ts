@@ -171,7 +171,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
     }
     const txtErr = [];
     if (level > 0) {
-      txtErr.push(`Must be bot level ${level}`);
+      txtErr.push(`Must be bot access level ${level}`);
     }
     if (typeof ov === 'object') {
       if (Array.isArray(ov.rolesWhitelist)) {
@@ -294,7 +294,7 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
 
       if (!ov) {
         if (!val) {
-          return `Must be bot level ${level}`;
+          return `Must be bot access level ${level}`;
         }
         return true;
       }
@@ -329,7 +329,10 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
           return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
         }
       }
-      return val;
+      if (!val) {
+        return `Must be bot access level ${level}`;
+      }
+      return true;
     };
     const checkAccess = accessFunc();
     if (checkAccess === true) {
@@ -474,7 +477,6 @@ export function InitializeCommands2() {
       ) as discord.command.ICommandGroupOptions;
       const newC = new discord.command.CommandGroup(opts).attach(newKeys);
       cmdgroups.push(newC);
-    // console.info('Loaded ' + count + ' cmds from commands2.' + key);
     }
   }
   // modules!

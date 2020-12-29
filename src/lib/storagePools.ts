@@ -248,10 +248,10 @@ export class StoragePool {
       if (res) {
         try {
           await this.kv.transact(res.key, (prev: any) => {
-            const newData = { ...prev };
+            const newData = [...prev];
             const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
             if (_ind !== -1) {
-              let newDataVal = callback(newData[_ind]);
+              let newDataVal = callback({ ...newData[_ind] });
               if (newDataVal === null) {
                 newDataVal = undefined;
               }
@@ -261,11 +261,12 @@ export class StoragePool {
           });
           return true;
         } catch (e) {
+          console.error('pools.editTransact error', e);
         }
 
         return false;
       }
-
+      console.warn('pools.editTransact couldnt find matching key in a pool');
       return false;
     }
     async editTransactWithResult<T>(id: string, callback: (val: T) => { next: T | undefined | null; result: boolean }) {
@@ -287,7 +288,7 @@ export class StoragePool {
       if (res) {
         try {
           const { result } = await this.kv.transactWithResult(res.key, (prev: any) => {
-            const newData = { ...prev };
+            const newData = [...prev];
             const _ind = newData.findIndex((e: T) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
             let rest = false;
             if (_ind !== -1) {
@@ -328,7 +329,7 @@ export class StoragePool {
         for (let i = 0; i < 2; i += 1) {
           try {
             await this.kv.transact(res.key, (prev: any) => {
-              const newData = JSON.parse(JSON.stringify(prev));
+              const newData = [...prev];
               const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
               if (_ind !== -1) {
                 if (typeof newObj === 'object' && newObj !== null) {

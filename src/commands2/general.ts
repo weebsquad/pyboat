@@ -42,7 +42,7 @@ export function InitializeCommands() {
   cmdGroup.raw(
     { name: 'mylevel', filters: c2.getFilters('commands.mylevel', Ranks.Guest) },
     async (msg) => {
-      const res: any = await msg.inlineReply(`${msg.author.toMention()} you are bot level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+      const res: any = await msg.inlineReply(`${msg.author.toMention()} you are bot access level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
       admin.saveMessage(res);
     },
   );

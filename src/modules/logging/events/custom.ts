@@ -92,7 +92,7 @@ export async function logDebug(
     return;
   }
   if (type === 'BOT_ERROR') {
-    utils.logError(placeholders.get('ERROR'));
+    // utils.logError(placeholders.get('ERROR'));
   }
   const evData = config.modules.logging.messages.DEBUG[type];
   if (evData === undefined) {
