@@ -6,7 +6,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
-const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'ccc';
+const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'starboard';
 const SLASH_COMMANDS_LIMIT = 10;
 
 type SlashCommandRegistry = {
@@ -91,7 +91,11 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
         await interaction.acknowledge(false);
       } catch (_) {}
       if (perms.errors.length > 0) {
-        await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
+        if (perms.errors.includes('This command is disabled')) {
+          await interaction.respondEphemeral('This command is disabled');
+        } else {
+          await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
+        }
       }
       return;
     }

@@ -4,6 +4,7 @@ import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
+import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
 
 const MAX_LIFETIME = 336;
 
@@ -860,7 +861,7 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === true) {
-            return `${msg.author.toMention()}, ${user.getTag()} is already blocked from the starboard!`;
+            return `${msg.author.toMention()}, ${user.toMention()} is already blocked from the starboard!`;
           }
           let blocks = await kv.get('blocks');
           if (!Array.isArray(blocks)) {
@@ -868,7 +869,7 @@ export function InitializeCommands() {
           }
           blocks.push(user.id);
           await kv.put('blocks', blocks);
-          return `${msg.author.toMention()}, added ${user.getTag()} to the starboard blocklist`;
+          return `${msg.author.toMention()}, added ${user.toMention()} to the starboard blocklist`;
         });
         saveMessage(res);
       },
@@ -880,7 +881,7 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === false) {
-            return `${msg.author.toMention()}, ${user.getTag()} is not blocked from the starboard!`;
+            return `${msg.author.toMention()}, ${user.toMention()} is not blocked from the starboard!`;
           }
           let blocks = await kv.get('blocks');
           if (!Array.isArray(blocks)) {
@@ -888,7 +889,7 @@ export function InitializeCommands() {
           }
           blocks.splice(blocks.indexOf(user.id), 1);
           await kv.put('blocks', blocks);
-          return `${msg.author.toMention()}, removed ${user.getTag()} from the starboard blocklist`;
+          return `${msg.author.toMention()}, removed ${user.toMention()} from the starboard blocklist`;
         });
         saveMessage(res);
       },
@@ -924,3 +925,178 @@ export function InitializeCommands() {
   });
   return cmdGroup;
 }
+
+const starsGroup = registerSlashGroup({ name: 'stars', description: 'Starboard commands' }, { module: 'starboard' });
+
+registerSlashSub(starsGroup,
+                 { name: 'stats', description: 'Get starboard statistics for a user', options: (ctx) => ({ user: ctx.guildMember({ required: false, description: 'The user to get data on' }) }) },
+                 async (inter, { user }) => {
+                   const emb = new discord.Embed();
+                   if (!user) {
+                     // leaderboard
+                     let stats = await statsKv.getAll<StarStats>();
+                     stats = stats.sort((a, b) => b.received - a.received);
+                     const top10 = stats.slice(0, Math.min(stats.length, 10));
+                     const txt = [];
+                     const usrs: Array<discord.User> = [];
+                     await Promise.all(top10.map(async (vl) => {
+                       const _thisusr = await utils.getUser(vl.id);
+                       if (_thisusr !== null) {
+                         usrs.push(_thisusr);
+                       }
+                     }));
+                     for (let i = 0; i < top10.length; i++) {
+                       const st = top10[i];
+                       const me = st.id === inter.member.user.id;
+                       let pos = '';
+                       let tag = st.id;
+                       const _u = usrs.find((u) => u.id === st.id);
+                       if (_u) {
+                         tag = utils.escapeString(_u.getTag());
+                       }
+                       if (me === true) {
+                         tag = `**${tag}**`;
+                       }
+                       if (i === 0) {
+                         pos = discord.decor.Emojis.FIRST_PLACE_MEDAL;
+                       } else if (i === 1) {
+                         pos = discord.decor.Emojis.SECOND_PLACE_MEDAL;
+                       } else if (i === 2) {
+                         pos = discord.decor.Emojis.THIRD_PLACE_MEDAL;
+                       } else {
+                         pos = `\` ${i.toString()} \``;
+                       }
+                       txt.push(`${pos} ${tag} - ${st.received} stars`);
+                     }
+                     const isTop = top10.find((st) => st.id === inter.member.user.id);
+                     if (!isTop) {
+                       const ind = stats.findIndex((st) => st.id === inter.member.user.id);
+                       if (ind > -1) {
+                         txt.push('...', `\`${ind + 1}\` - ${utils.escapeString(inter.member.user.getTag())}`);
+                       }
+                     }
+                     const allStars = stats.reduce((a, b) => a + b.received, 0);
+
+                     emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
+                   } else {
+                     user = user.user;
+                     const stats = await statsKv.getById<StarStats>(user.id);
+                     if (typeof stats === 'undefined') {
+                       await inter.acknowledge(false);
+                       await inter.respondEphemeral(`${discord.decor.Emojis.X} no stats found for ${user.getTag()}`);
+                       return;
+                     }
+                     emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
+                     emb.setColor(0xe1eb34);
+                     emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
+                   }
+                   await inter.acknowledge(true);
+
+                   await inter.respond({ content: '', allowedMentions: {}, embeds: [emb] });
+                 },
+                 {
+                   parent: 'stars',
+                   module: 'starboard',
+                   permissions: {
+                     overrideableInfo: 'starboard.stars.stats',
+                     level: Ranks.Authorized,
+                   },
+                 });
+
+registerSlashSub(starsGroup,
+                 { name: 'block', description: 'Blocks a user from starboard', options: (ctx) => ({ user: ctx.guildMember({ required: true, description: 'The user to block' }) }) },
+                 async (inter, { user }) => {
+                   user = user.user;
+                   const isb = await isBlocked(user.id);
+                   if (isb === true) {
+                     await inter.acknowledge(false);
+                     await inter.respondEphemeral(`${user.toMention()} is already blocked from the starboard!`);
+                     return;
+                   }
+                   let blocks = await kv.get('blocks');
+                   if (!Array.isArray(blocks)) {
+                     blocks = [];
+                   }
+                   await inter.acknowledge(true);
+                   blocks.push(user.id);
+                   await kv.put('blocks', blocks);
+                   await inter.respond(`${inter.member.user.toMention()}, added ${user.toMention()} to the starboard blocklist`);
+                 },
+                 {
+                   parent: 'stars',
+                   module: 'starboard',
+                   permissions: {
+                     overrideableInfo: 'starboard.stars.block',
+                     level: Ranks.Moderator,
+                   },
+                 });
+
+registerSlashSub(starsGroup,
+                 { name: 'unblock', description: 'Unblocks a user from starboard', options: (ctx) => ({ user: ctx.guildMember({ required: true, description: 'The user to unblock' }) }) },
+                 async (inter, { user }) => {
+                   user = user.user;
+                   const isb = await isBlocked(user.id);
+                   if (isb === false) {
+                     await inter.acknowledge(false);
+                     await inter.respondEphemeral(`${user.toMention()} is not blocked from the starboard!`);
+                     return;
+                   }
+                   let blocks = await kv.get('blocks');
+                   if (!Array.isArray(blocks)) {
+                     blocks = [];
+                   }
+                   await inter.acknowledge(true);
+                   blocks.splice(blocks.indexOf(user.id), 1);
+                   await kv.put('blocks', blocks);
+                   await inter.respond(`${inter.member.user.toMention()}, removed ${user.toMention()} from the starboard blocklist`);
+                 },
+                 {
+                   parent: 'stars',
+                   module: 'starboard',
+                   permissions: {
+                     overrideableInfo: 'starboard.stars.unblock',
+                     level: Ranks.Moderator,
+                   },
+                 });
+
+registerSlashSub(starsGroup,
+                 { name: 'lock', description: 'Locks the starboard' },
+                 async (inter) => {
+                   const lock: any = await kv.get('lock');
+                   if (lock === true) {
+                     await inter.acknowledge(false);
+                     await inter.respondEphemeral('The starboard is already locked.');
+                     return;
+                   }
+                   await kv.put('lock', true);
+                   await inter.respond(`${inter.member.user.toMention()}, locked the starboard!`);
+                 },
+                 {
+                   parent: 'stars',
+                   module: 'starboard',
+                   permissions: {
+                     overrideableInfo: 'starboard.stars.lock',
+                     level: Ranks.Administrator,
+                   },
+                 });
+
+registerSlashSub(starsGroup,
+                 { name: 'unlock', description: 'Unlocks the starboard' },
+                 async (inter) => {
+                   const lock: any = await kv.get('lock');
+                   if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
+                     await inter.acknowledge(false);
+                     await inter.respondEphemeral('The starboard is not locked.');
+                     return;
+                   }
+                   await kv.put('lock', false);
+                   await inter.respond(`${inter.member.user.toMention()}, unlocked the starboard!`);
+                 },
+                 {
+                   parent: 'stars',
+                   module: 'starboard',
+                   permissions: {
+                     overrideableInfo: 'starboard.stars.unlock',
+                     level: Ranks.Administrator,
+                   },
+                 });
