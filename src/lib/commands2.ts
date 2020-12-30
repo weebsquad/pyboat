@@ -1,7 +1,7 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
-import { registeredSlashCommands, registeredSlashCommandGroups } from '../modules/commands';
+import { registeredSlashCommands, registeredSlashCommandGroups, SlashGroupHasSubcommands } from '../modules/commands';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
@@ -74,7 +74,7 @@ export function cleanDuplicates() {
             if (individualCommandNames.includes(name.toLowerCase()) || (opts.aliasOf && individualCommandNames.includes(opts.aliasOf.toLowerCase()))) {
               continue;
             }
-          } else if (cmdType === 'CommandGroup') {
+          } else if (cmdType === 'CommandGroup' && SlashGroupHasSubcommands(name.toLowerCase())) {
             if (topGroupNames.includes(name.toLowerCase()) || (opts.aliasOf && topGroupNames.includes(opts.aliasOf.toLowerCase()))) {
               continue;
             }
