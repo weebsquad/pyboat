@@ -202,13 +202,16 @@ export function registerSlash(sconf: discord.interactions.commands.ICommandConfi
   registeredSlashCommands.push({ config: sconf, extras });
 }
 
-export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: SlashExtras) {
+export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: SlashExtras, parentGroup?: discord.interactions.commands.SlashCommandGroup) {
   registeredSlashCommandGroups.push({ config: sconf, extras });
   if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return null;
   }
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
     return null;
+  }
+  if (parentGroup) {
+    return parentGroup.registerGroup(sconf);
   }
   return discord.interactions.commands.registerGroup(sconf);
 }
@@ -221,6 +224,7 @@ export function registerSlashSub(parent: discord.interactions.commands.SlashComm
   /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
   sconf.description = `[${prettyModule}] ${sconf.description}`; */
   parent.register(sconf, async (interaction, ...args: any) => {
+    console.log('native callback ran');
     await executeSlash(sconf, extras, callback, interaction, ...args);
   });
   registeredSlashCommands.push({ config: sconf, extras });
