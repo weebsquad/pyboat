@@ -550,6 +550,133 @@ export function InitializeCommands() {
         });
       },
     );
+    subCommandGroup.raw(
+      { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.random.cat', Ranks.Guest) },
+      async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('http://aws.random.cat/meow')).json();
+          const catpic = await (await fetch(file.file)).arrayBuffer();
+          const ext = file.file.split('.')[file.file.split('.').length - 1];
+          return {
+            content: '',
+            attachments: [{
+              name: `cat.${ext}`,
+              data: catpic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.random.dog', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://random.dog/woof.json')).json();
+          const pic = await (await fetch(file.url)).arrayBuffer();
+          const ext = file.url.split('.')[file.url.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `dog.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'doge', aliases: ['shibe'], filters: c2.getFilters('utilities.random.doge', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
+          const pic = await (await fetch(file.message)).arrayBuffer();
+          const ext = file.message.split('.')[file.message.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `dog.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+
+    subCommandGroup.raw(
+      { name: 'fox', filters: c2.getFilters('utilities.random.fox', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://randomfox.ca/floof/')).json();
+          const pic = await (await fetch(file.image)).arrayBuffer();
+          const ext = file.image.split('.')[file.image.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `fox.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'koala', filters: c2.getFilters('utilities.random.koala', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
+          const pic = await (await fetch(file.link)).arrayBuffer();
+          const ext = file.link.split('.')[file.link.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `koala.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.random.birb', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
+          const pic = await (await fetch(file.link)).arrayBuffer();
+          const ext = file.link.split('.')[file.link.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `birb.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.raw(
+      { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.random.panda', Ranks.Guest) }, async (msg) => {
+        const res: any = await msg.inlineReply(async () => {
+          const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
+          const pic = await (await fetch(file.link)).arrayBuffer();
+          const ext = file.link.split('.')[file.link.split('.').length - 1];
+          return {
+            content: '',
+            allowedMentions: {},
+            attachments: [{
+              name: `panda.${ext}`,
+              data: pic,
+            }],
+          };
+        });
+        saveMessage(res);
+      },
+    );
   });
   // snowflake
   cmdGroup.on(
@@ -632,79 +759,7 @@ export function InitializeCommands() {
     );
   });
 */
-  cmdGroup.raw(
-    { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.cat', Ranks.Guest) },
-    async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('http://aws.random.cat/meow')).json();
-        const catpic = await (await fetch(file.file)).arrayBuffer();
-        const ext = file.file.split('.')[file.file.split('.').length - 1];
-        return {
-          content: '',
-          attachments: [{
-            name: `cat.${ext}`,
-            data: catpic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
-  cmdGroup.raw(
-    { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.dog', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://random.dog/woof.json')).json();
-        const pic = await (await fetch(file.url)).arrayBuffer();
-        const ext = file.url.split('.')[file.url.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `dog.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
-  cmdGroup.raw(
-    { name: 'doge', aliases: ['shibe'], filters: c2.getFilters('utilities.doge', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
-        const pic = await (await fetch(file.message)).arrayBuffer();
-        const ext = file.message.split('.')[file.message.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `dog.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
 
-  cmdGroup.raw(
-    { name: 'fox', filters: c2.getFilters('utilities.fox', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://randomfox.ca/floof/')).json();
-        const pic = await (await fetch(file.image)).arrayBuffer();
-        const ext = file.image.split('.')[file.image.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `fox.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
   cmdGroup.raw(
     { name: 'pikachu', filters: c2.getFilters('utilities.pikachu', Ranks.Guest) }, async (msg) => {
       const res: any = await msg.inlineReply(async () => {
@@ -723,24 +778,7 @@ export function InitializeCommands() {
       saveMessage(res);
     },
   );
-  cmdGroup.raw(
-    { name: 'koala', filters: c2.getFilters('utilities.koala', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
-        const pic = await (await fetch(file.link)).arrayBuffer();
-        const ext = file.link.split('.')[file.link.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `koala.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
+
   cmdGroup.raw(
     { name: 'pat', filters: c2.getFilters('utilities.pat', Ranks.Guest) }, async (msg) => {
       const res: any = await msg.inlineReply(async () => {
@@ -777,42 +815,7 @@ export function InitializeCommands() {
       saveMessage(res);
     },
   );
-  cmdGroup.raw(
-    { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.birb', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
-        const pic = await (await fetch(file.link)).arrayBuffer();
-        const ext = file.link.split('.')[file.link.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `birb.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
-  cmdGroup.raw(
-    { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.panda', Ranks.Guest) }, async (msg) => {
-      const res: any = await msg.inlineReply(async () => {
-        const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
-        const pic = await (await fetch(file.link)).arrayBuffer();
-        const ext = file.link.split('.')[file.link.split('.').length - 1];
-        return {
-          content: '',
-          allowedMentions: {},
-          attachments: [{
-            name: `panda.${ext}`,
-            data: pic,
-          }],
-        };
-      });
-      saveMessage(res);
-    },
-  );
+
   cmdGroup.on(
     { name: 'server', filters: c2.getFilters('utilities.server', Ranks.Guest) },
     (ctx) => ({ gid: ctx.stringOptional() }),
@@ -1668,37 +1671,6 @@ registerSlash(
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snipe', level: Ranks.Authorized } },
 );
 
-const randomGroup = registerSlashGroup({ name: 'random', description: 'RNG Commands' }, { module: 'utilities' });
-
-if (randomGroup) {
-  registerSlashSub(
-    randomGroup,
-    { name: 'coin', description: 'Flips a coin' },
-    async (inter) => {
-      const ret = utils.getRandomInt(1, 2);
-      await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
-    },
-    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' },
-  );
-
-  registerSlashSub(
-    randomGroup,
-    { name: 'number',
-      description: 'Gets a random number between 2 values',
-      options: (ctx) => ({ minimum: ctx.integer({ required: true, description: 'The minimum value' }), maximum: ctx.integer({ required: true, description: 'The maximum value' }) }),
-    },
-    async (inter, { minimum, maximum }) => {
-      if (minimum >= maximum) {
-        await inter.respondEphemeral('Error: Minimum value must be lower than the maximum value!');
-        return;
-      }
-      const ret = utils.getRandomInt(minimum, maximum);
-      await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
-    },
-    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' },
-  );
-}
-
 registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
@@ -1758,7 +1730,39 @@ if (reminderGroup) {
   );
 }
 
-registerSlash(
+const randomGroup = registerSlashGroup({ name: 'random', description: 'RNG Commands' }, { module: 'utilities' });
+
+if (randomGroup) {
+  registerSlashSub(
+    randomGroup,
+    { name: 'coin', description: 'Flips a coin' },
+    async (inter) => {
+      const ret = utils.getRandomInt(1, 2);
+      await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
+    },
+    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'number',
+      description: 'Gets a random number between 2 values',
+      options: (ctx) => ({ minimum: ctx.integer({ required: true, description: 'The minimum value' }), maximum: ctx.integer({ required: true, description: 'The maximum value' }) }),
+    },
+    async (inter, { minimum, maximum }) => {
+      if (minimum >= maximum) {
+        await inter.respondEphemeral('Error: Minimum value must be lower than the maximum value!');
+        return;
+      }
+      const ret = utils.getRandomInt(minimum, maximum);
+      await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
+    },
+    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' },
+  );
+}
+
+registerSlashSub(
+  randomGroup,
   { name: 'cat', description: 'Gets a random cat image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1767,10 +1771,11 @@ registerSlash(
     emb.setImage({ url: file.file });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.cat', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.cat', level: Ranks.Guest } },
 );
 
-registerSlash(
+registerSlashSub(
+  randomGroup,
   { name: 'dog', description: 'Gets a random dog image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1779,10 +1784,11 @@ registerSlash(
     emb.setImage({ url: file.url });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.dog', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.dog', level: Ranks.Guest } },
 );
 
-registerSlash(
+registerSlashSub(
+  randomGroup,
   { name: 'doge', description: 'Gets a random shiba inu image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1791,10 +1797,11 @@ registerSlash(
     emb.setImage({ url: file.message });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.doge', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.doge', level: Ranks.Guest } },
 );
 
-registerSlash(
+registerSlashSub(
+  randomGroup,
   { name: 'fox', description: 'Gets a random fox image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1803,10 +1810,11 @@ registerSlash(
     emb.setImage({ url: file.image });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.fox', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.fox', level: Ranks.Guest } },
 );
 
-registerSlash(
+registerSlashSub(
+  randomGroup,
   { name: 'pikachu', description: 'Gets a random pikachu image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1815,10 +1823,11 @@ registerSlash(
     emb.setImage({ url: file.link });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.pikachu', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.pikachu', level: Ranks.Guest } },
 );
 
-registerSlash(
+registerSlashSub(
+  randomGroup,
   { name: 'koala', description: 'Gets a random koala image' },
   async (inter) => {
     await inter.acknowledge(true);
@@ -1827,7 +1836,33 @@ registerSlash(
     emb.setImage({ url: file.link });
     await inter.respond({ embeds: [emb] });
   },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.koala', level: Ranks.Guest } },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.koala', level: Ranks.Guest } },
+);
+
+registerSlashSub(
+  randomGroup,
+  { name: 'birb', description: 'Gets a random birb image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.birb', level: Ranks.Guest } },
+);
+
+registerSlashSub(
+  randomGroup,
+  { name: 'panda', description: 'Gets a random panda image' },
+  async (inter) => {
+    await inter.acknowledge(true);
+    const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
+    const emb = new discord.Embed();
+    emb.setImage({ url: file.link });
+    await inter.respond({ embeds: [emb] });
+  },
+  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.panda', level: Ranks.Guest } },
 );
 
 registerSlash(
@@ -1852,30 +1887,6 @@ registerSlash(
     await inter.respond({ embeds: [emb] });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.hug', level: Ranks.Guest } },
-);
-
-registerSlash(
-  { name: 'birb', description: 'Gets a random birb image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
-  },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.birb', level: Ranks.Guest } },
-);
-
-registerSlash(
-  { name: 'panda', description: 'Gets a random panda image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
-  },
-  { module: 'utilities', permissions: { overrideableInfo: 'utilities.panda', level: Ranks.Guest } },
 );
 
 registerSlash(
