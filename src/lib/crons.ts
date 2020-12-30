@@ -18,24 +18,30 @@ const _cr: {[key: string]: any} = {
   '0 0 * * * * *': {
     name: 'every_hour',
     async function() {
-      await conf.InitializeConfig(true);
+      try {
+        await conf.InitializeConfig();
+        await starboard.periodicClear();
+        await antiPing.periodicDataClear();
+        await internal.checkInactiveGuilds();
+        await internal.sendBotUsers();
+      } catch (e) {
+        logError(e);
+      }
     },
     started: false,
   },
   '0 0/5 * * * * *': {
     name: 'every_5_min',
     async function() {
-      // @ts-ignore
-      const cput = await pylon.getCpuTime();
       try {
         await pylon.requestCpuBurst(async () => {
+          await conf.InitializeConfig();
           await ratelimit.clean();
           await translation.cleanPool();
           queue.cleanQueue();
           await admin.every5Min();
           await infractions.every5Min();
-          await starboard.periodicClear();
-          await antiPing.periodicDataClear();
+
           await utilities.checkReminders();
           await utilities.checkAllCustomRoles();
           // @ts-ignore
@@ -43,8 +49,7 @@ const _cr: {[key: string]: any} = {
           await reddit.updateSubs();
           // @ts-ignore
           console.log(`Started Reddit update @${Math.floor(redditmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - redditmeas)}ms to complete.`);
-          await internal.checkInactiveGuilds();
-          await internal.sendBotUsers();
+
           // @ts-ignore
           const poolmeas = await pylon.getCpuTime();
           // @ts-ignore

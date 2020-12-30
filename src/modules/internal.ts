@@ -127,7 +127,7 @@ export async function sendBotUsers() {
     }
     return { next: admins, result: false };
   });
-  const diff = lastUpdated ? Date.now() - lastUpdated : undefined;
+  const diff = typeof lastUpdated === 'number' ? Date.now() - lastUpdated : undefined;
   if (!result && typeof lastUpdated === 'number' && diff < 1000 * 60 * 60 * 24 * 7) {
     return;
   }
