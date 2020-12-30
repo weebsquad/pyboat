@@ -116,8 +116,7 @@ export async function sendBotUsers() {
   const cpuEnded = Math.floor(await pylon.getCpuTime());
   console.log(`Done botuser fetch in ${cpuEnded - startedAt}ms CPU`);
   // console.log('Admins: ', admins);
-  const lastUpdated: number = await thisAdmins.get('lastUpdated') ?? Date.now();
-  const diff = Date.now() - lastUpdated;
+  const lastUpdated: number = await thisAdmins.get('lastUpdated');
   const { result } = await thisAdmins.transactWithResult<Array<string>, boolean>(guildId, (prev) => {
     if (!prev) {
       return { next: admins, result: true };
@@ -128,7 +127,8 @@ export async function sendBotUsers() {
     }
     return { next: admins, result: false };
   });
-  if (!result && diff < 1000 * 60 * 60 * 24 * 7) {
+  const diff = lastUpdated ? Date.now() - lastUpdated : undefined;
+  if (!result && typeof lastUpdated === 'number' && diff < 1000 * 60 * 60 * 24 * 7) {
     return;
   }
   await thisAdmins.put('lastUpdated', Date.now());
