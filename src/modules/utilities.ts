@@ -1671,28 +1671,32 @@ registerSlash(
 const randomGroup = registerSlashGroup({ name: 'random', description: 'RNG Commands' }, { module: 'utilities' });
 
 if (randomGroup) {
-  registerSlashSub(randomGroup,
-                   { name: 'coin', description: 'Flips a coin' },
-                   async (inter) => {
-                     const ret = utils.getRandomInt(1, 2);
-                     await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
-                   },
-                   { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' });
+  registerSlashSub(
+    randomGroup,
+    { name: 'coin', description: 'Flips a coin' },
+    async (inter) => {
+      const ret = utils.getRandomInt(1, 2);
+      await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
+    },
+    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' },
+  );
 
-  registerSlashSub(randomGroup,
-                   { name: 'number',
-                     description: 'Gets a random number between 2 values',
-                     options: (ctx) => ({ minimum: ctx.integer({ required: true, description: 'The minimum value' }), maximum: ctx.integer({ required: true, description: 'The maximum value' }) }),
-                   },
-                   async (inter, { minimum, maximum }) => {
-                     if (minimum >= maximum) {
-                       await inter.respondEphemeral('Error: Minimum value must be lower than the maximum value!');
-                       return;
-                     }
-                     const ret = utils.getRandomInt(minimum, maximum);
-                     await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
-                   },
-                   { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' });
+  registerSlashSub(
+    randomGroup,
+    { name: 'number',
+      description: 'Gets a random number between 2 values',
+      options: (ctx) => ({ minimum: ctx.integer({ required: true, description: 'The minimum value' }), maximum: ctx.integer({ required: true, description: 'The maximum value' }) }),
+    },
+    async (inter, { minimum, maximum }) => {
+      if (minimum >= maximum) {
+        await inter.respondEphemeral('Error: Minimum value must be lower than the maximum value!');
+        return;
+      }
+      const ret = utils.getRandomInt(minimum, maximum);
+      await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
+    },
+    { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' },
+  );
 }
 
 registerSlash(
