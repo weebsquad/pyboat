@@ -113,18 +113,18 @@ export const messages = {
       type = 'AVATAR_REMOVED';
       mp.set('_OLD_AVATAR_', oldMember.user.getAvatarUrl());
       const data = await (await fetch(oldMember.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${oldMember.user.getAvatarUrl().split('.').slice(-1)[0]}`, data, url: oldMember.user.getAvatarUrl() }]);
+      mp.set('_ATTACHMENTS_', [{ name: `avatar.${oldMember.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: oldMember.user.getAvatarUrl() }]);
     } else if (member.user.avatar !== null && oldMember.user.avatar === null) {
       type = 'AVATAR_ADDED';
       mp.set('_NEW_AVATAR_', member.user.getAvatarUrl());
       const data = await (await fetch(member.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0]}`, data, url: member.user.getAvatarUrl() }]);
+      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
     } else {
       type = 'AVATAR_CHANGED';
       mp.set('_NEW_AVATAR_', member.user.getAvatarUrl());
       mp.set('_OLD_AVATAR_', oldMember.user.getAvatarUrl());
       const data = await (await fetch(member.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0]}`, data, url: member.user.getAvatarUrl() }]);
+      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
     }
 
     mp.set('_TYPE_', type);
