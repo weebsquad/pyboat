@@ -247,7 +247,7 @@ export const messages: {[key: string]: {[key: string]: string}} = {
     STOP_STREAM: `${discord.decor.Emojis.DESKTOP_COMPUTER} _USERTAG_ stopped streaming in _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
     ENTERED_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ joined _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
     LEFT_CHANNEL: `${discord.decor.Emojis.TELEPHONE} _USERTAG_ left _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
-    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from \`_OLD_CHANNEL_MENTION_\` **[**||\`_OLD_CHANNEL_ID_\`||**]** to \`_NEW_CHANNEL_MENTION_\` **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
+    MOVED_CHANNEL: `${discord.decor.Emojis.ARROW_RIGHT} _USERTAG_ moved from _OLD_CHANNEL_MENTION_ **[**||\`_OLD_CHANNEL_ID_\`||**]** to _NEW_CHANNEL_MENTION_ **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
   },
   'VOICE_SERVER_UPDATE': {
     CONNECTED: 'connected to voice @`_ENDPOINT_` with token ||`_TOKEN_`||',
@@ -411,6 +411,6 @@ export const messagesAuditLogs: {[key: string]: {[key: string]: string}} = {
       } _ACTORTAG_ disconnected _USERTAG_ from _CHANNEL_MENTION_ **[**||\`_CHANNEL_ID_\`||**]**`,
     MOVED_CHANNEL:
       `${discord.decor.Emojis.ARROW_RIGHT
-      } _ACTORTAG_ moved _USERTAG_ moved from \`_OLD_CHANNEL_MENTION_\` **[**||\`_OLD_CHANNEL_ID_\`||**]** to \`_NEW_CHANNEL_MENTION_\` **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
+      } _ACTORTAG_ moved _USERTAG_ moved from _OLD_CHANNEL_MENTION_ **[**||\`_OLD_CHANNEL_ID_\`||**]** to _NEW_CHANNEL_MENTION_ **[**||\`_NEW_CHANNEL_ID_\`||**]**`,
   },
 };
