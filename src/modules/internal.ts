@@ -89,10 +89,27 @@ export async function checkInactiveGuilds() {
   }
   const items = await namespaceUsers.getAll<guildBotUsers>();
   if (items && items.length > 0) {
-    const toRemove: Array<string> = items.filter((v) => !globalConfig.whitelistedGuilds.includes(v.guild)).map((v) => v.guild);
+    const toRemove: Array<guildBotUsers> = items.filter((v) => !globalConfig.whitelistedGuilds.includes(v.guild));
     if (toRemove.length > 0) {
+      const guild = await discord.getGuild();
       console.log(`Removing ${toRemove.length} guilds from active user-tracking due to being removed from whitelist`, toRemove);
-      await namespaceUsers.editPools(toRemove, () => undefined);
+      await namespaceUsers.editPools(toRemove.map((v) => v.guild), () => undefined);
+      const users: string[] = [];
+      toRemove.map((v) => v.adminUsers).forEach((v) => {
+        v.forEach((v2) => {
+          if (!users.includes(v2)) {
+            users.push(v2);
+          }
+        });
+      });
+      await Promise.all(users.map(async (v) => {
+        try {
+          const member = await guild.getMember(v);
+          if (member && member instanceof discord.GuildMember) {
+            await checkIsUser(member);
+          }
+        } catch (_) {}
+      }));
     }
   }
 }
