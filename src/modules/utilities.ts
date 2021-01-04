@@ -1675,9 +1675,8 @@ registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
     const normalTs = utils.getSnowflakeDate(id);
-    await interactionChannelRespond(inter, 
-      `\`\`\`\nID: ${id}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
-    );
+    await interactionChannelRespond(inter,
+                                    `\`\`\`\nID: ${id}\nTimestamp: ${new Date(normalTs)}\n\`\`\``);
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
 );
@@ -2188,7 +2187,7 @@ registerSlash(
 **❯ **Members ⎯ ${guild.memberCount}`;
       }
       embed.setDescription(desc);
-      await interactionChannelRespond(inter, { embed: embed, allowedMentions: {}, content: '' });
+      await interactionChannelRespond(inter, { embed, allowedMentions: {}, content: '' });
   },
 
   { permissions: { overrideableInfo: 'commands.server', level: Ranks.Guest }, module: 'utilities', staticAck: true },

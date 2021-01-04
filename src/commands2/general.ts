@@ -206,7 +206,9 @@ registerSlash(
     const msgdiff = new Date().getTime() - utils.decomposeSnowflake(inter.id).timestamp;
     const msgd = new Date();
     const edmsg = await interactionChannelRespond(inter, '<a:loading:735794724480483409>');
-    if(!edmsg) return;
+    if (!edmsg) {
+      return;
+    }
     const td = new Date().getTime() - msgd.getTime();
     await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
   }, {

@@ -8,6 +8,7 @@ import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
 
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
@@ -18,13 +19,13 @@ const ENTRIES_PER_POOL = 62; // approximate maximum
 
 // persist
 
-const PERSIST_DURATION = 30 * 24 * 60 * 60 * 1000;
+const PERSIST_DURATION = 32 * 24 * 60 * 60 * 1000;
 const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
 
 export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
 
 const kvOverrides = new pylon.KVNamespace('channelPersists');
-const ACTION_DURATION = 30 * 24 * 60 * 60 * 1000;
+const ACTION_DURATION = 32 * 24 * 60 * 60 * 1000;
 const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
 enum ActionType {
     'CLEAN' = 'CLEAN',
@@ -883,6 +884,9 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   if (count === 0) {
     return false;
   }
+  if (count > MAX_COMMAND_CLEAN) {
+    return 'Cant clean that many messages at once!';
+  }
   const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
   if (canT !== true) {
     return canT;
@@ -996,9 +1000,13 @@ export async function OnMessageCreate(
   gid: string,
   message: discord.Message,
 ) {
+  console.log('admin got msg', message instanceof discord.GuildMemberMessage, message.member instanceof discord.GuildMember);
   if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
-    return;
+    if (!message.application || message.application.id !== discord.getBotId()) {
+      return;
+    }
   }
+  console.log('is valid msg');
   adminPool.saveToPool(new TrackedMessage(message));
 }
 export async function OnMessageDelete(
@@ -2272,3 +2280,72 @@ export function InitializeCommands() {
 
   return cmdGroup;
 }
+
+const cleanGroup = registerSlashGroup(
+  { name: 'clean', description: 'Commands to clear messages in the server' },
+  {
+    module: 'admin',
+  },
+);
+
+registerSlashSub(cleanGroup,
+                 {
+                   name: 'user',
+                   description: 'Clear messages by a specific user',
+                   options: (ctx) => (
+                     {
+                       user: ctx.guildMember({ required: true, description: 'The user to clear messages from' }),
+                       count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+                     }),
+                 },
+                 async (inter, { user, count }) => {
+                   if (!count) {
+                     count = DEFAULT_COMMAND_CLEAN;
+                   }
+                   const chan = await inter.getChannel();
+                   let acked = false;
+                   const tmAck = setTimeout(async () => {
+                     await inter.acknowledge(true);
+                     acked = true;
+                   }, 1500);
+                   const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, user, inter.member, chan, count, inter.channelId);
+                   if (!acked) {
+                     clearTimeout(tmAck);
+                   }
+
+                   if (typeof res !== 'number') {
+                     if (!acked) {
+                       await inter.acknowledge(false);
+                     }
+                     if (res === false) {
+                       await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean user');
+                     } else if (typeof res === 'string') {
+                       await infractions.confirmResultInteraction(undefined, inter, false, res);
+                     }
+                   } else if (res > 0) {
+                     if (!acked) {
+                       await inter.acknowledge(true);
+                     }
+                     await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${user.user.getTag()}`);
+                   } else {
+                     if (!acked) {
+                       await inter.acknowledge(false);
+                     }
+                     await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+                   }
+                 },
+                 {
+                   module: 'admin',
+                   parent: 'clean',
+                   permissions: {
+                     overrideableInfo: 'admin.clean.user',
+                     level: Ranks.Moderator,
+                   },
+                 });
+
+const invitesGroup = registerSlashGroup(
+  { name: 'invites', description: 'Invite-related commands' },
+  {
+    module: 'admin',
+  },
+);

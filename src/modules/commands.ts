@@ -2,7 +2,7 @@
 import * as conf from '../config';
 import * as commands2 from '../lib/commands2';
 import * as utils from '../lib/utils';
-import * as admin from './admin'
+import * as admin from './admin';
 import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
@@ -235,16 +235,18 @@ export function registerSlashSub(parent: discord.interactions.commands.SlashComm
   registeredSlashCommands.push({ config: sconf, extras });
 }
 
-
 export async function interactionChannelRespond(interaction: discord.interactions.commands.SlashCommandInteraction, data: discord.Message.IOutgoingMessageOptions | string): Promise<discord.Message | false> {
   const channel = await interaction.getChannel();
-  if(!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) return false;
+  if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
+    return false;
+  }
   // @ts-ignore
   const msgRet = await channel.sendMessage(data);
-  if(msgRet instanceof discord.Message) {
+  if (msgRet instanceof discord.Message) {
     // @ts-ignore
-  await admin.saveMessage(msgRet);
-  return msgRet}
+    await admin.saveMessage(msgRet);
+    return msgRet;
+  }
   return false;
 }
 

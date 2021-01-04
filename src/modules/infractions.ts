@@ -1647,39 +1647,37 @@ export async function AL_OnGuildBanRemove(
   await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
 }
 
-
-
 registerSlash(
-  {name: 'kick', description: 'Kicks a member from the server', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to kick'}), reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, reason}) => {
+  { name: 'kick', description: 'Kicks a member from the server', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to kick' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
     const result = await Kick(member, inter.member, reason);
-      if (result === false) {
-        await inter.acknowledge(false);
-        await confirmResultInteraction(undefined, inter, false, 'Failed to kick member.');
-        return;
-      }
-      if (typeof result === 'string') {
-        await inter.acknowledge(false);
-        await confirmResultInteraction(undefined, inter, false, result);
-        return;
-      }
-      await inter.acknowledge(true);
-      await confirmResultInteraction(undefined, inter, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    if (result === false) {
+      await inter.acknowledge(false);
+      await confirmResultInteraction(undefined, inter, false, 'Failed to kick member.');
+      return;
+    }
+    if (typeof result === 'string') {
+      await inter.acknowledge(false);
+      await confirmResultInteraction(undefined, inter, false, result);
+      return;
+    }
+    await inter.acknowledge(true);
+    await confirmResultInteraction(undefined, inter, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.kick',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'mute', description: 'Mutes a member', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to mute'}), reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, reason}) => {
+  { name: 'mute', description: 'Mutes a member', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to mute' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
@@ -1690,7 +1688,7 @@ registerSlash(
     }
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, `Failed to mute member.`);
+      await confirmResultInteraction(undefined, inter, false, 'Failed to mute member.');
       return;
     }
     if (typeof result === 'string') {
@@ -1699,20 +1697,19 @@ registerSlash(
       return;
     }
     await inter.acknowledge(true);
-      await confirmResultInteraction(undefined, inter, true, `Muted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
+    await confirmResultInteraction(undefined, inter, true, `Muted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.mute',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'tempmute', description: 'Tempmutes a member', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to tempmute'}), time: ctx.string({required: true, description: 'Time to mute for (1h30m format)'}), reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, time, reason}) => {
+  { name: 'tempmute', description: 'Tempmutes a member', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to tempmute' }), time: ctx.string({ required: true, description: 'Time to mute for (1h30m format)' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, time, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
@@ -1731,19 +1728,18 @@ registerSlash(
     const dur = utils.timeArgumentToMs(time);
     const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
     await confirmResultInteraction(undefined, inter, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.tempmute',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'unmute', description: 'Unmutes a member', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to Unmute'}), reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, reason}) => {
+  { name: 'unmute', description: 'Unmutes a member', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to Unmute' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
@@ -1760,54 +1756,54 @@ registerSlash(
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Unmuted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.unmute',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'ban', description: 'Ban a member', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to ban'}), reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, reason}) => {
-      if (typeof reason !== 'string') {
-        reason = '';
-      }
-      const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
-      const result = await Ban(member, inter.member, _del, reason);
-      if (result === false) {
-        await inter.acknowledge(false);
-        await confirmResultInteraction(undefined, inter, false, 'Failed to ban user.');
-        return;
-      }
-      if (typeof result === 'string') {
-        await inter.acknowledge(false);
-        await confirmResultInteraction(undefined, inter, false, result);
-        return;
-      }
-      await inter.acknowledge(true);
-      await confirmResultInteraction(undefined, inter, true, `Banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
+  { name: 'ban', description: 'Ban a member', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to ban' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, reason }) => {
+    if (typeof reason !== 'string') {
+      reason = '';
+    }
+    const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
+    const result = await Ban(member, inter.member, _del, reason);
+    if (result === false) {
+      await inter.acknowledge(false);
+      await confirmResultInteraction(undefined, inter, false, 'Failed to ban user.');
+      return;
+    }
+    if (typeof result === 'string') {
+      await inter.acknowledge(false);
+      await confirmResultInteraction(undefined, inter, false, result);
+      return;
+    }
+    await inter.acknowledge(true);
+    await confirmResultInteraction(undefined, inter, true, `Banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.ban',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'massban', description: 'Massbans a bunch of users by their ids', options: (ctx) => ({
-    ids: ctx.string({required: true, description: 'IDs of users to ban, space seperated'}),
-    delete_days: ctx.integer({required: true, description: 'Days of messages to delete', choices: [0, 1, 2, 3, 4, 5, 6, 7]}),
-    reason: ctx.string({required: false, description: 'The reason'})
-  })},
-  async (inter, {ids, reason, delete_days}) => {
-    let _ids: string[] = [];
+  { name: 'massban',
+    description: 'Massbans a bunch of users by their ids',
+    options: (ctx) => ({
+      ids: ctx.string({ required: true, description: 'IDs of users to ban, space seperated' }),
+      delete_days: ctx.integer({ required: true, description: 'Days of messages to delete', choices: [0, 1, 2, 3, 4, 5, 6, 7] }),
+      reason: ctx.string({ required: false, description: 'The reason' }),
+    }) },
+  async (inter, { ids, reason, delete_days }) => {
+    const _ids: string[] = [];
     ids.split(' ').forEach((test) => {
       const rmpossible = test.split('@').join('').split('<').join('')
         .split('>')
@@ -1821,7 +1817,7 @@ registerSlash(
     ids = [...new Set(ids)]; // remove duplicates
     if (ids.length < 2) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral('Not enough ids specified!')
+      await inter.respondEphemeral('Not enough ids specified!');
       return;
     }
     await inter.acknowledge(true);
@@ -1845,22 +1841,23 @@ registerSlash(
     const _del: any = delete_days; // fuck off TS
     const result = await MassBan(objs, inter.member, _del, reason);
     await confirmResultInteraction(undefined, inter, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}` : ''}${result.fail.length > 0 ? `\n${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}${failNotFound.length > 0 ? `\n${discord.decor.Emojis.QUESTION} failed to find (**${failNotFound.length}**) users: ${failNotFound.join(', ')}` : ''}`);
-
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.massban',
-      level: Ranks.Administrator
-    }
-  }
-)
+      level: Ranks.Administrator,
+    },
+  },
+);
 
 registerSlash(
-  {name: 'cleanban', description: 'Ban a member and clean X days of their messages', options: (ctx) => ({
-    member: ctx.guildMember({required: true, description: 'The member to cleanban'}),
-    delete_days: ctx.integer({required: true, description: 'Days of messages to delete', choices: [0, 1, 2, 3, 4, 5, 6, 7]}),
-   reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, delete_days, reason}) => {
+  { name: 'cleanban',
+    description: 'Ban a member and clean X days of their messages',
+    options: (ctx) => ({
+      member: ctx.guildMember({ required: true, description: 'The member to cleanban' }),
+      delete_days: ctx.integer({ required: true, description: 'Days of messages to delete', choices: [0, 1, 2, 3, 4, 5, 6, 7] }),
+      reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, delete_days, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
@@ -1878,15 +1875,14 @@ registerSlash(
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Clean-banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.cleanban',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
   { name: 'softban',
@@ -1923,11 +1919,13 @@ registerSlash(
 );
 
 registerSlash(
-  {name: 'tempban', description: 'Ban a member for X amount of time', options: (ctx) => ({
-    member: ctx.guildMember({required: true, description: 'The member to tempban'}),
-    time: ctx.string({required: true, description: 'Time to ban the member for (in 1h30m format)'}),
-   reason: ctx.string({required: false, description: 'The reason'})})},
-  async (inter, {member, time, reason}) => {
+  { name: 'tempban',
+    description: 'Ban a member for X amount of time',
+    options: (ctx) => ({
+      member: ctx.guildMember({ required: true, description: 'The member to tempban' }),
+      time: ctx.string({ required: true, description: 'Time to ban the member for (in 1h30m format)' }),
+      reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  async (inter, { member, time, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';
     }
@@ -1947,15 +1945,14 @@ registerSlash(
     const dur = utils.timeArgumentToMs(time);
     const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
     await confirmResultInteraction(undefined, inter, true, `Temp-banned \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
-
   }, {
     module: 'infractions',
     permissions: {
       overrideableInfo: 'infractions.tempban',
-      level: Ranks.Moderator
-    }
-  }
-)
+      level: Ranks.Moderator,
+    },
+  },
+);
 
 registerSlash(
   { name: 'unban',
@@ -1999,8 +1996,6 @@ registerSlash(
     },
   },
 );
-
-
 
 const infGroup = registerSlashGroup(
   { name: 'inf', description: 'Infractions management and visualization commands' },
