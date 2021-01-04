@@ -11,7 +11,13 @@ export * from './kvManager';
 export * from './storagePools';
 //import * as moment from 'moment';
 
-
+export function objectFlip(obj: any) {
+  const ret = {};
+  Object.keys(obj).forEach(key => {
+    ret[obj[key]] = key;
+  });
+  return ret;
+}
 
 export function isNormalInteger(str, checkPositive = false) {
   const n = Math.floor(Number(str));
