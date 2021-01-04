@@ -7,7 +7,7 @@ import * as logUtils from './logging/utils';
 import { getUserAuth, StoragePool } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
 
 export const infsPool = new utils.StoragePool('infractions', 0, 'id', 'ts');
 
@@ -390,7 +390,6 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
   if (!me) {
     return;
   }
-  const botme = me;
   const chan = await interaction.getChannel();
   if (config.modules.infractions && config.modules.infractions.confirmation) {
     const react = typeof result === 'boolean' && typeof config.modules.infractions.confirmation.reaction === 'boolean' && chan.canMember(me, discord.Permissions.ADD_REACTIONS) ? config.modules.infractions.confirmation.reaction : false;
@@ -398,24 +397,6 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
     const expiry = typeof config.modules.infractions.confirmation.expiry === 'number' ? Math.min(12, Math.max(0, config.modules.infractions.confirmation.expiry)) : 0;
     const del = typeof config.modules.infractions.confirmation.deleteOriginal === 'boolean' && !noDeleteOriginal ? config.modules.infractions.confirmation.deleteOriginal : false;
 
-    const _deletedOg = false;
-    /*
-    /*if (react === true) {
-      try {
-        if (result === true) {
-          await interaction.addReaction(discord.decor.Emojis.WHITE_CHECK_MARK);
-        } else if (result === false) {
-          await ogMsg.addReaction(discord.decor.Emojis.X);
-        }
-      } catch (e) {}
-    }
-    */
-    /* if (del === true && !_deletedOg && chan.canMember(me, discord.Permissions.MANAGE_MESSAGES) && expiry === 0) {
-      try {
-        _deletedOg = true;
-        await ogMsg.delete();
-      } catch (e) {}
-    } */
     let replyMsg;
     if (msg === true) {
       try {
@@ -427,7 +408,7 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
           emj = discord.decor.Emojis.X;
           await interaction.respondEphemeral(`${emj !== '' ? `${emj} ` : ''}${txt}`);
         } else {
-          replyMsg = await interaction.respond({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
+          replyMsg = await interactionChannelRespond(interaction, { content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
             allowedMentions: {} });
         }
       } catch (_) {
@@ -437,17 +418,6 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
       const _theMsg = replyMsg;
       setTimeout(async () => {
         try {
-          /*
-          if (chan.canMember(botme, discord.Permissions.MANAGE_MESSAGES)) {
-            if (react === true && !del) {
-              if (result === true || result === false) {
-                await ogMsg.deleteAllReactionsForEmoji(result === true ? discord.decor.Emojis.WHITE_CHECK_MARK : discord.decor.Emojis.X);
-              }
-            }
-            if (del === true && !_deletedOg) {
-              await ogMsg.delete();
-            }
-          } */
           await _theMsg.delete();
         } catch (_) {}
       }, expiry * 1000);
@@ -1677,7 +1647,7 @@ export async function AL_OnGuildBanRemove(
   await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
 }
 
-/*
+
 
 registerSlash(
   {name: 'kick', description: 'Kicks a member from the server', options: (ctx) => ({member: ctx.guildMember({required: true, description: 'The member to kick'}), reason: ctx.string({required: false, description: 'The reason'})})},
@@ -2030,7 +2000,7 @@ registerSlash(
   },
 );
 
-*/
+
 
 const infGroup = registerSlashGroup(
   { name: 'inf', description: 'Infractions management and visualization commands' },
@@ -2065,7 +2035,7 @@ registerSlashSub(
     const emb = new discord.Embed();
     emb.setDescription(txt);
     emb.setTimestamp(new Date().toISOString());
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   },
   {
     module: 'infractions',
@@ -2103,7 +2073,7 @@ registerSlashSub(
     const emb = new discord.Embed();
     emb.setDescription(txt);
     emb.setTimestamp(new Date().toISOString());
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   },
   {
     module: 'infractions',
@@ -2145,7 +2115,7 @@ registerSlashSub(
     const emb = new discord.Embed();
     emb.setDescription(txt);
     emb.setTimestamp(new Date().toISOString());
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   },
   {
     module: 'infractions',
@@ -2216,7 +2186,7 @@ registerSlashSub(
     extras.set('_TYPE_', 'duration');
     extras.set('_NEW_VALUE_', utils.escapeString(duration, true));
     logCustom('INFRACTIONS', 'EDITED', extras);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
   },
   {
     module: 'infractions',
@@ -2277,7 +2247,7 @@ registerSlashSub(
     extras.set('_TYPE_', 'reason');
     extras.set('_NEW_VALUE_', utils.escapeString(reason, true));
     logCustom('INFRACTIONS', 'EDITED', extras);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
   },
   {
     module: 'infractions',
@@ -2339,7 +2309,7 @@ registerSlashSub(
     extras.set('_TYPE_', 'actor');
     extras.set('_NEW_VALUE_', new_actor.user.toMention());
     logCustom('INFRACTIONS', 'EDITED', extras);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
   },
   {
     module: 'infractions',
@@ -2390,7 +2360,7 @@ registerSlashSub(
     extras.set('_USER_ID_', inter.member.user.id);
     extras.set('_INFRACTION_ID_', inf.id);
     logCustom('INFRACTIONS', 'DELETED', extras);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
   },
   {
     module: 'infractions',
@@ -2421,7 +2391,7 @@ registerSlashSub(
     }
     await inter.acknowledge(true);
     await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
   },
   {
     module: 'infractions',
@@ -2452,7 +2422,7 @@ registerSlashSub(
     }
     await inter.acknowledge(true);
     await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
   },
   {
     module: 'infractions',
@@ -2482,7 +2452,7 @@ registerSlashSub(
     }
     await inter.acknowledge(true);
     await infsPool.clear();
-    await inter.respond(`${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
   },
   {
     module: 'infractions',
@@ -2542,7 +2512,7 @@ registerSlashSub(
     emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
     emb.setTimestamp(new Date().toISOString());
 
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   },
   {
     module: 'infractions',
@@ -2585,7 +2555,7 @@ registerSlashSub(
     emb.setAuthor({ name: 'SYSTEM' });
     emb.setTimestamp(new Date().toISOString());
 
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   }, {
     module: 'infractions',
     parent: 'search',
@@ -2631,7 +2601,7 @@ registerSlashSub(
     emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
     emb.setTimestamp(new Date().toISOString());
 
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   }, {
     module: 'infractions',
     parent: 'search',
@@ -2675,7 +2645,7 @@ registerSlashSub(
     emb.setDescription(txt);
     emb.setTimestamp(new Date().toISOString());
 
-    await inter.respond({ embeds: [emb], allowedMentions: {}, content: '' });
+    await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
   },
   {
     module: 'infractions',
@@ -2686,26 +2656,3 @@ registerSlashSub(
     },
   },
 );
-
-/*
-
-registerSlashSub(
-  infSearchGroup,
-  {
-    name: 'commandname',
-    description: 'commanddesc'
-  },
-  async (inter) => {
-
-  },
-  {
-    module: 'infractions',
-    parent: 'search',
-    permissions: {
-      level: Ranks.Moderator,
-      overrideableInfo: 'infractions.inf.name'
-    }
-  }
-)
-
-*/

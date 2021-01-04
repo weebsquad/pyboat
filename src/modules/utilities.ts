@@ -10,7 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
 
 class UserRole {
   memberId: string;
@@ -1446,7 +1446,7 @@ if (curGroup) {
       }
       await role.edit({ name });
       await inter.acknowledge(true);
-      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name, true)}\`` });
+      await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name, true)}\`` });
     },
     {
       parent: 'cur',
@@ -1488,7 +1488,7 @@ if (curGroup) {
       }
       await inter.acknowledge(true);
       await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
-      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` });
+      await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` });
     },
     {
       parent: 'cur',
@@ -1534,7 +1534,7 @@ if (curGroup) {
       if (!target.roles.includes(role.id)) {
         await target.addRole(role.id);
       }
-      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Set ${target.toMention()}'s role to ${role.toMention()}` });
+      await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Set ${target.toMention()}'s role to ${role.toMention()}` });
     },
     {
       parent: 'cur',
@@ -1570,7 +1570,7 @@ if (curGroup) {
       if (role instanceof discord.Role && target.roles.includes(role.id)) {
         await target.removeRole(role.id);
       }
-      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Cleared ${target.toMention()}'s custom role!` });
+      await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Cleared ${target.toMention()}'s custom role!` });
     },
     {
       parent: 'cur',
@@ -1609,7 +1609,7 @@ if (curGroup) {
       }
       await inter.acknowledge(true);
       await deleteCustomRoleOf(target.user.id);
-      await inter.respond({ allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Deleted ${target.toMention()}'s custom role!` });
+      await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: `${inter.member.user.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Deleted ${target.toMention()}'s custom role!` });
     },
     {
       parent: 'cur',
@@ -1662,8 +1662,8 @@ registerSlash(
     emb.setDescription(_sn.content);
     emb.setColor(0x03fc52);
     await snipekvs.delete(inter.channelId);
-    await inter.respond({
-      embeds: [emb],
+    await interactionChannelRespond(inter, {
+      embed: emb,
       content: `${_usr.toMention()} said ...`,
       allowedMentions: {},
     });
@@ -1675,7 +1675,7 @@ registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
     const normalTs = utils.getSnowflakeDate(id);
-    await inter.respond(
+    await interactionChannelRespond(inter, 
       `\`\`\`\nID: ${id}\nTimestamp: ${new Date(normalTs)}\n\`\`\``,
     );
   },
@@ -1696,7 +1696,7 @@ registerSlash(
     emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
     emb.setTimestamp(new Date().toISOString());
     emb.setImage({ url: user.getAvatarUrl() });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.avatar', level: Ranks.Guest }, staticAck: true },
 );
@@ -1738,7 +1738,7 @@ if (randomGroup) {
     { name: 'coin', description: 'Flips a coin' },
     async (inter) => {
       const ret = utils.getRandomInt(1, 2);
-      await inter.respond(`The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
+      await interactionChannelRespond(inter, `The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`);
     },
     { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.coin', level: Ranks.Guest }, module: 'utilities' },
   );
@@ -1755,7 +1755,7 @@ if (randomGroup) {
         return;
       }
       const ret = utils.getRandomInt(minimum, maximum);
-      await inter.respond(`Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
+      await interactionChannelRespond(inter, `Result (\`${minimum}-${maximum}\`) - **${ret}** !`);
     },
     { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' },
   );
@@ -1769,7 +1769,7 @@ registerSlashSub(
     const file = await (await fetch('http://aws.random.cat/meow')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.file });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.cat', level: Ranks.Guest } },
 );
@@ -1782,7 +1782,7 @@ registerSlashSub(
     const file = await (await fetch('https://random.dog/woof.json')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.url });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.dog', level: Ranks.Guest } },
 );
@@ -1795,7 +1795,7 @@ registerSlashSub(
     const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.message });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.doge', level: Ranks.Guest } },
 );
@@ -1808,7 +1808,7 @@ registerSlashSub(
     const file = await (await fetch('https://randomfox.ca/floof/')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.image });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.fox', level: Ranks.Guest } },
 );
@@ -1821,7 +1821,7 @@ registerSlashSub(
     const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.pikachu', level: Ranks.Guest } },
 );
@@ -1834,7 +1834,7 @@ registerSlashSub(
     const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.koala', level: Ranks.Guest } },
 );
@@ -1847,7 +1847,7 @@ registerSlashSub(
     const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.birb', level: Ranks.Guest } },
 );
@@ -1860,7 +1860,7 @@ registerSlashSub(
     const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.panda', level: Ranks.Guest } },
 );
@@ -1872,7 +1872,7 @@ registerSlash(
     const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.pat', level: Ranks.Guest } },
 );
@@ -1884,7 +1884,7 @@ registerSlash(
     const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
-    await inter.respond({ embeds: [emb] });
+    await interactionChannelRespond(inter, { embed: emb });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.hug', level: Ranks.Guest } },
 );
@@ -2188,7 +2188,7 @@ registerSlash(
 **❯ **Members ⎯ ${guild.memberCount}`;
       }
       embed.setDescription(desc);
-      await inter.respond({ embeds: [embed], allowedMentions: {}, content: '' });
+      await interactionChannelRespond(inter, { embed: embed, allowedMentions: {}, content: '' });
   },
 
   { permissions: { overrideableInfo: 'commands.server', level: Ranks.Guest }, module: 'utilities', staticAck: true },
@@ -2441,7 +2441,7 @@ registerSlash(
     }
 
     emb.setDescription(desc);
-    await inter.respond({ content: '', allowedMentions: {}, embeds: [emb] });
+    await interactionChannelRespond(inter, { content: '', allowedMentions: {}, embed: emb });
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.info', level: Ranks.Guest } },
 );

@@ -2,7 +2,7 @@ import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { Ranks, config, globalConfig } from '../config';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
 
 const pool = new utils.StoragePool('tags', 0, 'id', 'ts');
 class Tag {
@@ -210,7 +210,7 @@ registerSlashSub(tagGroup,
                    emb.setTimestamp(new Date().toISOString());
                    emb.setColor(0xfa7814);
 
-                   await inter.respond({ embeds: [emb] });
+                   await interactionChannelRespond(inter, { embed: emb });
                  }, {
                    permissions: {
                      overrideableInfo: 'tags.tag.show',
@@ -252,14 +252,14 @@ registerSlashSub(tagGroup,
                        await inter.acknowledge(true);
                        ex.content = value;
                        await pool.editPool(nm, ex);
-                       await inter.respond(`Edited tag with name \`${nm}\` !`);
+                       await interactionChannelRespond(inter, `Edited tag with name \`${nm}\` !`);
                        return;
                      }
                    }
                    await inter.acknowledge(true);
                    const newObj = new Tag(nm, inter.member.user.id, value);
                    await pool.saveToPool(newObj);
-                   await inter.respond(`Saved tag with name \`${nm}\` !`);
+                   await interactionChannelRespond(inter, `Saved tag with name \`${nm}\` !`);
                  }, {
                    permissions: {
                      overrideableInfo: 'tags.tag.set',
@@ -289,7 +289,7 @@ registerSlashSub(tagGroup,
                    }
                    await inter.acknowledge(true);
                    await pool.editPool(nm, null);
-                   await inter.respond(`Deleted tag \`${nm}\` !`);
+                   await interactionChannelRespond(inter, `Deleted tag \`${nm}\` !`);
                  }, {
                    permissions: {
                      overrideableInfo: 'tags.tag.delete',
@@ -316,7 +316,7 @@ registerSlashSub(tagGroup,
                    emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
                    emb.setTimestamp(new Date().toISOString());
                    emb.setColor(0xfa7814);
-                   await inter.respond({ content: '', embeds: [emb] });
+                   await interactionChannelRespond(inter, { content: '', embed: emb });
                  }, {
                    permissions: {
                      overrideableInfo: 'tags.tag.info',
@@ -331,7 +331,7 @@ registerSlashSub(tagGroup,
                  async (inter) => {
                    const removed = await pool.getAll<Tag>();
                    await pool.clear();
-                   await inter.respond(`Removed ${removed.length} tags!`);
+                   await interactionChannelRespond(inter, `Removed ${removed.length} tags!`);
                  }, {
                    staticAck: true,
                    permissions: {
@@ -357,7 +357,7 @@ registerSlashSub(tagGroup,
                    emb.setDescription(sorted.join(', '));
                    emb.setTitle('Tag List');
                    emb.setColor(0xfa7814);
-                   await inter.respond({ content: '', embeds: [emb] });
+                   await interactionChannelRespond(inter, { content: '', embed: emb });
                  }, {
                    permissions: {
                      overrideableInfo: 'tags.tag.list',

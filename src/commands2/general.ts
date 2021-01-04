@@ -6,7 +6,7 @@ import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as admin from '../modules/admin';
 import { SaveData } from '../modules/disabled/cur';
-import { registerSlash, registerSlashGroup, registerSlashSub } from '../modules/commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from '../modules/commands';
 
 const { config, Ranks } = conf;
 const F = discord.command.filters;
@@ -205,7 +205,8 @@ registerSlash(
   async (inter) => {
     const msgdiff = new Date().getTime() - utils.decomposeSnowflake(inter.id).timestamp;
     const msgd = new Date();
-    const edmsg = await inter.respond('<a:loading:735794724480483409>');
+    const edmsg = await interactionChannelRespond(inter, '<a:loading:735794724480483409>');
+    if(!edmsg) return;
     const td = new Date().getTime() - msgd.getTime();
     await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
   }, {
@@ -238,7 +239,7 @@ registerSlash(
     } // invis chars
     await inter.acknowledge(true);
     await me.edit({ nick });
-    await inter.respond('Done!');
+    await interactionChannelRespond(inter, 'Done!');
   }, {
     permissions: {
       overrideableInfo: 'commands.nickme',

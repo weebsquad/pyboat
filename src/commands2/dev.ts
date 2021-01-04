@@ -966,7 +966,7 @@ export function InitializeCommands() {
           txt += `\n${c} => ${item.value.length}`;
         });
         const res: any = await m.inlineReply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
-        admin.saveMessage(res);
+        //admin.saveMessage(res);
       },
     );
     sub.raw(

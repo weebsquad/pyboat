@@ -4,7 +4,7 @@ import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
 
 const MAX_LIFETIME = 336;
 
@@ -992,7 +992,7 @@ registerSlashSub(starsGroup,
                    }
                    await inter.acknowledge(true);
 
-                   await inter.respond({ content: '', allowedMentions: {}, embeds: [emb] });
+                   await interactionChannelRespond(inter, { content: '', allowedMentions: {}, embed: emb });
                  },
                  {
                    parent: 'stars',
@@ -1020,7 +1020,7 @@ registerSlashSub(starsGroup,
                    await inter.acknowledge(true);
                    blocks.push(user.id);
                    await kv.put('blocks', blocks);
-                   await inter.respond(`${inter.member.user.toMention()}, added ${user.toMention()} to the starboard blocklist`);
+                   await interactionChannelRespond(inter, `${inter.member.user.toMention()}, added ${user.toMention()} to the starboard blocklist`);
                  },
                  {
                    parent: 'stars',
@@ -1048,7 +1048,7 @@ registerSlashSub(starsGroup,
                    await inter.acknowledge(true);
                    blocks.splice(blocks.indexOf(user.id), 1);
                    await kv.put('blocks', blocks);
-                   await inter.respond(`${inter.member.user.toMention()}, removed ${user.toMention()} from the starboard blocklist`);
+                   await interactionChannelRespond(inter, `${inter.member.user.toMention()}, removed ${user.toMention()} from the starboard blocklist`);
                  },
                  {
                    parent: 'stars',
@@ -1069,7 +1069,7 @@ registerSlashSub(starsGroup,
                      return;
                    }
                    await kv.put('lock', true);
-                   await inter.respond(`${inter.member.user.toMention()}, locked the starboard!`);
+                   await interactionChannelRespond(inter, `${inter.member.user.toMention()}, locked the starboard!`);
                  },
                  {
                    parent: 'stars',
@@ -1090,7 +1090,7 @@ registerSlashSub(starsGroup,
                      return;
                    }
                    await kv.put('lock', false);
-                   await inter.respond(`${inter.member.user.toMention()}, unlocked the starboard!`);
+                   await interactionChannelRespond(inter, `${inter.member.user.toMention()}, unlocked the starboard!`);
                  },
                  {
                    parent: 'stars',
