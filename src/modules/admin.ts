@@ -14,7 +14,7 @@ const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
-const TRACKING_KEYS_LIMIT = 80;
+const TRACKING_KEYS_LIMIT = 40;
 const ENTRIES_PER_POOL = 62; // approximate maximum
 
 // persist
@@ -191,7 +191,8 @@ class TrackedMessage {
       this.id = message.id;
       this.ts = utils.decomposeSnowflake(this.id).timestamp;
       this.bot = message.author.bot;
-      if (message.webhookId !== null) {
+      // TODO: make this const type === 20 a const enum lol
+      if (message.webhookId !== null || (message.application && message.type === 20)) {
         this.bot = true;
       }
       // this.type = message.type;
@@ -1002,10 +1003,8 @@ export async function OnMessageCreate(
   gid: string,
   message: discord.Message,
 ) {
-  if (!(message instanceof discord.GuildMemberMessage) || !(message.member instanceof discord.GuildMember)) {
-    if (!message.application || message.application.id !== discord.getBotId()) {
-      return;
-    }
+  if (!(message.member instanceof discord.GuildMember)) {
+    return;
   }
   adminPool.saveToPool(new TrackedMessage(message));
 }

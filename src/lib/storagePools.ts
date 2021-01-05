@@ -207,18 +207,20 @@ export class StoragePool {
       }
 
       try {
-        const {result} = await this.kv.transactWithResult<any, boolean>(saveTo, (prev: T[]) => {
+        const { result } = await this.kv.transactWithResult<any, boolean>(saveTo, (prev: T[]) => {
           let newArr: Array<T>;
           if (!prev) {
             newArr = [];
           } else {
             newArr = [...prev];
           }
-          if(newArr.length !== saveLen) return {result: false, next: prev};
+          if (newArr.length !== saveLen) {
+            return { result: false, next: prev };
+          }
           newArr.push(newObj);
-          return {next: newArr, result: true};
+          return { next: newArr, result: true };
         });
-        if(!result) {
+        if (!result) {
           if (retries > 3) {
             return false;
           }
