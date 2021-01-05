@@ -215,7 +215,7 @@ export class StoragePool {
             newArr = [...prev];
           }
           if (newArr.length !== saveLen) {
-            return { result: false, next: prev };
+            return { result: false, next: newArr.length > 0 ? newArr : undefined };
           }
           newArr.push(newObj);
           return { next: newArr, result: true };
