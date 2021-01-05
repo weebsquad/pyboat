@@ -1958,7 +1958,7 @@ registerSlash(
   { name: 'unban',
     description: 'Unban a member',
     options: (ctx) => ({
-      user_id: ctx.string({ required: true, description: 'The member ID to unban' }),
+      user_id: ctx.string({ required: true, description: 'The user ID to unban' }),
 
       reason: ctx.string({ required: false, description: 'The reason' }) }) },
   async (inter, { user_id, reason }) => {

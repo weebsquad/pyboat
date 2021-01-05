@@ -221,6 +221,8 @@ registerSlash(
   },
 );
 
+/*
+
 registerSlash(
   { name: 'nickme', description: 'Changes the bot\'s nickname on the server', options: (ctx) => ({ nick: ctx.string({ required: true, description: 'The nick to change to. Use "invisible" to set the bot\'s nickname to invisible.' }) }) },
   async (inter, { nick }) => {
@@ -250,3 +252,5 @@ registerSlash(
     module: 'commands',
   },
 );
+
+*/

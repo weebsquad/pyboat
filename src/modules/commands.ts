@@ -7,7 +7,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
-const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'ccc';
+const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'admin';
 const SLASH_COMMANDS_LIMIT = 10;
 
 type SlashCommandRegistry = {

@@ -1670,16 +1670,18 @@ registerSlash(
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snipe', level: Ranks.Authorized } },
 );
-
+/*
 registerSlash(
   { name: 'snowflake', description: 'Gets date info on a snowflake', options: (ctx) => ({ id: ctx.string({ description: 'Snowflake', required: true }) }) },
   async (inter, { id }) => {
     const normalTs = utils.getSnowflakeDate(id);
-    await interactionChannelRespond(inter,
+    await interactionChannelRespond(
+      inter,
                                     `\`\`\`\nID: ${id}\nTimestamp: ${new Date(normalTs)}\n\`\`\``);
   },
   { module: 'utilities', permissions: { overrideableInfo: 'utilities.snowflake', level: Ranks.Guest }, staticAck: true },
 );
+*/
 
 registerSlash(
   { name: 'avatar', description: 'Gets a user\'s avatar', options: (ctx) => ({ user: ctx.guildMember({ description: 'User', required: false }) }) },
