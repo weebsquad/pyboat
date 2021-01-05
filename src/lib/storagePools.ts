@@ -32,7 +32,7 @@ export class StoragePool {
       this.local = local;
       return this;
     }
-    private async getItems() {
+    async getItems() {
       const list = await this.kv.list();
       let items: pylon.KVNamespace.Item[];
       if (list.length > 100) {
@@ -177,6 +177,7 @@ export class StoragePool {
       // @ts-ignore
       const cpuinitial = await pylon.getCpuTime();
       let saveTo: string | undefined;
+      let saveLen : number;
       items.every((item: any) => {
         if (!Array.isArray(item.value)) {
           return true;
@@ -185,6 +186,7 @@ export class StoragePool {
         if (typeof this.maxObjects === 'number' && this.maxObjects > 0) {
           if (_entries.length < this.maxObjects) {
             saveTo = item.key;
+            saveLen = _entries.length;
             return false;
           }
         } else {
@@ -194,6 +196,7 @@ export class StoragePool {
           const len = (new TextEncoder().encode(JSON.stringify(_entries)).byteLength) + _thisLen;
           if (len < constants.MAX_KV_SIZE) {
             saveTo = item.key;
+            saveLen = _entries.length;
             return false;
           }
         }
@@ -204,16 +207,24 @@ export class StoragePool {
       }
 
       try {
-        await this.kv.transact(saveTo, (prev: any) => {
+        const {result} = await this.kv.transactWithResult<any, boolean>(saveTo, (prev: T[]) => {
           let newArr: Array<T>;
           if (!prev) {
             newArr = [];
           } else {
             newArr = [...prev];
           }
+          if(newArr.length !== saveLen) return {result: false, next: prev};
           newArr.push(newObj);
-          return newArr;
+          return {next: newArr, result: true};
         });
+        if(!result) {
+          if (retries > 3) {
+            return false;
+          }
+          const newres = await this.saveToPool(newObj, retries + 1);
+          return newres;
+        }
         // @ts-ignore
         const cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
         if (cputnow >= 5) {
