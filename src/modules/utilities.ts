@@ -169,12 +169,12 @@ export async function AL_OnMessageDelete(
     return;
   }
   if (
-    msg === null
+    !msg
     || log instanceof discord.AuditLogEntry
-    || msg.author === null
+    || !msg.author
     || msg.webhookId !== null
     || msg.author.bot === true
-    || msg.member === null
+    || !msg.member
   ) {
     return;
   }
