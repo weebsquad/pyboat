@@ -727,7 +727,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
   return true;
 }
 
-export async function TempRole(actor: discord.GuildMember | null, target: discord.GuildMember, roleTxt: string, duration: number, reason = ''): Promise<string | boolean> {
+export async function TempRole(actor: discord.GuildMember | null, target: discord.GuildMember, role: string | discord.Role, duration: number, reason = ''): Promise<string | boolean> {
   const guild = await discord.getGuild(guildId);
   if (guild === null) {
     return false;
@@ -739,13 +739,16 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
   if (me === null) {
     return;
   }
-  const rlId = await getRoleIdByText(roleTxt);
-  if (rlId === null) {
-    return 'Role ID/Name not found';
-  }
-  const role = await guild.getRole(rlId);
+
   if (!(role instanceof discord.Role)) {
-    return `Role ID#(${rlId}) not found in the guild`;
+    const rlId = await getRoleIdByText(role);
+    if (rlId === null) {
+      return 'Role ID/Name not found';
+    }
+    role = await guild.getRole(rlId);
+    if (!(role instanceof discord.Role)) {
+      return `Role ID#(${rlId}) not found in the guild`;
+    }
   }
   const canT = await canTarget(actor, target, undefined, role, ActionType.TEMPROLE);
   if (canT !== true) {
@@ -1975,7 +1978,7 @@ export function InitializeCommands() {
     { name: 'cease', filters: c2.getFilters('admin.cease', Ranks.Moderator) },
     (ctx) => ({ duration: ctx.stringOptional(), channel: ctx.guildChannelOptional() }),
     async (msg, { channel, duration }) => {
-      if (channel === null) {
+      if (!channel) {
         channel = await msg.getChannel();
       }
       let dur = 0;
@@ -2877,6 +2880,196 @@ registerSlash(
     permissions: {
       level: Ranks.Moderator,
       overrideableInfo: 'admin.nickname',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'temprole',
+    description: 'Give a role to a member temporarily',
+    options: (ctx) => ({
+      member: ctx.guildMember({ required: true, description: 'The member to give the role to' }),
+      role: ctx.guildRole({ required: true, description: 'The role to give' }),
+      duration: ctx.string({ required: true, description: 'The duration for the role to be given for (in 1h30m format)' }),
+    }),
+  },
+  async (inter, { member, role, duration }) => {
+    const dur = utils.timeArgumentToMs(duration);
+    if (dur === 0) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('duration malformed (try 1h30m format)');
+      return false;
+    }
+    if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('duration must be between a minute and a month');
+      return false;
+    }
+
+    const res = await TempRole(inter.member, member, role, dur);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return false;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+    } else {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+      return false;
+    }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Administrator,
+      overrideableInfo: 'admin.temprole',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'cease',
+    description: 'Locks a channel',
+    options: (ctx) => ({
+      duration: ctx.string({ required: false, description: 'The duration for the lock. Blank will lock it permanently' }),
+      channel: ctx.guildChannel({ required: false, description: 'The channel to target. Blank will target the channel you run the command on' }),
+    }),
+  },
+  async (inter, { channel, duration }) => {
+    if (!channel) {
+      channel = await inter.getChannel();
+    }
+    let dur = 0;
+    if (duration) {
+      dur = utils.timeArgumentToMs(duration);
+      if (dur === 0) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('duration malformed (try 1h30m format)');
+        return false;
+      }
+      if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('duration must be between a minute and a month');
+        return false;
+      }
+    }
+    const res = await LockChannel(inter.member, channel, true, dur);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return false;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `Locked channel${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+    } else {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock channel');
+      return false;
+    }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.cease',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'uncease',
+    description: 'Unlocks a channel',
+    options: (ctx) => ({
+      channel: ctx.guildChannel({ required: false, description: 'The channel to target. Blank will target the channel you run the command on' }),
+    }),
+  },
+  async (inter, { channel }) => {
+    if (!channel) {
+      channel = await inter.getChannel();
+    }
+    const res = await LockChannel(inter.member, channel, false, 0);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return false;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, 'Unlocked channel');
+    } else {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock channel');
+      return false;
+    }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.uncease',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'slowmode',
+    description: 'Sets slowmode on a channel',
+    options: (ctx) => ({
+      seconds: ctx.integer({ required: false, description: 'The value for the slowmode in seconds. 0 or blank to disable slowmode' }),
+      duration: ctx.string({ required: false, description: 'How long to apply this slowmode for. Blank will apply it permanently' }),
+      channel: ctx.guildChannel({ required: false, description: 'The channel to target. Blank will target the channel you run the command on' }),
+    }),
+  },
+  async (inter, { channel, seconds, duration }) => {
+    if (!seconds) {
+      seconds = 0;
+    }
+    if (!channel) {
+      channel = await inter.getChannel();
+    }
+    let dur = 0;
+    if (duration) {
+      dur = utils.timeArgumentToMs(duration);
+      if (dur === 0) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('duration malformed (try 1h30m format)');
+        return false;
+      }
+      if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('duration must be between a minute and a month');
+        return false;
+      }
+    }
+    const res = await SlowmodeChannel(inter.member, channel, seconds, dur);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return false;
+    }
+    if (res === true) {
+      const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, 'second') : '';
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**${txtDur !== '' ? ` for ${txtDur}` : ''}`);
+    } else {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to set slowmode');
+      return false;
+    }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.slowmode',
     },
   },
 );
