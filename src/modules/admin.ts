@@ -1857,7 +1857,7 @@ export function InitializeCommands() {
     );
 
     subCommandGroup.on(
-      { name: 'join', aliases: ['add'], filters: c2.getFilters('admin.role.join', Ranks.Guest) },
+      { name: 'join', aliases: [], filters: c2.getFilters('admin.role.join', Ranks.Guest) },
       (ctx) => ({ roleName: ctx.text() }),
       async (msg, { roleName }) => {
         const res: any = await msg.inlineReply(async () => {
@@ -1897,7 +1897,7 @@ export function InitializeCommands() {
       },
     );
     subCommandGroup.on(
-      { name: 'leave', aliases: ['remove'], filters: c2.getFilters('admin.role.leave', Ranks.Guest) },
+      { name: 'leave', aliases: [], filters: c2.getFilters('admin.role.leave', Ranks.Guest) },
       (ctx) => ({ roleName: ctx.text() }),
       async (msg, { roleName }) => {
         const res: any = await msg.inlineReply(async () => {
