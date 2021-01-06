@@ -1855,76 +1855,76 @@ export function InitializeCommands() {
         saveMessage(res);
       },
     );
-  });
 
-  cmdGroup.on(
-    { name: 'join', aliases: ['add'], filters: c2.getFilters('admin.join', Ranks.Guest) },
-    (ctx) => ({ roleName: ctx.text() }),
-    async (msg, { roleName }) => {
-      const res: any = await msg.inlineReply(async () => {
-        if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-          return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
-        }
-        const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
-        if (!thisRole) {
-          return { content: `${discord.decor.Emojis.X} Role not found` };
-        }
-        if (typeof thisRole !== 'string' || thisRole.length < 5) {
-          return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
-        }
-        const guildRole = await (await msg.getGuild()).getRole(thisRole);
-        if (guildRole === null) {
-          return { content: `${discord.decor.Emojis.X} Role not found` };
-        }
-        if (msg.member.roles.includes(guildRole.id)) {
-          return { content: `${discord.decor.Emojis.X} You already have this role!` };
-        }
-        let perms = new utils.Permissions(guildRole.permissions).serialize(true);
-        for (const key in perms) {
-          if (perms[key] === false) {
-            delete perms[key];
+    subCommandGroup.on(
+      { name: 'join', aliases: ['add'], filters: c2.getFilters('admin.role.join', Ranks.Guest) },
+      (ctx) => ({ roleName: ctx.text() }),
+      async (msg, { roleName }) => {
+        const res: any = await msg.inlineReply(async () => {
+          if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+            return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
           }
-        }
-        perms = Object.keys(perms);
-        const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
-        const noStaff = perms.every((p) => !staffPerms.includes(p));
-        if (!noStaff) {
-          return { content: `${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.` };
-        }
-        await msg.member.addRole(guildRole.id);
-        return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${guildRole.toMention()} role!` };
-      });
-      saveMessage(res);
-    },
-  );
-  cmdGroup.on(
-    { name: 'leave', aliases: ['remove'], filters: c2.getFilters('admin.leave', Ranks.Guest) },
-    (ctx) => ({ roleName: ctx.text() }),
-    async (msg, { roleName }) => {
-      const res: any = await msg.inlineReply(async () => {
-        if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-          return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
-        }
-        const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
-        if (!thisRole) {
-          return { content: `${discord.decor.Emojis.X} Role not found` };
-        }
-        if (typeof thisRole !== 'string' || thisRole.length < 5) {
-          return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
-        }
-        const guildRole = await (await msg.getGuild()).getRole(thisRole);
-        if (guildRole === null) {
-          return { content: `${discord.decor.Emojis.X} Role not found` };
-        }
-        if (!msg.member.roles.includes(guildRole.id)) {
-          return { content: `${discord.decor.Emojis.X} You do not have this role!` };
-        }
-        await msg.member.removeRole(guildRole.id);
-        return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${guildRole.toMention()} role from you!` };
-      });
-      saveMessage(res);
-    },
-  );
+          const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
+          if (!thisRole) {
+            return { content: `${discord.decor.Emojis.X} Role not found` };
+          }
+          if (typeof thisRole !== 'string' || thisRole.length < 5) {
+            return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+          }
+          const guildRole = await (await msg.getGuild()).getRole(thisRole);
+          if (guildRole === null) {
+            return { content: `${discord.decor.Emojis.X} Role not found` };
+          }
+          if (msg.member.roles.includes(guildRole.id)) {
+            return { content: `${discord.decor.Emojis.X} You already have this role!` };
+          }
+          let perms = new utils.Permissions(guildRole.permissions).serialize(true);
+          for (const key in perms) {
+            if (perms[key] === false) {
+              delete perms[key];
+            }
+          }
+          perms = Object.keys(perms);
+          const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
+          const noStaff = perms.every((p) => !staffPerms.includes(p));
+          if (!noStaff) {
+            return { content: `${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.` };
+          }
+          await msg.member.addRole(guildRole.id);
+          return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${guildRole.toMention()} role!` };
+        });
+        saveMessage(res);
+      },
+    );
+    subCommandGroup.on(
+      { name: 'leave', aliases: ['remove'], filters: c2.getFilters('admin.role.leave', Ranks.Guest) },
+      (ctx) => ({ roleName: ctx.text() }),
+      async (msg, { roleName }) => {
+        const res: any = await msg.inlineReply(async () => {
+          if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+            return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
+          }
+          const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
+          if (!thisRole) {
+            return { content: `${discord.decor.Emojis.X} Role not found` };
+          }
+          if (typeof thisRole !== 'string' || thisRole.length < 5) {
+            return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+          }
+          const guildRole = await (await msg.getGuild()).getRole(thisRole);
+          if (guildRole === null) {
+            return { content: `${discord.decor.Emojis.X} Role not found` };
+          }
+          if (!msg.member.roles.includes(guildRole.id)) {
+            return { content: `${discord.decor.Emojis.X} You do not have this role!` };
+          }
+          await msg.member.removeRole(guildRole.id);
+          return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${guildRole.toMention()} role from you!` };
+        });
+        saveMessage(res);
+      },
+    );
+  });
   cmdGroup.on(
     { name: 'nickname', aliases: ['nick'], filters: c2.getFilters('admin.nickname', Ranks.Moderator) },
     (ctx) => ({ member: ctx.guildMember(), nickname: ctx.textOptional() }),
@@ -2734,7 +2734,8 @@ registerSlashSub(
   },
 );
 
-registerSlash(
+registerSlashSub(
+  groupRole,
   {
     name: 'join',
     description: 'Join a user-joinable role',
@@ -2771,14 +2772,55 @@ registerSlash(
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.`);
       return;
     }
-    await inter.member.addRole(role.id);
     await inter.acknowledge(true);
+    await inter.member.addRole(role.id);
+
     await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${role.toMention()} role!`, allowedMentions: {} });
   },
   {
     module: 'admin',
+    parent: 'role',
     permissions: {
-      overrideableInfo: 'admin.join',
+      overrideableInfo: 'admin.role.join',
+      level: Ranks.Guest,
+    },
+  },
+);
+
+registerSlashSub(
+  groupRole,
+  {
+    name: 'leave',
+    description: 'Leave a user-joinable role',
+    options: (ctx) => ({
+      role: ctx.guildRole({ required: true, description: 'The role to leave' }),
+    }),
+  },
+  async (inter, { role }) => {
+    if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
+      return;
+    }
+    const thisRole = config.modules.admin.groupRoles[role.id];
+    if (typeof thisRole !== 'string' || thisRole.length < 5) {
+      return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+    }
+    if (!inter.member.roles.includes(role.id)) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have this role!`);
+      return;
+    }
+    await inter.acknowledge(true);
+    await inter.member.removeRole(role.id);
+
+    await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${role.toMention()} role from you!`, allowedMentions: {} });
+  },
+  {
+    module: 'admin',
+    parent: 'role',
+    permissions: {
+      overrideableInfo: 'admin.role.leave',
       level: Ranks.Guest,
     },
   },
