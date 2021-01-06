@@ -39,7 +39,7 @@ export async function _Initialize() {
 let cachedConfig;
 export async function OnEvent(event: string, ts: string, ...args: any[]) {
   try {
-    if (typeof conf.config === 'undefined') {
+    if (!conf.config) {
       const ret = await conf.InitializeConfig();
       if (!ret) {
         return;
@@ -526,8 +526,8 @@ export function isModuleEnabled(modName: string) {
   if (modName === 'internal') {
     return true;
   }
-  if (typeof conf.config === 'undefined') {
-    return true;
+  if (!conf.config) {
+    return false;
   }
 
   if (typeof modName !== 'string' || modName === null) {
