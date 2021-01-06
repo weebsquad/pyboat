@@ -184,185 +184,197 @@ export function InitializeCommands() {
 
 const tagGroup = registerSlashGroup({ name: 'tag', description: 'Tags commands' }, { module: 'tags' });
 
-registerSlashSub(tagGroup,
-                 { name: 'show', description: 'Gets a tag\'s value', options: (ctx) => ({ tag_name: ctx.string('The tag name to show') }) },
-                 async (inter, { tag_name }) => {
-                   const nm = tag_name.toLowerCase();
-                   const obj = await pool.getById<Tag>(nm);
-                   if (!obj) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('No tag found with that name');
-                     return;
-                   }
-                   await inter.acknowledge(true);
-                   await pool.editTransact<Tag>(obj.id, (vl: Tag) => {
-                     vl.uses += 1;
-                     return vl;
-                   });
-                   const usr: discord.User | null = await utils.getUser(obj.authorId);
-                   const emb = new discord.Embed();
-                   if (usr !== null) {
-                     emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
-                   }
-                   emb.setDescription(obj.content);
-                   emb.setTitle(`Tag: ${obj.id}`);
-                   emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
-                   emb.setTimestamp(new Date().toISOString());
-                   emb.setColor(0xfa7814);
+registerSlashSub(
+  tagGroup,
+  { name: 'show', description: 'Gets a tag\'s value', options: (ctx) => ({ tag_name: ctx.string('The tag name to show') }) },
+  async (inter, { tag_name }) => {
+    const nm = tag_name.toLowerCase();
+    const obj = await pool.getById<Tag>(nm);
+    if (!obj) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('No tag found with that name');
+      return false;
+    }
+    await inter.acknowledge(true);
+    await pool.editTransact<Tag>(obj.id, (vl: Tag) => {
+      vl.uses += 1;
+      return vl;
+    });
+    const usr: discord.User | null = await utils.getUser(obj.authorId);
+    const emb = new discord.Embed();
+    if (usr !== null) {
+      emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
+    }
+    emb.setDescription(obj.content);
+    emb.setTitle(`Tag: ${obj.id}`);
+    emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
+    emb.setTimestamp(new Date().toISOString());
+    emb.setColor(0xfa7814);
 
-                   await interactionChannelRespond(inter, { embed: emb });
-                 }, {
-                   permissions: {
-                     overrideableInfo: 'tags.tag.show',
-                     level: Ranks.Guest,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+    await interactionChannelRespond(inter, { embed: emb });
+  }, {
+    permissions: {
+      overrideableInfo: 'tags.tag.show',
+      level: Ranks.Guest,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);
 
-registerSlashSub(tagGroup,
-                 { name: 'set', description: 'Creates or edits a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to edit'), value: ctx.string('The new value for this tag') }) },
-                 async (inter, { tag_name, value }) => {
-                   const testalph = tag_name.toLowerCase().replace(/[a-zA-Z0-9_]+/g, '');
-                   const nm = tag_name.toLowerCase();
-                   if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!');
-                     return;
-                   }
-                   if (blacklist.includes(nm)) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('Invalid tag name!');
-                     return;
-                   }
-                   if (typeof config.modules.tags.maxLength === 'number' && value.length > config.modules.tags.maxLength) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral(`Tag content may only be up to ${config.modules.tags.maxLength} characters in size!`);
-                     return;
-                   }
-                   const ex = await pool.getById<Tag>(nm);
-                   if (ex) {
-                     if (ex.authorId !== inter.member.user.id) {
-                       const lvl = utils.getUserAuth(inter.member);
-                       if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-                         await inter.acknowledge(false);
-                         await inter.respondEphemeral('You may not edit other user\'s tags!');
-                         return;
-                       }
-                       await inter.acknowledge(true);
-                       ex.content = value;
-                       await pool.editPool(nm, ex);
-                       await interactionChannelRespond(inter, `Edited tag with name \`${nm}\` !`);
-                       return;
-                     }
-                   }
-                   await inter.acknowledge(true);
-                   const newObj = new Tag(nm, inter.member.user.id, value);
-                   await pool.saveToPool(newObj);
-                   await interactionChannelRespond(inter, `Saved tag with name \`${nm}\` !`);
-                 }, {
-                   permissions: {
-                     overrideableInfo: 'tags.tag.set',
-                     level: Ranks.Guest,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+registerSlashSub(
+  tagGroup,
+  { name: 'set', description: 'Creates or edits a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to edit'), value: ctx.string('The new value for this tag') }) },
+  async (inter, { tag_name, value }) => {
+    const testalph = tag_name.toLowerCase().replace(/[a-zA-Z0-9_]+/g, '');
+    const nm = tag_name.toLowerCase();
+    if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!');
+      return false;
+    }
+    if (blacklist.includes(nm)) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('Invalid tag name!');
+      return false;
+    }
+    if (typeof config.modules.tags.maxLength === 'number' && value.length > config.modules.tags.maxLength) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`Tag content may only be up to ${config.modules.tags.maxLength} characters in size!`);
+      return false;
+    }
+    const ex = await pool.getById<Tag>(nm);
+    if (ex) {
+      if (ex.authorId !== inter.member.user.id) {
+        const lvl = utils.getUserAuth(inter.member);
+        if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
+          await inter.acknowledge(false);
+          await inter.respondEphemeral('You may not edit other user\'s tags!');
+          return false;
+        }
+        await inter.acknowledge(true);
+        ex.content = value;
+        await pool.editPool(nm, ex);
+        await interactionChannelRespond(inter, `Edited tag with name \`${nm}\` !`);
+        return;
+      }
+    }
+    await inter.acknowledge(true);
+    const newObj = new Tag(nm, inter.member.user.id, value);
+    await pool.saveToPool(newObj);
+    await interactionChannelRespond(inter, `Saved tag with name \`${nm}\` !`);
+  }, {
+    permissions: {
+      overrideableInfo: 'tags.tag.set',
+      level: Ranks.Guest,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);
 
-registerSlashSub(tagGroup,
-                 { name: 'delete', description: 'Deletes a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to delete') }) },
-                 async (inter, { tag_name }) => {
-                   const nm = tag_name.toLowerCase();
-                   const ex = await pool.getById<Tag>(nm);
-                   if (!ex) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('There is no tag with that name!');
-                     return;
-                   }
-                   if (ex.authorId !== inter.member.user.id) {
-                     const lvl = utils.getUserAuth(inter.member);
-                     if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-                       await inter.acknowledge(false);
-                       await inter.respondEphemeral('You may not edit other user\'s tags!');
-                       return;
-                     }
-                   }
-                   await inter.acknowledge(true);
-                   await pool.editPool(nm, null);
-                   await interactionChannelRespond(inter, `Deleted tag \`${nm}\` !`);
-                 }, {
-                   permissions: {
-                     overrideableInfo: 'tags.tag.delete',
-                     level: Ranks.Guest,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+registerSlashSub(
+  tagGroup,
+  { name: 'delete', description: 'Deletes a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to delete') }) },
+  async (inter, { tag_name }) => {
+    const nm = tag_name.toLowerCase();
+    const ex = await pool.getById<Tag>(nm);
+    if (!ex) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('There is no tag with that name!');
+      return;
+    }
+    if (ex.authorId !== inter.member.user.id) {
+      const lvl = utils.getUserAuth(inter.member);
+      if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral('You may not edit other user\'s tags!');
+        return false;
+      }
+    }
+    await inter.acknowledge(true);
+    await pool.editPool(nm, null);
+    await interactionChannelRespond(inter, `Deleted tag \`${nm}\` !`);
+  }, {
+    permissions: {
+      overrideableInfo: 'tags.tag.delete',
+      level: Ranks.Guest,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);
 
-registerSlashSub(tagGroup,
-                 { name: 'info', description: 'Gets statistics on a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to get info on') }) },
-                 async (inter, { tag_name }) => {
-                   const nm = tag_name.toLowerCase();
-                   const obj = await pool.getById<Tag>(nm);
-                   if (!obj) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('There is no tag with that name!');
-                     return;
-                   }
-                   const usr: discord.User | null = await utils.getUser(obj.authorId);
-                   const emb = new discord.Embed();
-                   emb.setDescription(`\n**By**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**Uses**: **${obj.uses}**\n**Created**: ${new Date(obj.ts).toLocaleDateString()}`);
-                   emb.setTitle(`Tag: ${obj.id}`);
-                   emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
-                   emb.setTimestamp(new Date().toISOString());
-                   emb.setColor(0xfa7814);
-                   await interactionChannelRespond(inter, { content: '', embed: emb });
-                 }, {
-                   permissions: {
-                     overrideableInfo: 'tags.tag.info',
-                     level: Ranks.Guest,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+registerSlashSub(
+  tagGroup,
+  { name: 'info', description: 'Gets statistics on a tag', options: (ctx) => ({ tag_name: ctx.string('The tag name to get info on') }) },
+  async (inter, { tag_name }) => {
+    const nm = tag_name.toLowerCase();
+    const obj = await pool.getById<Tag>(nm);
+    if (!obj) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('There is no tag with that name!');
+      return false;
+    }
+    const usr: discord.User | null = await utils.getUser(obj.authorId);
+    const emb = new discord.Embed();
+    emb.setDescription(`\n**By**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**Uses**: **${obj.uses}**\n**Created**: ${new Date(obj.ts).toLocaleDateString()}`);
+    emb.setTitle(`Tag: ${obj.id}`);
+    emb.setFooter({ text: `Requested by ${inter.member.user.getTag()} (${inter.member.user.id})` });
+    emb.setTimestamp(new Date().toISOString());
+    emb.setColor(0xfa7814);
+    await interactionChannelRespond(inter, { content: '', embed: emb });
+  }, {
+    permissions: {
+      overrideableInfo: 'tags.tag.info',
+      level: Ranks.Guest,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);
 
-registerSlashSub(tagGroup,
-                 { name: 'clearall', description: 'Clears all tags on the server' },
-                 async (inter) => {
-                   const removed = await pool.getAll<Tag>();
-                   await pool.clear();
-                   await interactionChannelRespond(inter, `Removed ${removed.length} tags!`);
-                 }, {
-                   staticAck: true,
-                   permissions: {
-                     overrideableInfo: 'tags.tag.clearall',
-                     level: Ranks.Administrator,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+registerSlashSub(
+  tagGroup,
+  { name: 'clearall', description: 'Clears all tags on the server' },
+  async (inter) => {
+    const removed = await pool.getAll<Tag>();
+    await pool.clear();
+    await interactionChannelRespond(inter, `Removed ${removed.length} tags!`);
+  }, {
+    staticAck: true,
+    permissions: {
+      overrideableInfo: 'tags.tag.clearall',
+      level: Ranks.Administrator,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);
 
-registerSlashSub(tagGroup,
-                 { name: 'list', description: 'List all tags on the server' },
-                 async (inter) => {
-                   const ex = await pool.getAll<Tag>();
-                   if (ex.length === 0) {
-                     await inter.acknowledge(false);
-                     await inter.respondEphemeral('There are no tags saved!');
-                     return;
-                   }
-                   await inter.acknowledge(true);
-                   const emb = new discord.Embed();
-                   const sorted = ex.sort((a, b) => b.uses - a.uses).map((tag) => tag.id);
-                   emb.setDescription(sorted.join(', '));
-                   emb.setTitle('Tag List');
-                   emb.setColor(0xfa7814);
-                   await interactionChannelRespond(inter, { content: '', embed: emb });
-                 }, {
-                   permissions: {
-                     overrideableInfo: 'tags.tag.list',
-                     level: Ranks.Authorized,
-                   },
-                   module: 'tags',
-                   parent: 'tag',
-                 });
+registerSlashSub(
+  tagGroup,
+  { name: 'list', description: 'List all tags on the server' },
+  async (inter) => {
+    const ex = await pool.getAll<Tag>();
+    if (ex.length === 0) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('There are no tags saved!');
+      return false;
+    }
+    await inter.acknowledge(true);
+    const emb = new discord.Embed();
+    const sorted = ex.sort((a, b) => b.uses - a.uses).map((tag) => tag.id);
+    emb.setDescription(sorted.join(', '));
+    emb.setTitle('Tag List');
+    emb.setColor(0xfa7814);
+    await interactionChannelRespond(inter, { content: '', embed: emb });
+  }, {
+    permissions: {
+      overrideableInfo: 'tags.tag.list',
+      level: Ranks.Authorized,
+    },
+    module: 'tags',
+    parent: 'tag',
+  },
+);

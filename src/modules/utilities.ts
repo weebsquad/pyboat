@@ -1401,12 +1401,12 @@ if (curGroup) {
     async (inter) => {
       if (!isCurEnabled()) {
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
       if (!checkrole) {
         await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
-        return;
+        return false;
       }
       await inter.respondEphemeral(`Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type **/**\`cur name <name>\`\nTo set the color, type **/**\`cur color <color>\``);
     },
@@ -1425,24 +1425,25 @@ if (curGroup) {
       if (!isCurEnabled()) {
         await inter.acknowledge(false);
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
       if (!checkrole) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
-        return;
+        return false;
       }
       if (name.length < 2 || name.length > 32) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} New name must be between 2 and 32 characters in size!`);
+        return false;
       }
       const guild = await inter.getGuild();
       const role = await guild.getRole(checkrole.roleId);
       if (!role) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
-        return;
+        return false;
       }
       await role.edit({ name });
       await inter.acknowledge(true);
@@ -1462,13 +1463,13 @@ if (curGroup) {
       if (!isCurEnabled()) {
         await inter.acknowledge(false);
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
       if (!checkrole) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
-        return;
+        return false;
       }
       if (typeof color === 'string' && color.includes('#')) {
         color = color.split('#').join('');
@@ -1476,7 +1477,7 @@ if (curGroup) {
       if (typeof color === 'string' && color.length !== 6) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} Color must be formatted as a hex string! (for example \`#ff0000\`)`);
-        return;
+        return false;
       }
 
       const guild = await inter.getGuild();
@@ -1484,7 +1485,7 @@ if (curGroup) {
       if (!role) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
-        return;
+        return false;
       }
       await inter.acknowledge(true);
       await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
@@ -1509,24 +1510,24 @@ if (curGroup) {
       if (!isCurEnabled()) {
         await inter.acknowledge(false);
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       if (!role || !(role instanceof discord.Role)) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} role not found`);
-        return;
+        return false;
       }
       const kvc = await customUserRoles.exists(target.user.id);
       if (kvc) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} This member already has a custom role!`);
-        return;
+        return false;
       }
       const kvcrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
       if (Array.isArray(kvcrole) && kvcrole.length > 0) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} This role is already assigned to <@!${kvcrole[0].memberId}>`);
-        return;
+        return false;
       }
       await inter.acknowledge(true);
       await setUserRole(target.user.id, role.id);
@@ -1554,13 +1555,13 @@ if (curGroup) {
       if (!isCurEnabled()) {
         await inter.acknowledge(false);
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       const kvc = await customUserRoles.getById<UserRole>(target.user.id);
       if (!kvc) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} This member has no custom role!`);
-        return;
+        return false;
       }
       await inter.acknowledge(true);
       const rlid = kvc.roleId;
@@ -1590,13 +1591,13 @@ if (curGroup) {
       if (!isCurEnabled()) {
         await inter.acknowledge(false);
         await inter.respondEphemeral('Custom User Roles are not enabled on this server');
-        return;
+        return false;
       }
       const kvc = await customUserRoles.getById<UserRole>(target.user.id);
       if (!kvc) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} This member has no custom role!`);
-        return;
+        return false;
       }
 
       const rlid = kvc.roleId;
@@ -1605,7 +1606,7 @@ if (curGroup) {
       if (!(role instanceof discord.Role)) {
         await inter.acknowledge(false);
         await inter.respondEphemeral(`${discord.decor.Emojis.X} Role not found`);
-        return;
+        return false;
       }
       await inter.acknowledge(true);
       await deleteCustomRoleOf(target.user.id);
@@ -1633,7 +1634,7 @@ registerSlash(
     ) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('Nothing to snipe.');
-      return;
+      return false;
     }
     if (
       _sn.author.id === inter.member.user.id
@@ -1717,6 +1718,7 @@ if (reminderGroup) {
       ) },
     async (inter, { when, text }) => {
       await addReminderSlash(inter, when, text);
+      return false;
     },
     { parent: 'remind', staticAck: false, permissions: { overrideableInfo: 'utilities.remind.add', level: Ranks.Guest }, module: 'utilities' },
   );
@@ -1726,6 +1728,7 @@ if (reminderGroup) {
     { name: 'clear', description: 'Clears all your reminders' },
     async (inter) => {
       await clearRemindersSlash(inter);
+      return false;
     },
     { parent: 'remind', staticAck: false, permissions: { overrideableInfo: 'utilities.remind.clear', level: Ranks.Guest }, module: 'utilities' },
   );
@@ -1896,12 +1899,6 @@ registerSlash(
     const embed = new discord.Embed();
     const guild = await inter.getGuild();
     const me = await guild.getMember(discord.getBotId());
-    if (guild === null || !(guild instanceof discord.Guild)) {
-      return { content: 'Guild not found' };
-    }
-    if (me === null) {
-      throw new Error('bot user not found');
-    }
 
     let icon = guild.getIconUrl();
     if (icon === null) {
@@ -2211,7 +2208,7 @@ registerSlash(
     if (!usr) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} User not found!`);
-      return;
+      return false;
     }
     const emb = new discord.Embed();
     emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });

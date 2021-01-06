@@ -106,13 +106,21 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     }
   }
   try {
+    // @ts-ignore
+    const retV = await callback(interaction, ...args);
+    if (typeof retV === 'boolean') {
+      if (retV === false) {
+        try {
+          await interaction.acknowledge(false);
+        } catch (_) {}
+        return;
+      }
+    }
     if (typeof extras.staticAck === 'boolean') {
       try {
         await interaction.acknowledge(extras.staticAck);
       } catch (_) {}
     }
-    // @ts-ignore
-    await callback(interaction, ...args);
   } catch (_e) {
     try {
       await interaction.acknowledge(false);

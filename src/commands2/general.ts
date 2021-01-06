@@ -162,6 +162,7 @@ registerSlash(
   { name: 'help', description: 'Shows the bot\'s help explanation' },
   async (inter) => {
     await inter.respondEphemeral('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
+    return false;
   }, {
     staticAck: false,
     permissions: {
@@ -176,6 +177,7 @@ registerSlash(
   { name: 'docs', description: 'Shows the bot\'s documentation link' },
   async (inter) => {
     await inter.respondEphemeral('<https://docs.pyboat.i0.tf/>');
+    return false;
   }, {
     staticAck: false,
     permissions: {
@@ -190,6 +192,7 @@ registerSlash(
   { name: 'mylevel', description: 'Shows your bot access level' },
   async (inter) => {
     await inter.respondEphemeral(`${inter.member.user.toMention()} you are bot access level **${utils.getUserAuth(inter.member)}**${utils.isGlobalAdmin(inter.member.user.id) ? ' and a global admin!' : ''}`);
+    return false;
   }, {
     staticAck: false,
     permissions: {

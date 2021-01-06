@@ -1657,12 +1657,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to kick member.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1689,12 +1689,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to mute member.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Muted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1717,12 +1717,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to tempmute member.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const dur = utils.timeArgumentToMs(time);
@@ -1747,12 +1747,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to unmute member.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Unmuted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1776,12 +1776,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to ban user.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1818,7 +1818,7 @@ registerSlash(
     if (ids.length < 2) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('Not enough ids specified!');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const objs: any[] = [];
@@ -1866,12 +1866,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to cleanban user.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Clean-banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1900,12 +1900,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to softban user.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Soft-banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -1934,12 +1934,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to tempban user.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const dur = utils.timeArgumentToMs(time);
@@ -1966,7 +1966,7 @@ registerSlash(
     if (!usr) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} User not found!`);
-      return;
+      return false;
     }
     let member: discord.User | discord.GuildMember | null = await (await inter.getGuild()).getMember(usr.id);
     if (!member) {
@@ -1979,12 +1979,12 @@ registerSlash(
     if (result === false) {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, 'Failed to unban user.');
-      return;
+      return false;
     }
     if (typeof result === 'string') {
       await inter.acknowledge(false);
       await confirmResultInteraction(undefined, inter, false, result);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await confirmResultInteraction(undefined, inter, true, `Unbanned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
@@ -2015,7 +2015,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no infractions');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));
@@ -2053,7 +2053,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no active infractions');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));
@@ -2102,7 +2102,7 @@ registerSlashSub(
     if (infs.length !== 1) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X}No infraction found`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const inf = infs[0];
@@ -2137,12 +2137,12 @@ registerSlashSub(
     if (dur === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} duration malformed (try 1h30m format)`);
-      return;
+      return false;
     }
     if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} duration must be between a minute and a year`);
-      return;
+      return false;
     }
     let infs;
     if (inf_id.toLowerCase() === 'ml') {
@@ -2156,18 +2156,18 @@ registerSlashSub(
     if (infs.length !== 1) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
-      return;
+      return false;
     }
     const inf: Infraction = utils.makeFake(infs[0], Infraction);
     if (!inf.active) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} This infraction is not active.`);
-      return;
+      return false;
     }
     if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     inf.expiresAt = utils.composeSnowflake(inf.ts + dur);
@@ -2216,18 +2216,18 @@ registerSlashSub(
     if (infs.length !== 1) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
-      return;
+      return false;
     }
     const inf: Infraction = utils.makeFake(infs[0], Infraction);
     if (!inf.active) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} This infraction is not active.`);
-      return;
+      return false;
     }
     if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
 
@@ -2277,19 +2277,19 @@ registerSlashSub(
     if (infs.length !== 1) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
-      return;
+      return false;
     }
     const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
     if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-      return;
+      return false;
     }
     if (new_actor.user.id === discord.getBotId()) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot assign infractions to me.`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     inf.actorId = new_actor.user.id;
@@ -2338,13 +2338,13 @@ registerSlashSub(
     if (infs.length !== 1) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
-      return;
+      return false;
     }
     const inf: Infraction = infs[0];
     if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await infsPool.delete(inf.id);
@@ -2382,7 +2382,7 @@ registerSlashSub(
     if (!infs || infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} Could not find any infractions for the given user`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
@@ -2413,7 +2413,7 @@ registerSlashSub(
     if (!infs || infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} Could not find any infractions for the given actor`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
@@ -2487,7 +2487,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no infractions by this actor');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));
@@ -2530,7 +2530,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no infractions by system');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));
@@ -2576,7 +2576,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no infractions applied to this user');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));
@@ -2621,7 +2621,7 @@ registerSlashSub(
     if (infs.length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral('There are no infractions of this type');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     const last10 = infs.slice(0, Math.min(infs.length, 10));

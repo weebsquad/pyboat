@@ -2322,7 +2322,8 @@ registerSlashSub(
       } else if (typeof res === 'string') {
         await infractions.confirmResultInteraction(undefined, inter, false, res);
       }
-    } else if (res > 0) {
+      return false;
+    } if (res > 0) {
       if (!acked) {
         await inter.acknowledge(true);
       }
@@ -2332,6 +2333,7 @@ registerSlashSub(
         await inter.acknowledge(false);
       }
       await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+      return false;
     }
   },
   {
@@ -2378,7 +2380,8 @@ registerSlashSub(
       } else if (typeof res === 'string') {
         await infractions.confirmResultInteraction(undefined, inter, false, res);
       }
-    } else if (res > 0) {
+      return false;
+    } if (res > 0) {
       if (!acked) {
         await inter.acknowledge(true);
       }
@@ -2388,6 +2391,7 @@ registerSlashSub(
         await inter.acknowledge(false);
       }
       await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+      return false;
     }
   },
   {
@@ -2434,7 +2438,8 @@ registerSlashSub(
       } else if (typeof res === 'string') {
         await infractions.confirmResultInteraction(undefined, inter, false, res);
       }
-    } else if (res > 0) {
+      return false;
+    } if (res > 0) {
       if (!acked) {
         await inter.acknowledge(true);
       }
@@ -2444,6 +2449,7 @@ registerSlashSub(
         await inter.acknowledge(false);
       }
       await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+      return false;
     }
   },
   {
@@ -2490,7 +2496,8 @@ registerSlashSub(
       } else if (typeof res === 'string') {
         await infractions.confirmResultInteraction(undefined, inter, false, res);
       }
-    } else if (res > 0) {
+      return false;
+    } if (res > 0) {
       if (!acked) {
         await inter.acknowledge(true);
       }
@@ -2500,6 +2507,7 @@ registerSlashSub(
         await inter.acknowledge(false);
       }
       await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+      return false;
     }
   },
   {
@@ -2546,7 +2554,8 @@ registerSlashSub(
       } else if (typeof res === 'string') {
         await infractions.confirmResultInteraction(undefined, inter, false, res);
       }
-    } else if (res > 0) {
+      return false;
+    } if (res > 0) {
       if (!acked) {
         await inter.acknowledge(true);
       }
@@ -2556,6 +2565,7 @@ registerSlashSub(
         await inter.acknowledge(false);
       }
       await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+      return false;
     }
   },
   {
@@ -2597,12 +2607,14 @@ registerSlashSub(
         cleared += 1;
       }
     }));
-    await inter.acknowledge(true);
     if (cleared === 0) {
+      await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, 'No invites were pruned!');
-    } else {
-      await infractions.confirmResultInteraction(undefined, inter, true, `${cleared} total invites pruned!`);
+      return false;
     }
+    await inter.acknowledge(true);
+    await infractions.confirmResultInteraction(undefined, inter, true, `${cleared} total invites pruned!`);
+    return true;
   },
   {
     module: 'admin',
@@ -2637,18 +2649,18 @@ registerSlashSub(
     if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, 'No locked roles are configured');
-      return;
+      return false;
     }
     if (!config.modules.admin.lockedRoles.includes(role.id)) {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, 'This role is not locked');
-      return;
+      return false;
     }
     const kvc = await roleLockKv.get(role.id);
     if (typeof kvc === 'boolean') {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, 'This role is already temporarily unlocked!');
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
@@ -2679,15 +2691,16 @@ registerSlashSub(
     if (typeof res === 'string') {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, res);
-      return;
+      return false;
     }
     if (res === true) {
       await inter.acknowledge(true);
       await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.user.toMention()}`);
-    } else {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+      return true;
     }
+    await inter.acknowledge(false);
+    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+    return false;
   },
   {
     module: 'admin',
@@ -2714,15 +2727,16 @@ registerSlashSub(
     if (typeof res === 'string') {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, res);
-      return;
+      return false;
     }
     if (res === true) {
       await inter.acknowledge(true);
       await infractions.confirmResultInteraction(undefined, inter, true, `Removed role <@&${role.id}> to ${member.user.toMention()}`);
-    } else {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to remove role');
+      return true;
     }
+    await inter.acknowledge(false);
+    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to remove role');
+    return false;
   },
   {
     module: 'admin',
@@ -2747,16 +2761,18 @@ registerSlashSub(
     if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
-      return;
+      return false;
     }
     const thisRole = config.modules.admin.groupRoles[role.id];
     if (typeof thisRole !== 'string' || thisRole.length < 5) {
-      return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+      return false;
     }
     if (inter.member.roles.includes(role.id)) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have this role!`);
-      return;
+      return false;
     }
     let perms = new utils.Permissions(role.permissions).serialize(true);
     for (const key in perms) {
@@ -2770,7 +2786,7 @@ registerSlashSub(
     if (!noStaff) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await inter.member.addRole(role.id);
@@ -2800,16 +2816,18 @@ registerSlashSub(
     if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
-      return;
+      return false;
     }
     const thisRole = config.modules.admin.groupRoles[role.id];
     if (typeof thisRole !== 'string' || thisRole.length < 5) {
-      return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+      await inter.acknowledge(false);
+      await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+      return false;
     }
     if (!inter.member.roles.includes(role.id)) {
       await inter.acknowledge(false);
       await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have this role!`);
-      return;
+      return false;
     }
     await inter.acknowledge(true);
     await inter.member.removeRole(role.id);
@@ -2822,6 +2840,43 @@ registerSlashSub(
     permissions: {
       overrideableInfo: 'admin.role.leave',
       level: Ranks.Guest,
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'nickname',
+    description: 'Changes another user\'s nickname',
+    options: (ctx) => ({
+      member: ctx.guildMember({ required: true, description: 'The member to target' }),
+      nickname: ctx.string({ required: false, description: 'The new nickname. Keep this blank to clear their nickname' }),
+    }),
+  },
+  async (inter, { member, nickname }) => {
+    if (!nickname) {
+      nickname = null;
+    }
+    const res = await Nick(inter.member, member, nickname);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return false;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname, true)}\``);
+      return true;
+    }
+    await inter.acknowledge(false);
+    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to set nickname');
+    return false;
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.nickname',
     },
   },
 );

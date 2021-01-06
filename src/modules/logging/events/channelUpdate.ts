@@ -239,8 +239,8 @@ export const messages = {
       const oldV = oldChan.permissionOverwrites.find((obj) => obj.id === e);
       const newV = chan.permissionOverwrites.find((obj) => obj.id === e);
 
-      let _type: string | discord.Channel.PermissionOverwriteType = newV !== undefined ? newV.type : oldV.type;
-      if (_type === discord.Channel.PermissionOverwriteType.MEMBER) {
+      let _type: any = newV !== undefined ? newV.type : oldV.type;
+      if (_type == 1) { // eslint-disable-line eqeqeq
         _type = 'member';
       } else {
         _type = 'role';
