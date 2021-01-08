@@ -204,6 +204,7 @@ export class StoragePool {
       });
       if (!saveTo) {
         saveTo = utils.composeSnowflake();
+        saveLen = 0;
       }
 
       try {
