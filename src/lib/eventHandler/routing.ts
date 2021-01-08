@@ -527,7 +527,7 @@ export function isModuleEnabled(modName: string) {
     return true;
   }
   if (!conf.config) {
-    return false;
+    throw new Error('tried to check module enable without config being enabled');
   }
 
   if (typeof modName !== 'string' || modName === null) {

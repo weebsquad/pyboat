@@ -131,12 +131,12 @@ const eventFilters = <any>{
       if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) {
         return true;
       }
-      if (msg !== null && isMessageConfigUpdate(msg) !== false) {
+      if (msg && isMessageConfigUpdate(msg) !== false) {
         return true;
       }
-      if (msg !== null && msg.author.id === discord.getBotId()) {
+      /* if (msg && msg.author.id === discord.getBotId()) {
         return true;
-      }
+      } */
     },
     TYPING_START: (ev: discord.Event.ITypingStart) => {
       if (typeof globalConfig === 'object' && typeof globalConfig.masterGuild === 'string' && guildId !== globalConfig.masterGuild && !ev.guildId) {

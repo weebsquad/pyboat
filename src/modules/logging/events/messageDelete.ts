@@ -136,7 +136,7 @@ export async function AL_OnMessageDelete(
   ev: discord.Event.IMessageDelete,
   oldMessage: discord.Message.AnyMessage | null,
 ) {
-  if (oldMessage !== null && oldMessage.type !== discord.Message.Type.DEFAULT) {
+  if (oldMessage && oldMessage.type !== discord.Message.Type.DEFAULT) {
     return;
   }
   await handleEvent(
