@@ -408,10 +408,58 @@
                                 }
                             },
                             "options": {
+                                "collapsed": true,
                                 "dependencies": {
                                     "enabled": true
+                                }
+                            }
+                        },
+                        "autoPrune": {
+                            "title": "Auto Prune",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
                                 },
-                                "collapsed": true
+                                "channels": {
+                                    "type": "array",
+                                    "title": "Channels",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "object",
+                                        "title": "Channel",
+                                        "properties": {
+                                            "__key": {
+                                                "type": "string",
+                                                "title": "Channel ID",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            },
+                                            "duration": {
+                                                "type": "string",
+                                                "title": "Duration (in 1h30m format) minimum 10min, maximum 7days",
+                                                "default": "30m",
+                                                "minLength": 2
+                                            } 
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true,
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "collapsed": true,
+                                "dependencies": {
+                                    "enabled": true
+                                }
                             }
                         }
                     },

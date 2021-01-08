@@ -286,6 +286,10 @@ const defaultConfig = { // for non-defined configs!
         enabled: false,
         definitions: [],
       },
+      autoPrune: {
+        enabled: false,
+        channels: {},
+      },
     },
   },
 };

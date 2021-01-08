@@ -44,6 +44,7 @@ const _cr: {[key: string]: any} = {
 
           await utilities.checkReminders();
           await utilities.checkAllCustomRoles();
+
           // @ts-ignore
           const redditmeas = await pylon.getCpuTime();
           await reddit.updateSubs();

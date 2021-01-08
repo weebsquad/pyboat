@@ -316,6 +316,7 @@ export async function checkRoleAll() {
 }
 
 export async function every5Min() {
+  await checkPrunes();
   checkRoleAll();
   try {
     const acts = (await actionPool.getByQuery<Action>({
@@ -1356,6 +1357,48 @@ export async function OnChannelUpdate(
   });
   if (!hasChange) {
     await storeChannelData();
+  }
+}
+
+async function checkPrunes() {
+  if (!config) {
+    return;
+  }
+  if (!config.modules.admin.autoPrune || typeof config.modules.admin.autoPrune !== 'object' || !config.modules.admin.autoPrune.enabled || !config.modules.admin.autoPrune.channels) {
+    return;
+  }
+  const now = Date.now();
+  for (const chId in config.modules.admin.autoPrune.channels) {
+    const duration = utils.timeArgumentToMs(config.modules.admin.autoPrune.channels[chId]);
+    if (duration < 1000 * 10 || duration > 1000 * 60 * 60 * 24 * 7) {
+      continue;
+    }
+    const channel = await discord.getChannel(chId);
+    if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildTextChannel)) {
+      continue;
+    }
+    const tsDiff = now - duration;
+    console.log('tsDiff', tsDiff);
+    const messages = await adminPool.getByQuery<TrackedMessage>({ channelId: chId });
+    console.log('messages', messages.length);
+    const toDel = messages.filter((v) => v.ts < tsDiff);
+    console.log('toDel', toDel.length);
+    const ids = toDel.map((v) => v.id);
+    if (toDel.length === 0) {
+      continue;
+    }
+    if (toDel.length === 1) {
+      const msg = await channel.getMessage(toDel[0].id);
+      await msg.delete();
+    } else if (toDel.length <= 100) {
+      await channel.bulkDeleteMessages(ids);
+    } else {
+      const splits = utils.chunkArrayInGroups(ids, 99);
+      await Promise.all(splits.map(async (newmids) => {
+        await channel.bulkDeleteMessages(newmids);
+      }));
+    }
+    await adminPool.editPools(ids, () => null);
   }
 }
 
