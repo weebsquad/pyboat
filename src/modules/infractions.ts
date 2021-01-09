@@ -7,7 +7,7 @@ import * as logUtils from './logging/utils';
 import { getUserAuth, StoragePool } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw } from './commands';
 
 export const infsPool = new utils.StoragePool('infractions', 0, 'id', 'ts');
 
@@ -777,7 +777,6 @@ export function InitializeCommands() {
 
   const _groupOptions = {
     description: 'Infraction Commands',
-    filters: c2.getFilters('infractions', Ranks.Moderator),
   };
 
   const optsGroup = c2.getOpts(
@@ -785,8 +784,9 @@ export function InitializeCommands() {
   );
 
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.on(
-    { name: 'kick', filters: c2.getFilters('infractions.kick', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'kick',
     (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
     async (msg, { member, reason }) => {
       if (typeof reason !== 'string') {
@@ -804,9 +804,16 @@ export function InitializeCommands() {
 
       await confirmResult(undefined, msg, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.kick',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'mute', filters: c2.getFilters('infractions.mute', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'mute',
     (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
     async (msg, { member, reason }) => {
       if (typeof reason !== 'string') {
@@ -844,9 +851,16 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
       }
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.mute',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'tempmute', filters: c2.getFilters('infractions.tempmute', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'tempmute',
     (ctx) => ({ member: ctx.guildMember(), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { member, time, reason }) => {
       if (typeof reason !== 'string') {
@@ -865,9 +879,16 @@ export function InitializeCommands() {
       const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
       await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.tempmute',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'unmute', filters: c2.getFilters('infractions.unmute', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'unmute',
     (ctx) => ({ member: ctx.guildMember(), reason: ctx.textOptional() }),
     async (msg, { member, reason }) => {
       if (typeof reason !== 'string') {
@@ -884,9 +905,16 @@ export function InitializeCommands() {
       }
       await confirmResult(undefined, msg, true, `Unmuted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.unmute',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'ban', filters: c2.getFilters('infractions.ban', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'ban',
     (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
@@ -914,9 +942,16 @@ export function InitializeCommands() {
       }
       await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.ban',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'massban', filters: c2.getFilters('infractions.massban', Ranks.Administrator) },
+  registerChatOn(
+    cmdGroup,
+    'massban',
     (ctx) => ({ deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), args: ctx.text() }),
     async (msg, { deleteDays, args }) => {
       let ids: string[] = [];
@@ -960,9 +995,16 @@ export function InitializeCommands() {
       const result = await MassBan(objs, msg.member, _del, reason);
       await confirmResult(undefined, msg, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}` : ''}${result.fail.length > 0 ? `\n${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}${failNotFound.length > 0 ? `\n${discord.decor.Emojis.QUESTION} failed to find (**${failNotFound.length}**) users: ${failNotFound.join(', ')}` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Administrator,
+        overrideableInfo: 'infractions.massban',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'cleanban', aliases: ['cban'], filters: c2.getFilters('infractions.cleanban', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    { name: 'cleanban', aliases: ['cban'] },
     (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
@@ -989,9 +1031,16 @@ export function InitializeCommands() {
       }
       await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.cleanban',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'softban', aliases: ['sban'], filters: c2.getFilters('infractions.softban', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    { name: 'softban', aliases: ['sban'] },
     (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
@@ -1018,9 +1067,16 @@ export function InitializeCommands() {
       }
       await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.softban',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'tempban', filters: c2.getFilters('infractions.tempban', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'tempban',
     (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { user, time, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
@@ -1049,9 +1105,16 @@ export function InitializeCommands() {
       const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
       await confirmResult(undefined, msg, true, `Temp-banned \`${utils.escapeString(usr.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.tempban',
+      },
+    },
   );
-  cmdGroup.on(
-    { name: 'unban', filters: c2.getFilters('infractions.unban', Ranks.Moderator) },
+  registerChatOn(
+    cmdGroup,
+    'unban',
     (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
@@ -1077,10 +1140,17 @@ export function InitializeCommands() {
       }
       await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
     },
+    {
+      permissions: {
+        level: Ranks.Moderator,
+        overrideableInfo: 'infractions.unban',
+      },
+    },
   );
-  cmdGroup.subcommand({ name: 'inf', filters: c2.getFilters('infractions.inf', Ranks.Moderator) }, (subCommandGroup) => {
-    subCommandGroup.raw(
-      { name: 'recent', filters: c2.getFilters('infractions.inf.recent', Ranks.Moderator) },
+  cmdGroup.subcommand('inf', (subCommandGroup) => {
+    registerChatRaw(
+      subCommandGroup,
+      'recent',
       async (msg) => {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll<Infraction>(null));
@@ -1103,9 +1173,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.recent',
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'active', filters: c2.getFilters('infractions.inf.active', Ranks.Moderator) },
+    registerChatRaw(
+      subCommandGroup,
+      'active',
       async (msg) => {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ active: true }));
@@ -1128,9 +1205,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.active',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'info', filters: c2.getFilters('infractions.inf.info', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'info',
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1155,9 +1239,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.info',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'duration', filters: c2.getFilters('infractions.inf.duration', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'duration',
       (ctx) => ({ id: ctx.string(), duration: ctx.string() }),
       async (msg, { id, duration }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1202,9 +1293,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.duration',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'reason', filters: c2.getFilters('infractions.inf.reason', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'reason',
       (ctx) => ({ id: ctx.string(), reason: ctx.text() }),
       async (msg, { id, reason }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1240,9 +1338,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.reason',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'actor', filters: c2.getFilters('infractions.inf.actor', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'actor',
       (ctx) => ({ id: ctx.string(), actor: ctx.user() }),
       async (msg, { id, actor }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1282,9 +1387,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Moderator,
+          overrideableInfo: 'infractions.inf.actor',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'delete', filters: c2.getFilters('infractions.inf.delete', Ranks.Administrator) },
+    registerChatOn(
+      subCommandGroup,
+      'delete',
       (ctx) => ({ id: ctx.string() }),
       async (msg, { id }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1316,9 +1428,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Administrator,
+          overrideableInfo: 'infractions.inf.delete',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'clearuser', filters: c2.getFilters('infractions.inf.clearuser', Ranks.Administrator) },
+    registerChatOn(
+      subCommandGroup,
+      'clearuser',
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1331,9 +1450,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Administrator,
+          overrideableInfo: 'infractions.inf.clearuser',
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'clearactor', filters: c2.getFilters('infractions.inf.clearactor', Ranks.Administrator) },
+    registerChatOn(
+      subCommandGroup,
+      'clearactor',
       (ctx) => ({ actor: ctx.user() }),
       async (msg, { actor }) => {
         const res:any = await msg.inlineReply(async () => {
@@ -1346,9 +1472,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Administrator,
+          overrideableInfo: 'infractions.inf.clearactor',
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'clearall', filters: c2.getFilters('infractions.inf.clearall', Ranks.Owner) },
+    registerChatRaw(
+      subCommandGroup,
+      'clearall',
       async (msg) => {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll(null));
@@ -1360,10 +1493,17 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          level: Ranks.Owner,
+          overrideableInfo: 'infractions.inf.clearall',
+        },
+      },
     );
     subCommandGroup.subcommand('search', (subCommandGroup2) => {
-      subCommandGroup2.on(
-        { name: 'actor', filters: c2.getFilters('infractions.inf search.actor', Ranks.Moderator) },
+      registerChatOn(
+        subCommandGroup2,
+        'actor',
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
           const res:any = await msg.inlineReply(async () => {
@@ -1392,9 +1532,16 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            level: Ranks.Moderator,
+            overrideableInfo: 'infractions.inf search.actor',
+          },
+        },
       );
-      subCommandGroup2.raw(
-        { name: 'system', filters: c2.getFilters('infractions.inf search.system', Ranks.Moderator) },
+      registerChatRaw(
+        subCommandGroup2,
+        'system',
         async (msg) => {
           const res:any = await msg.inlineReply(async () => {
             const infs = (await infsPool.getByQuery<Infraction>({ actorId: 'SYSTEM' }));
@@ -1422,9 +1569,16 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            level: Ranks.Moderator,
+            overrideableInfo: 'infractions.inf search.system',
+          },
+        },
       );
-      subCommandGroup2.on(
-        { name: 'user', filters: c2.getFilters('infractions.inf search.user', Ranks.Moderator) },
+      registerChatOn(
+        subCommandGroup2,
+        'user',
         (ctx) => ({ user: ctx.user() }),
         async (msg, { user }) => {
           const res:any = await msg.inlineReply(async () => {
@@ -1453,9 +1607,16 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            level: Ranks.Moderator,
+            overrideableInfo: 'infractions.inf search.user',
+          },
+        },
       );
-      subCommandGroup2.on(
-        { name: 'type', filters: c2.getFilters('infractions.inf search.type', Ranks.Moderator) },
+      registerChatOn(
+        subCommandGroup2,
+        'type',
         (ctx) => ({ type: ctx.string() }),
         async (msg, { type }) => {
           const res:any = await msg.inlineReply(async () => {
@@ -1482,6 +1643,12 @@ export function InitializeCommands() {
             return { embed: emb, allowedMentions: {}, content: '' };
           });
           saveMessage(res);
+        },
+        {
+          permissions: {
+            level: Ranks.Moderator,
+            overrideableInfo: 'infractions.inf search.type',
+          },
         },
       );
     });
@@ -1648,7 +1815,9 @@ export async function AL_OnGuildBanRemove(
 }
 
 registerSlash(
-  { name: 'kick', description: 'Kicks a member from the server', options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to kick' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
+  { name: 'kick',
+    description: 'Kicks a member from the server',
+    options: (ctx) => ({ member: ctx.guildMember({ required: true, description: 'The member to kick' }), reason: ctx.string({ required: false, description: 'The reason' }) }) },
   async (inter, { member, reason }) => {
     if (typeof reason !== 'string') {
       reason = '';

@@ -6,7 +6,7 @@ import { saveMessage } from '../modules/admin';
 const ADMIN_ROLE = '567988684193005568';
 const OP_ROLE = '565325264981327873';
 
-const GENERAL_CHANNEL = '565325743278653461';
+const GENERAL_CHANNEL = '565325743278653461';/*
 export function InitializeCommands(): Array<discord.command.CommandGroup> | boolean {
   if (guildId !== '565323632751149103') {
     return false;
@@ -82,3 +82,4 @@ export function InitializeCommands(): Array<discord.command.CommandGroup> | bool
   });
   return [cmdGroupAdmin, cmdGroupOp];
 }
+*/

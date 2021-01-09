@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { globalConfig, InitializeConfig, config } from '../config';
 import * as utils from '../lib/utils';
-import * as c2 from '../lib/commands2';
 import * as infractions from '../modules/infractions';
 import * as starboard from '../modules/starboard';
-import * as censor from '../modules/censor';
 import * as antiSpam from '../modules/antiSpam';
 import * as admin from '../modules/admin';
 import * as pools from '../lib/storagePools';
@@ -12,8 +10,8 @@ import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
 import * as github from '../lib/github';
-import { handleEvent } from '../modules/logging/main';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
+import { registerChatOn, registerChatRaw } from '../modules/commands';
 
 type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
@@ -123,27 +121,19 @@ function assert(x: any, message: string): asserts x {
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
 export function InitializeCommands() {
-  const _groupOptions = {
+  const _groupOptions: any = {
     description: 'Dev commands',
     defaultPrefix: globalConfig.devPrefix,
-    filters: c2.getFilters(null, 0, false, true),
     mentionPrefix: false,
+    register: false,
   };
 
-  const optsGroup = c2.getOpts(_groupOptions);
-  const cmdGroup = new discord.command.CommandGroup(optsGroup);
+  const cmdGroup = new discord.command.CommandGroup(_groupOptions);
 
-  /* const optsEval = c2.getOpts(_groupOptions);
-  optsEval.defaultPrefix = '';
-  optsEval.additionalPrefixes = [];
-  optsEval.mentionPrefix = false;
-  optsEval.filters = c2.getFilters(null, 0, false, true); */
+  const cmdGroupOverrides = new discord.command.CommandGroup(_groupOptions);
 
-  const optsOverrides = c2.getOpts(_groupOptions);
-  optsOverrides.filters = c2.getFilters(null, 0, false, true);
-  const cmdGroupOverrides = new discord.command.CommandGroup(optsOverrides);
-
-  cmdGroupOverrides.on(
+  registerChatOn(
+    cmdGroupOverrides,
     'override',
     (ctx) => ({ txt: ctx.textOptional() }),
     async (msg, { txt }) => {
@@ -183,14 +173,16 @@ export function InitializeCommands() {
       });
       admin.saveMessage(res);
     },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
   );
 
-  // const cmdGroupEval = new discord.command.CommandGroup(optsEval);
-  cmdGroup.raw(
-    { name: 'eval',
-      onError(e: any) {
-        return e;
-      } },
+  registerChatRaw(
+    cmdGroup,
+    'eval',
     async (msg) => {
       if (msg.content.length < 4 || !msg.content.includes(' ')) {
         throw new TypeError('No eval argument specified');
@@ -216,8 +208,14 @@ export function InitializeCommands() {
         fakeConsole.log(e);
       }
     },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
   );
-  cmdGroup.on(
+  registerChatOn(
+    cmdGroup,
     'falseupdate',
     (ctx) => ({ member: ctx.guildMember() }),
     async (msg, { member }) => {
@@ -231,84 +229,91 @@ export function InitializeCommands() {
       const res: any = await msg.inlineReply('done');
       admin.saveMessage(res);
     },
-  );
-  cmdGroup.raw(
-    'reload',
-    async (msg) => {
-      const cfgres = await InitializeConfig(true);
-      let txt = `${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`;
-      if (!cfgres) {
-        txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
-      }
-      const res: any = await msg.inlineReply(txt);
-      admin.saveMessage(res);
-    },
-  );
-  cmdGroup.raw(
-    'deploy',
-    async (msg, repo) => {
-      if (repo === null || repo.length < 1) {
-        repo = 'pyboat';
-      }
-      if (!globalConfig.github.deployments[repo.toLowerCase()]) {
-        return 'Invalid repo name';
-      }
-      const res = await msg.inlineReply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
-      if (res instanceof discord.GuildMemberMessage) {
-        admin.saveMessage(res);
-      }
-      const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
-      if (r === true) {
-        for (let i = 0; i < 9; i++) {
-          const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
-          if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
-            await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
-            return;
-          }
-          await sleep(300);
-        }
-        await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
-        return;
-      }
-      await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
-    },
-  );
-  cmdGroup.subcommand('test', (sub) => {
-    sub.on(
-      'override',
-      (ctx) => ({ level: ctx.number(), string: ctx.string() }),
-      async (m, { string, level }) => {
-        const res: any = await m.inlineReply(async () => {
-          const newlvl = c2.checkOverrides(level, string);
-          if (newlvl.level === level) {
-            return { content: 'Nothing changed.' };
-          } if (newlvl.level === -1) {
-            return { content: `\`${string}\` is disabled.` };
-          }
-          return { content: `Overriden level of \`${string}\`**[**${level}**]** >> **${c2.checkOverrides(level, string)}**` };
-        });
-        admin.saveMessage(res);
+    {
+      permissions: {
+        globalAdmin: true,
       },
-    );
-
-    sub.raw(
+    },
+  );
+  registerChatRaw(cmdGroup,
+                  'reload',
+                  async (msg) => {
+                    const cfgres = await InitializeConfig(true);
+                    let txt = `${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`;
+                    if (!cfgres) {
+                      txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
+                    }
+                    const res: any = await msg.inlineReply(txt);
+                    admin.saveMessage(res);
+                  },
+                  {
+                    permissions: {
+                      globalAdmin: true,
+                    },
+                  });
+  registerChatRaw(cmdGroup,
+                  'deploy',
+                  async (msg, repo) => {
+                    if (repo === null || repo.length < 1) {
+                      repo = 'pyboat';
+                    }
+                    if (!globalConfig.github.deployments[repo.toLowerCase()]) {
+                      return 'Invalid repo name';
+                    }
+                    const res = await msg.inlineReply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
+                    if (res instanceof discord.GuildMemberMessage) {
+                      admin.saveMessage(res);
+                    }
+                    const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
+                    if (r === true) {
+                      for (let i = 0; i < 9; i++) {
+                        const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
+                        if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
+                          await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
+                          return;
+                        }
+                        await sleep(300);
+                      }
+                      await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
+                      return;
+                    }
+                    await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
+                  },
+                  {
+                    permissions: {
+                      globalAdmin: true,
+                    },
+                  });
+  cmdGroup.subcommand('test', (sub) => {
+    registerChatRaw(
+      sub,
       'error',
       async () => {
         throw new Error('testing pls ignore');
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
+    registerChatRaw(
+      sub,
       'permerror',
       async (msg) => {
         const guild = await msg.getGuild();
         const owner = await guild.getMember(guild.ownerId);
         await owner.edit({ nick: 'asdasdasd' });
       },
-    );
-    sub.on(
       {
-        name: 'argerror',
+        permissions: {
+          globalAdmin: true,
+        },
       },
+    );
+    registerChatOn(
+      sub,
+      'argerror',
       (ctx) => ({
         u: ctx.user(),
         usr2: ctx.integer(),
@@ -317,10 +322,17 @@ export function InitializeCommands() {
       async () => {
         console.log('cmd ran!');
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
     // http://i0.tf/q261q.zip
-    sub.raw(
-      'cpu', async (m) => {
+    registerChatRaw(
+      sub,
+      'cpu',
+      async (m) => {
         // @ts-ignore
         const cpuinitial = await pylon.getCpuTime();
         const res: any = await m.inlineReply('<a:loading:735794724480483409>');
@@ -330,9 +342,16 @@ export function InitializeCommands() {
         await res.edit(`**Command Handler Reached:** ${Math.floor(cpuinitial)}ms\n**Reload:** ${cfgafter}ms`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'kv', async (m, filter) => {
+    registerChatRaw(
+      sub,
+      'kv',
+      async (m, filter) => {
         const res: any = await m.inlineReply(async () => {
           const start = Date.now();
           const results = await runTests(
@@ -643,17 +662,31 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'kvmkeys', async (m) => {
+    registerChatRaw(
+      sub,
+      'kvmkeys',
+      async (m) => {
         const keys = await utils.KVManager.listKeys();
         console.log(keys);
         const res: any = await m.inlineReply(`Found ${keys.length} keys!`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'user', async (m) => {
+    registerChatRaw(
+      sub,
+      'user',
+      async (m) => {
         const resUsr = await utils.getUser(m.author.id, true);
         if (!resUsr || !(resUsr instanceof utils.BetterUser)) {
           throw new Error('no user found');
@@ -662,17 +695,31 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`\`\`\`json\n${JSON.stringify(flags.serialize(), null, 2)}\n\`\`\``);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'clearkvm', async (m) => {
+    registerChatRaw(
+      sub,
+      'clearkvm',
+      async (m) => {
         const dt = Date.now();
         await utils.KVManager.clear();
         const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'runcleans', async (m) => {
+    registerChatRaw(
+      sub,
+      'runcleans',
+      async (m) => {
         const dt = Date.now();
         await Promise.all(pools.InitializedPools.map(async (pool) => {
           await pool.clean();
@@ -680,9 +727,16 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'avatar', async (m) => {
+    registerChatRaw(
+      sub,
+      'avatar',
+      async (m) => {
         // @ts-ignore
         const initial = await pylon.getCpuTime();
         const url = m.author.getAvatarUrl();
@@ -694,8 +748,14 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply({ content: `Done, took ${diff}ms cpu`, attachments: [{ name: `avatar.${ext}`, data }] });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'cron',
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
@@ -704,8 +764,14 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'whmeme',
       (ctx) => ({ whUrl: ctx.string() }),
       async (m, { whUrl }) => {
@@ -721,8 +787,14 @@ export function InitializeCommands() {
         embed.setTimestamp(new Date().toISOString());
         await utils.executeWebhook(whUrl, '', [embed], ' ឵឵ ', guild.getIconUrl(), false, {});
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'escape',
       (ctx) => ({ text: ctx.text() }),
       async (m, { text }) => {
@@ -730,8 +802,14 @@ export function InitializeCommands() {
         const parsed = utils.escapeString(text);
         await m.inlineReply(`Parsed (${len} : ${parsed.length}) => ${parsed}`);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'invisrole',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
@@ -751,8 +829,14 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'invisrole2',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
@@ -768,8 +852,14 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'getkvm',
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
@@ -779,8 +869,14 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done, check console (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'getpool',
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
@@ -802,8 +898,14 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(json);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'clearpool',
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
@@ -818,8 +920,14 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done (${Date.now() - dt}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'movehighest',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
@@ -846,8 +954,14 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.on(
+    registerChatOn(
+      sub,
       'movelowest',
       (ctx) => ({ roleid: ctx.string() }),
       async (m, { roleid }) => {
@@ -874,8 +988,14 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
+    registerChatRaw(
+      sub,
       'embed', async (m) => {
         const embed = new discord.Embed();
         embed.setDescription('does this even look good');
@@ -890,14 +1010,28 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply({ embed });
         admin.saveMessage(res);
       },
-    );
-    sub.raw(
-      'channelow', async (m) => {
-        await admin.storeChannelData();
+      {
+        permissions: {
+          globalAdmin: true,
+        },
       },
     );
-    sub.raw(
-      'logqueue', async (m) => {
+    registerChatRaw(
+      sub,
+      'channelow',
+      async (m) => {
+        await admin.storeChannelData();
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+    registerChatRaw(
+      sub,
+      'logqueue',
+      async (m) => {
         const ev = { channelId: m.channelId, guildId: m.guildId, id: m.id } as discord.Event.IMessageDelete;
         const count = 50;
         for (let i = 0; i < count; i++) {
@@ -906,58 +1040,107 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done sending ${count} message delete logs`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'mychannelow', async (m) => {
+    registerChatRaw(
+      sub,
+      'mychannelow',
+      async (m) => {
         await admin.storeChannelData();
         const res = await admin.getStoredUserOverwrites(m.author.id);
         console.log(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
 
-    sub.raw(
-      'clearsb', async (m) => {
+    registerChatRaw(
+      sub,
+      'clearsb',
+      async (m) => {
         const now = Date.now();
         await starboard.clearData();
         const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
 
-    sub.raw(
-      'asclear', async (m) => {
+    registerChatRaw(
+      sub,
+      'asclear',
+      async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('antiSpam').clear();
         const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'asget', async (m) => {
+    registerChatRaw(
+      sub,
+      'asget',
+      async (m) => {
         const now = Date.now();
         const res1 = await antiSpam.pools.getAll();
         const res: any = await m.inlineReply(`Done - ${res1.length} - (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'getinfs', async (m) => {
+    registerChatRaw(
+      sub,
+      'getinfs',
+      async (m) => {
         const now = Date.now();
         const infs = await infractions.infsPool.getAll();
         const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
         console.log(infs);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'clearinfs', async (m) => {
+    registerChatRaw(
+      sub,
+      'clearinfs',
+      async (m) => {
         await infractions.clearInfractions();
         const res: any = await m.inlineReply('Done');
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'modules', async (m) => {
+    registerChatRaw(
+      sub,
+      'modules',
+      async (m) => {
         const res: any = await m.inlineReply(async () => {
           const mods = [];
           for (const key in config.modules) {
@@ -974,9 +1157,16 @@ export function InitializeCommands() {
         });
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'tracking', async (m) => {
+    registerChatRaw(
+      sub,
+      'tracking',
+      async (m) => {
         const now = Date.now();
         const res1 = await admin.adminPool.getItems();
         const poolsL = await admin.adminPool.getAll();
@@ -994,15 +1184,29 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
         // admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'ratelimit', async (m) => {
+    registerChatRaw(
+      sub,
+      'ratelimit',
+      async (m) => {
         const now = Date.now();
         const res1 = ratelimit.poolGlob;
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'auditlogmsgdeletes', async (m) => {
+    registerChatRaw(
+      sub,
+      'auditlogmsgdeletes',
+      async (m) => {
         const chan = await m.getChannel();
         const guild = await m.getGuild();
         const randchan: Array<discord.GuildTextChannel> = <any>(await guild.getChannels()).filter((v) => v.type === discord.Channel.Type.GUILD_TEXT);
@@ -1018,9 +1222,16 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'auditlogmsgdeletes2', async (m) => {
+    registerChatRaw(
+      sub,
+      'auditlogmsgdeletes2',
+      async (m) => {
         const chan = await m.getChannel();
         const guild = await m.getGuild();
         const randchan: Array<discord.GuildTextChannel> = <any>(await guild.getChannels()).filter((v) => v.type === discord.Channel.Type.GUILD_TEXT);
@@ -1040,25 +1251,46 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply('Done - Check audit logs.');
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'queue', async (m) => {
+    registerChatRaw(
+      sub,
+      'queue',
+      async (m) => {
         const now = Date.now();
         const res1 = queue.queue;
         const res: any = await m.inlineReply(`Done - **${res1.length} item(s)** - (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'cleartracking', async (m) => {
+    registerChatRaw(
+      sub,
+      'cleartracking',
+      async (m) => {
         const now = Date.now();
         await new pylon.KVNamespace('admin').clear();
         const res: any = await m.inlineReply(`Done (Took ${Date.now() - now}ms)`);
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'join', async (m) => {
+    registerChatRaw(
+      sub,
+      'join',
+      async (m) => {
         const ch = await discord.getChannel('691752063134203974');
         if (!(ch instanceof discord.GuildVoiceChannel)) {
           return;
@@ -1067,9 +1299,16 @@ export function InitializeCommands() {
         const res: any = await m.inlineReply('done');
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
-    sub.raw(
-      'perms', async (m) => {
+    registerChatRaw(
+      sub,
+      'perms',
+      async (m) => {
         let permsVal: number | BigInt = BigInt('17179869186');
         permsVal = m.member.permissions;
         const p = new utils.Permissions(permsVal);
@@ -1084,10 +1323,16 @@ export function InitializeCommands() {
         );
         admin.saveMessage(res);
       },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
     );
   });
 
-  cmdGroup.on(
+  registerChatOn(
+    cmdGroup,
     'clearkv',
     (ctx) => ({ kvep: ctx.string() }),
     async (msg, { kvep }) => {
@@ -1096,9 +1341,15 @@ export function InitializeCommands() {
       const res: any = await msg.inlineReply('done');
       admin.saveMessage(res);
     },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
   );
 
-  cmdGroup.on(
+  registerChatOn(
+    cmdGroup,
     'listkv',
     (ctx) => ({ kvep: ctx.string() }),
     async (msg, { kvep }) => {
@@ -1107,9 +1358,15 @@ export function InitializeCommands() {
       const res: any = await msg.inlineReply(`\`\`\`json\n${JSON.stringify(items)}\n\`\`\``);
       admin.saveMessage(res);
     },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
   );
 
-  cmdGroup.on(
+  registerChatOn(
+    cmdGroup,
     'getemoji',
     (ctx) => ({ emj: ctx.string() }),
     async (msg, { emj }) => {
@@ -1117,6 +1374,11 @@ export function InitializeCommands() {
       const emoji = await guild.getEmoji(emj);
       const res: any = await msg.inlineReply(`\`\`\`\n${JSON.stringify(emoji)}\n\`\`\``);
       admin.saveMessage(res);
+    },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
     },
   );
   return [cmdGroup, cmdGroupOverrides];

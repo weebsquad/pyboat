@@ -13,11 +13,11 @@ const SLASH_COMMANDS_LIMIT = 10;
 
 type SlashCommandRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
-  extras: SlashExtras;
+  extras: CommandExtras;
 }
 type SlashCommandGroupRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
-  extras?: SlashExtras;
+  extras?: CommandExtras;
 }
 export const registeredSlashCommands: SlashCommandRegistry[] = [];
 export const registeredSlashCommandGroups: SlashCommandGroupRegistry[] = [];
@@ -26,17 +26,17 @@ interface ApiError extends discord.ApiError {
   messageExtended: string | undefined;
 }
 
-type SlashPermissionsCheck = {
-  overrideableInfo: string;
-  level: number;
+type CommandPermissionsCheck = {
+  overrideableInfo?: string;
+  level?: number;
   owner?: boolean;
   globalAdmin?: boolean;
 }
 
-type SlashExtras = {
-  permissions?: SlashPermissionsCheck;
+type CommandExtras = {
+  permissions?: CommandPermissionsCheck;
   staticAck?: boolean;
-  module: string;
+  module?: string;
   parent?: string;
 };
 
@@ -57,7 +57,7 @@ function getFullCommandName(name: string, parent?: string) {
   }
   return getFullCommandName(`${parentF.config.name} ${name}`, parentF.extras.parent);
 }
-async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<any>, extras: SlashExtras, callback: discord.interactions.commands.HandlerFunction<any>, interaction: discord.interactions.commands.SlashCommandInteraction, ...args: any) {
+async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<any>, extras: CommandExtras, callback: discord.interactions.commands.HandlerFunction<any>, interaction: discord.interactions.commands.SlashCommandInteraction, ...args: any) {
   const fullCmdName = getFullCommandName(sconf.name, extras.parent);
   if (typeof conf.config !== 'object' || conf.config === null || typeof conf.config === 'undefined') {
     const ret = await conf.InitializeConfig();
@@ -91,7 +91,8 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     return;
   }
   if (extras.permissions) {
-    const perms = await commands2.checkSlashPerms(interaction, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
+    const guild = await interaction.getGuild();
+    const perms = await commands2.checkPerms(interaction.member, guild, interaction.channelId, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
     if (!perms.access) {
       try {
         await interaction.acknowledge(false);
@@ -200,7 +201,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
   }
 }
 
-export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
+export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: CommandExtras) {
   if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return;
   }
@@ -216,7 +217,7 @@ export function registerSlash(sconf: discord.interactions.commands.ICommandConfi
   registeredSlashCommands.push({ config: sconf, extras });
 }
 
-export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: SlashExtras, parentGroup?: discord.interactions.commands.SlashCommandGroup) {
+export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: CommandExtras, parentGroup?: discord.interactions.commands.SlashCommandGroup) {
   registeredSlashCommandGroups.push({ config: sconf, extras });
   if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return null;
@@ -230,7 +231,7 @@ export function registerSlashGroup(sconf: discord.interactions.commands.ICommand
   return discord.interactions.commands.registerGroup(sconf);
 }
 
-export function registerSlashSub(parent: discord.interactions.commands.SlashCommandGroup, sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: SlashExtras) {
+export function registerSlashSub(parent: discord.interactions.commands.SlashCommandGroup, sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: CommandExtras) {
   if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return;
   }
@@ -256,6 +257,63 @@ export async function interactionChannelRespond(interaction: discord.interaction
     return msgRet;
   }
   return false;
+}
+
+export async function executeChatCommand(opts: string | discord.command.ICommandOptions, extras: CommandExtras, callback: discord.command.CommandHandler<any>, msg: discord.Message, ...args: any) {
+  cmdErrorDebounces.push(msg.id);
+  if (msg.member.user.bot && !utils.isCommandsAuthorized(msg.member)) {
+    return;
+  }
+  if (!utils.isCommandsAuthorized(msg.member)) {
+    return;
+  }
+  if (extras.permissions) {
+    const guild = await msg.getGuild();
+    const perms = await commands2.checkPerms(msg.member, guild, msg.channelId, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
+    if (!perms.access) {
+      if (perms.errors.length > 0) {
+        let txtErr = '';
+        if (perms.errors.includes('This command is disabled')) {
+          txtErr = 'This command is disabled';
+        } else {
+          txtErr = `__You must meet all of following criteria:__\n${perms.errors.join('\n')}`;
+        }
+        const emb = new discord.Embed();
+        emb.setTitle(`${discord.decor.Emojis.LOCK} You can't use that command!`);
+        emb.setColor(0xff0505);
+        emb.setDescription(txtErr);
+        let sentMsg;
+        try {
+          sentMsg = await msg.inlineReply({ allowedMentions: {}, content: '', embed: emb });
+        } catch (_) {
+          sentMsg = await msg.reply({ allowedMentions: {}, content: '', embed: emb });
+        }
+        if (sentMsg) {
+          await admin.saveMessage(sentMsg, true);
+        }
+      }
+      return;
+    }
+  }
+  // @ts-ignore
+  await callback(msg, ...args);
+
+  const checkDebounce = cmdErrorDebounces.findIndex((v) => v === msg.id);
+  if (checkDebounce > -1) {
+    cmdErrorDebounces.splice(checkDebounce, 1);
+  }
+}
+
+export function registerChatOn(parentGroup: discord.command.CommandGroup, opts: string | discord.command.ICommandOptions, argsParser: discord.command.ArgumentsParser<any>, callback: discord.command.CommandHandler<any>, extras: CommandExtras) {
+  parentGroup.on(opts, argsParser, async (...args) => {
+    await executeChatCommand(opts, extras, callback, ...args);
+  });
+}
+
+export function registerChatRaw(parentGroup: discord.command.CommandGroup, opts: string | discord.command.ICommandOptions, callback: discord.command.CommandHandler<any>, extras: CommandExtras) {
+  parentGroup.raw(opts, async (...args) => {
+    await executeChatCommand(opts, extras, callback, ...args);
+  });
 }
 
 const errorsDisplay = ['missing permissions'];

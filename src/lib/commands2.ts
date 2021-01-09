@@ -268,10 +268,8 @@ type SlashExecutionPermission = {
   access: boolean;
   errors?: string[];
 }
-export async function checkSlashPerms(interaction: discord.interactions.commands.SlashCommandInteraction, overrideableInfo: string | null, level: number, owner = false, ga = false): Promise<SlashExecutionPermission> {
+export async function checkPerms(member: discord.GuildMember, guild: discord.Guild, channelId: string, overrideableInfo: string, level: number, owner = false, ga = false): Promise<SlashExecutionPermission> {
   const retVal: SlashExecutionPermission = { access: false, errors: [] };
-  const guild = await interaction.getGuild();
-  const member = interaction.member;
   const isOverridingGlobalAdmin = await utils.isGAOverride(member.user.id);
   // the non-async check is after because the first one will force a preload of the admins config
   const isGlobalAdmin = utils.isGlobalAdmin(member.user.id);
@@ -287,7 +285,7 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
     return retVal;
   }
   let ov: undefined | CmdOverride;
-  if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1 && typeof config.modules.commands.overrides === 'object') {
+  if (overrideableInfo && overrideableInfo.length > 1 && typeof config.modules.commands.overrides === 'object' && level) {
     ov = checkOverrides(level, overrideableInfo);
     level = ov.level;
   }
@@ -299,6 +297,9 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
       retVal.access = false;
       retVal.errors.push('This command is disabled');
     }
+  } else if (typeof level !== 'number') {
+    retVal.access = false;
+    retVal.errors.push('Command improperly defined');
   } else {
     const accessFunc: any = () => {
       const val = theirLevel >= level;
@@ -317,10 +318,10 @@ export async function checkSlashPerms(interaction: discord.interactions.commands
           return true;
         }
       }
-      if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(interaction.channelId)) {
+      if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(channelId)) {
         return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
       }
-      if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(interaction.channelId)) {
+      if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(channelId)) {
         let chs = ov.channelsWhitelist;
         if (Array.isArray(ov.channelsBlacklist)) {
           chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));

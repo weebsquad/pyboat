@@ -3,7 +3,6 @@
 import * as conf from '../config';
 import { pad, swapKV, logError, makeFake, escapeString } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
-// import { bigInt } from './bigint';
 
 const { config } = conf;
 
@@ -290,7 +289,6 @@ export function composeSnowflake(timestamp: any = Date.now()) {
 }
 
 export function decomposeSnowflake(snowflake: string) {
-  // let binary = pad(bigInt(snowflake, 10, undefined, undefined).toString(2), 64);
   const binary = pad(BigInt(snowflake).toString(2), 64);
   const res = {
     timestamp: parseInt(binary.substring(0, 42), 2) + Epoch,

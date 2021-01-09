@@ -2,7 +2,7 @@ import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { Ranks, config, globalConfig } from '../config';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand } from './commands';
 
 const pool = new utils.StoragePool('tags', 0, 'id', 'ts');
 class Tag {
@@ -47,18 +47,36 @@ export async function showTag(msg: discord.GuildMemberMessage, tagName: string) 
 }
 const blacklist = ['show', 'create', 'set', 'define', 'make', 'delete', 'del', 'rm', 'remove', 'info', 'inf', 'list', 'all', 'removeall', 'clearall', 'edit'];
 export function subTags(subCmdGroup: discord.command.CommandGroup) {
-  subCmdGroup.default((ctx) => ({ tagName: ctx.text() }), async (msg, { tagName }) => {
-    await showTag(msg, tagName);
-  }, { filters: c2.getFilters('tags.tag.show', Ranks.Guest) });
-  subCmdGroup.on(
-    { name: 'show', filters: c2.getFilters('tags.tag.show', Ranks.Guest) },
+  subCmdGroup.default(
+    (ctx) => ({ tagName: ctx.text() }),
+    async (...args) => {
+      await executeChatCommand(
+        'remind',
+        { permissions: { level: Ranks.Guest, overrideableInfo: 'tags.tag.show' } },
+        async (msg, { tagName }) => {
+          await showTag(msg, tagName);
+        }, ...args,
+      );
+    },
+  );
+
+  registerChatOn(
+    subCmdGroup,
+    'show',
     (ctx) => ({ tagName: ctx.text() }),
     async (msg, { tagName }) => {
       await showTag(msg, tagName);
     },
+    {
+      permissions: {
+        level: Ranks.Guest,
+        overrideableInfo: 'tags.tag.show',
+      },
+    },
   );
-  subCmdGroup.on(
-    { name: 'set', aliases: ['set', 'define', 'make', 'edit', 'create'], filters: c2.getFilters('tags.tag.set', Ranks.Guest) },
+  registerChatOn(
+    subCmdGroup,
+    { name: 'set', aliases: ['set', 'define', 'make', 'edit', 'create'] },
     (ctx) => ({ tagName: ctx.string(), content: ctx.text() }),
     async (msg, { tagName, content }) => {
       const res: any = await msg.inlineReply(async () => {
@@ -92,9 +110,16 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        level: Ranks.Guest,
+        overrideableInfo: 'tags.tag.set',
+      },
+    },
   );
-  subCmdGroup.on(
-    { name: 'delete', aliases: ['remove', 'rm', 'del'], filters: c2.getFilters('tags.tag.delete', Ranks.Guest) },
+  registerChatOn(
+    subCmdGroup,
+    { name: 'delete', aliases: ['remove', 'rm', 'del'] },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
       const res: any = await msg.inlineReply(async () => {
@@ -114,9 +139,16 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        level: Ranks.Guest,
+        overrideableInfo: 'tags.tag.delete',
+      },
+    },
   );
-  subCmdGroup.on(
-    { name: 'info', aliases: ['inf'], filters: c2.getFilters('tags.tag.info', Ranks.Guest) },
+  registerChatOn(
+    subCmdGroup,
+    { name: 'info', aliases: ['inf'] },
     (ctx) => ({ tagName: ctx.string() }),
     async (msg, { tagName }) => {
       const res: any = await msg.inlineReply(async () => {
@@ -136,9 +168,16 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        level: Ranks.Guest,
+        overrideableInfo: 'tags.tag.info',
+      },
+    },
   );
-  subCmdGroup.raw(
-    { name: 'clearall', aliases: ['removeall'], filters: c2.getFilters('tags.tag.clearall', Ranks.Administrator) },
+  registerChatRaw(
+    subCmdGroup,
+    { name: 'clearall', aliases: ['removeall'] },
     async (msg) => {
       const res: any = await msg.inlineReply(async () => {
         const removed = await pool.getAll<Tag>();
@@ -147,9 +186,16 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        level: Ranks.Administrator,
+        overrideableInfo: 'tags.tag.clearall',
+      },
+    },
   );
-  subCmdGroup.raw(
-    { name: 'list', aliases: ['all'], filters: c2.getFilters('tags.tag.list', Ranks.Authorized) },
+  registerChatRaw(
+    subCmdGroup,
+    { name: 'list', aliases: ['all'] },
     async (msg) => {
       const res: any = await msg.inlineReply(async () => {
         const ex = await pool.getAll<Tag>();
@@ -165,20 +211,25 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        level: Ranks.Authorized,
+        overrideableInfo: 'tags.tag.list',
+      },
+    },
   );
 }
 export function InitializeCommands() {
   const _groupOptions = {
     description: 'Tag Commands',
-    filters: c2.getFilters('tags', Ranks.Guest),
   };
 
   const optsGroup = c2.getOpts(
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand({ name: 'tag', filters: c2.getFilters('tags.tag', Ranks.Moderator) }, subTags);
-  // cmdGroup.subcommand({ name: 'tags', filters: c2.getFilters('tags.tags', Ranks.Moderator) }, subTags);
+  cmdGroup.subcommand('tag', subTags);
+  // cmdGroup.subcommand('tags', subTags);
   return cmdGroup;
 }
 

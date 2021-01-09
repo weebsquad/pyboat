@@ -10,7 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand } from './commands';
 
 class UserRole {
   memberId: string;
@@ -322,11 +322,8 @@ export async function OnGuildRoleDelete(
 }
 
 export function InitializeCommands() {
-  const F = discord.command.filters;
-
   const _groupOptions = {
     description: 'Utility Commands',
-    filters: c2.getFilters('utilities', Ranks.Guest),
   };
 
   const optsGroup = c2.getOpts(
@@ -335,22 +332,29 @@ export function InitializeCommands() {
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
   if (typeof config.modules.utilities.customUserRoles === 'object' && config.modules.utilities.customUserRoles.enabled === true) {
     // CUSTOM USER ROLES
-    cmdGroup.subcommand({ name: 'cur', filters: c2.getFilters('utilities.cur', Ranks.Guest) }, (subCommandGroup) => {
+    cmdGroup.subcommand('cur', (subCommandGroup) => {
       subCommandGroup.defaultRaw(
-        async (msg) => {
-          const res: any = await msg.inlineReply(async () => {
-            const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
-            if (!checkrole) {
-              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
-            }
-            const prefix = typeof config.modules.commands.prefix === 'string' ? config.modules.commands.prefix : config.modules.commands.prefix[0];
-            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type \`${prefix}cur name <name>\`\nTo set the color, type \`${prefix}cur color <color>\`` };
-          });
-          saveMessage(res);
+        async (msgT) => {
+          await executeChatCommand(
+            'cur',
+            { permissions: { level: Ranks.Guest, overrideableInfo: 'utilities.cur' } },
+            async (msg) => {
+              const res: any = await msg.inlineReply(async () => {
+                const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
+                if (!checkrole) {
+                  return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+                }
+                const prefix = typeof config.modules.commands.prefix === 'string' ? config.modules.commands.prefix : config.modules.commands.prefix[0];
+                return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type \`${prefix}cur name <name>\`\nTo set the color, type \`${prefix}cur color <color>\`` };
+              });
+              saveMessage(res);
+            }, msgT,
+          );
         },
       );
-      subCommandGroup.on(
-        { name: 'name', filters: c2.getFilters('utilities.cur.name', Ranks.Guest) },
+      registerChatOn(
+        subCommandGroup,
+        'name',
         (ctx) => ({ name: ctx.text() }),
         async (msg, { name }) => {
           const res: any = await msg.inlineReply(async () => {
@@ -371,9 +375,16 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            overrideableInfo: 'utilities.cur.name',
+            level: Ranks.Guest,
+          },
+        },
       );
-      subCommandGroup.on(
-        { name: 'color', filters: c2.getFilters('utilities.cur.color', Ranks.Guest) },
+      registerChatOn(
+        subCommandGroup,
+        'color',
         (ctx) => ({ color: ctx.textOptional() }),
         async (msg, { color }) => {
           const res: any = await msg.inlineReply(async () => {
@@ -397,10 +408,17 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            overrideableInfo: 'utilities.cur.color',
+            level: Ranks.Guest,
+          },
+        },
       );
 
-      subCommandGroup.on(
-        { name: 'set', filters: c2.getFilters('utilities.cur.set', Ranks.Administrator) },
+      registerChatOn(
+        subCommandGroup,
+        'set',
         (ctx) => ({ target: ctx.guildMember(), roleText: ctx.text() }),
         async (msg, { target, roleText }) => {
           const res: any = await msg.inlineReply(async () => {
@@ -430,10 +448,17 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            overrideableInfo: 'utilities.cur.set',
+            level: Ranks.Administrator,
+          },
+        },
       );
 
-      subCommandGroup.on(
-        { name: 'clear', filters: c2.getFilters('utilities.cur.clear', Ranks.Administrator) },
+      registerChatOn(
+        subCommandGroup,
+        'clear',
         (ctx) => ({ target: ctx.guildMember() }),
         async (msg, { target }) => {
           const res: any = await msg.inlineReply(async () => {
@@ -452,9 +477,16 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            overrideableInfo: 'utilities.cur.clear',
+            level: Ranks.Administrator,
+          },
+        },
       );
-      subCommandGroup.on(
-        { name: 'delete', filters: c2.getFilters('utilities.cur.delete', Ranks.Administrator) },
+      registerChatOn(
+        subCommandGroup,
+        'delete',
         (ctx) => ({ target: ctx.guildMember() }),
         async (msg, { target }) => {
           const res: any = await msg.inlineReply(async () => {
@@ -474,13 +506,20 @@ export function InitializeCommands() {
           });
           saveMessage(res);
         },
+        {
+          permissions: {
+            overrideableInfo: 'utilities.cur.delete',
+            level: Ranks.Administrator,
+          },
+        },
       );
     });
   }
   // SNIPE COMMAND
   if (typeof config.modules.utilities.snipe === 'object' && config.modules.utilities.snipe.enabled === true) {
-    cmdGroup.raw(
-      { name: 'snipe', filters: c2.getFilters('utilities.snipe', Ranks.Authorized) }, async (msg) => {
+    registerChatRaw(
+      cmdGroup,
+      'snipe', async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           let _sn: any = await snipekvs.get(msg.channelId);
           if (typeof _sn === 'string') {
@@ -523,22 +562,36 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.snipe',
+          level: Ranks.Authorized,
+        },
+      },
     );
   }
 
   // random
-  cmdGroup.subcommand({ name: 'random', filters: c2.getFilters('utilities.random', Ranks.Guest) }, (subCommandGroup) => {
-    subCommandGroup.raw(
-      { name: 'coin', filters: c2.getFilters('utilities.random.coin', Ranks.Guest) },
+  cmdGroup.subcommand('random', (subCommandGroup) => {
+    registerChatRaw(
+      subCommandGroup,
+      'coin',
       async (msg) => {
         await msg.inlineReply(async () => {
           const ret = utils.getRandomInt(1, 2);
           return `The coin comes up as .... **${ret === 1 ? 'Heads' : 'Tails'}** !`;
         });
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.coin',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'number', filters: c2.getFilters('utilities.random.number', Ranks.Guest) },
+    registerChatOn(
+      subCommandGroup,
+      'number',
       (ctx) => ({ minimum: ctx.integer({ maxValue: 1000000000, minValue: 0 }), maximum: ctx.integer({ maxValue: 1000000000, minValue: 1 }) }),
       async (msg, { minimum, maximum }) => {
         await msg.inlineReply(async () => {
@@ -549,9 +602,16 @@ export function InitializeCommands() {
           return `Result (\`${minimum}-${maximum}\`) - **${ret}** !`;
         });
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.number',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'cat', aliases: ['pussy', 'fatbitch'], filters: c2.getFilters('utilities.random.cat', Ranks.Guest) },
+    registerChatRaw(
+      subCommandGroup,
+      { name: 'cat', aliases: ['pussy', 'fatbitch'] },
       async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('http://aws.random.cat/meow')).json();
@@ -567,9 +627,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.cat',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'dog', aliases: ['doggo'], filters: c2.getFilters('utilities.random.dog', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      { name: 'dog', aliases: ['doggo'] }, async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://random.dog/woof.json')).json();
           const pic = await (await fetch(file.url)).arrayBuffer();
@@ -585,9 +652,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.dog',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'doge', aliases: ['shibe'], filters: c2.getFilters('utilities.random.doge', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      { name: 'doge', aliases: ['shibe'] }, async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
           const pic = await (await fetch(file.message)).arrayBuffer();
@@ -603,10 +677,17 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.doge',
+          level: Ranks.Guest,
+        },
+      },
     );
 
-    subCommandGroup.raw(
-      { name: 'fox', filters: c2.getFilters('utilities.random.fox', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      'fox', async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://randomfox.ca/floof/')).json();
           const pic = await (await fetch(file.image)).arrayBuffer();
@@ -622,9 +703,17 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.fox',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'koala', filters: c2.getFilters('utilities.random.koala', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      'koala',
+      async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
           const pic = await (await fetch(file.link)).arrayBuffer();
@@ -640,9 +729,17 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.koala',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'birb', aliases: ['bird'], filters: c2.getFilters('utilities.random.birb', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      { name: 'birb', aliases: ['bird'] },
+      async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
           const pic = await (await fetch(file.link)).arrayBuffer();
@@ -658,9 +755,17 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.birb',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'panda', aliases: ['ponda', 'pwnda'], filters: c2.getFilters('utilities.random.panda', Ranks.Guest) }, async (msg) => {
+    registerChatRaw(
+      subCommandGroup,
+      { name: 'panda', aliases: ['ponda', 'pwnda'] },
+      async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
           const pic = await (await fetch(file.link)).arrayBuffer();
@@ -676,11 +781,18 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.random.panda',
+          level: Ranks.Guest,
+        },
+      },
     );
   });
   // snowflake
-  cmdGroup.on(
-    { name: 'snowflake', filters: c2.getFilters('utilities.snowflake', Ranks.Guest) },
+  registerChatOn(
+    cmdGroup,
+    'snowflake',
     (ctx) => ({ snowflake: ctx.string() }),
     async (msg, { snowflake }) => {
       const normalTs = utils.getSnowflakeDate(snowflake);
@@ -689,10 +801,17 @@ export function InitializeCommands() {
       );
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.snowflake',
+        level: Ranks.Guest,
+      },
+    },
   );
 
-  cmdGroup.on(
-    { name: 'avatar', filters: c2.getFilters('utilities.avatar', Ranks.Guest) },
+  registerChatOn(
+    cmdGroup,
+    'avatar',
     (ctx) => ({ user: ctx.userOptional() }),
     async (msg, { user }) => {
       const res: any = await msg.inlineReply(async () => {
@@ -710,58 +829,62 @@ export function InitializeCommands() {
 
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.avatar',
+        level: Ranks.Guest,
+      },
+    },
   );
 
   // reminder
   cmdGroup.subcommand('remind', (subCommandGroup) => {
     subCommandGroup.default(
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
-      async (msg, { when, text }) => {
-        await addReminder(msg, when, text);
-      }, { filters: c2.getFilters('utilities.remind.add', Ranks.Guest) },
+      async (...args) => {
+        await executeChatCommand(
+          'remind',
+          { permissions: { level: Ranks.Guest, overrideableInfo: 'utilities.remind.add' } },
+          async (msg, { when, text }) => {
+            await addReminder(msg, when, text);
+          }, ...args,
+        );
+      },
     );
 
-    subCommandGroup.on(
-      { name: 'add', filters: c2.getFilters('utilities.remind.add', Ranks.Guest) },
+    registerChatOn(
+      subCommandGroup,
+      'add',
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
       async (msg, { when, text }) => {
         await addReminder(msg, when, text);
       },
+      {
+        permissions: {
+          overrideableInfo: 'utilities.remind.add',
+          level: Ranks.Guest,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'clear', filters: c2.getFilters('utilities.remind.clear', Ranks.Guest) },
+    registerChatRaw(
+      subCommandGroup,
+      'clear',
       async (msg) => {
         await clearReminders(msg);
       },
-    );
-  });
-  /*
-  cmdGroup.subcommand('r', (subCommandGroup) => {
-    subCommandGroup.default(
-      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
-      async (msg, { when, text }) => {
-        await addReminder(msg, when, text);
-      }, { filters: c2.getFilters('utilities.remind', Ranks.Guest) },
-    );
-
-    subCommandGroup.on(
-      { name: 'add', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
-      (ctx) => ({ when: ctx.string(), text: ctx.text() }),
-      async (msg, { when, text }) => {
-        await addReminder(msg, when, text);
-      },
-    );
-    subCommandGroup.raw(
-      { name: 'clear', filters: c2.getFilters('utilities.remind', Ranks.Guest) },
-      async (msg) => {
-        await clearReminders(msg);
+      {
+        permissions: {
+          overrideableInfo: 'utilities.remind.clear',
+          level: Ranks.Guest,
+        },
       },
     );
   });
-*/
 
-  cmdGroup.raw(
-    { name: 'pikachu', filters: c2.getFilters('utilities.pikachu', Ranks.Guest) }, async (msg) => {
+  registerChatRaw(
+    cmdGroup,
+    'pikachu',
+    async (msg) => {
       const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
@@ -777,10 +900,18 @@ export function InitializeCommands() {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.pikachu',
+        level: Ranks.Guest,
+      },
+    },
   );
 
-  cmdGroup.raw(
-    { name: 'pat', filters: c2.getFilters('utilities.pat', Ranks.Guest) }, async (msg) => {
+  registerChatRaw(
+    cmdGroup,
+    'pat',
+    async (msg) => {
       const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
@@ -796,9 +927,17 @@ export function InitializeCommands() {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.pat',
+        level: Ranks.Guest,
+      },
+    },
   );
-  cmdGroup.raw(
-    { name: 'hug', filters: c2.getFilters('utilities.hug', Ranks.Guest) }, async (msg) => {
+  registerChatRaw(
+    cmdGroup,
+    'hug',
+    async (msg) => {
       const res: any = await msg.inlineReply(async () => {
         const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
         const pic = await (await fetch(file.link)).arrayBuffer();
@@ -814,10 +953,17 @@ export function InitializeCommands() {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.hug',
+        level: Ranks.Guest,
+      },
+    },
   );
 
-  cmdGroup.on(
-    { name: 'server', filters: c2.getFilters('utilities.server', Ranks.Guest) },
+  registerChatOn(
+    cmdGroup,
+    'server',
     (ctx) => ({ gid: ctx.stringOptional() }),
     async (message, { gid }) => {
       const res: any = await message.inlineReply(async () => {
@@ -1131,10 +1277,17 @@ export function InitializeCommands() {
       });
       saveMessage(res);
     },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.server',
+        level: Ranks.Guest,
+      },
+    },
   );
 
-  cmdGroup.on(
-    { name: 'info', filters: c2.getFilters('utilities.info', Ranks.Guest) },
+  registerChatOn(
+    cmdGroup,
+    'info',
     (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'user' }) }),
     async (msg, { user }) => {
       const res: any = await msg.inlineReply(async () => {
@@ -1388,6 +1541,12 @@ export function InitializeCommands() {
       });
       saveMessage(res);
       // await loadingMsg.edit({ content: '', embed: emb });
+    },
+    {
+      permissions: {
+        overrideableInfo: 'utilities.info',
+        level: Ranks.Guest,
+      },
     },
   );
   return cmdGroup;

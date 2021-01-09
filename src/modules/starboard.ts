@@ -4,7 +4,7 @@ import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn } from './commands';
 
 const MAX_LIFETIME = 336;
 
@@ -777,7 +777,6 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
 export function InitializeCommands() {
   const _groupOptions = {
     description: 'Starboard Commands',
-    filters: c2.getFilters('starboard', Ranks.Moderator),
   };
 
   const optsGroup = c2.getOpts(
@@ -785,9 +784,10 @@ export function InitializeCommands() {
   );
 
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand({ name: 'stars', filters: c2.getFilters('starboard.stars', Ranks.Authorized) }, (subCommandGroup) => {
-    subCommandGroup.on(
-      { name: 'stats', filters: c2.getFilters('starboard.stars.stats', Ranks.Authorized) },
+  cmdGroup.subcommand('stars', (subCommandGroup) => {
+    registerChatOn(
+      subCommandGroup,
+      'stats',
       (ctx) => ({ user: ctx.userOptional() }),
       async (msg, { user }) => {
         const res: any = await msg.inlineReply(async () => {
@@ -853,9 +853,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'starboards.stars.stats',
+          level: Ranks.Authorized,
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'block', filters: c2.getFilters('starboard.stars.block', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'block',
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
         const res: any = await msg.inlineReply(async () => {
@@ -873,9 +880,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'starboards.stars.block',
+          level: Ranks.Moderator,
+        },
+      },
     );
-    subCommandGroup.on(
-      { name: 'unblock', filters: c2.getFilters('starboard.stars.unblock', Ranks.Moderator) },
+    registerChatOn(
+      subCommandGroup,
+      'unblock',
       (ctx) => ({ user: ctx.user() }),
       async (msg, { user }) => {
         const res: any = await msg.inlineReply(async () => {
@@ -893,9 +907,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'starboards.stars.unblock',
+          level: Ranks.Moderator,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'lock', filters: c2.getFilters('starboard.stars.lock', Ranks.Administrator) },
+    registerChatRaw(
+      subCommandGroup,
+      'lock',
       async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
@@ -907,9 +928,16 @@ export function InitializeCommands() {
         });
         saveMessage(res);
       },
+      {
+        permissions: {
+          overrideableInfo: 'starboards.stars.lock',
+          level: Ranks.Administrator,
+        },
+      },
     );
-    subCommandGroup.raw(
-      { name: 'unlock', filters: c2.getFilters('starboard.stars.unlock', Ranks.Administrator) },
+    registerChatRaw(
+      subCommandGroup,
+      'unlock',
       async (msg) => {
         const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
@@ -920,6 +948,12 @@ export function InitializeCommands() {
           return `${msg.author.toMention()}, unlocked the starboard!`;
         });
         saveMessage(res);
+      },
+      {
+        permissions: {
+          overrideableInfo: 'starboards.stars.unlock',
+          level: Ranks.Administrator,
+        },
       },
     );
   });
