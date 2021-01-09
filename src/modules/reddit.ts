@@ -50,7 +50,8 @@ export async function updateSubs(): Promise<void> {
     sub.channel = channel;
     return sub;
   }));
-  if (subs.length > 3) {
+  subs = subs.filter((v) => v && v.channel);
+  if (subs.length > 3 || subs.length === 0) {
     return;
   }
   // @ts-ignore
@@ -59,6 +60,7 @@ export async function updateSubs(): Promise<void> {
   const times = await kv.get('lastUpdated') || {};
   const timesNew = JSON.parse(JSON.stringify(times));
   await Promise.all(subs.map(async (sub) => {
+    // @ts-ignore
     const jsonmeas = await pylon.getCpuTime();
     const req = await fetch(`https://www.reddit.com/r/${sub.name}/new.json`);
     if (req.status !== 200) {
@@ -69,6 +71,7 @@ export async function updateSubs(): Promise<void> {
     if (!json.data || !json.data.children) {
       return;
     }
+    // @ts-ignore
     const jsonmeasend = Math.floor(await pylon.getCpuTime() - jsonmeas);
     if (jsonmeasend > 5) {
       console.log(`[REDDIT] CPU @ ONE FETCH TOOK ${jsonmeasend}ms`);
