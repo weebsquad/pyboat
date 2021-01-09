@@ -4,7 +4,7 @@ import { config, globalConfig, guildId, Ranks } from '../config';
 import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
 
 const MAX_LIFETIME = 336;
 
@@ -784,7 +784,7 @@ export function InitializeCommands() {
   );
 
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand('stars', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'stars', (subCommandGroup) => {
     registerChatOn(
       subCommandGroup,
       'stats',

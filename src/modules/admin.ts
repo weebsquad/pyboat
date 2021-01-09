@@ -8,7 +8,7 @@ import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
 
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
@@ -1761,9 +1761,9 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand('clean', cleanCommands);
-  cmdGroup.subcommand('clear', cleanCommands);
-  cmdGroup.subcommand('invites', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'clean', cleanCommands);
+  registerChatSubCallback(cmdGroup, 'clear', cleanCommands);
+  registerChatSubCallback(cmdGroup, 'invites', (subCommandGroup) => {
     registerChatOn(
       subCommandGroup,
       'prune',
@@ -1795,7 +1795,7 @@ export function InitializeCommands() {
       },
     );
   });
-  cmdGroup.subcommand('role', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'role', (subCommandGroup) => {
     registerChatOn(
       subCommandGroup,
       'unlock',
@@ -2394,7 +2394,7 @@ export function InitializeCommands() {
 
   // BACKUP
   if (config.modules.admin.persist.enabled === true) {
-    cmdGroup.subcommand('backup', (subCommandGroup) => {
+    registerChatSubCallback(cmdGroup, 'backup', (subCommandGroup) => {
       registerChatOn(
         subCommandGroup,
         'restore',

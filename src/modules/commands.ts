@@ -7,6 +7,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
+const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
 const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'admin';
 const SLASH_COMMANDS_LIMIT = 10;
@@ -132,7 +133,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     if (_e.messageExtended && typeof _e.messageExtended === 'string') {
       try {
         const emsg: any = JSON.parse(_e.messageExtended).message;
-        if (emsg && emsg.toLowerCase() === 'missing permissions') {
+        if (emsg && errorsDisplay.includes(emsg.toLowerCase())) {
           await interaction.respondEphemeral(`**There has been an error executing this command**\n\n__${emsg}__`);
           return;
         }
@@ -316,7 +317,23 @@ export function registerChatRaw(parentGroup: discord.command.CommandGroup, opts:
   });
 }
 
-const errorsDisplay = ['missing permissions'];
+export function registerChatSubCallback(parentGroup: discord.command.CommandGroup, opts: string | discord.command.ICommandOptions, func: (group: discord.command.CommandGroup) => void, applyDefault = true) {
+  const newg = parentGroup.subcommand(opts, (newgr) => {
+    func(newgr);
+    if (applyDefault) {
+      // @ts-ignore
+      newgr.defaultRaw(async (msg) => {
+        await unknownHandler(msg, newgr);
+      });
+    }
+  });
+  return newg;
+}
+
+export function registerChatSub(parentGroup: discord.command.CommandGroup, opts: string | discord.command.ICommandOptions, applyDefault = true) {
+  return registerChatSubCallback(parentGroup, opts, () => undefined, applyDefault);
+}
+
 export async function chatErrorHandler({ message, command }, error: Error | discord.command.ArgumentError<any>): Promise<void> {
   try {
     cmdErrorDebounces.push(message.id);
@@ -354,7 +371,7 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
         return false;
       });
       if (matchingArgErrorName) {
-        matchingArgErrorName = [matchingArgErrorName];
+        [matchingArgErrorName] = matchingArgErrorName;
       }
       msgReply = `${discord.decor.Emojis.WARNING} Argument Error (\`${matchingArgErrorName}\`: __${error.message}__)\n\`\`\`\n${usageString}\n\`\`\``;
     } else if (errorsDisplay.includes(error.message.toLowerCase())) {
@@ -389,6 +406,45 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
   }
 }
 
+export async function unknownHandler(message, group) {
+  let msgReply = '';
+  let cmdInitial: string | Array<string>;
+  if (message.content.includes(' ')) {
+    cmdInitial = [];
+    const splitted = message.content.split(' ');
+    for (const key in splitted) {
+      const val = splitted[key];
+      cmdInitial.push(val);
+      if (val === group.options.name) {
+        break;
+      }
+    }
+    cmdInitial = cmdInitial.join(' ');
+  } else {
+    cmdInitial = message.content;
+  }
+  const subNames = [];
+  for (const [key, value] of group.commandExecutors) {
+    if (!value.aliasOf) {
+      subNames.push(key);
+    }
+  }
+  if (subNames.length > 0) {
+    msgReply = `Unknown sub-command for \`${utils.escapeString(<string>cmdInitial, true)}\`, try:\n${subNames.join(', ')}`;
+  }
+
+  if (msgReply.length > 0) {
+    let sentMsg;
+    try {
+      sentMsg = await message.inlineReply({ allowedMentions: {}, content: msgReply });
+    } catch (_) {
+      sentMsg = await message.reply({ allowedMentions: {}, content: msgReply });
+    }
+    if (sentMsg) {
+      await admin.saveMessage(sentMsg);
+    }
+  }
+}
 const cooldowns: any = {};
 export async function OnMessageCreate(
   id: string,

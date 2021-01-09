@@ -7,7 +7,7 @@ import * as logUtils from './logging/utils';
 import { getUserAuth, StoragePool } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, registerChatSubCallback } from './commands';
 
 export const infsPool = new utils.StoragePool('infractions', 0, 'id', 'ts');
 
@@ -1147,7 +1147,7 @@ export function InitializeCommands() {
       },
     },
   );
-  cmdGroup.subcommand('inf', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'inf', (subCommandGroup) => {
     registerChatRaw(
       subCommandGroup,
       'recent',
@@ -1500,7 +1500,7 @@ export function InitializeCommands() {
         },
       },
     );
-    subCommandGroup.subcommand('search', (subCommandGroup2) => {
+    registerChatSubCallback(subCommandGroup, 'search', (subCommandGroup2) => {
       registerChatOn(
         subCommandGroup2,
         'actor',

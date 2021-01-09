@@ -525,5 +525,6 @@ export function InitializeCommands2() {
     }
   }
   cmdgroups = cmdgroups.map((v) => applyErrorHandler(v));
+
   cleanDuplicates();
 }

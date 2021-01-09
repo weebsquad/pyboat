@@ -10,7 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
 
 class UserRole {
   memberId: string;
@@ -332,7 +332,7 @@ export function InitializeCommands() {
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
   if (typeof config.modules.utilities.customUserRoles === 'object' && config.modules.utilities.customUserRoles.enabled === true) {
     // CUSTOM USER ROLES
-    cmdGroup.subcommand('cur', (subCommandGroup) => {
+    registerChatSubCallback(cmdGroup, 'cur', (subCommandGroup) => {
       subCommandGroup.defaultRaw(
         async (msgT) => {
           await executeChatCommand(
@@ -513,7 +513,7 @@ export function InitializeCommands() {
           },
         },
       );
-    });
+    }, false);
   }
   // SNIPE COMMAND
   if (typeof config.modules.utilities.snipe === 'object' && config.modules.utilities.snipe.enabled === true) {
@@ -572,7 +572,7 @@ export function InitializeCommands() {
   }
 
   // random
-  cmdGroup.subcommand('random', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'random', (subCommandGroup) => {
     registerChatRaw(
       subCommandGroup,
       'coin',
@@ -838,7 +838,7 @@ export function InitializeCommands() {
   );
 
   // reminder
-  cmdGroup.subcommand('remind', (subCommandGroup) => {
+  registerChatSubCallback(cmdGroup, 'remind', (subCommandGroup) => {
     subCommandGroup.default(
       (ctx) => ({ when: ctx.string(), text: ctx.text() }),
       async (...args) => {
@@ -879,7 +879,7 @@ export function InitializeCommands() {
         },
       },
     );
-  });
+  }, false);
 
   registerChatRaw(
     cmdGroup,

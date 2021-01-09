@@ -11,7 +11,7 @@ import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
 import * as github from '../lib/github';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
-import { registerChatOn, registerChatRaw } from '../modules/commands';
+import { registerChatOn, registerChatRaw, registerChatSubCallback } from '../modules/commands';
 
 type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
@@ -235,56 +235,60 @@ export function InitializeCommands() {
       },
     },
   );
-  registerChatRaw(cmdGroup,
-                  'reload',
-                  async (msg) => {
-                    const cfgres = await InitializeConfig(true);
-                    let txt = `${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`;
-                    if (!cfgres) {
-                      txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
-                    }
-                    const res: any = await msg.inlineReply(txt);
-                    admin.saveMessage(res);
-                  },
-                  {
-                    permissions: {
-                      globalAdmin: true,
-                    },
-                  });
-  registerChatRaw(cmdGroup,
-                  'deploy',
-                  async (msg, repo) => {
-                    if (repo === null || repo.length < 1) {
-                      repo = 'pyboat';
-                    }
-                    if (!globalConfig.github.deployments[repo.toLowerCase()]) {
-                      return 'Invalid repo name';
-                    }
-                    const res = await msg.inlineReply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
-                    if (res instanceof discord.GuildMemberMessage) {
-                      admin.saveMessage(res);
-                    }
-                    const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
-                    if (r === true) {
-                      for (let i = 0; i < 9; i++) {
-                        const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
-                        if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
-                          await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
-                          return;
-                        }
-                        await sleep(300);
-                      }
-                      await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
-                      return;
-                    }
-                    await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
-                  },
-                  {
-                    permissions: {
-                      globalAdmin: true,
-                    },
-                  });
-  cmdGroup.subcommand('test', (sub) => {
+  registerChatRaw(
+    cmdGroup,
+    'reload',
+    async (msg) => {
+      const cfgres = await InitializeConfig(true);
+      let txt = `${discord.decor.Emojis.WHITE_CHECK_MARK} reloaded the servers config!`;
+      if (!cfgres) {
+        txt = `${discord.decor.Emojis.X} Failed to reload the server's config`;
+      }
+      const res: any = await msg.inlineReply(txt);
+      admin.saveMessage(res);
+    },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
+  );
+  registerChatRaw(
+    cmdGroup,
+    'deploy',
+    async (msg, repo) => {
+      if (repo === null || repo.length < 1) {
+        repo = 'pyboat';
+      }
+      if (!globalConfig.github.deployments[repo.toLowerCase()]) {
+        return 'Invalid repo name';
+      }
+      const res = await msg.inlineReply(`<a:loading:735794724480483409> Deploying __${repo.toLowerCase()}__ @ master`);
+      if (res instanceof discord.GuildMemberMessage) {
+        admin.saveMessage(res);
+      }
+      const r = await github.sendDispatchEvent(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()]);
+      if (r === true) {
+        for (let i = 0; i < 9; i++) {
+          const runs = await github.getWorkflowRuns(globalConfig.github.org, repo, globalConfig.github.deployments[repo.toLowerCase()], 'queued');
+          if (runs && runs.workflow_runs && runs.workflow_runs.length > 0) {
+            await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** <${runs.workflow_runs[0].html_url}>`);
+            return;
+          }
+          await sleep(300);
+        }
+        await res.edit(`Sent deployment dispatch event: <https://github.com/${globalConfig.github.org}/${repo.toLowerCase()}>\n\t**=>** __Could not grab run URL__`);
+        return;
+      }
+      await res.edit(`${discord.decor.Emojis.X} Failed to deploy!`);
+    },
+    {
+      permissions: {
+        globalAdmin: true,
+      },
+    },
+  );
+  registerChatSubCallback(cmdGroup, 'test', (sub) => {
     registerChatRaw(
       sub,
       'error',
@@ -333,7 +337,7 @@ export function InitializeCommands() {
       sub,
       'cpu',
       async (m) => {
-        // @ts-ignore
+      // @ts-ignore
         const cpuinitial = await pylon.getCpuTime();
         const res: any = await m.inlineReply('<a:loading:735794724480483409>');
         await InitializeConfig(true);
@@ -737,7 +741,7 @@ export function InitializeCommands() {
       sub,
       'avatar',
       async (m) => {
-        // @ts-ignore
+      // @ts-ignore
         const initial = await pylon.getCpuTime();
         const url = m.author.getAvatarUrl();
         const ext = url.split('.').slice(-1)[0];
@@ -1182,7 +1186,7 @@ export function InitializeCommands() {
           }
         });
         const res: any = await m.inlineReply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
-        // admin.saveMessage(res);
+      // admin.saveMessage(res);
       },
       {
         permissions: {

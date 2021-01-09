@@ -2,7 +2,7 @@ import * as utils from '../lib/utils';
 import * as c2 from '../lib/commands2';
 import { Ranks, config, globalConfig } from '../config';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
 
 const pool = new utils.StoragePool('tags', 0, 'id', 'ts');
 class Tag {
@@ -228,8 +228,7 @@ export function InitializeCommands() {
     _groupOptions,
   );
   const cmdGroup = new discord.command.CommandGroup(optsGroup);
-  cmdGroup.subcommand('tag', subTags);
-  // cmdGroup.subcommand('tags', subTags);
+  registerChatSubCallback(cmdGroup, 'tag', subTags, false);
   return cmdGroup;
 }
 
