@@ -1378,11 +1378,8 @@ async function checkPrunes() {
       continue;
     }
     const tsDiff = now - duration;
-    console.log('tsDiff', tsDiff);
     const messages = await adminPool.getByQuery<TrackedMessage>({ channelId: chId });
-    console.log('messages', messages.length);
     const toDel = messages.filter((v) => v.ts < tsDiff);
-    console.log('toDel', toDel.length);
     const ids = toDel.map((v) => v.id);
     if (toDel.length === 0) {
       continue;
