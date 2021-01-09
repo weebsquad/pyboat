@@ -177,7 +177,7 @@ export class Action { // class action lawsuit lmao
     return diff > 0;
   }
 }
-class TrackedMessage {
+export class TrackedMessage {
     authorId: string;
     id: string;
     channelId: string;
@@ -394,11 +394,19 @@ function isThisEnabled() {
   }
   return config.modules.admin.enabled;
 }
-export async function saveMessage(msg: discord.GuildMemberMessage) {
+export async function saveMessage(msg: discord.GuildMemberMessage, forceBot = false) {
   if (!isThisEnabled()) {
     return false;
   }
-  const _res = await adminPool.saveToPool(new TrackedMessage(msg));
+  const checkExists = await adminPool.exists(msg.id);
+  if (checkExists) {
+    return false;
+  }
+  const newobj = new TrackedMessage(msg);
+  if (forceBot) {
+    newobj.bot = true;
+  }
+  const _res = await adminPool.saveToPool(newobj);
   return _res;
 }
 export async function getRoleIdByText(txt: string): Promise<string | null> {

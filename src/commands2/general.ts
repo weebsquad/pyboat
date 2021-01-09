@@ -49,7 +49,8 @@ export function InitializeCommands() {
   );
 
   cmdGroup.raw(
-    { name: 'ping', filters: c2.getFilters('commands.ping', Ranks.Guest) }, async (msg) => {
+    { name: 'ping', filters: c2.getFilters('commands.ping', Ranks.Guest) },
+    async (msg) => {
       const msgdiff = new Date().getTime() - utils.decomposeSnowflake(msg.id).timestamp;
       const msgd = new Date();
       const edmsg: any = await msg.inlineReply('<a:loading:735794724480483409>');

@@ -7,6 +7,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 
+const cmdErrorDebounces: string[] = [];
 const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'admin';
 const SLASH_COMMANDS_LIMIT = 10;
 
@@ -237,7 +238,6 @@ export function registerSlashSub(parent: discord.interactions.commands.SlashComm
   /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
   sconf.description = `[${prettyModule}] ${sconf.description}`; */
   parent.register(sconf, async (interaction, ...args: any) => {
-    console.log('native callback ran');
     await executeSlash(sconf, extras, callback, interaction, ...args);
   });
   registeredSlashCommands.push({ config: sconf, extras });
@@ -256,6 +256,79 @@ export async function interactionChannelRespond(interaction: discord.interaction
     return msgRet;
   }
   return false;
+}
+
+const errorsDisplay = ['missing permissions'];
+export async function chatErrorHandler({ message, command }, error: Error | discord.command.ArgumentError<any>): Promise<void> {
+  try {
+    cmdErrorDebounces.push(message.id);
+    let msgReply = '';
+    let cmdInitial: string | Array<string>;
+    if (message.content.includes(' ')) {
+      cmdInitial = [];
+      const splitted = message.content.split(' ');
+      for (const key in splitted) {
+        const val = splitted[key];
+        cmdInitial.push(val);
+        if (val === command.options.name) {
+          break;
+        }
+      }
+      cmdInitial = cmdInitial.join(' ');
+    } else {
+      cmdInitial = message.content;
+    }
+    if (error instanceof discord.command.ArgumentError) {
+      const argsUsage = command.argumentConfigList.map((v) => {
+        let typeArg = v[1].type;
+        if (typeArg.includes('Optional')) {
+          typeArg = typeArg.split('Optional').join('');
+          return `[${v[0]}: ${typeArg}]`;
+        }
+        return `<${v[0]}: ${typeArg}>`;
+      }).join(' ');
+      const usageString = `${cmdInitial} ${argsUsage}`;
+      let matchingArgErrorName = command.argumentConfigList.find((v) => {
+        const typeArg = v[1].type.toLowerCase();
+        if (error.argumentConfig.type.toLowerCase() === typeArg) {
+          return true;
+        }
+        return false;
+      });
+      if (matchingArgErrorName) {
+        matchingArgErrorName = [matchingArgErrorName];
+      }
+      msgReply = `${discord.decor.Emojis.WARNING} Argument Error (\`${matchingArgErrorName}\`: __${error.message}__)\n\`\`\`\n${usageString}\n\`\`\``;
+    } else if (errorsDisplay.includes(error.message.toLowerCase())) {
+      msgReply = `${discord.decor.Emojis.X} **There was an error running that command**\n[${error.name}] - __${error.message}__`;
+    } else {
+      utils.logError(error);
+      msgReply = `${discord.decor.Emojis.X} **There was an error running that command**\n__This has been reported to the Bot Developer__`;
+      logDebug(
+        'BOT_ERROR',
+        new Map<string, any>([
+          [
+            'ERROR',
+            `Command Error on [${cmdInitial}]\nMessage: '${message.content}'\n${error.stack}`,
+          ],
+        ]),
+      );
+    }
+
+    if (msgReply.length > 0) {
+      let sentMsg;
+      try {
+        sentMsg = await message.inlineReply({ allowedMentions: {}, content: msgReply });
+      } catch (_) {
+        sentMsg = await message.reply({ allowedMentions: {}, content: msgReply });
+      }
+      if (sentMsg) {
+        await admin.saveMessage(sentMsg);
+      }
+    }
+  } catch (e) {
+    utils.logError(e);
+  }
 }
 
 const cooldowns: any = {};
@@ -318,7 +391,20 @@ export async function OnMessageCreate(
 
     cooldowns[msg.author.id] = Date.now();
     const cmdExec = await commands2.handleCommand(msg);
+    // @ts-ignore
+    const trySave = await admin.saveMessage(msg, true);
+    if (!trySave) {
+      await admin.adminPool.editTransact<admin.TrackedMessage>(msg.id, (prev) => {
+        prev.bot = true;
+        return prev;
+      });
+    }
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
+      const checkDebounce = cmdErrorDebounces.findIndex((v) => v === msg.id);
+      if (checkDebounce > -1) {
+        cmdErrorDebounces.splice(checkDebounce, 1);
+        return;
+      }
       if (!isDevCmd) {
         if (!isIgnoredChannel(msg.channelId) && !isIgnoredUser(msg.member)) {
           const parsedTxt = await utils.parseMentionables(msg.content);
@@ -336,35 +422,6 @@ export async function OnMessageCreate(
           );
         }
       }
-
-      return false;
-    }
-    if (typeof cmdExec === 'boolean' && !cmdExec) {
-      /* let isCmd2 = await HandleCommand(msg);
-        if (!isCmd2) await HandleChat(msg); */
-    } else {
-      // original cmd errored!
-      const _e: ApiError = cmdExec;
-      utils.logError(_e);
-
-      if (_e.messageExtended && typeof _e.messageExtended === 'string') {
-        try {
-          const emsg: any = JSON.parse(_e.messageExtended).message;
-          if (emsg && emsg.toLowerCase() === 'missing permissions') {
-            return;
-          }
-        } catch (e) {}
-      }
-
-      logDebug(
-        'BOT_ERROR',
-        new Map<string, any>([
-          [
-            'ERROR',
-            `Command Error on '${msg.content}': \n${_e.stack}`,
-          ],
-        ]),
-      );
     }
   }
 }

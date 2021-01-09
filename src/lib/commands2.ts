@@ -1,7 +1,7 @@
 import { commandsTable } from '../commands2/_init_';
 import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
-import { registeredSlashCommands, registeredSlashCommandGroups, SlashGroupHasSubcommands } from '../modules/commands';
+import { registeredSlashCommands, registeredSlashCommandGroups, SlashGroupHasSubcommands, chatErrorHandler } from '../modules/commands';
 import * as utils from './utils';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
@@ -55,6 +55,20 @@ class CmdOverride {
   rolesWhitelist: Array<string> | undefined;
   rolesBlacklist: Array<string> | undefined;
   bypassLevel: number | undefined;
+}
+
+function applyErrorHandler(cmd: any) {
+  if (cmd.commandExecutors) {
+    for (let [name, exec] of cmd.commandExecutors) {
+      if (exec.executor.commandExecutors) {
+        exec = applyErrorHandler(exec.executor);
+      } else if (!exec.executor.options.onError) {
+        exec.executor.options.onError = chatErrorHandler;
+        cmd.commandExecutors.set(name, exec);
+      }
+    }
+  }
+  return cmd;
 }
 
 export function cleanDuplicates() {
@@ -509,5 +523,6 @@ export function InitializeCommands2() {
       }
     }
   }
+  cmdgroups = cmdgroups.map((v) => applyErrorHandler(v));
   cleanDuplicates();
 }

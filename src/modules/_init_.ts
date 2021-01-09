@@ -28,7 +28,7 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   starboard,
   tags,
   translation,
-  commands,
   reddit,
+  commands,
 };
 export const asyncModules = ['logging'];

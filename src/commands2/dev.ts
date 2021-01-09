@@ -292,8 +292,30 @@ export function InitializeCommands() {
     );
 
     sub.raw(
-      'error', async () => {
+      'error',
+      async () => {
         throw new Error('testing pls ignore');
+      },
+    );
+    sub.raw(
+      'permerror',
+      async (msg) => {
+        const guild = await msg.getGuild();
+        const owner = await guild.getMember(guild.ownerId);
+        await owner.edit({ nick: 'asdasdasd' });
+      },
+    );
+    sub.on(
+      {
+        name: 'argerror',
+      },
+      (ctx) => ({
+        u: ctx.user(),
+        usr2: ctx.integer(),
+        usr3: ctx.guildChannelOptional(),
+      }),
+      async () => {
+        console.log('cmd ran!');
       },
     );
     // http://i0.tf/q261q.zip
