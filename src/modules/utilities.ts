@@ -1922,111 +1922,111 @@ if (randomGroup) {
     },
     { parent: 'random', staticAck: true, permissions: { overrideableInfo: 'utilities.random.number', level: Ranks.Guest }, module: 'utilities' },
   );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'cat', description: 'Gets a random cat image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('http://aws.random.cat/meow')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.file });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.cat', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'dog', description: 'Gets a random dog image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://random.dog/woof.json')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.url });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.dog', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'doge', description: 'Gets a random shiba inu image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.message });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.doge', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'fox', description: 'Gets a random fox image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://randomfox.ca/floof/')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.image });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.fox', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'pikachu', description: 'Gets a random pikachu image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.link });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.pikachu', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'koala', description: 'Gets a random koala image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.link });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.koala', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'birb', description: 'Gets a random birb image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.link });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.birb', level: Ranks.Guest } },
+  );
+
+  registerSlashSub(
+    randomGroup,
+    { name: 'panda', description: 'Gets a random panda image' },
+    async (inter) => {
+      await inter.acknowledge(true);
+      const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
+      const emb = new discord.Embed();
+      emb.setImage({ url: file.link });
+      await interactionChannelRespond(inter, { embed: emb });
+    },
+    { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.panda', level: Ranks.Guest } },
+  );
 }
-
-registerSlashSub(
-  randomGroup,
-  { name: 'cat', description: 'Gets a random cat image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('http://aws.random.cat/meow')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.file });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.cat', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'dog', description: 'Gets a random dog image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://random.dog/woof.json')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.url });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.dog', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'doge', description: 'Gets a random shiba inu image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.message });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.doge', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'fox', description: 'Gets a random fox image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://randomfox.ca/floof/')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.image });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.fox', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'pikachu', description: 'Gets a random pikachu image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.pikachu', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'koala', description: 'Gets a random koala image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.koala', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'birb', description: 'Gets a random birb image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.birb', level: Ranks.Guest } },
-);
-
-registerSlashSub(
-  randomGroup,
-  { name: 'panda', description: 'Gets a random panda image' },
-  async (inter) => {
-    await inter.acknowledge(true);
-    const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
-    const emb = new discord.Embed();
-    emb.setImage({ url: file.link });
-    await interactionChannelRespond(inter, { embed: emb });
-  },
-  { parent: 'random', module: 'utilities', permissions: { overrideableInfo: 'utilities.random.panda', level: Ranks.Guest } },
-);
 
 registerSlash(
   { name: 'pat', description: 'Gets a random anime patting gif' },

@@ -2526,296 +2526,298 @@ const cleanGroup = registerSlashGroup(
   },
 );
 
-registerSlashSub(
-  cleanGroup,
-  {
-    name: 'user',
-    description: 'Clear messages by a specific user',
-    options: (ctx) => (
-      {
-        user: ctx.guildMember({ required: true, description: 'The user to clear messages from' }),
-        count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
-      }),
-  },
-  async (inter, { user, count }) => {
-    if (!count) {
-      count = DEFAULT_COMMAND_CLEAN;
-    }
-    const chan = await inter.getChannel();
-    let acked = false;
-    const tmAck = setTimeout(async () => {
-      await inter.acknowledge(true);
-      acked = true;
-    }, 1500);
-    const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, user, inter.member, chan, count, inter.channelId);
-    if (!acked) {
-      clearTimeout(tmAck);
-    }
-
-    if (typeof res !== 'number') {
-      if (!acked) {
-        await inter.acknowledge(false);
-      }
-      if (res === false) {
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean user');
-      } else if (typeof res === 'string') {
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-      }
-      return false;
-    } if (res > 0) {
-      if (!acked) {
-        await inter.acknowledge(true);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${user.user.getTag()}`);
-    } else {
-      if (!acked) {
-        await inter.acknowledge(false);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
-      return false;
-    }
-  },
-  {
-    module: 'admin',
-    parent: 'clean',
-    permissions: {
-      overrideableInfo: 'admin.clean.user',
-      level: Ranks.Moderator,
+if (cleanGroup) {
+  registerSlashSub(
+    cleanGroup,
+    {
+      name: 'user',
+      description: 'Clear messages by a specific user',
+      options: (ctx) => (
+        {
+          user: ctx.guildMember({ required: true, description: 'The user to clear messages from' }),
+          count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+        }),
     },
-  },
-);
-
-registerSlashSub(
-  cleanGroup,
-  {
-    name: 'channel',
-    description: 'Clear any kind of messages in a specific channel',
-    options: (ctx) => (
-      {
-        channel: ctx.guildChannel({ required: true, description: 'The channel to clear messages from' }),
-        count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
-      }),
-  },
-  async (inter, { channel, count }) => {
-    if (!count) {
-      count = DEFAULT_COMMAND_CLEAN;
-    }
-    let acked = false;
-    const tmAck = setTimeout(async () => {
-      await inter.acknowledge(true);
-      acked = true;
-    }, 1500);
-    const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
-    if (!acked) {
-      clearTimeout(tmAck);
-    }
-
-    if (typeof res !== 'number') {
-      if (!acked) {
-        await inter.acknowledge(false);
+    async (inter, { user, count }) => {
+      if (!count) {
+        count = DEFAULT_COMMAND_CLEAN;
       }
-      if (res === false) {
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
-      } else if (typeof res === 'string') {
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-      }
-      return false;
-    } if (res > 0) {
-      if (!acked) {
+      const chan = await inter.getChannel();
+      let acked = false;
+      const tmAck = setTimeout(async () => {
         await inter.acknowledge(true);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
-    } else {
+        acked = true;
+      }, 1500);
+      const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, user, inter.member, chan, count, inter.channelId);
       if (!acked) {
-        await inter.acknowledge(false);
+        clearTimeout(tmAck);
       }
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
-      return false;
-    }
-  },
-  {
-    module: 'admin',
-    parent: 'clean',
-    permissions: {
-      overrideableInfo: 'admin.clean.channel',
-      level: Ranks.Moderator,
+
+      if (typeof res !== 'number') {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        if (res === false) {
+          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean user');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResultInteraction(undefined, inter, false, res);
+        }
+        return false;
+      } if (res > 0) {
+        if (!acked) {
+          await inter.acknowledge(true);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${user.user.getTag()}`);
+      } else {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        return false;
+      }
     },
-  },
-);
+    {
+      module: 'admin',
+      parent: 'clean',
+      permissions: {
+        overrideableInfo: 'admin.clean.user',
+        level: Ranks.Moderator,
+      },
+    },
+  );
 
-registerSlashSub(
-  cleanGroup,
-  {
-    name: 'here',
-    description: 'Clear any kind of messages in the current channel',
-    options: (ctx) => (
-      {
-        count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
-      }),
-  },
-  async (inter, { count }) => {
-    if (!count) {
-      count = DEFAULT_COMMAND_CLEAN;
-    }
-    const channel = await inter.getChannel();
-    let acked = false;
-    const tmAck = setTimeout(async () => {
-      await inter.acknowledge(true);
-      acked = true;
-    }, 1500);
-    const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
-    if (!acked) {
-      clearTimeout(tmAck);
-    }
-
-    if (typeof res !== 'number') {
-      if (!acked) {
-        await inter.acknowledge(false);
+  registerSlashSub(
+    cleanGroup,
+    {
+      name: 'channel',
+      description: 'Clear any kind of messages in a specific channel',
+      options: (ctx) => (
+        {
+          channel: ctx.guildChannel({ required: true, description: 'The channel to clear messages from' }),
+          count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+        }),
+    },
+    async (inter, { channel, count }) => {
+      if (!count) {
+        count = DEFAULT_COMMAND_CLEAN;
       }
-      if (res === false) {
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
-      } else if (typeof res === 'string') {
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-      }
-      return false;
-    } if (res > 0) {
-      if (!acked) {
+      let acked = false;
+      const tmAck = setTimeout(async () => {
         await inter.acknowledge(true);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
-    } else {
+        acked = true;
+      }, 1500);
+      const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
       if (!acked) {
-        await inter.acknowledge(false);
+        clearTimeout(tmAck);
       }
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
-      return false;
-    }
-  },
-  {
-    module: 'admin',
-    parent: 'clean',
-    permissions: {
-      overrideableInfo: 'admin.clean.here',
-      level: Ranks.Moderator,
+
+      if (typeof res !== 'number') {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        if (res === false) {
+          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResultInteraction(undefined, inter, false, res);
+        }
+        return false;
+      } if (res > 0) {
+        if (!acked) {
+          await inter.acknowledge(true);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
+      } else {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        return false;
+      }
     },
-  },
-);
+    {
+      module: 'admin',
+      parent: 'clean',
+      permissions: {
+        overrideableInfo: 'admin.clean.channel',
+        level: Ranks.Moderator,
+      },
+    },
+  );
 
-registerSlashSub(
-  cleanGroup,
-  {
-    name: 'all',
-    description: 'Clear latest X messages in the entire server',
-    options: (ctx) => (
-      {
-        count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
-      }),
-  },
-  async (inter, { count }) => {
-    if (!count) {
-      count = DEFAULT_COMMAND_CLEAN;
-    }
-    const chan = await inter.getChannel();
-    let acked = false;
-    const tmAck = setTimeout(async () => {
-      await inter.acknowledge(true);
-      acked = true;
-    }, 1500);
-    const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, chan, count);
-    if (!acked) {
-      clearTimeout(tmAck);
-    }
-
-    if (typeof res !== 'number') {
-      if (!acked) {
-        await inter.acknowledge(false);
+  registerSlashSub(
+    cleanGroup,
+    {
+      name: 'here',
+      description: 'Clear any kind of messages in the current channel',
+      options: (ctx) => (
+        {
+          count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+        }),
+    },
+    async (inter, { count }) => {
+      if (!count) {
+        count = DEFAULT_COMMAND_CLEAN;
       }
-      if (res === false) {
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
-      } else if (typeof res === 'string') {
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-      }
-      return false;
-    } if (res > 0) {
-      if (!acked) {
+      const channel = await inter.getChannel();
+      let acked = false;
+      const tmAck = setTimeout(async () => {
         await inter.acknowledge(true);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages`);
-    } else {
+        acked = true;
+      }, 1500);
+      const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
       if (!acked) {
-        await inter.acknowledge(false);
+        clearTimeout(tmAck);
       }
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
-      return false;
-    }
-  },
-  {
-    module: 'admin',
-    parent: 'clean',
-    permissions: {
-      overrideableInfo: 'admin.clean.all',
-      level: Ranks.Administrator,
+
+      if (typeof res !== 'number') {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        if (res === false) {
+          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResultInteraction(undefined, inter, false, res);
+        }
+        return false;
+      } if (res > 0) {
+        if (!acked) {
+          await inter.acknowledge(true);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
+      } else {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        return false;
+      }
     },
-  },
-);
+    {
+      module: 'admin',
+      parent: 'clean',
+      permissions: {
+        overrideableInfo: 'admin.clean.here',
+        level: Ranks.Moderator,
+      },
+    },
+  );
 
-registerSlashSub(
-  cleanGroup,
-  {
-    name: 'bots',
-    description: 'Clear latest X messages in the current channel by bots',
-    options: (ctx) => (
-      {
-        count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
-      }),
-  },
-  async (inter, { count }) => {
-    if (!count) {
-      count = DEFAULT_COMMAND_CLEAN;
-    }
-    const chan = await inter.getChannel();
-    let acked = false;
-    const tmAck = setTimeout(async () => {
-      await inter.acknowledge(true);
-      acked = true;
-    }, 1500);
-    const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, { bot: true }, inter.member, chan, count, inter.channelId);
-    if (!acked) {
-      clearTimeout(tmAck);
-    }
-
-    if (typeof res !== 'number') {
-      if (!acked) {
-        await inter.acknowledge(false);
+  registerSlashSub(
+    cleanGroup,
+    {
+      name: 'all',
+      description: 'Clear latest X messages in the entire server',
+      options: (ctx) => (
+        {
+          count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+        }),
+    },
+    async (inter, { count }) => {
+      if (!count) {
+        count = DEFAULT_COMMAND_CLEAN;
       }
-      if (res === false) {
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean bot messages');
-      } else if (typeof res === 'string') {
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-      }
-      return false;
-    } if (res > 0) {
-      if (!acked) {
+      const chan = await inter.getChannel();
+      let acked = false;
+      const tmAck = setTimeout(async () => {
         await inter.acknowledge(true);
-      }
-      await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from bots`);
-    } else {
+        acked = true;
+      }, 1500);
+      const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, chan, count);
       if (!acked) {
-        await inter.acknowledge(false);
+        clearTimeout(tmAck);
       }
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
-      return false;
-    }
-  },
-  {
-    module: 'admin',
-    parent: 'clean',
-    permissions: {
-      overrideableInfo: 'admin.clean.bots',
-      level: Ranks.Moderator,
+
+      if (typeof res !== 'number') {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        if (res === false) {
+          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResultInteraction(undefined, inter, false, res);
+        }
+        return false;
+      } if (res > 0) {
+        if (!acked) {
+          await inter.acknowledge(true);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages`);
+      } else {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        return false;
+      }
     },
-  },
-);
+    {
+      module: 'admin',
+      parent: 'clean',
+      permissions: {
+        overrideableInfo: 'admin.clean.all',
+        level: Ranks.Administrator,
+      },
+    },
+  );
+
+  registerSlashSub(
+    cleanGroup,
+    {
+      name: 'bots',
+      description: 'Clear latest X messages in the current channel by bots',
+      options: (ctx) => (
+        {
+          count: ctx.integer({ required: false, description: `How many messages to clear (most recent to older). If not defined, clears ${DEFAULT_COMMAND_CLEAN} messages` }),
+        }),
+    },
+    async (inter, { count }) => {
+      if (!count) {
+        count = DEFAULT_COMMAND_CLEAN;
+      }
+      const chan = await inter.getChannel();
+      let acked = false;
+      const tmAck = setTimeout(async () => {
+        await inter.acknowledge(true);
+        acked = true;
+      }, 1500);
+      const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, { bot: true }, inter.member, chan, count, inter.channelId);
+      if (!acked) {
+        clearTimeout(tmAck);
+      }
+
+      if (typeof res !== 'number') {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        if (res === false) {
+          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean bot messages');
+        } else if (typeof res === 'string') {
+          await infractions.confirmResultInteraction(undefined, inter, false, res);
+        }
+        return false;
+      } if (res > 0) {
+        if (!acked) {
+          await inter.acknowledge(true);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from bots`);
+      } else {
+        if (!acked) {
+          await inter.acknowledge(false);
+        }
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        return false;
+      }
+    },
+    {
+      module: 'admin',
+      parent: 'clean',
+      permissions: {
+        overrideableInfo: 'admin.clean.bots',
+        level: Ranks.Moderator,
+      },
+    },
+  );
+}
 
 const invitesGroup = registerSlashGroup(
   { name: 'invites', description: 'Invite-related commands' },
@@ -2823,48 +2825,48 @@ const invitesGroup = registerSlashGroup(
     module: 'admin',
   },
 );
-
-registerSlashSub(
-  invitesGroup,
-  {
-    name: 'prune',
-    description: 'Prune invites with X or less uses on the server',
-    options: (ctx) => ({
-      uses: ctx.integer({ required: false, description: 'The uses or less that an invite has to have to be cleared',
-      }) }),
-  },
-  async (inter, { uses }) => {
-    if (!uses) {
-      uses = 0;
-    }
-    const guild = await inter.getGuild();
-    const invites = await guild.getInvites();
-    let cleared = 0;
-    await Promise.all(invites.map(async (invite) => {
-      if (invite.uses <= uses) {
-        await invite.delete();
-        cleared += 1;
-      }
-    }));
-    if (cleared === 0) {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No invites were pruned!');
-      return false;
-    }
-    await inter.acknowledge(true);
-    await infractions.confirmResultInteraction(undefined, inter, true, `${cleared} total invites pruned!`);
-    return true;
-  },
-  {
-    module: 'admin',
-    parent: 'invites',
-    permissions: {
-      overrideableInfo: 'admin.invites.prune',
-      level: Ranks.Administrator,
+if (invitesGroup) {
+  registerSlashSub(
+    invitesGroup,
+    {
+      name: 'prune',
+      description: 'Prune invites with X or less uses on the server',
+      options: (ctx) => ({
+        uses: ctx.integer({ required: false, description: 'The uses or less that an invite has to have to be cleared',
+        }) }),
     },
-  },
-);
-
+    async (inter, { uses }) => {
+      if (!uses) {
+        uses = 0;
+      }
+      const guild = await inter.getGuild();
+      const invites = await guild.getInvites();
+      let cleared = 0;
+      await Promise.all(invites.map(async (invite) => {
+        if (invite.uses <= uses) {
+          await invite.delete();
+          cleared += 1;
+        }
+      }));
+      if (cleared === 0) {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No invites were pruned!');
+        return false;
+      }
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${cleared} total invites pruned!`);
+      return true;
+    },
+    {
+      module: 'admin',
+      parent: 'invites',
+      permissions: {
+        overrideableInfo: 'admin.invites.prune',
+        level: Ranks.Administrator,
+      },
+    },
+  );
+}
 const groupRole = registerSlashGroup(
   {
     name: 'role',
@@ -2875,213 +2877,215 @@ const groupRole = registerSlashGroup(
   },
 );
 
-registerSlashSub(
-  groupRole,
-  {
-    name: 'unlock',
-    description: 'Unlocks a locked role',
-    options: (ctx) => ({
-      role: ctx.guildRole({ required: true, description: 'The role to unlock' }),
-    }),
-  },
-  async (inter, { role }) => {
-    if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'No locked roles are configured');
-      return false;
-    }
-    if (!config.modules.admin.lockedRoles.includes(role.id)) {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'This role is not locked');
-      return false;
-    }
-    const kvc = await roleLockKv.get(role.id);
-    if (typeof kvc === 'boolean') {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'This role is already temporarily unlocked!');
-      return false;
-    }
-    await inter.acknowledge(true);
-    await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
-    await infractions.confirmResultInteraction(undefined, inter, true, 'Role unlocked for 5 minutes');
-  },
-  {
-    module: 'admin',
-    parent: 'role',
-    permissions: {
-      overrideableInfo: 'admin.role.unlock',
-      level: Ranks.Administrator,
+if (groupRole) {
+  registerSlashSub(
+    groupRole,
+    {
+      name: 'unlock',
+      description: 'Unlocks a locked role',
+      options: (ctx) => ({
+        role: ctx.guildRole({ required: true, description: 'The role to unlock' }),
+      }),
     },
-  },
-);
-
-registerSlashSub(
-  groupRole,
-  {
-    name: 'add',
-    description: 'Add a role to a member',
-    options: (ctx) => ({
-      member: ctx.guildMember({ required: true, description: 'The member to give the role to' }),
-      role: ctx.guildRole({ required: true, description: 'The role to add' }),
-    }),
-  },
-  async (inter, { member, role }) => {
-    const res = await Role(inter.member, member, role, true);
-    if (typeof res === 'string') {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, res);
-      return false;
-    }
-    if (res === true) {
-      await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.user.toMention()}`);
-      return true;
-    }
-    await inter.acknowledge(false);
-    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
-    return false;
-  },
-  {
-    module: 'admin',
-    parent: 'role',
-    permissions: {
-      overrideableInfo: 'admin.role.add',
-      level: Ranks.Administrator,
-    },
-  },
-);
-
-registerSlashSub(
-  groupRole,
-  {
-    name: 'remove',
-    description: 'Remove a role from a member',
-    options: (ctx) => ({
-      member: ctx.guildMember({ required: true, description: 'The member to remove the role from' }),
-      role: ctx.guildRole({ required: true, description: 'The role to remove' }),
-    }),
-  },
-  async (inter, { member, role }) => {
-    const res = await Role(inter.member, member, role, false);
-    if (typeof res === 'string') {
-      await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, res);
-      return false;
-    }
-    if (res === true) {
-      await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Removed role <@&${role.id}> to ${member.user.toMention()}`);
-      return true;
-    }
-    await inter.acknowledge(false);
-    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to remove role');
-    return false;
-  },
-  {
-    module: 'admin',
-    parent: 'role',
-    permissions: {
-      overrideableInfo: 'admin.role.remove',
-      level: Ranks.Administrator,
-    },
-  },
-);
-
-registerSlashSub(
-  groupRole,
-  {
-    name: 'join',
-    description: 'Join a user-joinable role',
-    options: (ctx) => ({
-      role: ctx.guildRole({ required: true, description: 'The role to join' }),
-    }),
-  },
-  async (inter, { role }) => {
-    if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
-      return false;
-    }
-    const thisRole = config.modules.admin.groupRoles[role.id];
-    if (typeof thisRole !== 'string' || thisRole.length < 5) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
-      return false;
-    }
-    if (inter.member.roles.includes(role.id)) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have this role!`);
-      return false;
-    }
-    let perms = new utils.Permissions(role.permissions).serialize(true);
-    for (const key in perms) {
-      if (perms[key] === false) {
-        delete perms[key];
+    async (inter, { role }) => {
+      if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'No locked roles are configured');
+        return false;
       }
-    }
-    perms = Object.keys(perms);
-    const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
-    const noStaff = perms.every((p) => !staffPerms.includes(p));
-    if (!noStaff) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.`);
-      return false;
-    }
-    await inter.acknowledge(true);
-    await inter.member.addRole(role.id);
-
-    await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${role.toMention()} role!`, allowedMentions: {} });
-  },
-  {
-    module: 'admin',
-    parent: 'role',
-    permissions: {
-      overrideableInfo: 'admin.role.join',
-      level: Ranks.Guest,
+      if (!config.modules.admin.lockedRoles.includes(role.id)) {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'This role is not locked');
+        return false;
+      }
+      const kvc = await roleLockKv.get(role.id);
+      if (typeof kvc === 'boolean') {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'This role is already temporarily unlocked!');
+        return false;
+      }
+      await inter.acknowledge(true);
+      await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
+      await infractions.confirmResultInteraction(undefined, inter, true, 'Role unlocked for 5 minutes');
     },
-  },
-);
-
-registerSlashSub(
-  groupRole,
-  {
-    name: 'leave',
-    description: 'Leave a user-joinable role',
-    options: (ctx) => ({
-      role: ctx.guildRole({ required: true, description: 'The role to leave' }),
-    }),
-  },
-  async (inter, { role }) => {
-    if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
-      return false;
-    }
-    const thisRole = config.modules.admin.groupRoles[role.id];
-    if (typeof thisRole !== 'string' || thisRole.length < 5) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
-      return false;
-    }
-    if (!inter.member.roles.includes(role.id)) {
-      await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have this role!`);
-      return false;
-    }
-    await inter.acknowledge(true);
-    await inter.member.removeRole(role.id);
-
-    await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${role.toMention()} role from you!`, allowedMentions: {} });
-  },
-  {
-    module: 'admin',
-    parent: 'role',
-    permissions: {
-      overrideableInfo: 'admin.role.leave',
-      level: Ranks.Guest,
+    {
+      module: 'admin',
+      parent: 'role',
+      permissions: {
+        overrideableInfo: 'admin.role.unlock',
+        level: Ranks.Administrator,
+      },
     },
-  },
-);
+  );
+
+  registerSlashSub(
+    groupRole,
+    {
+      name: 'add',
+      description: 'Add a role to a member',
+      options: (ctx) => ({
+        member: ctx.guildMember({ required: true, description: 'The member to give the role to' }),
+        role: ctx.guildRole({ required: true, description: 'The role to add' }),
+      }),
+    },
+    async (inter, { member, role }) => {
+      const res = await Role(inter.member, member, role, true);
+      if (typeof res === 'string') {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, res);
+        return false;
+      }
+      if (res === true) {
+        await inter.acknowledge(true);
+        await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.user.toMention()}`);
+        return true;
+      }
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+      return false;
+    },
+    {
+      module: 'admin',
+      parent: 'role',
+      permissions: {
+        overrideableInfo: 'admin.role.add',
+        level: Ranks.Administrator,
+      },
+    },
+  );
+
+  registerSlashSub(
+    groupRole,
+    {
+      name: 'remove',
+      description: 'Remove a role from a member',
+      options: (ctx) => ({
+        member: ctx.guildMember({ required: true, description: 'The member to remove the role from' }),
+        role: ctx.guildRole({ required: true, description: 'The role to remove' }),
+      }),
+    },
+    async (inter, { member, role }) => {
+      const res = await Role(inter.member, member, role, false);
+      if (typeof res === 'string') {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, res);
+        return false;
+      }
+      if (res === true) {
+        await inter.acknowledge(true);
+        await infractions.confirmResultInteraction(undefined, inter, true, `Removed role <@&${role.id}> to ${member.user.toMention()}`);
+        return true;
+      }
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to remove role');
+      return false;
+    },
+    {
+      module: 'admin',
+      parent: 'role',
+      permissions: {
+        overrideableInfo: 'admin.role.remove',
+        level: Ranks.Administrator,
+      },
+    },
+  );
+
+  registerSlashSub(
+    groupRole,
+    {
+      name: 'join',
+      description: 'Join a user-joinable role',
+      options: (ctx) => ({
+        role: ctx.guildRole({ required: true, description: 'The role to join' }),
+      }),
+    },
+    async (inter, { role }) => {
+      if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
+        return false;
+      }
+      const thisRole = config.modules.admin.groupRoles[role.id];
+      if (typeof thisRole !== 'string' || thisRole.length < 5) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+        return false;
+      }
+      if (inter.member.roles.includes(role.id)) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have this role!`);
+        return false;
+      }
+      let perms = new utils.Permissions(role.permissions).serialize(true);
+      for (const key in perms) {
+        if (perms[key] === false) {
+          delete perms[key];
+        }
+      }
+      perms = Object.keys(perms);
+      const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
+      const noStaff = perms.every((p) => !staffPerms.includes(p));
+      if (!noStaff) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.`);
+        return false;
+      }
+      await inter.acknowledge(true);
+      await inter.member.addRole(role.id);
+
+      await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${role.toMention()} role!`, allowedMentions: {} });
+    },
+    {
+      module: 'admin',
+      parent: 'role',
+      permissions: {
+        overrideableInfo: 'admin.role.join',
+        level: Ranks.Guest,
+      },
+    },
+  );
+
+  registerSlashSub(
+    groupRole,
+    {
+      name: 'leave',
+      description: 'Leave a user-joinable role',
+      options: (ctx) => ({
+        role: ctx.guildRole({ required: true, description: 'The role to leave' }),
+      }),
+    },
+    async (inter, { role }) => {
+      if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
+        return false;
+      }
+      const thisRole = config.modules.admin.groupRoles[role.id];
+      if (typeof thisRole !== 'string' || thisRole.length < 5) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+        return false;
+      }
+      if (!inter.member.roles.includes(role.id)) {
+        await inter.acknowledge(false);
+        await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have this role!`);
+        return false;
+      }
+      await inter.acknowledge(true);
+      await inter.member.removeRole(role.id);
+
+      await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${role.toMention()} role from you!`, allowedMentions: {} });
+    },
+    {
+      module: 'admin',
+      parent: 'role',
+      permissions: {
+        overrideableInfo: 'admin.role.leave',
+        level: Ranks.Guest,
+      },
+    },
+  );
+}
 
 registerSlash(
   {
