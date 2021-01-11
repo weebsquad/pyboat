@@ -3166,7 +3166,7 @@ registerSlash(
     },
   },
 );
-/*
+
 registerSlash(
   {
     name: 'cease',
@@ -3320,32 +3320,32 @@ registerSlash(
   },
   async (inter, { duration }) => {
     let dur = 0;
-      if (duration) {
-        dur = utils.timeArgumentToMs(duration);
-        if (dur === 0) {
-          await inter.acknowledge(false);
-          await inter.respondEphemeral('duration malformed (try 1h30m format)');
-          return;
-        }
-        if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          await inter.acknowledge(false);
-          await inter.respondEphemeral('duration must be between a minute and a month');
-          return;
-        }
-      }
-      const res = await LockGuild(inter.member, true, dur);
-      if (typeof res === 'string') {
+    if (duration) {
+      dur = utils.timeArgumentToMs(duration);
+      if (dur === 0) {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
+        await inter.respondEphemeral('duration malformed (try 1h30m format)');
         return;
       }
-      if (res === true) {
-        await inter.acknowledge(true);
-        await infractions.confirmResultInteraction(undefined, inter, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
-      } else {
+      if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock guild');
+        await inter.respondEphemeral('duration must be between a minute and a month');
+        return;
       }
+    }
+    const res = await LockGuild(inter.member, true, dur);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+    } else {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock guild');
+    }
   },
   {
     module: 'admin',
@@ -3362,19 +3362,19 @@ registerSlash(
     description: 'Removes a active lockdown',
   },
   async (inter) => {
-      const res = await LockGuild(inter.member, false, 0);
-      if (typeof res === 'string') {
-        await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, res);
-        return;
-      }
-      if (res === true) {
-        await inter.acknowledge(true);
-        await infractions.confirmResultInteraction(undefined, inter, true, `Unlocked Guild`);
-      } else {
-        await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock guild');
-      }
+    const res = await LockGuild(inter.member, false, 0);
+    if (typeof res === 'string') {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, res);
+      return;
+    }
+    if (res === true) {
+      await inter.acknowledge(true);
+      await infractions.confirmResultInteraction(undefined, inter, true, 'Unlocked Guild');
+    } else {
+      await inter.acknowledge(false);
+      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock guild');
+    }
   },
   {
     module: 'admin',
@@ -3385,7 +3385,6 @@ registerSlash(
   },
 );
 
-*/
 registerSlash(
   {
     name: 'roles',

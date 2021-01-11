@@ -9,8 +9,8 @@ import { isModuleEnabled } from '../lib/eventHandler/routing';
 
 const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
-const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = 'admin';
-const SLASH_COMMANDS_LIMIT = 10;
+const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = '';
+const SLASH_COMMANDS_LIMIT = 50;
 
 type SlashCommandRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
@@ -203,7 +203,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
 }
 
 export function registerSlash(sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: CommandExtras) {
-  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
+  if (TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER !== '' && extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return;
   }
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
@@ -220,7 +220,7 @@ export function registerSlash(sconf: discord.interactions.commands.ICommandConfi
 
 export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: CommandExtras, parentGroup?: discord.interactions.commands.SlashCommandGroup) {
   registeredSlashCommandGroups.push({ config: sconf, extras });
-  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
+  if (TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER !== '' && extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return null;
   }
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
@@ -233,7 +233,7 @@ export function registerSlashGroup(sconf: discord.interactions.commands.ICommand
 }
 
 export function registerSlashSub(parent: discord.interactions.commands.SlashCommandGroup, sconf: discord.interactions.commands.ICommandConfig<any>, callback: discord.interactions.commands.HandlerFunction<any>, extras: CommandExtras) {
-  if (extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
+  if (TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER !== '' && extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return;
   }
   // add module name to the comamnd's description
@@ -451,6 +451,9 @@ export async function OnMessageCreate(
   guildId: string,
   msg: discord.Message,
 ) {
+  if (cmdErrorDebounces.length > 50) {
+    console.error('Memory leak on commands cmdErrorDebounces');
+  }
   if (
     !msg.content
     || typeof msg.content !== 'string'
