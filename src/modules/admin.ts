@@ -2104,6 +2104,7 @@ export function InitializeCommands() {
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         const res: any = await msg.inlineReply('duration must be between a minute and a month');
         saveMessage(res);
+        return;
       }
 
       const res = await TempRole(msg.member, member, roleText, dur);
@@ -2140,10 +2141,12 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
+          return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
+          return;
         }
       }
       const res = await LockChannel(msg.member, channel, true, dur);
@@ -2201,10 +2204,12 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
+          return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
+          return;
         }
       }
       if (channel === null) {
@@ -2240,10 +2245,12 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
           saveMessage(res);
+          return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply('duration must be between a minute and a month');
           saveMessage(res);
+          return;
         }
       }
       const res = await LockGuild(msg.member, true, dur);
@@ -3159,7 +3166,7 @@ registerSlash(
     },
   },
 );
-
+/*
 registerSlash(
   {
     name: 'cease',
@@ -3299,6 +3306,155 @@ registerSlash(
     permissions: {
       level: Ranks.Moderator,
       overrideableInfo: 'admin.slowmode',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'lockdown',
+    description: 'Locks the server down, preventing members from sending messages',
+    options: (ctx) => ({
+      duration: ctx.string({ required: false, description: 'How long to apply this lockdown for. Blank will apply it permanently' }),
+    }),
+  },
+  async (inter, { duration }) => {
+    let dur = 0;
+      if (duration) {
+        dur = utils.timeArgumentToMs(duration);
+        if (dur === 0) {
+          await inter.acknowledge(false);
+          await inter.respondEphemeral('duration malformed (try 1h30m format)');
+          return;
+        }
+        if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
+          await inter.acknowledge(false);
+          await inter.respondEphemeral('duration must be between a minute and a month');
+          return;
+        }
+      }
+      const res = await LockGuild(inter.member, true, dur);
+      if (typeof res === 'string') {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, res);
+        return;
+      }
+      if (res === true) {
+        await inter.acknowledge(true);
+        await infractions.confirmResultInteraction(undefined, inter, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+      } else {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock guild');
+      }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.lockdown',
+    },
+  },
+);
+
+registerSlash(
+  {
+    name: 'unlockdown',
+    description: 'Removes a active lockdown',
+  },
+  async (inter) => {
+      const res = await LockGuild(inter.member, false, 0);
+      if (typeof res === 'string') {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, res);
+        return;
+      }
+      if (res === true) {
+        await inter.acknowledge(true);
+        await infractions.confirmResultInteraction(undefined, inter, true, `Unlocked Guild`);
+      } else {
+        await inter.acknowledge(false);
+        await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock guild');
+      }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      level: Ranks.Moderator,
+      overrideableInfo: 'admin.unlockdown',
+    },
+  },
+);
+
+*/
+registerSlash(
+  {
+    name: 'roles',
+    description: 'Query roles on your server, returning a list of roles',
+    options: (ctx) => ({
+      query: ctx.string({ required: false, description: 'The query to search for. If this is not defined, returns a list of all roles' }),
+    }),
+  },
+  async (inter, { query }) => {
+    if (!query) {
+      query = '';
+    }
+    query = query.toLowerCase();
+    const guild = await inter.getGuild();
+    let roles = (await guild.getRoles()).reverse();
+    if (query.length > 0) {
+      roles = roles.filter((rl) => rl.name.toLowerCase().includes(query) || rl.id.includes(query) || rl.name.toLowerCase() === query);
+    }
+    roles = roles.filter((role) => role.id !== guild.id);
+    if (roles.length === 0) {
+      await inter.acknowledge(false);
+      await inter.respondEphemeral('No roles found');
+      return;
+    }
+    await inter.acknowledge(true);
+    const dt = [];
+    let currKey = 0;
+    roles.forEach((role) => {
+      /* if(passedRls >= 20) {
+          currKey +=1;
+          passedRls = 0;
+        } */
+      let len = Array.isArray(dt[currKey]) ? dt[currKey].reduce((a, b) => a + b.length, 0) : 0;
+      if (Array.isArray(dt[currKey])) {
+        len += 10 + (dt[currKey].length * 2);
+      }
+      const props = [];
+      if (typeof config.levels === 'object' && typeof config.levels.roles === 'object' && typeof config.levels.roles[role.id] === 'number' && config.levels.roles[role.id] > 0) {
+        props.push(`Lvl ${config.levels.roles[role.id]}`);
+      }
+      if (role.mentionable === true) {
+        props.push('[M]');
+      }
+      if (role.hoist === true) {
+        props.push('[H]');
+      }
+      // dt[currKey].push([props.join(', '), role.id, role.name]);
+      const prp = props.length > 0 ? props.join(', ') : '';
+      const thisTxt = `[${role.id}]${prp !== '' ? ` | <${prp}>` : ''} | ${utils.escapeString(role.name)}`;
+
+      if ((len + thisTxt.length) > 1950) {
+        currKey += 1;
+      }
+      if (!Array.isArray(dt[currKey])) {
+        dt[currKey] = ['ID | <Properties> | Name', ''];
+      }
+      dt[currKey].push(thisTxt);
+    });
+
+    for (let i = 0; i < dt.length; i += 1) {
+      const it = dt[i];
+      await interactionChannelRespond(inter, { allowedMentions: {}, content: `\`\`\`\n${it.join('\n')}\n\`\`\`` });
+    }
+  },
+  {
+    module: 'admin',
+    permissions: {
+      overrideableInfo: 'admin.roles',
+      level: Ranks.Moderator,
     },
   },
 );
