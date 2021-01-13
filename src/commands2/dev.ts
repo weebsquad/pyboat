@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { globalConfig, InitializeConfig, config } from '../config';
+import { globalConfig, InitializeConfig, config, deployDate } from '../config';
 import * as utils from '../lib/utils';
 import * as infractions from '../modules/infractions';
 import * as starboard from '../modules/starboard';
@@ -1025,6 +1025,25 @@ export function InitializeCommands() {
       'channelow',
       async (m) => {
         await admin.storeChannelData();
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+    registerChatRaw(
+      sub,
+      'deployed',
+      async (m) => {
+        const formattedDtCreation = `${deployDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}`;
+        const tdiff = utils.getLongAgoFormat(deployDate.getTime(), 2, true, 'second');
+        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`);
+        admin.saveMessage(res);
       },
       {
         permissions: {

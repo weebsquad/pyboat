@@ -10,6 +10,7 @@ require('dotenv').config();
 const opts = {
   __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
   __GH_TOKEN__: process.env.GH_TOKEN,
+  __DATE_PUBLISH__: new Date().getTime(),
 };
 
 module.exports = () => ({

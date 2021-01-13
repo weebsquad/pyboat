@@ -44,6 +44,8 @@ export const globalConfig = <any>{
   version: '1.6.2',
 };
 export const guildId = discord.getGuildId();
+// @ts-ignore
+export const deployDate = new Date(__DATE_PUBLISH__);
 const defaultConfig = { // for non-defined configs!
   guildId,
   levels: {
