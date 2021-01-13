@@ -10,7 +10,7 @@ import { isModuleEnabled } from '../lib/eventHandler/routing';
 const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
 const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = '';
-const SLASH_COMMANDS_LIMIT = 0;
+const SLASH_COMMANDS_LIMIT = 10;
 
 type SlashCommandRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
@@ -219,13 +219,13 @@ export function registerSlash(sconf: discord.interactions.commands.ICommandConfi
 }
 
 export function registerSlashGroup(sconf: discord.interactions.commands.ICommandConfig<any>, extras?: CommandExtras, parentGroup?: discord.interactions.commands.SlashCommandGroup) {
-  registeredSlashCommandGroups.push({ config: sconf, extras });
   if (TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER !== '' && extras.module !== TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER) {
     return null;
   }
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
     return null;
   }
+  registeredSlashCommandGroups.push({ config: sconf, extras });
   if (parentGroup) {
     return parentGroup.registerGroup(sconf);
   }
