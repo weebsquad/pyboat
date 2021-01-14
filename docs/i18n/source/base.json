@@ -85,55 +85,56 @@
     },
     "modules": {
         "tags": {
-            "shared": {
-                "footer": "Requested by {USER_TAG} ({USER_ID})",
-                "tag": "Tag",
-                "cant_edit_others": "You may not edit other user's tags!",
-                "tag_not_found": "There is no tag with that name!"
+            "footer": "Requested by {USER_TAG} ({USER_ID})",
+            "tag": "Tag",
+            "cant_edit_others": "You may not edit other user's tags!",
+            "tag_not_found": "There is no tag with that name!",
+            "show": {
+                "no_tag_found": "No tag found with that name"
             },
-            "commands": {
-                "show": {
-                    "no_tag_found": "No tag found with that name"
-                },
-                "set": {
-                    "name_length": "Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!",
-                    "invalid_name": "Invalid tag name!",
-                    "content_length": "Tag content may only be up to {MAX_LENGTH} characters in size!",
-                    "edited_tag": "Edited tag with name `${TAG_NAME}` !",
-                    "saved_tag":  "Saved tag with name `${TAG_NAME}` !"
-                },
-                "delete": {
-                    "deleted_tag": "Deleted tag `{TAG_NAME}` !"
-                },
-                "info": {
-                    "by": "By",
-                    "uses": "Uses",
-                    "created": "Created"
-                },
-                "clearall": {
-                    "cleared_tags": "Removed {COUNT} tags!"
-                },
-                "list": {
-                    "no_tags": "There are no tags saved!",
-                    "tag_list": "Tag List"
-                }
+            "set": {
+                "name_length": "Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!",
+                "invalid_name": "Invalid tag name!",
+                "content_length": "Tag content may only be up to {MAX_LENGTH} characters in size!",
+                "edited_tag": "Edited tag with name `${TAG_NAME}` !",
+                "saved_tag":  "Saved tag with name `${TAG_NAME}` !"
+            },
+            "delete": {
+                "deleted_tag": "Deleted tag `{TAG_NAME}` !"
+            },
+            "info": {
+                "by": "By",
+                "uses": "Uses",
+                "created": "Created"
+            },
+            "clearall": {
+                "cleared_tags": "Removed {COUNT} tags!"
+            },
+            "list": {
+                "no_tags": "There are no tags saved!",
+                "tag_list": "Tag List"
             }
         },
         "utilities": {
-            "shared": {
-                "time_improper": "❌ Time improperly formatted! Please use `1h30m` formatting",
-                "reminders": {
-                    "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC} UTC` ({TIME_AGO} ago) to remind you about:\n`{REMINDER_TEXT}`",
-                    "reminder_time_limit": "❌ Time must be between 2 minutes and a month",
-                    "reminder_count_limit": "❌ You already have 10 active reminders, you may not define any more!",
-                    "reminder_content_limit": "❌ Reminder content is too large!",
-                    "will_remind_in": "✅ I will remind you in {DURATION}",
-                    "no_reminders": "❌ You don't have any active reminders!",
-                    "cleared_reminders": "✅ cleared {COUNT} reminders!"
-                }
+            "time_improper": "❌ Time improperly formatted! Please use `1h30m` formatting",
+            "reminders": {
+                "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC} UTC` ({TIME_AGO} ago) to remind you about:\n`{REMINDER_TEXT}`",
+                "reminder_time_limit": "❌ Time must be between 2 minutes and a month",
+                "reminder_count_limit": "❌ You already have 10 active reminders, you may not define any more!",
+                "reminder_content_limit": "❌ Reminder content is too large!",
+                "will_remind_in": "✅ I will remind you in {DURATION}",
+                "no_reminders": "❌ You don't have any active reminders!",
+                "cleared_reminders": "✅ cleared {COUNT} reminders!"
             },
-            "commands": {
-
+            "curs": {
+                "dont_have_role": "❌ You do not have a custom role!",
+                "check_role": "Your custom role is: {ROLE_MENTION}\nTo set the name of it, type `{PREFIX}cur name <name>`\nTo set the color, type `{PREFIX}cur color <color>`",
+                "check_role_slash": "Your custom role is: {ROLE_MENTION}>\nTo set the name of it, type **/**`cur name <name>`\nTo set the color, type **/**`cur color <color>`",
+                "character_limit": "❌ New name must be between 2 and 32 characters in size!",
+                "role_not_found": "❌ role not found",
+                "changed_role_name": "✅ Changed your role's name to {ROLE_NAME}",
+                "changed_role_color": "✅ Changed your role's color to {COLOR}",
+                "color_wrong_format": "❌ Color must be formatted as a hex string! (for example `#ff0000`)"
             }
         }
     }

@@ -106,26 +106,18 @@ export interface IModules {
     utilities: IUtilities;
 }
 export interface ITags {
-    shared: IShared;
-    commands: ICommands;
-}
-export interface IShared {
-    footer?: string;
-    tag?: string;
-    cant_edit_others?: string;
-    tag_not_found?: string;
-    time_improper?: string;
-    reminders?: IReminders;
-}
-export interface ICommands {
-    show?: IShow;
-    set?: ISet;
-    'delete'?: {
+    footer: string;
+    tag: string;
+    cant_edit_others: string;
+    tag_not_found: string;
+    show: IShow;
+    set: ISet;
+    'delete': {
         deleted_tag: string;
     };
-    info?: IInfo;
-    clearall?: IClearall;
-    list?: IList;
+    info: IInfo;
+    clearall: IClearall;
+    list: IList;
 }
 export interface IShow {
     no_tag_found: string;
@@ -150,8 +142,9 @@ export interface IList {
     tag_list: string;
 }
 export interface IUtilities {
-    shared: IShared;
-    commands: ICommands;
+    time_improper: string;
+    reminders: IReminders;
+    curs: ICurs;
 }
 export interface IReminders {
     remind_message: string;
@@ -161,4 +154,14 @@ export interface IReminders {
     will_remind_in: string;
     no_reminders: string;
     cleared_reminders: string;
+}
+export interface ICurs {
+    dont_have_role: string;
+    check_role: string;
+    check_role_slash: string;
+    character_limit: string;
+    role_not_found: string;
+    changed_role_name: string;
+    changed_role_color: string;
+    color_wrong_format: string;
 }
