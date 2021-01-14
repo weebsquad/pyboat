@@ -5,9 +5,9 @@
 */
 
 export interface IRootObject {
-    Time_Units: ITime_units;
-    Ranks: IRanks;
-    Config: IConfig;
+    time_units: ITime_units;
+    ranks: IRanks;
+    config: IConfig;
     modules: IModules;
 }
 export interface ITime_units {

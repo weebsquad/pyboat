@@ -2,9 +2,7 @@ const { json2ts } = require('json-ts');
 const fs = require('fs');
 const path = require('path');
 
-const defaultLang = 'en_US';
-
-const json = JSON.parse(fs.readFileSync(path.join(path.dirname(__dirname), './', 'docs', 'i18n', `${defaultLang}.json`)));
+const json = JSON.parse(fs.readFileSync(path.join(path.dirname(__dirname), './', 'docs', 'i18n', 'source', 'base.json')));
 
 let txtTypings = json2ts(JSON.stringify(json));
 // txtTypings = `\t${txtTypings.split('\n').join('\n\t')}`;

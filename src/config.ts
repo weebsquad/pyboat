@@ -42,7 +42,7 @@ export const globalConfig = <any>{
   },
   localization: {
     cdnUrl: 'https://pyboat.i0.tf/i18n/',
-    default: 'en_US',
+    default: 'source/base.json',
   },
   memStore: {
     key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
@@ -554,13 +554,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       let data: any;
       data = await fetch(message.attachments[0].url);
       if (!data.ok) {
-        await message.reply(i18n.setPlaceholders(i18n.language.Config.cant_download_file, ['user_mention', message.author.toMention()]));
+        await message.reply(i18n.setPlaceholders(i18n.language.config.cant_download_file, ['user_mention', message.author.toMention()]));
       }
 
       try {
         await message.delete();
       } catch (e) {
-        await message.reply(i18n.setPlaceholders(i18n.language.Config.cant_delete_message, ['user_mention', message.author.toMention()]));
+        await message.reply(i18n.setPlaceholders(i18n.language.config.cant_delete_message, ['user_mention', message.author.toMention()]));
       }
       // data = await data.arrayBuffer();
       data = await data.text();
@@ -592,7 +592,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       // await message.inlineReply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
       if (typeof check.guildId !== 'string' || check.guildId !== guildId) {
-        await message.reply(i18n.setPlaceholders(i18n.language.Config.incorrect_guild_id, ['user_mention', message.author.toMention()]));
+        await message.reply(i18n.setPlaceholders(i18n.language.config.incorrect_guild_id, ['user_mention', message.author.toMention()]));
         return;
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
@@ -606,9 +606,9 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
-      await message.reply(i18n.setPlaceholders(i18n.language.Config.updated_config, ['user_mention', message.author.toMention()]));
+      await message.reply(i18n.setPlaceholders(i18n.language.config.updated_config, ['user_mention', message.author.toMention()]));
     } catch (e) {
-      await message.reply(i18n.setPlaceholders(i18n.language.Config.error_updating_config, ['user_mention', message.author.toMention(), 'error', `\`\`\`\n${e.message}\n\`\`\``]));
+      await message.reply(i18n.setPlaceholders(i18n.language.config.error_updating_config, ['user_mention', message.author.toMention(), 'error', `\`\`\`\n${e.message}\n\`\`\``]));
     }
   } else if (isCfg === 'check') {
     try {
@@ -640,7 +640,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } */
     const cfgToRet = typeof cfg !== 'string' ? JSON.stringify(cfg, null, 2) : cfg;
     const returnedMsg = await message.reply({
-      content: i18n.setPlaceholders(isDefaultConfig === true ? i18n.language.Config.get_default_config : i18n.language.Config.get_config, ['user_mention', message.author.toMention()]),
+      content: i18n.setPlaceholders(isDefaultConfig === true ? i18n.language.config.get_default_config : i18n.language.config.get_config, ['user_mention', message.author.toMention()]),
       attachments: [{
         name: 'config.json',
         data: str2ab(cfgToRet),
@@ -654,6 +654,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } catch (e) {
     }
     await configKv.clear();
-    await message.reply(i18n.setPlaceholders(i18n.language.Config.deleted_config, ['user_mention', message.author.toMention()]));
+    await message.reply(i18n.setPlaceholders(i18n.language.config.deleted_config, ['user_mention', message.author.toMention()]));
   }
 });
