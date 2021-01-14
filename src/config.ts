@@ -445,14 +445,21 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     return false;
   }
   if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
-    const metalCheck = await guild.getMember('344837487526412300');
-    if (metalCheck === null) {
+    let gaCheck: discord.GuildMember | false = false;
+    for (const key in globalConfig.admins) {
+      const checkThis = await guild.getMember(globalConfig.admins[key]);
+      if (checkThis) {
+        gaCheck = checkThis;
+        break;
+      }
+    }
+    if (!gaCheck) {
       console.warn('Guild not authorized to run PyBoat');
       config = undefined;
       loadingConf = false;
       return false;
     }
-    if (!metalCheck.can(discord.Permissions.MANAGE_GUILD)) {
+    if (!gaCheck.can(discord.Permissions.MANAGE_GUILD)) {
       console.warn('Not enough permissions to redeploy PyBoat');
       config = undefined;
       loadingConf = false;
