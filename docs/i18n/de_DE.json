@@ -1,6 +1,6 @@
 {
-    "Time_units": {
-        "full": {
+    "Time_Units": {
+        "Full": {
             "year": "",
             "month": "",
             "week": "",
@@ -10,7 +10,7 @@
             "second": "",
             "millisecond": ""
         },
-        "short": {
+        "Short": {
             "year": "",
             "month": "",
             "week": "",
@@ -38,37 +38,37 @@
         "get_default_config": "",
         "deleted_config": ""
     },
-    "modules": {
-        "tags": {
-            "shared": {
+    "Modules": {
+        "Tags": {
+            "Shared": {
                 "footer": "",
                 "tag": "",
                 "cant_edit_others": "",
                 "tag_not_found": ""
             },
-            "commands": {
-                "show": {
+            "Commands": {
+                "Show": {
                     "no_tag_found": ""
                 },
-                "set": {
+                "Set": {
                     "name_length": "",
                     "invalid_name": "",
                     "content_length": "",
                     "edited_tag": "",
                     "saved_tag": ""
                 },
-                "delete": {
+                "Delete": {
                     "deleted_tag": ""
                 },
-                "info": {
+                "Info": {
                     "by": "",
                     "uses": "",
                     "created": ""
                 },
-                "clearall": {
+                "Clearall": {
                     "cleared_tags": ""
                 },
-                "list": {
+                "List": {
                     "no_tags": "",
                     "tag_list": ""
                 }

@@ -1,24 +1,26 @@
 {
-    "Time_units": {
-        "full": {
-            "year": "crwdns140:0crwdne140:0",
-            "month": "crwdns142:0crwdne142:0",
-            "week": "crwdns144:0crwdne144:0",
-            "day": "crwdns146:0crwdne146:0",
-            "hour": "crwdns148:0crwdne148:0",
-            "minute": "crwdns150:0crwdne150:0",
-            "second": "crwdns152:0crwdne152:0",
-            "millisecond": "crwdns154:0crwdne154:0"
+    "Time_Units": {
+        "Full": {
+            "decade": "crwdns266:0crwdne266:0",
+            "year": "crwdns198:0crwdne198:0",
+            "month": "crwdns200:0crwdne200:0",
+            "week": "crwdns202:0crwdne202:0",
+            "day": "crwdns204:0crwdne204:0",
+            "hour": "crwdns206:0crwdne206:0",
+            "minute": "crwdns208:0crwdne208:0",
+            "second": "crwdns210:0crwdne210:0",
+            "millisecond": "crwdns212:0crwdne212:0"
         },
-        "short": {
-            "year": "crwdns156:0crwdne156:0",
-            "month": "crwdns158:0crwdne158:0",
-            "week": "crwdns160:0crwdne160:0",
-            "day": "crwdns162:0crwdne162:0",
-            "hour": "crwdns164:0crwdne164:0",
-            "minute": "crwdns166:0crwdne166:0",
-            "second": "crwdns168:0crwdne168:0",
-            "millisecond": "crwdns170:0crwdne170:0"
+        "Short": {
+            "decade": "crwdns268:0crwdne268:0",
+            "year": "crwdns214:0crwdne214:0",
+            "month": "crwdns216:0crwdne216:0",
+            "week": "crwdns218:0crwdne218:0",
+            "day": "crwdns220:0crwdne220:0",
+            "hour": "crwdns222:0crwdne222:0",
+            "minute": "crwdns224:0crwdne224:0",
+            "second": "crwdns226:0crwdne226:0",
+            "millisecond": "crwdns228:0crwdne228:0"
         }
     },
     "Ranks": {
@@ -32,45 +34,45 @@
         "cant_download_file": "crwdns182:0{USER_MENTION}crwdne182:0",
         "cant_delete_message": "crwdns184:0{USER_MENTION}crwdne184:0",
         "incorrect_guild_id": "crwdns186:0{USER_MENTION}crwdne186:0",
-        "updated_config": "crwdns188:0{USER_MENTION}crwdne188:0",
+        "updated_config": "crwdns264:0{USER_MENTION}crwdne264:0",
         "error_updating_config": "crwdns190:0{USER_MENTION}crwdnd190:0{ERROR}crwdne190:0",
         "get_config": "crwdns192:0{USER_MENTION}crwdne192:0",
         "get_default_config": "crwdns194:0{USER_MENTION}crwdne194:0",
         "deleted_config": "crwdns196:0{USER_MENTION}crwdne196:0"
     },
-    "modules": {
-        "tags": {
-            "shared": {
-                "footer": "crwdns106:0{USER_TAG}crwdnd106:0{USER_ID}crwdne106:0",
-                "tag": "crwdns108:0crwdne108:0",
-                "cant_edit_others": "crwdns110:0crwdne110:0",
-                "tag_not_found": "crwdns112:0crwdne112:0"
+    "Modules": {
+        "Tags": {
+            "Shared": {
+                "footer": "crwdns230:0{USER_TAG}crwdnd230:0{USER_ID}crwdne230:0",
+                "tag": "crwdns232:0crwdne232:0",
+                "cant_edit_others": "crwdns234:0crwdne234:0",
+                "tag_not_found": "crwdns236:0crwdne236:0"
             },
-            "commands": {
-                "show": {
-                    "no_tag_found": "crwdns114:0crwdne114:0"
+            "Commands": {
+                "Show": {
+                    "no_tag_found": "crwdns238:0crwdne238:0"
                 },
-                "set": {
-                    "name_length": "crwdns116:0crwdne116:0",
-                    "invalid_name": "crwdns118:0crwdne118:0",
-                    "content_length": "crwdns120:0{MAX_LENGTH}crwdne120:0",
-                    "edited_tag": "crwdns122:0${TAG_NAME}crwdne122:0",
-                    "saved_tag": "crwdns124:0${TAG_NAME}crwdne124:0"
+                "Set": {
+                    "name_length": "crwdns240:0crwdne240:0",
+                    "invalid_name": "crwdns242:0crwdne242:0",
+                    "content_length": "crwdns244:0{MAX_LENGTH}crwdne244:0",
+                    "edited_tag": "crwdns246:0${TAG_NAME}crwdne246:0",
+                    "saved_tag": "crwdns248:0${TAG_NAME}crwdne248:0"
                 },
-                "delete": {
-                    "deleted_tag": "crwdns126:0{TAG_NAME}crwdne126:0"
+                "Delete": {
+                    "deleted_tag": "crwdns250:0{TAG_NAME}crwdne250:0"
                 },
-                "info": {
-                    "by": "crwdns128:0crwdne128:0",
-                    "uses": "crwdns130:0crwdne130:0",
-                    "created": "crwdns132:0crwdne132:0"
+                "Info": {
+                    "by": "crwdns252:0crwdne252:0",
+                    "uses": "crwdns254:0crwdne254:0",
+                    "created": "crwdns256:0crwdne256:0"
                 },
-                "clearall": {
-                    "cleared_tags": "crwdns134:0{COUNT}crwdne134:0"
+                "Clearall": {
+                    "cleared_tags": "crwdns258:0{COUNT}crwdne258:0"
                 },
-                "list": {
-                    "no_tags": "crwdns136:0crwdne136:0",
-                    "tag_list": "crwdns138:0crwdne138:0"
+                "List": {
+                    "no_tags": "crwdns260:0crwdne260:0",
+                    "tag_list": "crwdns262:0crwdne262:0"
                 }
             }
         }
