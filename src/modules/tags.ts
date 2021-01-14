@@ -3,7 +3,7 @@ import * as c2 from '../lib/commands2';
 import { Ranks, config, globalConfig } from '../config';
 import { saveMessage } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
-import {language as i18n, setPlaceholders } from '../localization/interface';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const pool = new utils.StoragePool('tags', 0, 'id', 'ts');
 class Tag {
@@ -39,7 +39,7 @@ export async function showTag(msg: discord.GuildMemberMessage, tagName: string) 
     }
     emb.setDescription(obj.content);
     emb.setTitle(`${i18n.modules.tags.shared.tag}: ${obj.id}`);
-    emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', usr.getTag(), 'user_id', usr.id])});
+    emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
     emb.setTimestamp(new Date().toISOString());
     emb.setColor(0xfa7814);
     return { content: '', embed: emb };
@@ -102,12 +102,12 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
             const oldV = `${ex.content}`;
             ex.content = content;
             await pool.editPool(nm, ex);
-            return setPlaceholders(i18n.modules.tags.commands.set.edited_tag,[ 'tag_name', nm]);
+            return setPlaceholders(i18n.modules.tags.commands.set.edited_tag, ['tag_name', nm]);
           }
         }
         const newObj = new Tag(nm, msg.author.id, content);
         await pool.saveToPool(newObj);
-        return setPlaceholders(i18n.modules.tags.commands.set.saved_tag,[ 'tag_name', nm]);
+        return setPlaceholders(i18n.modules.tags.commands.set.saved_tag, ['tag_name', nm]);
       });
       saveMessage(res);
     },
@@ -306,14 +306,14 @@ if (tagGroup) {
           await inter.acknowledge(true);
           ex.content = value;
           await pool.editPool(nm, ex);
-          await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.edited_tag,[ 'tag_name', nm]));
+          await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.edited_tag, ['tag_name', nm]));
           return;
         }
       }
       await inter.acknowledge(true);
       const newObj = new Tag(nm, inter.member.user.id, value);
       await pool.saveToPool(newObj);
-      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.saved_tag,[ 'tag_name', nm]));
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.saved_tag, ['tag_name', nm]));
     }, {
       permissions: {
         overrideableInfo: 'tags.tag.set',
