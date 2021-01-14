@@ -1,3 +1,3 @@
 files:
-  - source: /i18n/source/**/
-    translation: /i18n/%locale_with_underscore%.json
+  - source: /docs/i18n/source/**/
+    translation: /docs/i18n/%locale_with_underscore%.json
