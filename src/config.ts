@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as messages from './modules/logging/messages';
 import * as updates from './updates';
+import * as i18n from './localization/interface';
 
 export class ConfigError extends Error {
   configPath: string;
@@ -474,6 +475,9 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
+
+  console.log('loading language files');
+  await i18n.Initialize();
   return true;
 }
 

@@ -1,5 +1,5 @@
 {
-    "time_units": {
+    "Time_units": {
         "full": {
             "year": "year",
             "month": "month",
@@ -21,14 +21,14 @@
             "millisecond": "ms"
         }
     },
-    "ranks": {
+    "Ranks": {
         "guest": "Guest",
         "authorized": "Authorized",
         "moderator": "Moderator",
         "administrator": "Administrator",
         "owner": "Owner"
     },
-    "config": {
+    "Config": {
         "cant_download_file": "{USER_MENTION} I couldn't grab that file, is another bot deleting the file?",
         "cant_delete_message": "{USER_MENTION} I Couldn't delete your message! You might want to delete it yourself.",
         "incorrect_guild_id": "{USER_MENTION} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?",

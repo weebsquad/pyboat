@@ -9,7 +9,7 @@
     "lint": "eslint cd/publish.js --config .eslintrc.js && eslint src/ --ext .ts --max-warnings 99999 --config .eslintrc.ts",
     "lintfix": "eslint cd/publish.js --config .eslintrc.js --quiet --fix && eslint src/ --ext .ts --fix --config .eslintrc.ts --quiet",
     "test": "rollup -c rollup_test.config.js && npm run-script publish",
-    "testlint": "npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish"
+    "testlint": "node cd/i18n_typings.js && npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish"
   },
   "author": "weebsquad",
   "license": "MIT",
@@ -24,6 +24,7 @@
     "eslint": "^7.6.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
+    "json-ts": "^1.6.4",
     "mocha": "^8.1.1",
     "node-fetch": "^2.6.0",
     "rollup": "^2.6.1",
