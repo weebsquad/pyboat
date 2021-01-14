@@ -548,6 +548,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       data = await fetch(message.attachments[0].url);
       if (!data.ok) {
         await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
+        await message.reply(i18n.setPlaceholders(i18n.language.))
       }
 
       try {

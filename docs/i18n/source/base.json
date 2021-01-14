@@ -1,6 +1,6 @@
 {
-    "Time_units": {
-        "full": {
+    "Time_Units": {
+        "Full": {
             "year": "year",
             "month": "month",
             "week": "week",
@@ -10,7 +10,7 @@
             "second": "second",
             "millisecond": "millisecond"
         },
-        "short": {
+        "Short": {
             "year": "y",
             "month": "mo",
             "week": "w",
@@ -38,37 +38,37 @@
         "get_default_config": "{USER_MENTION} here you go!\n\n**WARNING**: This is the default config, you did not have a config previously saved!\n**It is HIGHLY RECOMMENDED to start from a empty config instead!**\n\n*This message will self-destruct in 15 seconds*",
         "deleted_config": "{USER_MENTION} done!\n\nFeel free to request a new config by typing `.config.`"
     },
-    "modules": {
-        "tags": {
-            "shared": {
+    "Modules": {
+        "Tags": {
+            "Shared": {
                 "footer": "Requested by {USER_TAG} ({USER_ID})",
                 "tag": "Tag",
                 "cant_edit_others": "You may not edit other user's tags!",
                 "tag_not_found": "There is no tag with that name!"
             },
-            "commands": {
-                "show": {
+            "Commands": {
+                "Show": {
                     "no_tag_found": "No tag found with that name"
                 },
-                "set": {
+                "Set": {
                     "name_length": "Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!",
                     "invalid_name": "Invalid tag name!",
                     "content_length": "Tag content may only be up to {MAX_LENGTH} characters in size!",
                     "edited_tag": "Edited tag with name `${TAG_NAME}` !",
                     "saved_tag":  "Saved tag with name `${TAG_NAME}` !"
                 },
-                "delete": {
+                "Delete": {
                     "deleted_tag": "Deleted tag `{TAG_NAME}` !"
                 },
-                "info": {
+                "Info": {
                     "by": "By",
                     "uses": "Uses",
                     "created": "Created"
                 },
-                "clearall": {
+                "Clearall": {
                     "cleared_tags": "Removed {COUNT} tags!"
                 },
-                "list": {
+                "List": {
                     "no_tags": "There are no tags saved!",
                     "tag_list": "Tag List"
                 }
