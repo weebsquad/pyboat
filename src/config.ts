@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as messages from './modules/logging/messages';
 import * as updates from './updates';
+
 import * as i18n from './localization/interface';
+
+export let config: any;
+export const guildId = discord.getGuildId();
 
 export class ConfigError extends Error {
   configPath: string;
@@ -48,7 +52,7 @@ export const globalConfig = <any>{
   Ranks, // lol
   version: '1.6.2',
 };
-export const guildId = discord.getGuildId();
+
 // @ts-ignore
 export const deployDate = new Date(__DATE_PUBLISH__);
 const defaultConfig = { // for non-defined configs!
@@ -356,10 +360,8 @@ function loadConfigDefaults(cfg: any) {
 
 const configKv = new pylon.KVNamespace('config');
 
-export let config: any;
 let loadingConf = false;
 let lastTry = Date.now();
-
 export async function InitializeConfig(bypass = false): Promise<boolean> {
   const resC = await beginLoad(bypass);
   /*
