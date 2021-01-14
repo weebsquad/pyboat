@@ -1,6 +1,7 @@
 {
     "Time_Units": {
         "Full": {
+            "decade": "crwdns266:0crwdne266:0",
             "year": "crwdns198:0crwdne198:0",
             "month": "crwdns200:0crwdne200:0",
             "week": "crwdns202:0crwdne202:0",
@@ -11,6 +12,7 @@
             "millisecond": "crwdns212:0crwdne212:0"
         },
         "Short": {
+            "decade": "crwdns268:0crwdne268:0",
             "year": "crwdns214:0crwdne214:0",
             "month": "crwdns216:0crwdne216:0",
             "week": "crwdns218:0crwdne218:0",
