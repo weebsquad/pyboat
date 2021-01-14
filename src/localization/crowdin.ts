@@ -1,4 +1,4 @@
-namespace Crowdin {
+/*namespace Crowdin {
     interface Manifest {
         
     }
@@ -12,4 +12,4 @@ export async function getManifest() {
     const res = await fetch(url);
     const json = await res.json();
 
-}
+}*/
