@@ -1,14 +1,14 @@
 {
-    "time_units": {
+    "Time_units": {
         "full": {
-            "year": "ano",
-            "month": "mês",
-            "week": "semana",
-            "day": "dia",
-            "hour": "hora",
-            "minute": "minuto",
-            "second": "segundo",
-            "millisecond": "milissegundo"
+            "year": "",
+            "month": "",
+            "week": "",
+            "day": "",
+            "hour": "",
+            "minute": "",
+            "second": "",
+            "millisecond": ""
         },
         "short": {
             "year": "",
@@ -21,15 +21,15 @@
             "millisecond": ""
         }
     },
-    "ranks": {
-        "guest": "Convidado",
-        "authorized": "Autorizado",
-        "moderator": "Moderador",
-        "administrator": "Administrador",
-        "owner": "Dono"
+    "Ranks": {
+        "guest": "",
+        "authorized": "",
+        "moderator": "",
+        "administrator": "",
+        "owner": ""
     },
-    "config": {
-        "cant_download_file": "{USER_MENTION} Eu não consegui pegar esse ficheiro, está outro bot a apagar o arquivo?",
+    "Config": {
+        "cant_download_file": "",
         "cant_delete_message": "",
         "incorrect_guild_id": "",
         "updated_config": "",
