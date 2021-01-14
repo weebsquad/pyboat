@@ -37,5 +37,42 @@
         "get_config": "crwdns66:0{USER_MENTION}crwdne66:0",
         "get_default_config": "crwdns68:0{USER_MENTION}crwdne68:0",
         "deleted_config": "crwdns70:0{USER_MENTION}crwdne70:0"
+    },
+    "modules": {
+        "tags": {
+            "shared": {
+                "footer": "crwdns106:0{USER_TAG}crwdnd106:0{USER_ID}crwdne106:0",
+                "tag": "crwdns108:0crwdne108:0",
+                "cant_edit_others": "crwdns110:0crwdne110:0",
+                "tag_not_found": "crwdns112:0crwdne112:0"
+            },
+            "commands": {
+                "show": {
+                    "no_tag_found": "crwdns114:0crwdne114:0"
+                },
+                "set": {
+                    "name_length": "crwdns116:0crwdne116:0",
+                    "invalid_name": "crwdns118:0crwdne118:0",
+                    "content_length": "crwdns120:0{MAX_LENGTH}crwdne120:0",
+                    "edited_tag": "crwdns122:0${TAG_NAME}crwdne122:0",
+                    "saved_tag": "crwdns124:0${TAG_NAME}crwdne124:0"
+                },
+                "delete": {
+                    "deleted_tag": "crwdns126:0{TAG_NAME}crwdne126:0"
+                },
+                "info": {
+                    "by": "crwdns128:0crwdne128:0",
+                    "uses": "crwdns130:0crwdne130:0",
+                    "created": "crwdns132:0crwdne132:0"
+                },
+                "clearall": {
+                    "cleared_tags": "crwdns134:0{COUNT}crwdne134:0"
+                },
+                "list": {
+                    "no_tags": "crwdns136:0crwdne136:0",
+                    "tag_list": "crwdns138:0crwdne138:0"
+                }
+            }
+        }
     }
 }
