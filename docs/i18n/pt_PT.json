@@ -1,78 +1,78 @@
 {
-    "Time_Units": {
-        "Full": {
-            "decade": "",
-            "year": "",
-            "month": "",
-            "week": "",
-            "day": "",
-            "hour": "",
-            "minute": "",
-            "second": "",
-            "millisecond": ""
+    "time_units": {
+        "full": {
+            "decade": "década",
+            "year": "ano",
+            "month": "mês",
+            "week": "semana",
+            "day": "dia",
+            "hour": "hora",
+            "minute": "minuto",
+            "second": "segundo",
+            "millisecond": "milissegundo"
         },
-        "Short": {
-            "decade": "",
-            "year": "",
-            "month": "",
-            "week": "",
-            "day": "",
-            "hour": "",
-            "minute": "",
-            "second": "",
-            "millisecond": ""
+        "short": {
+            "decade": "dez",
+            "year": "a",
+            "month": "me",
+            "week": "sem",
+            "day": "d",
+            "hour": "h",
+            "minute": "m",
+            "second": "s",
+            "millisecond": "ms"
         }
     },
-    "Ranks": {
-        "guest": "",
-        "authorized": "",
-        "moderator": "",
-        "administrator": "",
-        "owner": ""
+    "ranks": {
+        "guest": "Visitante",
+        "authorized": "Autorizado",
+        "moderator": "Moderador",
+        "administrator": "Administrador",
+        "owner": "Dono"
     },
-    "Config": {
-        "cant_download_file": "",
-        "cant_delete_message": "",
-        "incorrect_guild_id": "",
-        "updated_config": "",
-        "error_updating_config": "",
-        "get_config": "",
-        "get_default_config": "",
-        "deleted_config": ""
+    "config": {
+        "cant_download_file": "{USER_MENTION} Eu não consegui apanhar esse ficheiro, está outro bot a apagar o ficheiro?",
+        "cant_delete_message": "{USER_MENTION} Não foi possível apagar sua mensagem! Talvez você queira fazê-lo.",
+        "incorrect_guild_id": "{USER_MENTION} ID incorreto da guild em sua configuração!\n\nVocê está enviando para o servidor correto?",
+        "updated_config": "{USER_MENTION} ✅ atualizou a configuração!",
+        "error_updating_config": "{USER_MENTION} Erro ao atualizar sua configuração:\n{ERROR}\n",
+        "get_config": "{USER_MENTION} aqui está!\n\n*Esta mensagem irá se auto-destruir em 15 segundos*",
+        "get_default_config": "{USER_MENTION} aqui está!\n\n**AVISO**: Essa é a configuração padrão, você não tem uma configuração salva anteriormente!\n**É ALTAMENTE RECOMENDADO para começar com uma configuração vazia!**\n\n*Esta mensagem irá se auto-destruir em 15 segundos*",
+        "deleted_config": "{USER_MENTION} feito!\n\nSinta-se à vontade para solicitar uma nova configuração digitando `.config.`"
     },
-    "Modules": {
-        "Tags": {
-            "Shared": {
-                "footer": "",
-                "tag": "",
-                "cant_edit_others": "",
-                "tag_not_found": ""
+    "modules": {
+        "tags": {
+            "shared": {
+                "footer": "Solicitado por {USER_TAG} ({USER_ID})",
+                "tag": "Etiqueta",
+                "cant_edit_others": "Você não pode editar etiquetas de outros usuários!",
+                "tag_not_found": "Não há etiqueta com esse nome!"
             },
-            "Commands": {
-                "Show": {
-                    "no_tag_found": ""
+            "commands": {
+                "show": {
+                    "no_tag_found": "Nenhuma etiqueta encontrada com esse nome"
                 },
-                "Set": {
-                    "name_length": "",
-                    "invalid_name": "",
-                    "content_length": "",
-                    "edited_tag": "",
-                    "saved_tag": ""
+                "set": {
+                    "name_length": "O nome da etiqueta deve ter entre 2 e 20 caracteres e só pode conter caracteres alfanuméricos!",
+                    "invalid_name": "Nome de etiqueta inválido!",
+                    "content_length": "O conteúdo da etiqueta só pode ter até {MAX_LENGTH} caracteres!",
+                    "edited_tag": "Etiqueta editada com o nome `${TAG_NAME}`!",
+                    "saved_tag": "Etiqueta salva com o nome `${TAG_NAME}`!"
                 },
-                "Delete": {
-                    "deleted_tag": ""
+                "delete": {
+                    "deleted_tag": "Apagada a etiqueta `{TAG_NAME}`!"
                 },
-                "Info": {
-                    "by": "",
-                    "uses": "",
-                    "created": ""
+                "info": {
+                    "by": "Por",
+                    "uses": "Utilizações",
+                    "created": "Criado"
                 },
-                "Clearall": {
-                    "cleared_tags": ""
+                "clearall": {
+                    "cleared_tags": "{COUNT} etiquetas removidas!"
                 },
-                "List": {
-                    "no_tags": "",
-                    "tag_list": ""
+                "list": {
+                    "no_tags": "Não há etiquetas salvas!",
+                    "tag_list": "Lista de Etiquetas"
                 }
             }
         }
