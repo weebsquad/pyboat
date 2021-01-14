@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Build i18n typings",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "i18ntypings"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+        {
             "name": "Test All",
             "request": "launch",
             "runtimeArgs": [

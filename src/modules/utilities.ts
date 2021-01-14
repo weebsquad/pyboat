@@ -76,7 +76,7 @@ export async function checkReminders() {
         }
       } catch (_) {}
       const newContent = await utils.parseMentionables(remi.content);
-      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: setPlaceholders(i18n.modules.utilities.shared.reminders.remind_message, ['user_mention', member.toMention(), 'time_utc', timestamptext, 'time_ago', utils.getLongAgoFormat(ts, 1, true), 'reminder_text', newContent]) });
+      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: setPlaceholders(i18n.modules.utilities.reminders.remind_message, ['user_mention', member.toMention(), 'time_utc', timestamptext, 'time_ago', utils.getLongAgoFormat(ts, 1, true), 'reminder_text', newContent]) });
       await reminders.editPool(remi.id, null);
     }
   }));
@@ -85,50 +85,50 @@ export async function checkReminders() {
 export async function addReminderSlash(inter: discord.interactions.commands.SlashCommandInteraction, when: string, text: string) {
   const dur = utils.timeArgumentToMs(when);
   if (dur === 0) {
-    await inter.respondEphemeral(i18n.modules.utilities.shared.time_improper);
+    await inter.respondEphemeral(i18n.modules.utilities.time_improper);
     return;
   }
   if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
-    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_time_limit);
+    await inter.respondEphemeral(i18n.modules.utilities.reminders.reminder_time_limit);
     return;
   }
   const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
   const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
   if (bythem.length >= 10) {
-    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_count_limit);
+    await inter.respondEphemeral(i18n.modules.utilities.reminders.reminder_count_limit);
     return;
   }
   text = utils.escapeString(text);
   text = text.split('\n').join(' ').split('\t').join(' ');
   if (text.length > 1000) {
-    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_content_limit);
+    await inter.respondEphemeral(i18n.modules.utilities.reminders.reminder_content_limit);
     return;
   }
   await reminders.saveToPool(new Reminder(utils.composeSnowflake(), Date.now() + dur, inter.member.user.id, inter.channelId, text));
-  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.shared.reminders.will_remind_in, ['duration', durationText]));
+  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.reminders.will_remind_in, ['duration', durationText]));
 }
 
 export async function addReminder(msg: discord.GuildMemberMessage, when: string, text: string) {
   const res: any = await msg.inlineReply(async () => {
     const dur = utils.timeArgumentToMs(when);
     if (dur === 0) {
-      return i18n.modules.utilities.shared.time_improper;
+      return i18n.modules.utilities.time_improper;
     }
     if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
-      return i18n.modules.utilities.shared.reminders.reminder_time_limit;
+      return i18n.modules.utilities.reminders.reminder_time_limit;
     }
     const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length >= 10) {
-      return i18n.modules.utilities.shared.reminders.reminder_count_limit;
+      return i18n.modules.utilities.reminders.reminder_count_limit;
     }
     text = utils.escapeString(text);
     text = text.split('\n').join(' ').split('\t').join(' ');
     if (text.length > 1000) {
-      return i18n.modules.utilities.shared.reminders.reminder_content_limit;
+      return i18n.modules.utilities.reminders.reminder_content_limit;
     }
     await reminders.saveToPool(new Reminder(msg.id, Date.now() + dur, msg.author.id, msg.channelId, text));
-    return setPlaceholders(i18n.modules.utilities.shared.reminders.will_remind_in, ['duration', durationText]);
+    return setPlaceholders(i18n.modules.utilities.reminders.will_remind_in, ['duration', durationText]);
   });
   saveMessage(res);
 }
@@ -136,23 +136,23 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
 export async function clearRemindersSlash(inter: discord.interactions.commands.SlashCommandInteraction) {
   const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
   if (bythem.length === 0) {
-    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.no_reminders);
+    await inter.respondEphemeral(i18n.modules.utilities.reminders.no_reminders);
     return;
   }
   const ids = bythem.map((val) => val.id);
   await reminders.editPools<Reminder>(ids, () => null);
-  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.shared.reminders.cleared_reminders, ['count', ids.length.toString()]));
+  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.reminders.cleared_reminders, ['count', ids.length.toString()]));
 }
 
 export async function clearReminders(msg: discord.GuildMemberMessage) {
   const res: any = await msg.inlineReply(async () => {
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length === 0) {
-      return i18n.modules.utilities.shared.reminders.no_reminders;
+      return i18n.modules.utilities.reminders.no_reminders;
     }
     const ids = bythem.map((val) => val.id);
     await reminders.editPools<Reminder>(ids, () => null);
-    return setPlaceholders(i18n.modules.utilities.shared.reminders.cleared_reminders, ['count', ids.length.toString()]);
+    return setPlaceholders(i18n.modules.utilities.reminders.cleared_reminders, ['count', ids.length.toString()]);
   });
   saveMessage(res);
 }
@@ -342,10 +342,10 @@ export function InitializeCommands() {
               const res: any = await msg.inlineReply(async () => {
                 const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
                 if (!checkrole) {
-                  return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+                  return { content: setPlaceholders(i18n.modules.utilities.curs.dont_have_role, ['user_mention', msg.author.toMention()]) };
                 }
                 const prefix = typeof config.modules.commands.prefix === 'string' ? config.modules.commands.prefix : config.modules.commands.prefix[0];
-                return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type \`${prefix}cur name <name>\`\nTo set the color, type \`${prefix}cur color <color>\`` };
+                return { allowedMentions: { users: [msg.author.id] }, content: setPlaceholders(i18n.modules.utilities.curs.check_role, ['user_mention', msg.author.toMention(), 'role_mention', `<@&${checkrole.roleId}>`, 'prefix', prefix]) };
               });
               saveMessage(res);
             }, msgT,
@@ -360,18 +360,18 @@ export function InitializeCommands() {
           const res: any = await msg.inlineReply(async () => {
             const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
             if (!checkrole) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.dont_have_role };
             }
             if (name.length < 2 || name.length > 32) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} New name must be between 2 and 32 characters in size!` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.character_limit };
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(checkrole.roleId);
             if (!role) {
-              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+              return { content: i18n.modules.utilities.curs.role_not_found };
             }
             await role.edit({ name });
-            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's name to \`${utils.escapeString(name, true)}\`` };
+            return { allowedMentions: { users: [msg.author.id] }, content: setPlaceholders(i18n.modules.utilities.curs.changed_role_name, ['role_name', utils.escapeString(name, true)]) };
           });
           saveMessage(res);
         },
@@ -390,21 +390,21 @@ export function InitializeCommands() {
           const res: any = await msg.inlineReply(async () => {
             const checkrole = await customUserRoles.getById<UserRole>(msg.author.id);
             if (!checkrole) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} You do not have a custom role!` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.dont_have_role };
             }
             if (typeof color === 'string' && color.includes('#')) {
               color = color.split('#').join('');
             }
             if (typeof color === 'string' && color.length !== 6) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Color must be formatted as a hex string! (for example \`#ff0000\`)` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.color_wrong_format };
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(checkrole.roleId);
             if (!role) {
-              return { content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+              return { content: i18n.modules.utilities.curs.role_not_found };
             }
             await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
-            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Changed your role's color to \`${typeof color === 'string' ? `#${color}` : 'None'}\`` };
+            return { allowedMentions: { users: [msg.author.id] }, content: setPlaceholders(i18n.modules.utilities.curs.changed_role_color, ['color', typeof color === 'string' ? `#${color}` : 'None']) };
           });
           saveMessage(res);
         },
@@ -1567,7 +1567,7 @@ if (curGroup) {
         await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have a custom role!`);
         return false;
       }
-      await inter.respondEphemeral(`Your custom role is: <@&${checkrole.roleId}>\nTo set the name of it, type **/**\`cur name <name>\`\nTo set the color, type **/**\`cur color <color>\``);
+      await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.curs.check_role_slash, ['user_mention', inter.member.user.toMention(), 'role_mention', `<@&${checkrole.roleId}>`]));
     },
     {
       parent: 'cur',

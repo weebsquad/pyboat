@@ -25,7 +25,7 @@ export async function showTag(msg: discord.GuildMemberMessage, tagName: string) 
     const nm = tagName.toLowerCase();
     const obj = await pool.getById<Tag>(nm);
     if (!obj) {
-      return { content: i18n.modules.tags.shared.tag_not_found };
+      return { content: i18n.modules.tags.tag_not_found };
     }
 
     pool.editTransact(obj.id, (vl: Tag) => {
@@ -38,8 +38,8 @@ export async function showTag(msg: discord.GuildMemberMessage, tagName: string) 
       emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
     }
     emb.setDescription(obj.content);
-    emb.setTitle(`${i18n.modules.tags.shared.tag}: ${obj.id}`);
-    emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
+    emb.setTitle(`${i18n.modules.tags.tag}: ${obj.id}`);
+    emb.setFooter({ text: setPlaceholders(i18n.modules.tags.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
     emb.setTimestamp(new Date().toISOString());
     emb.setColor(0xfa7814);
     return { content: '', embed: emb };
@@ -84,30 +84,30 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
         const testalph = tagName.toLowerCase().replace(/[a-zA-Z0-9_]+/g, '');
         const nm = tagName.toLowerCase();
         if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
-          return i18n.modules.tags.commands.set.name_length;
+          return i18n.modules.tags.set.name_length;
         }
         if (blacklist.includes(nm)) {
-          return i18n.modules.tags.commands.set.invalid_name;
+          return i18n.modules.tags.set.invalid_name;
         }
         if (typeof config.modules.tags.maxLength === 'number' && content.length > config.modules.tags.maxLength) {
-          return setPlaceholders(i18n.modules.tags.commands.set.content_length, ['max_length', config.modules.tags.maxLength]);
+          return setPlaceholders(i18n.modules.tags.set.content_length, ['max_length', config.modules.tags.maxLength]);
         }
         const ex = await pool.getById<Tag>(nm);
         if (ex) {
           if (ex.authorId !== msg.author.id) {
             const lvl = utils.getUserAuth(msg.member);
             if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-              return i18n.modules.tags.shared.cant_edit_others;
+              return i18n.modules.tags.cant_edit_others;
             }
             const oldV = `${ex.content}`;
             ex.content = content;
             await pool.editPool(nm, ex);
-            return setPlaceholders(i18n.modules.tags.commands.set.edited_tag, ['tag_name', nm]);
+            return setPlaceholders(i18n.modules.tags.set.edited_tag, ['tag_name', nm]);
           }
         }
         const newObj = new Tag(nm, msg.author.id, content);
         await pool.saveToPool(newObj);
-        return setPlaceholders(i18n.modules.tags.commands.set.saved_tag, ['tag_name', nm]);
+        return setPlaceholders(i18n.modules.tags.set.saved_tag, ['tag_name', nm]);
       });
       saveMessage(res);
     },
@@ -127,16 +127,16 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
         const nm = tagName.toLowerCase();
         const ex = await pool.getById<Tag>(nm);
         if (!ex) {
-          return i18n.modules.tags.shared.tag_not_found;
+          return i18n.modules.tags.tag_not_found;
         }
         if (ex.authorId !== msg.author.id) {
           const lvl = utils.getUserAuth(msg.member);
           if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-            return i18n.modules.tags.shared.cant_edit_others;
+            return i18n.modules.tags.cant_edit_others;
           }
         }
         await pool.editPool(nm, null);
-        return i18n.modules.tags.commands.delete.deleted_tag;
+        return i18n.modules.tags.delete.deleted_tag;
       });
       saveMessage(res);
     },
@@ -156,13 +156,13 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
         const nm = tagName.toLowerCase();
         const obj = await pool.getById<Tag>(nm);
         if (!obj) {
-          return { content: i18n.modules.tags.shared.tag_not_found };
+          return { content: i18n.modules.tags.tag_not_found };
         }
         const usr: discord.User | null = await utils.getUser(obj.authorId);
         const emb = new discord.Embed();
-        emb.setDescription(`\n**${i18n.modules.tags.commands.info.by}**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**${i18n.modules.tags.commands.info.uses}**: **${obj.uses}**\n**${i18n.modules.tags.commands.info.created}**: ${new Date(obj.ts).toLocaleDateString()}`);
-        emb.setTitle(`${i18n.modules.tags.shared.tag}: ${obj.id}`);
-        emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', msg.author.getTag(), 'user_id', msg.author.id]) });
+        emb.setDescription(`\n**${i18n.modules.tags.info.by}**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**${i18n.modules.tags.info.uses}**: **${obj.uses}**\n**${i18n.modules.tags.info.created}**: ${new Date(obj.ts).toLocaleDateString()}`);
+        emb.setTitle(`${i18n.modules.tags.tag}: ${obj.id}`);
+        emb.setFooter({ text: setPlaceholders(i18n.modules.tags.footer, ['user_tag', msg.author.getTag(), 'user_id', msg.author.id]) });
         emb.setTimestamp(new Date().toISOString());
         emb.setColor(0xfa7814);
         return { content: '', embed: emb };
@@ -183,7 +183,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       const res: any = await msg.inlineReply(async () => {
         const removed = await pool.getAll<Tag>();
         await pool.clear();
-        return i18n.modules.tags.commands.clearall.cleared_tags;
+        return i18n.modules.tags.clearall.cleared_tags;
       });
       saveMessage(res);
     },
@@ -201,12 +201,12 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
       const res: any = await msg.inlineReply(async () => {
         const ex = await pool.getAll<Tag>();
         if (ex.length === 0) {
-          return { content: i18n.modules.tags.commands.list.no_tags };
+          return { content: i18n.modules.tags.list.no_tags };
         }
         const emb = new discord.Embed();
         const sorted = ex.sort((a, b) => b.uses - a.uses).map((tag) => tag.id);
         emb.setDescription(sorted.join(', '));
-        emb.setTitle(i18n.modules.tags.commands.list.tag_list);
+        emb.setTitle(i18n.modules.tags.list.tag_list);
         emb.setColor(0xfa7814);
         return { content: '', embed: emb };
       });
@@ -243,7 +243,7 @@ if (tagGroup) {
       const obj = await pool.getById<Tag>(nm);
       if (!obj) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.shared.tag_not_found);
+        await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return false;
       }
       await inter.acknowledge(true);
@@ -258,7 +258,7 @@ if (tagGroup) {
       }
       emb.setDescription(obj.content);
       emb.setTitle(`Tag: ${obj.id}`);
-      emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
+      emb.setFooter({ text: setPlaceholders(i18n.modules.tags.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
       emb.setTimestamp(new Date().toISOString());
       emb.setColor(0xfa7814);
 
@@ -281,17 +281,17 @@ if (tagGroup) {
       const nm = tag_name.toLowerCase();
       if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.commands.set.name_length);
+        await inter.respondEphemeral(i18n.modules.tags.set.name_length);
         return false;
       }
       if (blacklist.includes(nm)) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.commands.set.invalid_name);
+        await inter.respondEphemeral(i18n.modules.tags.set.invalid_name);
         return false;
       }
       if (typeof config.modules.tags.maxLength === 'number' && value.length > config.modules.tags.maxLength) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(setPlaceholders(i18n.modules.tags.commands.set.content_length, ['max_length', config.modules.tags.maxLength]));
+        await inter.respondEphemeral(setPlaceholders(i18n.modules.tags.set.content_length, ['max_length', config.modules.tags.maxLength]));
         return false;
       }
       const ex = await pool.getById<Tag>(nm);
@@ -300,20 +300,20 @@ if (tagGroup) {
           const lvl = utils.getUserAuth(inter.member);
           if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
             await inter.acknowledge(false);
-            await inter.respondEphemeral(i18n.modules.tags.shared.cant_edit_others);
+            await inter.respondEphemeral(i18n.modules.tags.cant_edit_others);
             return false;
           }
           await inter.acknowledge(true);
           ex.content = value;
           await pool.editPool(nm, ex);
-          await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.edited_tag, ['tag_name', nm]));
+          await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.set.edited_tag, ['tag_name', nm]));
           return;
         }
       }
       await inter.acknowledge(true);
       const newObj = new Tag(nm, inter.member.user.id, value);
       await pool.saveToPool(newObj);
-      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.commands.set.saved_tag, ['tag_name', nm]));
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.set.saved_tag, ['tag_name', nm]));
     }, {
       permissions: {
         overrideableInfo: 'tags.tag.set',
@@ -332,20 +332,20 @@ if (tagGroup) {
       const ex = await pool.getById<Tag>(nm);
       if (!ex) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.shared.tag_not_found);
+        await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return;
       }
       if (ex.authorId !== inter.member.user.id) {
         const lvl = utils.getUserAuth(inter.member);
         if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
           await inter.acknowledge(false);
-          await inter.respondEphemeral(i18n.modules.tags.shared.cant_edit_others);
+          await inter.respondEphemeral(i18n.modules.tags.cant_edit_others);
           return false;
         }
       }
       await inter.acknowledge(true);
       await pool.editPool(nm, null);
-      await interactionChannelRespond(inter, i18n.modules.tags.commands.delete.deleted_tag);
+      await interactionChannelRespond(inter, i18n.modules.tags.delete.deleted_tag);
     }, {
       permissions: {
         overrideableInfo: 'tags.tag.delete',
@@ -364,14 +364,14 @@ if (tagGroup) {
       const obj = await pool.getById<Tag>(nm);
       if (!obj) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.shared.tag_not_found);
+        await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return false;
       }
       const usr: discord.User | null = await utils.getUser(obj.authorId);
       const emb = new discord.Embed();
-      emb.setDescription(`\n**${i18n.modules.tags.commands.info.by}**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**${i18n.modules.tags.commands.info.uses}**: **${obj.uses}**\n**${i18n.modules.tags.commands.info.created}**: ${new Date(obj.ts).toLocaleDateString()}`);
+      emb.setDescription(`\n**${i18n.modules.tags.info.by}**: ${usr !== null ? `${usr.getTag()} ` : ''}[\`${obj.authorId}\`]\n**${i18n.modules.tags.info.uses}**: **${obj.uses}**\n**${i18n.modules.tags.info.created}**: ${new Date(obj.ts).toLocaleDateString()}`);
       emb.setTitle(`Tag: ${obj.id}`);
-      emb.setFooter({ text: setPlaceholders(i18n.modules.tags.shared.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
+      emb.setFooter({ text: setPlaceholders(i18n.modules.tags.footer, ['user_tag', usr.getTag(), 'user_id', usr.id]) });
       emb.setTimestamp(new Date().toISOString());
       emb.setColor(0xfa7814);
       await interactionChannelRespond(inter, { content: '', embed: emb });
@@ -391,7 +391,7 @@ if (tagGroup) {
     async (inter) => {
       const removed = await pool.getAll<Tag>();
       await pool.clear();
-      await interactionChannelRespond(inter, i18n.modules.tags.commands.clearall.cleared_tags);
+      await interactionChannelRespond(inter, i18n.modules.tags.clearall.cleared_tags);
     }, {
       staticAck: true,
       permissions: {
@@ -410,14 +410,14 @@ if (tagGroup) {
       const ex = await pool.getAll<Tag>();
       if (ex.length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(i18n.modules.tags.commands.list.no_tags);
+        await inter.respondEphemeral(i18n.modules.tags.list.no_tags);
         return false;
       }
       await inter.acknowledge(true);
       const emb = new discord.Embed();
       const sorted = ex.sort((a, b) => b.uses - a.uses).map((tag) => tag.id);
       emb.setDescription(sorted.join(', '));
-      emb.setTitle(i18n.modules.tags.commands.list.tag_list);
+      emb.setTitle(i18n.modules.tags.list.tag_list);
       emb.setColor(0xfa7814);
       await interactionChannelRespond(inter, { content: '', embed: emb });
     }, {
