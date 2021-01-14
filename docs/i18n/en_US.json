@@ -1,1 +1,35 @@
-{}
+{
+    "core": {
+        "footer": "Requested by {USER_TAG} ({USER_ID})",
+        "tag": "Tag",
+        "cant_edit_others": "You may not edit other user's tags!",
+        "tag_not_found": "There is no tag with that name!"
+    },
+    "commands": {
+        "show": {
+            "no_tag_found": "No tag found with that name"
+        },
+        "set": {
+            "name_length": "Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!",
+            "invalid_name": "Invalid tag name!",
+            "content_length": "Tag content may only be up to {MAX_LENGTH} characters in size!",
+            "edited_tag": "Edited tag with name `${TAG_NAME}` !",
+            "saved_tag": "Saved tag with name `${TAG_NAME}` !"
+        },
+        "delete": {
+            "deleted_tag": "Deleted tag `{TAG_NAME}` !"
+        },
+        "info": {
+            "by": "By",
+            "uses": "Uses",
+            "created": "Created"
+        },
+        "clearall": {
+            "cleared_tags": "Removed {COUNT} tags!"
+        },
+        "list": {
+            "no_tags": "There are no tags saved!",
+            "tag_list": "Tag List"
+        }
+    }
+}
