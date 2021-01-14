@@ -1,6 +1,7 @@
 {
     "Time_Units": {
         "Full": {
+            "decade": "decade",
             "year": "year",
             "month": "month",
             "week": "week",
@@ -11,6 +12,7 @@
             "millisecond": "millisecond"
         },
         "Short": {
+            "decade": "dec",
             "year": "y",
             "month": "mo",
             "week": "w",

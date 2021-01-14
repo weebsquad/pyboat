@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { config, globalConfig, guildId } from '../config';
 import * as constants from '../constants/constants';
+import * as i18n from '../localization/interface';
 
 export * from './metalApi';
 export * from './discordHelpers';
@@ -44,15 +45,15 @@ export function changeTimezone(date: Date, ianatz: string) {
   }
   
 const timeMap = new Map([
-    ['decade', 1000 * 60 * 60 * 24 * 365 * 10],
-    ['year', 1000 * 60 * 60 * 24 * 365],
-    ['month', 1000 * 60 * 60 * 24 * 31],
-    ['week', 1000 * 60 * 60 * 24 * 7],
-    ['day', 1000 * 60 * 60 * 24],
-    ['hour', 1000 * 60 * 60],
-    ['minute', 1000 * 60],
-    ['second', 1000],
-    ['milisecond', 1],
+    [i18n.language.Time_Units.full.decade, 1000 * 60 * 60 * 24 * 365 * 10],
+    [i18n.language.Time_Units.full.year, 1000 * 60 * 60 * 24 * 365],
+    [i18n.language.Time_Units.full.month, 1000 * 60 * 60 * 24 * 31],
+    [i18n.language.Time_Units.full.week, 1000 * 60 * 60 * 24 * 7],
+    [i18n.language.Time_Units.full.day, 1000 * 60 * 60 * 24],
+    [i18n.language.Time_Units.full.hour, 1000 * 60 * 60],
+    [i18n.language.Time_Units.full.minute, 1000 * 60],
+    [i18n.language.Time_Units.full.second, 1000],
+    [i18n.language.Time_Units.full.millisecond, 1],
   ]);
   export function getLongAgoFormat(ts: number, limiter: number, diffSinceNow: boolean = true, lowestUnit: string | undefined = undefined) {
     if(diffSinceNow) ts = new Date(new Date().getTime() - ts).getTime();
@@ -90,16 +91,17 @@ const timeMap = new Map([
     }
     return txtret.join(', ');
   }
-  const timeMapArguments: {[key: string]: Array<string>} = {
-    'year': ['y', 'yr'],
-    'month': ['mo', 'mon'],
-    'week': ['w', 'we'],
-    'day': ['d', 'da'],
-    'hour': ['h', 'hr'],
-    'minute': ['m', 'min'],
-    'second': ['s', 'sec'],
-    'millisecond': ['ms'],
-  };
+  const timeMapArguments: {[key: string]: Array<string>} = {};
+  timeMapArguments[i18n.language.Time_Units.full.decade] = [i18n.language.Time_Units.short.decade, 'dec', 'dc'];
+  timeMapArguments[i18n.language.Time_Units.full.year] = [i18n.language.Time_Units.short.year, 'y', 'yr'];
+  timeMapArguments[i18n.language.Time_Units.full.month] = [i18n.language.Time_Units.short.month, 'mo', 'mon'];
+  timeMapArguments[i18n.language.Time_Units.full.week] = [i18n.language.Time_Units.short.week, 'w', 'we'];
+  timeMapArguments[i18n.language.Time_Units.full.day] = [i18n.language.Time_Units.short.day, 'd', 'da'];
+  timeMapArguments[i18n.language.Time_Units.full.hour] = [i18n.language.Time_Units.short.hour, 'h', 'hr'];
+  timeMapArguments[i18n.language.Time_Units.full.minute] = [i18n.language.Time_Units.short.minute, 'm', 'min'];
+  timeMapArguments[i18n.language.Time_Units.full.second] = [i18n.language.Time_Units.short.second, 's', 'sec'];
+  timeMapArguments[i18n.language.Time_Units.full.millisecond] = [i18n.language.Time_Units.short.millisecond, 'ms'];
+
   export function timeArgumentToMs(txt: string) {
     txt = txt.split(' ').join('') + ' ';
     let combos = new Array<Array<string | number>>();

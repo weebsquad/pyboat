@@ -1,4 +1,3 @@
-import { logError } from '../lib/utils';
 import { IRootObject } from './typings';
 import { globalConfig } from '../config';
 
@@ -45,7 +44,6 @@ export async function buildLanguage(langCode: string): Promise<IRootObject> {
   try {
     initial = await fetchLanguage(langCode);
   } catch (e) {
-    logError(e);
     return defaultLanguage;
   }
   return transformJson(recursiveDefault(defaultLanguage, initial));

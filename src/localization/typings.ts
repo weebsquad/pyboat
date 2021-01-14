@@ -5,7 +5,7 @@
 */
 
 export interface IRootObject {
-    Time_units: ITime_units;
+    Time_Units: ITime_units;
     Ranks: IRanks;
     Config: IConfig;
     modules: IModules;
@@ -13,6 +13,7 @@ export interface IRootObject {
 export interface ITime_units {
     full: IFull;
     'short': {
+        decade: string;
         year: string;
         month: string;
         week: string;
@@ -24,6 +25,7 @@ export interface ITime_units {
     };
 }
 export interface IFull {
+    decade: string;
     year: string;
     month: string;
     week: string;

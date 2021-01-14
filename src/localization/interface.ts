@@ -1,4 +1,5 @@
 /* eslint-disable import/no-mutable-exports */
+
 import { IRootObject } from './typings';
 import * as builder from './builder';
 import { config } from '../config';
