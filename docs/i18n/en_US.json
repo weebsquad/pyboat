@@ -1,6 +1,7 @@
 {
     "Time_Units": {
         "Full": {
+            "decade": "",
             "year": "year",
             "month": "month",
             "week": "week",
@@ -11,6 +12,7 @@
             "millisecond": "millisecond"
         },
         "Short": {
+            "decade": "",
             "year": "y",
             "month": "mo",
             "week": "w",
@@ -32,7 +34,7 @@
         "cant_download_file": "{USER_MENTION} I couldn't grab that file, is another bot deleting the file?",
         "cant_delete_message": "{USER_MENTION} I Couldn't delete your message! You might want to delete it yourself.",
         "incorrect_guild_id": "{USER_MENTION} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?",
-        "updated_config": "",
+        "updated_config": "{USER_MENTION} ✅ updated the config!",
         "error_updating_config": "{USER_MENTION} Error whilst updating your config:\n{ERROR}\n",
         "get_config": "{USER_MENTION} here you go!\n\n*This message will self-destruct in 15 seconds*",
         "get_default_config": "{USER_MENTION} here you go!\n\n**WARNING**: This is the default config, you did not have a config previously saved!\n**It is HIGHLY RECOMMENDED to start from a empty config instead!**\n\n*This message will self-destruct in 15 seconds*",
