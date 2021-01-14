@@ -8,6 +8,7 @@ function transformJson(json: any): IRootObject {
 }
 
 async function fetchLanguage(langCode: string): Promise<IRootObject> {
+  console.log('url', `${globalConfig.localization.cdnUrl}${langCode}.json`);
   const req = await fetch(`${globalConfig.localization.cdnUrl}${langCode}.json`);
   const json = await req.json();
   return transformJson(json);

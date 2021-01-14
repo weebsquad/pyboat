@@ -42,7 +42,7 @@ export const globalConfig = <any>{
   },
   localization: {
     cdnUrl: 'https://pyboat.i0.tf/i18n/',
-    default: 'source/base.json',
+    default: 'source/base',
   },
   memStore: {
     key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
