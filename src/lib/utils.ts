@@ -98,7 +98,7 @@ const timeMap = new Map([
     'hour': ['h', 'hr'],
     'minute': ['m', 'min'],
     'second': ['s', 'sec'],
-    'milisecond': ['ms'],
+    'millisecond': ['ms'],
   };
   export function timeArgumentToMs(txt: string) {
     txt = txt.split(' ').join('') + ' ';

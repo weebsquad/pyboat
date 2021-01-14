@@ -549,7 +549,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       try {
         await message.delete();
       } catch (e) {
-        await message.reply(`${message.author.toMention()} Couldnt delete your message! You might want to delete it yourself.`);
+        await message.reply(`${message.author.toMention()} I Couldn\'t delete your message! You might want to delete it yourself.`);
       }
       // data = await data.arrayBuffer();
       data = await data.text();
@@ -595,7 +595,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
-      await message.reply(`${message.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} updated the config!`);
+      await message.reply(`${message.author.toMention()} ✔️ updated the config!`);
     } catch (e) {
       await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
     }
