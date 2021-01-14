@@ -1,1 +1,78 @@
-{}
+{
+    "time_units": {
+        "full": {
+            "year": "",
+            "month": "",
+            "week": "",
+            "day": "",
+            "hour": "",
+            "minute": "",
+            "second": "",
+            "millisecond": ""
+        },
+        "short": {
+            "year": "",
+            "month": "",
+            "week": "",
+            "day": "",
+            "hour": "",
+            "minute": "",
+            "second": "",
+            "millisecond": ""
+        }
+    },
+    "ranks": {
+        "guest": "",
+        "authorized": "",
+        "moderator": "",
+        "administrator": "",
+        "owner": ""
+    },
+    "config": {
+        "cant_download_file": "",
+        "cant_delete_message": "",
+        "incorrect_guild_id": "",
+        "updated_config": "",
+        "error_updating_config": "",
+        "get_config": "",
+        "get_default_config": "",
+        "deleted_config": ""
+    },
+    "modules": {
+        "tags": {
+            "shared": {
+                "footer": "",
+                "tag": "",
+                "cant_edit_others": "",
+                "tag_not_found": ""
+            },
+            "commands": {
+                "show": {
+                    "no_tag_found": ""
+                },
+                "set": {
+                    "name_length": "",
+                    "invalid_name": "",
+                    "content_length": "",
+                    "edited_tag": "",
+                    "saved_tag": ""
+                },
+                "delete": {
+                    "deleted_tag": ""
+                },
+                "info": {
+                    "by": "",
+                    "uses": "",
+                    "created": ""
+                },
+                "clearall": {
+                    "cleared_tags": ""
+                },
+                "list": {
+                    "no_tags": "",
+                    "tag_list": ""
+                }
+            }
+        }
+    }
+}
