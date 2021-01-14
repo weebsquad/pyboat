@@ -1,27 +1,69 @@
-
 {
     "time_units": {
-        "full": {
-            "decade": "década",
-            "year": "ano",
-            "month": "mês",
-            "week": "semana",
-            "day": "dia",
-            "hour": "hora",
-            "minute": "minuto",
-            "second": "segundo",
-            "millisecond": "milissegundo"
+        "ti_full": {
+            "singular": {
+                "decade": "década",
+                "year": "ano",
+                "month": "mês",
+                "week": "semana",
+                "day": "dia",
+                "hour": "hora",
+                "minute": "minuto",
+                "second": "segundo",
+                "millisecond": "milissegundo"
+            },
+            "plural": {
+                "decade": "décadas",
+                "year": "anos",
+                "month": "meses",
+                "week": "semanas",
+                "day": "dias",
+                "hour": "horas",
+                "minute": "minutos",
+                "second": "segundos",
+                "millisecond": "milissegundos"
+            }
         },
-        "short": {
+        "ti_short": {
             "decade": "dez",
             "year": "a",
             "month": "me",
             "week": "sem",
             "day": "d",
             "hour": "h",
-            "minute": "m",
+            "minute": "min",
             "second": "s",
             "millisecond": "ms"
+        },
+        "months": {
+            "mo_full": {
+                "january": "Janeiro",
+                "february": "Fevereiro",
+                "march": "Março",
+                "april": "Abril",
+                "may": "Maio",
+                "june": "Junho",
+                "july": "Julho",
+                "august": "Agosto",
+                "september": "Setembro",
+                "october": "Outubro",
+                "november": "Novembro",
+                "december": "Dezembro"
+            },
+            "mo_short": {
+                "january": "jan",
+                "february": "fev",
+                "march": "mar",
+                "april": "abr",
+                "may": "mai",
+                "june": "jun",
+                "july": "jul",
+                "august": "ago",
+                "september": "set",
+                "october": "out",
+                "november": "nov",
+                "december": "dez"
+            }
         }
     },
     "ranks": {
@@ -76,6 +118,21 @@
                     "tag_list": "Lista de Etiquetas"
                 }
             }
+        },
+        "utilities": {
+            "shared": {
+                "time_improper": "❌ Tempo formatado incorretamente! Por favor, use a formatação `1h30m`",
+                "reminders": {
+                    "remind_message": "Oi {USER_MENTION}! Pediste-me `{TIME_UTC} UTC` ({TIME_AGO} atrás) para te lembrar sobre:\n`{REMINDER_TEXT}`",
+                    "reminder_time_limit": "❌ O tempo deve estar entre 2 minutos e um mês",
+                    "reminder_count_limit": "❌ Você já tem 10 lembretes ativos, você pode não definir mais!",
+                    "reminder_content_limit": "❌ O conteúdo dos lembretes é muito grande!",
+                    "will_remind_in": "✅ Vou te lembrar em {DURATION}",
+                    "no_reminders": "❌ Você não tem nenhum lembrete ativo!",
+                    "cleared_reminders": "✅ limpou {COUNT} lembretes!"
+                }
+            },
+            "commands": {}
         }
     }
 }
