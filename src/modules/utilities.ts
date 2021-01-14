@@ -11,6 +11,7 @@ import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 class UserRole {
   memberId: string;
@@ -64,8 +65,7 @@ export async function checkReminders() {
       }
       const ts = utils.decomposeSnowflake(remi.id).timestamp;
       const dt = new Date(ts);
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'De',
+      const monthNames = [i18n.time_units.months.mo_short.january, i18n.time_units.months.mo_short.february, i18n.time_units.months.mo_short.march, i18n.time_units.months.mo_short.april, i18n.time_units.months.mo_short.may, i18n.time_units.months.mo_short.june, i18n.time_units.months.mo_short.july, i18n.time_units.months.mo_short.august, i18n.time_units.months.mo_short.september, i18n.time_units.months.mo_short.october, i18n.time_units.months.mo_short.november, i18n.time_units.months.mo_short.december,
       ];
       const timestamptext = `${(`0${dt.getDate()}`).substr(-2)}-${monthNames[dt.getMonth()]}-${dt.getFullYear().toString().substr(-2)} @ ${(`0${dt.getHours()}`).substr(-2)}:${(`0${dt.getMinutes()}`).substr(-2)}:${(`0${dt.getSeconds()}`).substr(-2)}`;
       let msgExists = false;
@@ -76,7 +76,7 @@ export async function checkReminders() {
         }
       } catch (_) {}
       const newContent = await utils.parseMentionables(remi.content);
-      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: `Hey ${member.toMention()}! You asked me at \`${timestamptext} UTC\` (${utils.getLongAgoFormat(ts, 1, true)} ago) to remind you about:\n\`${newContent}\`` });
+      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: setPlaceholders(i18n.modules.utilities.shared.reminders.remind_message, ['user_mention', member.toMention(), 'time_utc', timestamptext, 'time_ago', utils.getLongAgoFormat(ts, 1, true), 'reminder_text', newContent]) });
       await reminders.editPool(remi.id, null);
     }
   }));
@@ -85,50 +85,50 @@ export async function checkReminders() {
 export async function addReminderSlash(inter: discord.interactions.commands.SlashCommandInteraction, when: string, text: string) {
   const dur = utils.timeArgumentToMs(when);
   if (dur === 0) {
-    await inter.respondEphemeral(`${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`);
+    await inter.respondEphemeral(i18n.modules.utilities.shared.time_improper);
     return;
   }
   if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
-    await inter.respondEphemeral(`${discord.decor.Emojis.X} Time must be between 2 minutes and a month`);
+    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_time_limit);
     return;
   }
   const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
   const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
   if (bythem.length >= 10) {
-    await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have 10 active reminders, you may not define any more!`);
+    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_count_limit);
     return;
   }
   text = utils.escapeString(text);
   text = text.split('\n').join(' ').split('\t').join(' ');
   if (text.length > 1000) {
-    await inter.respondEphemeral('Reminder content is too large!');
+    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.reminder_content_limit);
     return;
   }
   await reminders.saveToPool(new Reminder(utils.composeSnowflake(), Date.now() + dur, inter.member.user.id, inter.channelId, text));
-  await inter.respondEphemeral(`${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`);
+  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.shared.reminders.will_remind_in, ['duration', durationText]));
 }
 
 export async function addReminder(msg: discord.GuildMemberMessage, when: string, text: string) {
   const res: any = await msg.inlineReply(async () => {
     const dur = utils.timeArgumentToMs(when);
     if (dur === 0) {
-      return `${discord.decor.Emojis.X} Time improperly formatted! Please use \`1h30m\` formatting`;
+      return i18n.modules.utilities.shared.time_improper;
     }
     if (dur < 2000 * 60 || dur > 32 * 24 * 60 * 60 * 1000) {
-      return `${discord.decor.Emojis.X} Time must be between 2 minutes and a month`;
+      return i18n.modules.utilities.shared.reminders.reminder_time_limit;
     }
-    const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+    const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length >= 10) {
-      return `${discord.decor.Emojis.X} You already have 10 active reminders, you may not define any more!`;
+      return i18n.modules.utilities.shared.reminders.reminder_count_limit;
     }
     text = utils.escapeString(text);
     text = text.split('\n').join(' ').split('\t').join(' ');
     if (text.length > 1000) {
-      return 'Reminder content is too large!';
+      return i18n.modules.utilities.shared.reminders.reminder_content_limit;
     }
     await reminders.saveToPool(new Reminder(msg.id, Date.now() + dur, msg.author.id, msg.channelId, text));
-    return `${discord.decor.Emojis.WHITE_CHECK_MARK} I will remind you in ${durationText}`;
+    return setPlaceholders(i18n.modules.utilities.shared.reminders.will_remind_in, ['duration', durationText]);
   });
   saveMessage(res);
 }
@@ -136,23 +136,23 @@ export async function addReminder(msg: discord.GuildMemberMessage, when: string,
 export async function clearRemindersSlash(inter: discord.interactions.commands.SlashCommandInteraction) {
   const bythem = await reminders.getByQuery<Reminder>({ authorId: inter.member.user.id });
   if (bythem.length === 0) {
-    await inter.respondEphemeral(`${discord.decor.Emojis.X} You don't have any active reminders!`);
+    await inter.respondEphemeral(i18n.modules.utilities.shared.reminders.no_reminders);
     return;
   }
   const ids = bythem.map((val) => val.id);
   await reminders.editPools<Reminder>(ids, () => null);
-  await inter.respondEphemeral(`${discord.decor.Emojis.WHITE_CHECK_MARK} cleared ${ids.length} reminders!`);
+  await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.shared.reminders.cleared_reminders, ['count', ids.length.toString()]));
 }
 
 export async function clearReminders(msg: discord.GuildMemberMessage) {
   const res: any = await msg.inlineReply(async () => {
     const bythem = await reminders.getByQuery<Reminder>({ authorId: msg.author.id });
     if (bythem.length === 0) {
-      return `${discord.decor.Emojis.X} You don't have any active reminders!`;
+      return i18n.modules.utilities.shared.reminders.no_reminders;
     }
     const ids = bythem.map((val) => val.id);
     await reminders.editPools<Reminder>(ids, () => null);
-    return `${discord.decor.Emojis.WHITE_CHECK_MARK} cleared ${ids.length} reminders!`;
+    return setPlaceholders(i18n.modules.utilities.shared.reminders.cleared_reminders, ['count', ids.length.toString()]);
   });
   saveMessage(res);
 }

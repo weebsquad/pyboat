@@ -11,20 +11,15 @@ export interface IRootObject {
     modules: IModules;
 }
 export interface ITime_units {
-    full: IFull;
-    'short': {
-        decade: string;
-        year: string;
-        month: string;
-        week: string;
-        day: string;
-        hour: string;
-        minute: string;
-        second: string;
-        millisecond: string;
-    };
+    ti_full: ITi_full;
+    ti_short: ITi_short;
+    months: IMonths;
 }
-export interface IFull {
+export interface ITi_full {
+    singular: ISingular;
+    plural: IPlural;
+}
+export interface ISingular {
     decade: string;
     year: string;
     month: string;
@@ -34,6 +29,60 @@ export interface IFull {
     minute: string;
     second: string;
     millisecond: string;
+}
+export interface IPlural {
+    decade: string;
+    year: string;
+    month: string;
+    week: string;
+    day: string;
+    hour: string;
+    minute: string;
+    second: string;
+    millisecond: string;
+}
+export interface ITi_short {
+    decade: string;
+    year: string;
+    month: string;
+    week: string;
+    day: string;
+    hour: string;
+    minute: string;
+    second: string;
+    millisecond: string;
+}
+export interface IMonths {
+    mo_full: IMo_full;
+    mo_short: IMo_short;
+}
+export interface IMo_full {
+    january: string;
+    february: string;
+    march: string;
+    april: string;
+    may: string;
+    june: string;
+    july: string;
+    august: string;
+    september: string;
+    october: string;
+    november: string;
+    december: string;
+}
+export interface IMo_short {
+    january: string;
+    february: string;
+    march: string;
+    april: string;
+    may: string;
+    june: string;
+    july: string;
+    august: string;
+    september: string;
+    october: string;
+    november: string;
+    december: string;
 }
 export interface IRanks {
     guest: string;
@@ -54,26 +103,29 @@ export interface IConfig {
 }
 export interface IModules {
     tags: ITags;
+    utilities: IUtilities;
 }
 export interface ITags {
     shared: IShared;
     commands: ICommands;
 }
 export interface IShared {
-    footer: string;
-    tag: string;
-    cant_edit_others: string;
-    tag_not_found: string;
+    footer?: string;
+    tag?: string;
+    cant_edit_others?: string;
+    tag_not_found?: string;
+    time_improper?: string;
+    reminders?: IReminders;
 }
 export interface ICommands {
-    show: IShow;
-    set: ISet;
-    'delete': {
+    show?: IShow;
+    set?: ISet;
+    'delete'?: {
         deleted_tag: string;
     };
-    info: IInfo;
-    clearall: IClearall;
-    list: IList;
+    info?: IInfo;
+    clearall?: IClearall;
+    list?: IList;
 }
 export interface IShow {
     no_tag_found: string;
@@ -96,4 +148,17 @@ export interface IClearall {
 export interface IList {
     no_tags: string;
     tag_list: string;
+}
+export interface IUtilities {
+    shared: IShared;
+    commands: ICommands;
+}
+export interface IReminders {
+    remind_message: string;
+    reminder_time_limit: string;
+    reminder_count_limit: string;
+    reminder_content_limit: string;
+    will_remind_in: string;
+    no_reminders: string;
+    cleared_reminders: string;
 }

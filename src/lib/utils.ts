@@ -45,29 +45,40 @@ export function changeTimezone(date: Date, ianatz: string) {
   }
   let timeMap; 
   const timeMapArguments: {[key: string]: Array<string>} = {};
+  const languageMap: {[key: string]: string} = {};
   
   function initializeMaps() {
     if(timeMap) return;
     timeMap = new Map([
-      [i18n.language.time_units.full.decade, 1000 * 60 * 60 * 24 * 365 * 10],
-      [i18n.language.time_units.full.year, 1000 * 60 * 60 * 24 * 365],
-      [i18n.language.time_units.full.month, 1000 * 60 * 60 * 24 * 31],
-      [i18n.language.time_units.full.week, 1000 * 60 * 60 * 24 * 7],
-      [i18n.language.time_units.full.day, 1000 * 60 * 60 * 24],
-      [i18n.language.time_units.full.hour, 1000 * 60 * 60],
-      [i18n.language.time_units.full.minute, 1000 * 60],
-      [i18n.language.time_units.full.second, 1000],
-      [i18n.language.time_units.full.millisecond, 1],
+      [i18n.language.time_units.ti_full.singular.decade, 1000 * 60 * 60 * 24 * 365 * 10],
+      [i18n.language.time_units.ti_full.singular.year, 1000 * 60 * 60 * 24 * 365],
+      [i18n.language.time_units.ti_full.singular.month, 1000 * 60 * 60 * 24 * 31],
+      [i18n.language.time_units.ti_full.singular.week, 1000 * 60 * 60 * 24 * 7],
+      [i18n.language.time_units.ti_full.singular.day, 1000 * 60 * 60 * 24],
+      [i18n.language.time_units.ti_full.singular.hour, 1000 * 60 * 60],
+      [i18n.language.time_units.ti_full.singular.minute, 1000 * 60],
+      [i18n.language.time_units.ti_full.singular.second, 1000],
+      [i18n.language.time_units.ti_full.singular.millisecond, 1],
     ]);
-    timeMapArguments[i18n.language.time_units.full.decade] = [i18n.language.time_units.short.decade, 'dec', 'dc'];
-  timeMapArguments[i18n.language.time_units.full.year] = [i18n.language.time_units.short.year, 'y', 'yr'];
-  timeMapArguments[i18n.language.time_units.full.month] = [i18n.language.time_units.short.month, 'mo', 'mon'];
-  timeMapArguments[i18n.language.time_units.full.week] = [i18n.language.time_units.short.week, 'w', 'we'];
-  timeMapArguments[i18n.language.time_units.full.day] = [i18n.language.time_units.short.day, 'd', 'da'];
-  timeMapArguments[i18n.language.time_units.full.hour] = [i18n.language.time_units.short.hour, 'h', 'hr'];
-  timeMapArguments[i18n.language.time_units.full.minute] = [i18n.language.time_units.short.minute, 'm', 'min'];
-  timeMapArguments[i18n.language.time_units.full.second] = [i18n.language.time_units.short.second, 's', 'sec'];
-  timeMapArguments[i18n.language.time_units.full.millisecond] = [i18n.language.time_units.short.millisecond, 'ms'];
+    timeMapArguments[i18n.language.time_units.ti_full.singular.decade] = [i18n.language.time_units.ti_short.decade, 'dec', 'dc'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.year] = [i18n.language.time_units.ti_short.year, 'y', 'yr'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.month] = [i18n.language.time_units.ti_short.month, 'mo', 'mon'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.week] = [i18n.language.time_units.ti_short.week, 'w', 'we'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.day] = [i18n.language.time_units.ti_short.day, 'd', 'da'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.hour] = [i18n.language.time_units.ti_short.hour, 'h', 'hr'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.minute] = [i18n.language.time_units.ti_short.minute, 'm', 'min'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.second] = [i18n.language.time_units.ti_short.second, 's', 'sec'];
+  timeMapArguments[i18n.language.time_units.ti_full.singular.millisecond] = [i18n.language.time_units.ti_short.millisecond, 'ms'];
+
+  languageMap['decade'] = i18n.language.time_units.ti_full.singular.decade;
+  languageMap['year'] = i18n.language.time_units.ti_full.singular.year;
+  languageMap['month'] = i18n.language.time_units.ti_full.singular.month;
+  languageMap['week'] = i18n.language.time_units.ti_full.singular.week;
+  languageMap['day'] = i18n.language.time_units.ti_full.singular.day;
+  languageMap['hour'] = i18n.language.time_units.ti_full.singular.hour;
+  languageMap['minute'] = i18n.language.time_units.ti_full.singular.minute;
+  languageMap['second'] = i18n.language.time_units.ti_full.singular.second;
+  languageMap['millisecond'] = i18n.language.time_units.ti_full.singular.millisecond;
   }
   
 
@@ -101,7 +112,10 @@ export function changeTimezone(date: Date, ianatz: string) {
         break;
       }
       if(lowestUnit === key) hitLowest = true;
-      let cc: string = value > 1 ? `${key}s` : key;
+      let cc: string = key;
+      if(value > 1) {
+        cc = i18n.language.time_units.ti_full.plural[key];
+      }
       cc = `${cc.substr(0,1).toUpperCase()}${cc.substr(1).toLowerCase()}`
       txtret.push(`${value} ${cc}`);
       runsc += 1;
@@ -139,7 +153,7 @@ export function changeTimezone(date: Date, ianatz: string) {
         thisType = thisType.toLowerCase();
         for(var key in timeMapArguments) {
             const obj = timeMapArguments[key];
-            if(key === thisType || `${key}s` === thisType || obj.includes(thisType)) {
+            if(key === thisType || obj.includes(thisType)) {
                 msret += thisQuant * (timeMap.get(key));
             }
         }
