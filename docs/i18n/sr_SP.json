@@ -1,5 +1,5 @@
 {
-    "time_units": {
+    "Time_units": {
         "full": {
             "year": "",
             "month": "",
@@ -21,14 +21,14 @@
             "millisecond": ""
         }
     },
-    "ranks": {
+    "Ranks": {
         "guest": "",
         "authorized": "",
         "moderator": "",
         "administrator": "",
         "owner": ""
     },
-    "config": {
+    "Config": {
         "cant_download_file": "",
         "cant_delete_message": "",
         "incorrect_guild_id": "",
