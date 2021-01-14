@@ -1,27 +1,69 @@
-
 {
     "time_units": {
-        "full": {
-            "decade": "crwdns270:0crwdne270:0",
-            "year": "crwdns272:0crwdne272:0",
-            "month": "crwdns274:0crwdne274:0",
-            "week": "crwdns276:0crwdne276:0",
-            "day": "crwdns278:0crwdne278:0",
-            "hour": "crwdns280:0crwdne280:0",
-            "minute": "crwdns282:0crwdne282:0",
-            "second": "crwdns284:0crwdne284:0",
-            "millisecond": "crwdns286:0crwdne286:0"
+        "ti_full": {
+            "singular": {
+                "decade": "crwdns366:0crwdne366:0",
+                "year": "crwdns368:0crwdne368:0",
+                "month": "crwdns370:0crwdne370:0",
+                "week": "crwdns372:0crwdne372:0",
+                "day": "crwdns374:0crwdne374:0",
+                "hour": "crwdns376:0crwdne376:0",
+                "minute": "crwdns378:0crwdne378:0",
+                "second": "crwdns380:0crwdne380:0",
+                "millisecond": "crwdns382:0crwdne382:0"
+            },
+            "plural": {
+                "decade": "crwdns384:0crwdne384:0",
+                "year": "crwdns386:0crwdne386:0",
+                "month": "crwdns388:0crwdne388:0",
+                "week": "crwdns390:0crwdne390:0",
+                "day": "crwdns392:0crwdne392:0",
+                "hour": "crwdns394:0crwdne394:0",
+                "minute": "crwdns396:0crwdne396:0",
+                "second": "crwdns398:0crwdne398:0",
+                "millisecond": "crwdns400:0crwdne400:0"
+            }
         },
-        "short": {
-            "decade": "crwdns288:0crwdne288:0",
-            "year": "crwdns290:0crwdne290:0",
-            "month": "crwdns292:0crwdne292:0",
-            "week": "crwdns294:0crwdne294:0",
-            "day": "crwdns296:0crwdne296:0",
-            "hour": "crwdns298:0crwdne298:0",
-            "minute": "crwdns300:0crwdne300:0",
-            "second": "crwdns302:0crwdne302:0",
-            "millisecond": "crwdns304:0crwdne304:0"
+        "ti_short": {
+            "decade": "crwdns402:0crwdne402:0",
+            "year": "crwdns404:0crwdne404:0",
+            "month": "crwdns406:0crwdne406:0",
+            "week": "crwdns408:0crwdne408:0",
+            "day": "crwdns410:0crwdne410:0",
+            "hour": "crwdns412:0crwdne412:0",
+            "minute": "crwdns414:0crwdne414:0",
+            "second": "crwdns416:0crwdne416:0",
+            "millisecond": "crwdns418:0crwdne418:0"
+        },
+        "months": {
+            "mo_full": {
+                "january": "crwdns420:0crwdne420:0",
+                "february": "crwdns422:0crwdne422:0",
+                "march": "crwdns424:0crwdne424:0",
+                "april": "crwdns426:0crwdne426:0",
+                "may": "crwdns428:0crwdne428:0",
+                "june": "crwdns430:0crwdne430:0",
+                "july": "crwdns432:0crwdne432:0",
+                "august": "crwdns434:0crwdne434:0",
+                "september": "crwdns436:0crwdne436:0",
+                "october": "crwdns438:0crwdne438:0",
+                "november": "crwdns440:0crwdne440:0",
+                "december": "crwdns442:0crwdne442:0"
+            },
+            "mo_short": {
+                "january": "crwdns444:0crwdne444:0",
+                "february": "crwdns446:0crwdne446:0",
+                "march": "crwdns448:0crwdne448:0",
+                "april": "crwdns450:0crwdne450:0",
+                "may": "crwdns452:0crwdne452:0",
+                "june": "crwdns454:0crwdne454:0",
+                "july": "crwdns456:0crwdne456:0",
+                "august": "crwdns458:0crwdne458:0",
+                "september": "crwdns460:0crwdne460:0",
+                "october": "crwdns462:0crwdne462:0",
+                "november": "crwdns464:0crwdne464:0",
+                "december": "crwdns466:0crwdne466:0"
+            }
         }
     },
     "ranks": {
@@ -76,6 +118,21 @@
                     "tag_list": "crwdns364:0crwdne364:0"
                 }
             }
+        },
+        "utilities": {
+            "shared": {
+                "time_improper": "crwdns468:0crwdne468:0",
+                "reminders": {
+                    "remind_message": "crwdns470:0{USER_MENTION}crwdnd470:0{TIME_UTC}crwdnd470:0{TIME_AGO}crwdnd470:0{REMINDER_TEXT}crwdne470:0",
+                    "reminder_time_limit": "crwdns472:0crwdne472:0",
+                    "reminder_count_limit": "crwdns474:0crwdne474:0",
+                    "reminder_content_limit": "crwdns476:0crwdne476:0",
+                    "will_remind_in": "crwdns478:0{DURATION}crwdne478:0",
+                    "no_reminders": "crwdns480:0crwdne480:0",
+                    "cleared_reminders": "crwdns482:0{COUNT}crwdne482:0"
+                }
+            },
+            "commands": {}
         }
     }
 }

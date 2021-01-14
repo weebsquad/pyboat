@@ -1,30 +1,17 @@
 {
     "time_units": {
-        "ti_full": {
-            "singular": {
-                "decade": "decade",
-                "year": "year",
-                "month": "month",
-                "week": "week",
-                "day": "day",
-                "hour": "hour",
-                "minute": "minute",
-                "second": "second",
-                "millisecond": "millisecond"
-            },
-            "plural": {
-                "decade": "decades",
-                "year": "years",
-                "month": "months",
-                "week": "weeks",
-                "day": "days",
-                "hour": "hours",
-                "minute": "minutes",
-                "second": "seconds",
-                "millisecond": "milliseconds"
-            }
+        "full": {
+            "decade": "decade",
+            "year": "year",
+            "month": "month",
+            "week": "week",
+            "day": "day",
+            "hour": "hour",
+            "minute": "minute",
+            "second": "second",
+            "millisecond": "millisecond"
         },
-        "ti_short": {
+        "short": {
             "decade": "dec",
             "year": "y",
             "month": "mo",
@@ -34,36 +21,6 @@
             "minute": "m",
             "second": "s",
             "millisecond": "ms"
-        },
-        "months": {
-            "mo_full": {
-                "january": "January",
-                "february": "February",
-                "march": "March",
-                "april": "April",
-                "may": "May",
-                "june": "June",
-                "july": "July",
-                "august": "August",
-                "september": "September",
-                "october": "October",
-                "november": "November",
-                "december": "December"
-            },
-            "mo_short": {
-                "january": "jan",
-                "february": "feb",
-                "march": "mar",
-                "april": "apr",
-                "may": "may",
-                "june": "jun",
-                "july": "jul",
-                "august": "aug",
-                "september": "sep",
-                "october": "oct",
-                "november": "nov",
-                "december": "dec"
-            }
         }
     },
     "ranks": {
@@ -117,23 +74,6 @@
                     "no_tags": "There are no tags saved!",
                     "tag_list": "Tag List"
                 }
-            }
-        },
-        "utilities": {
-            "shared": {
-                "time_improper": "❌ Time improperly formatted! Please use `1h30m` formatting",
-                "reminders": {
-                    "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC} UTC` ({TIME_AGO} ago) to remind you about:\n`{REMINDER_TEXT}`",
-                    "reminder_time_limit": "❌ Time must be between 2 minutes and a month",
-                    "reminder_count_limit": "❌ You already have 10 active reminders, you may not define any more!",
-                    "reminder_content_limit": "❌ Reminder content is too large!",
-                    "will_remind_in": "✅ I will remind you in {DURATION}",
-                    "no_reminders": "❌ You don't have any active reminders!",
-                    "cleared_reminders": "✅ cleared {COUNT} reminders!"
-                }
-            },
-            "commands": {
-
             }
         }
     }
