@@ -5,10 +5,59 @@
 */
 
 export interface IRootObject {
-    core: ICore;
+    Time_units: ITime_units;
+    Ranks: IRanks;
+    Config: IConfig;
+    modules: IModules;
+}
+export interface ITime_units {
+    full: IFull;
+    'short': {
+        year: string;
+        month: string;
+        week: string;
+        day: string;
+        hour: string;
+        minute: string;
+        second: string;
+        millisecond: string;
+    };
+}
+export interface IFull {
+    year: string;
+    month: string;
+    week: string;
+    day: string;
+    hour: string;
+    minute: string;
+    second: string;
+    millisecond: string;
+}
+export interface IRanks {
+    guest: string;
+    authorized: string;
+    moderator: string;
+    administrator: string;
+    owner: string;
+}
+export interface IConfig {
+    cant_download_file: string;
+    cant_delete_message: string;
+    incorrect_guild_id: string;
+    updated_config: string;
+    error_updating_config: string;
+    get_config: string;
+    get_default_config: string;
+    deleted_config: string;
+}
+export interface IModules {
+    tags: ITags;
+}
+export interface ITags {
+    shared: IShared;
     commands: ICommands;
 }
-export interface ICore {
+export interface IShared {
     footer: string;
     tag: string;
     cant_edit_others: string;

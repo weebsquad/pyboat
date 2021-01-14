@@ -36,6 +36,10 @@ export const globalConfig = <any>{
     org: 'weebsquad',
     deployments: { pyboat: 'node.js.deploy.yml' },
   },
+  localization: {
+    cdnUrl: 'https://pyboat.i0.tf/i18n/',
+    default: 'en_US',
+  },
   memStore: {
     key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
     url: 'http://51.38.114.230:8000',
@@ -49,6 +53,7 @@ export const guildId = discord.getGuildId();
 export const deployDate = new Date(__DATE_PUBLISH__);
 const defaultConfig = { // for non-defined configs!
   guildId,
+  language: globalConfig.localization.default,
   levels: {
     users: {},
     roles: {},
@@ -547,14 +552,13 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       let data: any;
       data = await fetch(message.attachments[0].url);
       if (!data.ok) {
-        await message.reply(`${message.author.toMention()} I couldn\'t grab that file, is another bot deleting the file?`);
-        await message.reply(i18n.setPlaceholders(i18n.language.))
+        await message.reply(i18n.setPlaceholders(i18n.language.Config.cant_download_file, ['user_mention', message.author.toMention()]));
       }
 
       try {
         await message.delete();
       } catch (e) {
-        await message.reply(`${message.author.toMention()} I Couldn\'t delete your message! You might want to delete it yourself.`);
+        await message.reply(i18n.setPlaceholders(i18n.language.Config.cant_delete_message, ['user_mention', message.author.toMention()]));
       }
       // data = await data.arrayBuffer();
       data = await data.text();
@@ -586,7 +590,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
       // await message.inlineReply(`\`\`\`json\n${data.split('').join('|')}\n\`\`\``);
       const check = JSON.parse(data);
       if (typeof check.guildId !== 'string' || check.guildId !== guildId) {
-        await message.reply(`${message.author.toMention()} Incorrect guild ID in your config!\n\nAre you uploading it to the right server?`);
+        await message.reply(i18n.setPlaceholders(i18n.language.Config.incorrect_guild_id, ['user_mention', message.author.toMention()]));
         return;
       }
       // let dat = JSON.parse(await (await fetch(message.attachments[0].url)).text());
@@ -600,9 +604,9 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
         await configKv.put(i.toString(), parts[i]);
       }
       await InitializeConfig(true);
-      await message.reply(`${message.author.toMention()} ✔️ updated the config!`);
+      await message.reply(i18n.setPlaceholders(i18n.language.Config.updated_config, ['user_mention', message.author.toMention()]));
     } catch (e) {
-      await message.reply(`${message.author.toMention()} Error whilst updating your config:\n\`\`\`${e.message}\n\`\`\``);
+      await message.reply(i18n.setPlaceholders(i18n.language.Config.error_updating_config, ['user_mention', message.author.toMention(), 'error', `\`\`\`\n${e.message}\n\`\`\``]));
     }
   } else if (isCfg === 'check') {
     try {
@@ -634,7 +638,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } */
     const cfgToRet = typeof cfg !== 'string' ? JSON.stringify(cfg, null, 2) : cfg;
     const returnedMsg = await message.reply({
-      content: `${message.author.toMention()} here you go!\n${isDefaultConfig === true ? '\n**WARNING**: This is the default config, you did not have a config previously saved!\n**It is HIGHLY RECOMMENDED to start from a empty config instead!**\n' : ''}\n*This message will self-destruct in 15 seconds*`,
+      content: i18n.setPlaceholders(isDefaultConfig === true ? i18n.language.Config.get_default_config : i18n.language.Config.get_config, ['user_mention', message.author.toMention()]),
       attachments: [{
         name: 'config.json',
         data: str2ab(cfgToRet),
@@ -648,6 +652,6 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } catch (e) {
     }
     await configKv.clear();
-    await message.reply(`${message.author.toMention()} done!\n\nFeel free to request a new config by typing \`.config.\``);
+    await message.reply(i18n.setPlaceholders(i18n.language.Config.deleted_config, ['user_mention', message.author.toMention()]));
   }
 });

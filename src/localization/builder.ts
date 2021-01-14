@@ -1,15 +1,15 @@
+import { logError } from '../lib/utils';
 import { IRootObject } from './typings';
+import { globalConfig } from '../config';
 
-const defaultLanguageCode = 'en_US';
 let defaultLanguage: IRootObject;
-const cdnUrl = 'https://pyboat.i0.tf/i18n/';
 
 function transformJson(json: any): IRootObject {
   return json as IRootObject;
 }
 
 async function fetchLanguage(langCode: string): Promise<IRootObject> {
-  const req = await fetch(`${cdnUrl}${langCode}.json`);
+  const req = await fetch(`${globalConfig.localization.cdnUrl}${langCode}.json`);
   const json = await req.json();
   return transformJson(json);
 }
@@ -37,10 +37,16 @@ function recursiveDefault(source: any, dest: any) {
 }
 
 export async function buildLanguage(langCode: string): Promise<IRootObject> {
+  console.log('building language', langCode);
   if (!defaultLanguage) {
-    defaultLanguage = await fetchLanguage(defaultLanguageCode);
+    defaultLanguage = await fetchLanguage(globalConfig.localization.default);
   }
-  const initial = await fetchLanguage(langCode);
-  const built = transformJson(recursiveDefault(defaultLanguage, initial));
-  return built;
+  let initial;
+  try {
+    initial = await fetchLanguage(langCode);
+  } catch (e) {
+    logError(e);
+    return defaultLanguage;
+  }
+  return transformJson(recursiveDefault(defaultLanguage, initial));
 }

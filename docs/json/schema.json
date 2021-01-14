@@ -10,6 +10,15 @@
             "pattern": "^[0-9]+$",
             "required": true
         },
+        "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "The language that the bot will use for user responses",
+            "enum": ["en_US", "pt_PT"],
+            "default": "en_US",
+            "required": true,
+            "minLength": 3
+        },
         "levels": {
             "title": "Levels",
             "type": "object",
