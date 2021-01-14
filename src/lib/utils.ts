@@ -114,7 +114,9 @@ export function changeTimezone(date: Date, ianatz: string) {
       if(lowestUnit === key) hitLowest = true;
       let cc: string = key;
       if(value > 1) {
-        cc = i18n.language.time_units.ti_full.plural[key];
+        for(const keyLang in languageMap) {
+          if(languageMap[keyLang] === key) cc = i18n.language.time_units.ti_full.plural[keyLang]
+        }
       }
       cc = `${cc.substr(0,1).toUpperCase()}${cc.substr(1).toLowerCase()}`
       txtret.push(`${value} ${cc}`);
