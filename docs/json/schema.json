@@ -3213,7 +3213,7 @@
                             "type": "string",
                             "title": "User Tag",
                             "description": "User tag formatting",
-                            "default": "_MENTION_",
+                            "default": "{MENTION}",
                             "options": {
                                 "dependencies": {
                                     "enabled": true
@@ -3224,7 +3224,7 @@
                             "type": "string",
                             "title": "Actor Tag",
                             "description": "Actor tag formatting",
-                            "default": "_MENTION_",
+                            "default": "{MENTION}",
                             "options": {
                                 "dependencies": {
                                     "enabled": true
@@ -3247,7 +3247,7 @@
                             "type": "string",
                             "title": "Reason Suffix String",
                             "description": "String to be suffixed to a log message if Suffix Reason to Audit Log is enabled",
-                            "default": " with reason `_REASON_RAW_`",
+                            "default": " with reason `{REASON_RAW}`",
                             "options": {
                                 "dependencies": {
                                     "enabled": true,

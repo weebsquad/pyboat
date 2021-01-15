@@ -91,13 +91,13 @@ const defaultConfig = { // for non-defined configs!
         logChannels: true,
       },
       // tag type to use for users
-      userTag: '_MENTION_',
+      userTag: '{MENTION}',
       // tag type to use for actors
-      actorTag: '_MENTION_',
+      actorTag: '{MENTION}',
       // automatically append reason suffix below when reason not already found on the message?
       suffixReasonToAuditlog: true,
       // reason suffix to append
-      reasonSuffix: ' with reason `_REASON_RAW_`',
+      reasonSuffix: ' with reason `{REASON_RAW}`',
       // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       timezone: 'Etc/GMT+0',
     },
