@@ -241,6 +241,7 @@ export function getLogMessage(
 
 export function replacePlaceholders(txt: string, map: Map<string, string>) {
   console.log('replacePlaceholders', 'txt', txt, 'map', map);
+  
   for (let [key, value] of map) {
     key = key.split('{').join('').split('}').join('');
     txt = txt.split(`{${key}}`).join(value);
