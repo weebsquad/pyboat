@@ -927,7 +927,6 @@ export async function handleEvent(
       log,
       ...args,
     );
-    console.log('obj', obj, obj.payload[1]);
     if (isExt) {
       const chans = await parseChannelsData(obj);
       let messages = await getMessages(chans, obj);
