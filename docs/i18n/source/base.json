@@ -463,7 +463,7 @@
                   },
                 
                   "MESSAGE_DELETE": {
-                    "MESSAGE_DELETED_GUILD": "🗑️ {ACTORTAG} deleted message by _AUTHOR_ **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}"
+                    "MESSAGE_DELETED_GUILD": "🗑️ {ACTORTAG} deleted message by {AUTHOR} **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}"
                   },
                   "MESSAGE_DELETE_BULK": {
                     "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted _COUNT_ messages in <#{CHANNEL_ID}>"
