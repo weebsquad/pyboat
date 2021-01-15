@@ -424,27 +424,27 @@ export function InitializeCommands() {
           const res: any = await msg.inlineReply(async () => {
             const rlid = await getRoleIdByText(roleText);
             if (!rlid) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} role not found` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.role_not_found };
             }
             const guild = await msg.getGuild();
             const role = await guild.getRole(rlid);
             if (!(role instanceof discord.Role)) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} Role not found` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.role_not_found };
             }
             const kvc = await customUserRoles.exists(target.user.id);
             if (kvc) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This member already has a custom role!` };
+              return { allowedMentions: { users: [msg.author.id] }, content: i18n.modules.utilities.curs.already_has_role };
             }
             const kvcrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
             if (Array.isArray(kvcrole) && kvcrole.length > 0) {
-              return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.X} This role is already assigned to <@!${kvcrole[0].memberId}>` };
+              return { allowedMentions: { users: [msg.author.id] }, content: setPlaceholders(i18n.modules.utilities.curs.already_assigned_to, ['user_mention', `<@!${kvcrole[0].memberId}>`]) };
             }
             await setUserRole(target.user.id, role.id);
             await checkCustomRoleProperties();
             if (!target.roles.includes(role.id)) {
               await target.addRole(role.id);
             }
-            return { allowedMentions: { users: [msg.author.id] }, content: `${msg.author.toMention()} ${discord.decor.Emojis.WHITE_CHECK_MARK} Set ${target.toMention()}'s role to ${role.toMention()}` };
+            return { allowedMentions: { users: [msg.author.id] }, content: setPlaceholders(i18n.modules.utilities.curs.set_role, ['user_mention', target.toMention(), 'role_mention', role.toMention()]) };
           });
           saveMessage(res);
         },

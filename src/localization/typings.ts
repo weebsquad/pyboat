@@ -164,4 +164,7 @@ export interface ICurs {
     changed_role_name: string;
     changed_role_color: string;
     color_wrong_format: string;
+    already_has_role: string;
+    already_assigned_to: string;
+    set_role: string;
 }
