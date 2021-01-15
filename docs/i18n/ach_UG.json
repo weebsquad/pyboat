@@ -134,7 +134,10 @@
                 "role_not_found": "crwdns696:0crwdne696:0",
                 "changed_role_name": "crwdns698:0{ROLE_NAME}crwdne698:0",
                 "changed_role_color": "crwdns700:0{COLOR}crwdne700:0",
-                "color_wrong_format": "crwdns702:0crwdne702:0"
+                "color_wrong_format": "crwdns702:0crwdne702:0",
+                "already_has_role": "crwdns704:0crwdne704:0",
+                "already_assigned_to": "crwdns706:0{USER_MENTION}crwdne706:0",
+                "set_role": "crwdns708:0{USER_MENTION}crwdnd708:0{ROLE_MENTION}crwdne708:0"
             }
         }
     }
