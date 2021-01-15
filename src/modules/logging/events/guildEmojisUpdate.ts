@@ -1,5 +1,6 @@
 /* eslint-disable no-loop-func */
 import { handleEvent, getUserTag, getMemberTag } from '../main';
+import { language as i18n, setPlaceholders } from '../../../localization/interface';
 
 function getChanges(
   ev: discord.Event.IGuildEmojisUpdate,
@@ -95,7 +96,7 @@ export const messages = {
 
     const mp = new Map();
     let msg = '';
-    mp.set('_TYPE_', 'EDITED_EMOJIS');
+    mp.set('TYPE', 'EDITED_EMOJIS');
     for (const [k, v] of changed) {
       const emj = ev.emojis.find((e) => e.id === k);
       const emjOld = oldEv.emojis.find((e) => e.id === k);
@@ -106,18 +107,14 @@ export const messages = {
         let oldProp = emjOld[changedProp];
         let newProp = emj[changedProp];
         if (typeof changedProp === 'boolean') {
-          oldProp = emjOld[changedProp] === true ? 'True' : 'False';
-          newProp = emj[changedProp] === true ? 'True' : 'False';
+          oldProp = emjOld[changedProp] === true ? i18n.modules.logging.l_terms.trueval : i18n.modules.logging.l_terms.falseval;
+          newProp = emj[changedProp] === true ? i18n.modules.logging.l_terms.trueval : i18n.modules.logging.l_terms.falseval;
         }
         if (msg !== '') {
           msg += '\n';
         }
         if (changedProp !== 'roles') {
-          msg += `Edited emoji ${emj.toMention()} **[**||\`${
-            emj.id
-          }\`||**]** changed **${changedProp}**: \`${oldProp}\` ${
-            discord.decor.Emojis.ARROW_RIGHT
-          } \`${newProp}\``;
+          msg += setPlaceholders(i18n.modules.logging.l_terms.edited_emoji, ['emoji_mention', emj.toMention(), 'emoji_id', emj.id, 'old_value', oldProp, 'new_value', newProp]);
         } else {
           const added = [];
           const removed = [];
@@ -137,13 +134,11 @@ export const messages = {
               removed.map((e: string) => `**-**<@&${e}>`),
             )
             .join('  ');
-          msg += `Edited emoji ${emj.toMention()} **[**||\`${
-            emj.id
-          }\`||**]** changed **roles**: ${_edit}`;
+          msg += setPlaceholders(i18n.modules.logging.l_terms.edited_emoji_roles, ['emoji_mention', emj.toMention(), 'emoji_id', emj.id, 'new_value', _edit]);
         }
       });
     }
-    mp.set('_MESSAGE_', msg);
+    mp.set('MESSAGE', msg);
     return mp;
   },
   addedEmoji(
@@ -153,17 +148,15 @@ export const messages = {
   ) {
     const edited = getChanges(ev, oldEv);
     const { added } = edited;
-    const mp = new Map([['_TYPE_', 'ADDED_EMOJIS']]);
+    const mp = new Map([['TYPE', 'ADDED_EMOJIS']]);
     let msg = '';
     added.forEach((newE: discord.Emoji) => {
       if (msg !== '') {
         msg += '\n';
       }
-      msg += `Added emoji ${newE.toMention()} **[**||\`${
-        newE.id
-      }\`||**]** to the server`;
+      msg += setPlaceholders(i18n.modules.logging.l_terms.added_emoji, ['emoji_mention', newE.toMention(), 'emoji_id', newE.id]);
     });
-    mp.set('_MESSAGE_', msg);
+    mp.set('MESSAGE', msg);
     return mp;
   },
   removedEmoji(
@@ -173,15 +166,15 @@ export const messages = {
   ) {
     const edited = getChanges(ev, oldEv);
     const { removed } = edited;
-    const mp = new Map([['_TYPE_', 'REMOVED_EMOJIS']]);
+    const mp = new Map([['TYPE', 'REMOVED_EMOJIS']]);
     let msg = '';
     removed.forEach((newE: discord.Emoji) => {
       if (msg !== '') {
         msg += '\n';
       }
-      msg += `Removed emoji \`${newE.name}\` **[**||\`${newE.id}\`||**]** from the server`;
+      msg += setPlaceholders(i18n.modules.logging.l_terms.removed_emoji, ['emoji_mention', newE.toMention(), 'emoji_id', newE.id]);
     });
-    mp.set('_MESSAGE_', msg);
+    mp.set('MESSAGE', msg);
     return mp;
   },
 };

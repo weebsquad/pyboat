@@ -17,8 +17,8 @@ export const messages = {
     ev: discord.Event.IWebhooksUpdate,
   ) {
     return new Map([
-      ['_TYPE_', 'WEBHOOK_UPDATED'],
-      ['_CHANNEL_ID_', ev.channelId],
+      ['TYPE', 'WEBHOOK_UPDATED'],
+      ['CHANNEL_ID', ev.channelId],
     ]);
   },
 };

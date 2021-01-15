@@ -1,6 +1,7 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredChannel, isIgnoredUser, isMaster } from '../main';
 import * as utils from '../../../lib/utils';
 import * as utils2 from '../utils';
+import { language as i18n, setPlaceholders } from '../../../localization/interface';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -61,17 +62,17 @@ export const messages = {
     ev: discord.Event.IMessageDelete,
     msg: discord.Message,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
 
-    mp.set('_AUTHOR_', getUserTag(msg.author));
-    mp.set('_USER_ID_', msg.author.id);
-    mp.set('_USERTAG_', getUserTag(msg.author));
-    mp.set('_USER_', msg.author);
-    mp.set('_TYPE_', 'MESSAGE_DELETED_DM');
-    mp.set('_CONTENT_', await utils2.parseMessageContent(msg));
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_MESSAGE_ID_', ev.id);
+    mp.set('AUTHOR', getUserTag(msg.author));
+    mp.set('USER_ID', msg.author.id);
+    mp.set('USERTAG', getUserTag(msg.author));
+    mp.set('USER', msg.author);
+    mp.set('TYPE', 'MESSAGE_DELETED_DM');
+    mp.set('CONTENT', await utils2.parseMessageContent(msg));
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('MESSAGE_ID', ev.id);
     return mp;
   },
 
@@ -80,16 +81,16 @@ export const messages = {
     ev: discord.Event.IMessageDelete,
     msg: discord.GuildMemberMessage,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_AUTHOR_', getUserTag(msg.author));
-    mp.set('_USER_ID_', msg.author.id);
-    mp.set('_USERTAG_', getUserTag(msg.author));
-    mp.set('_USER_', msg.author);
-    mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_CONTENT_', await utils2.parseMessageContent(msg));
-    mp.set('_MESSAGE_ID_', ev.id);
+    mp.set('AUTHOR', getUserTag(msg.author));
+    mp.set('USER_ID', msg.author.id);
+    mp.set('USERTAG', getUserTag(msg.author));
+    mp.set('USER', msg.author);
+    mp.set('TYPE', 'MESSAGE_DELETED_GUILD');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('CONTENT', await utils2.parseMessageContent(msg));
+    mp.set('MESSAGE_ID', ev.id);
     return mp;
   },
   async messageDeletedGuildWebhook(
@@ -97,15 +98,15 @@ export const messages = {
     ev: discord.Event.IMessageDelete,
     msg: discord.Message,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
 
-    mp.set('_AUTHOR_', `Webhook #${msg.webhookId}`);
-    // mp.set('_USERTAG_', `Webhook #${msg.webhookId}`);
-    mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD_WEBHOOK');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_CONTENT_', await utils2.parseMessageContent(msg));
-    mp.set('_MESSAGE_ID_', ev.id);
+    mp.set('AUTHOR', `${i18n.modules.logging.l_terms.webhook} #${msg.webhookId}`);
+    // mp.set('USERTAG', `Webhook #${msg.webhookId}`);
+    mp.set('TYPE', 'MESSAGE_DELETED_GUILD_WEBHOOK');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('CONTENT', await utils2.parseMessageContent(msg));
+    mp.set('MESSAGE_ID', ev.id);
     return mp;
   },
   messageDeletedNoCache(
@@ -113,8 +114,8 @@ export const messages = {
     ev: discord.Event.IMessageDelete,
   ) {
     const mp = new Map();
-    mp.set('_TYPE_', 'MESSAGE_DELETED_DM_NO_CACHE');
-    mp.set('_MESSAGE_ID_', ev.id);
+    mp.set('TYPE', 'MESSAGE_DELETED_DM_NO_CACHE');
+    mp.set('MESSAGE_ID', ev.id);
     return mp;
   },
   messageDeletedGuildNoCache(
@@ -122,9 +123,9 @@ export const messages = {
     ev: discord.Event.IMessageDelete,
   ) {
     const mp = new Map();
-    mp.set('_TYPE_', 'MESSAGE_DELETED_GUILD_NO_CACHE');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_MESSAGE_ID_', ev.id);
+    mp.set('TYPE', 'MESSAGE_DELETED_GUILD_NO_CACHE');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('MESSAGE_ID', ev.id);
     return mp;
   },
 };

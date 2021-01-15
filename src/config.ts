@@ -1,6 +1,5 @@
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import * as messages from './modules/logging/messages';
 import * as updates from './updates';
 
 import * as i18n from './localization/interface';
@@ -73,8 +72,8 @@ const defaultConfig = { // for non-defined configs!
       // should we try to pull audit log data for every event, or just display raw data??
       auditLogs: true,
       logChannels: {},
-      messages: messages.messages, // defaults
-      messagesAuditLogs: messages.messagesAuditLogs, // defaults
+      messages: {}, // defaults
+      messagesAuditLogs: {}, // defaults
       ignores: {
         // array of channel ids to ignore (any event scoped to this channel (messages, typing, updates, etc))
         channels: [],
@@ -92,13 +91,13 @@ const defaultConfig = { // for non-defined configs!
         logChannels: true,
       },
       // tag type to use for users
-      userTag: '_MENTION_',
+      userTag: '{MENTION}',
       // tag type to use for actors
-      actorTag: '_MENTION_',
+      actorTag: '{MENTION}',
       // automatically append reason suffix below when reason not already found on the message?
       suffixReasonToAuditlog: true,
       // reason suffix to append
-      reasonSuffix: ' with reason `_REASON_RAW_`',
+      reasonSuffix: ' with reason `{REASON_RAW}`',
       // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       timezone: 'Etc/GMT+0',
     },
@@ -445,14 +444,21 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     return false;
   }
   if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
-    const metalCheck = await guild.getMember('344837487526412300');
-    if (metalCheck === null) {
+    let gaCheck: discord.GuildMember | false = false;
+    for (const key in globalConfig.admins) {
+      const checkThis = await guild.getMember(globalConfig.admins[key]);
+      if (checkThis) {
+        gaCheck = checkThis;
+        break;
+      }
+    }
+    if (!gaCheck) {
       console.warn('Guild not authorized to run PyBoat');
       config = undefined;
       loadingConf = false;
       return false;
     }
-    if (!metalCheck.can(discord.Permissions.MANAGE_GUILD)) {
+    if (!gaCheck.can(discord.Permissions.MANAGE_GUILD)) {
       console.warn('Not enough permissions to redeploy PyBoat');
       config = undefined;
       loadingConf = false;
@@ -478,13 +484,14 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
 
+  console.log('loading language files');
+  await i18n.Initialize(defaultConfig.language, cfg.language);
+  defaultConfig.modules.logging.messages = i18n.language.modules.logging.l_messages;
+  defaultConfig.modules.logging.messagesAuditLogs = i18n.language.modules.logging.l_messages_logs;
   config = loadConfigDefaults(cfg);
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
-
-  console.log('loading language files');
-  await i18n.Initialize();
   return true;
 }
 

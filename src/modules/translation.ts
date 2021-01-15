@@ -1,7 +1,6 @@
 import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as utils from '../lib/utils';
-import {messageJump} from '../modules/logging/messages';
 import { saveMessage } from './admin';
 import { config } from '../config';
 
@@ -179,7 +178,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   if(utils.isBlacklisted(reaction.member)) {
-      const jmp = messageJump.split('_CHANNEL_ID_').join(reaction.channelId).split('_GUILD_ID_').join(guildId).split('_MESSAGE_ID_').join(reaction.messageId);
+      const jmp = '<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})'.split('CHANNEL_ID').join(reaction.channelId).split('GUILD_ID').join(guildId).split('MESSAGE_ID').join(reaction.messageId);
     await utils.reportBlockedAction(reaction.member, `translation reaction attempt on <#${reaction.channelId}> on a message by <@!${reaction.userId}> ${jmp}`);
   return;
   }

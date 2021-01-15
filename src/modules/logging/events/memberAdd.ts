@@ -1,5 +1,6 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
 import * as utils from '../../../lib/utils';
+import { language as i18n, setPlaceholders } from '../../../localization/interface';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -31,19 +32,19 @@ export const messages = {
     member: discord.GuildMember,
   ) {
     const mp = new Map();
-    mp.set('_TYPE_', 'MEMBER_JOIN');
-    mp.set('_USER_ID_', member.user.id);
-    mp.set('_ACCOUNT_AGE_', utils.getLongAgoFormat(utils.decomposeSnowflake(member.user.id).timestamp, 2, true, 'second'));
-    mp.set('_USERTAG_', getMemberTag(member));
-    mp.set('_USER_', member.user);
+    mp.set('TYPE', 'MEMBER_JOIN');
+    mp.set('USER_ID', member.user.id);
+    mp.set('ACCOUNT_AGE', utils.getLongAgoFormat(utils.decomposeSnowflake(member.user.id).timestamp, 2, true, i18n.time_units.ti_full.singular.second));
+    mp.set('USERTAG', getMemberTag(member));
+    mp.set('USER', member.user);
     return mp;
   },
   botAdd(log: discord.AuditLogEntry, member: discord.GuildMember) {
     const mp = new Map();
-    mp.set('_TYPE_', 'BOT_ADDED');
-    mp.set('_USER_ID_', member.user.id);
-    mp.set('_USERTAG_', getMemberTag(member));
-    mp.set('_USER_', member.user);
+    mp.set('TYPE', 'BOT_ADDED');
+    mp.set('USER_ID', member.user.id);
+    mp.set('USERTAG', getMemberTag(member));
+    mp.set('USER', member.user);
 
     return mp;
   },

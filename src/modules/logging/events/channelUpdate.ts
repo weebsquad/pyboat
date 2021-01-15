@@ -3,6 +3,7 @@ import * as utils from '../../../lib/utils';
 import { ChannelScopes } from '../classes';
 import * as constants from '../../../constants/constants';
 import { eventData } from '../tracking';
+import { language as i18n } from '../../../localization/interface';
 
 async function isParentPermSync(chan: discord.GuildChannel) {
   if (typeof chan.parentId !== 'string') {
@@ -117,11 +118,11 @@ export const messages = {
   async name(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_TYPE_', 'NAME_CHANGED'],
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_NAME_', utils.escapeString(chan.name, true)],
-      ['_OLD_NAME_', utils.escapeString(oldChan.name, true)],
+      ['TYPE', 'NAME_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_NAME', utils.escapeString(chan.name, true)],
+      ['OLD_NAME', utils.escapeString(oldChan.name, true)],
     ]);
   },
   async parentId(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
@@ -131,11 +132,11 @@ export const messages = {
     const parentOld = oldParExists !== 'None' ? await discord.getGuildCategory(oldChan.parentId) : null;
     const mention = await getChannelMention(chan, parent);
     return new Map([
-      ['_TYPE_', 'CATEGORY_CHANGED'],
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
-      ['_OLD_MENTION_', parentOld !== null ? `${getChannelEmoji(parentOld)}\`${utils.escapeString(parentOld.name, true)}\`` : `\`${oldParExists}\``],
+      ['TYPE', 'CATEGORY_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_MENTION', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
+      ['OLD_MENTION', parentOld !== null ? `${getChannelEmoji(parentOld)}\`${utils.escapeString(parentOld.name, true)}\`` : `\`${oldParExists}\``],
     ]);
   },
   async type(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
@@ -143,61 +144,61 @@ export const messages = {
     const newType = constants.channelTypeMap.get(chan.type);
     const oldType = constants.channelTypeMap.get(oldChan.type);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_TYPE_', newType],
-      ['_OLD_TYPE_', oldType],
-      ['_TYPE_', 'TYPE_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_TYPE', newType],
+      ['OLD_TYPE', oldType],
+      ['TYPE', 'TYPE_CHANGED'],
     ]);
   },
   async nsfw(log: discord.AuditLogEntry, chan: discord.GuildTextChannel | discord.GuildNewsChannel, oldChan: discord.GuildTextChannel| discord.GuildNewsChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_NSFW_', chan.nsfw === true ? 'Yes' : 'No'],
-      ['_OLD_NSFW_', oldChan.nsfw === true ? 'Yes' : 'No'],
-      ['_TYPE_', 'NSFW_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_NSFW', chan.nsfw === true ? i18n.modules.logging.l_terms.yes : i18n.modules.logging.l_terms.no],
+      ['OLD_NSFW', oldChan.nsfw === true ? i18n.modules.logging.l_terms.yes : i18n.modules.logging.l_terms.no],
+      ['TYPE', 'NSFW_CHANGED'],
     ]);
   },
   async topic(log: discord.AuditLogEntry, chan: discord.GuildTextChannel | discord.GuildNewsChannel, oldChan: discord.GuildTextChannel| discord.GuildNewsChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_TOPIC_', utils.escapeString(chan.topic !== null && chan.topic !== undefined ? chan.topic : 'None', true)],
-      ['_OLD_TOPIC_', utils.escapeString(oldChan.topic !== null && oldChan.topic !== undefined ? oldChan.topic : 'None', true)],
-      ['_TYPE_', 'TOPIC_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_TOPIC', utils.escapeString(chan.topic !== null && chan.topic !== undefined ? chan.topic : 'None', true)],
+      ['OLD_TOPIC', utils.escapeString(oldChan.topic !== null && oldChan.topic !== undefined ? oldChan.topic : 'None', true)],
+      ['TYPE', 'TOPIC_CHANGED'],
     ]);
   },
   async rateLimitPerUser(log: discord.AuditLogEntry, chan: discord.GuildTextChannel, oldChan: discord.GuildTextChannel | discord.GuildNewsChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_SLOWMODE_', chan.rateLimitPerUser.toString()],
-      ['_OLD_SLOWMODE_', oldChan.type === discord.Channel.Type.GUILD_TEXT ? oldChan.rateLimitPerUser.toString() : '???'],
-      ['_TYPE_', 'SLOWMODE_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_SLOWMODE', chan.rateLimitPerUser.toString()],
+      ['OLD_SLOWMODE', oldChan.type === discord.Channel.Type.GUILD_TEXT ? oldChan.rateLimitPerUser.toString() : '???'],
+      ['TYPE', 'SLOWMODE_CHANGED'],
     ]);
   },
   async bitrate(log: discord.AuditLogEntry, chan: discord.GuildVoiceChannel, oldChan: discord.GuildVoiceChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_BITRATE_', Math.floor(chan.bitrate / 1000).toString()],
-      ['_OLD_BITRATE_', Math.floor(oldChan.bitrate / 1000).toString()],
-      ['_TYPE_', 'BITRATE_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_BITRATE', Math.floor(chan.bitrate / 1000).toString()],
+      ['OLD_BITRATE', Math.floor(oldChan.bitrate / 1000).toString()],
+      ['TYPE', 'BITRATE_CHANGED'],
     ]);
   },
   async userLimit(log: discord.AuditLogEntry, chan: discord.GuildVoiceChannel, oldChan: discord.GuildVoiceChannel) {
     const mention = await getChannelMention(chan);
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_NEW_BITRATE_', chan.userLimit.toString()],
-      ['_OLD_BITRATE_', oldChan.userLimit.toString()],
-      ['_TYPE_', 'USERLIMIT_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['NEW_BITRATE', chan.userLimit.toString()],
+      ['OLD_BITRATE', oldChan.userLimit.toString()],
+      ['TYPE', 'USERLIMIT_CHANGED'],
     ]);
   },
   async parentPermissionSynchronization(log: discord.AuditLogEntry, chan: discord.GuildChannel) {
@@ -205,10 +206,10 @@ export const messages = {
     const parExists = typeof chan.parentId === 'string' ? chan.parentId : 'None';
     const parent = parExists !== 'None' ? await discord.getGuildCategory(chan.parentId) : null;
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_PARENT_MENTION_', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
-      ['_TYPE_', 'PERMS_SYNCED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['PARENT_MENTION', parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`` : `\`${parExists}\``],
+      ['TYPE', 'PERMS_SYNCED'],
     ]);
   },
   async permissionsChanged(log: discord.AuditLogEntry, chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
@@ -256,11 +257,11 @@ export const messages = {
       const permsAllowNew = newV !== undefined ? new utils.Permissions(newV.allow).serialize(false) : new utils.Permissions(0).serialize();
       const permsDenyNew = newV !== undefined ? new utils.Permissions(newV.deny).serialize(false) : new utils.Permissions(0).serialize();
       if (!oldV && newV) { // Added!
-        txt += `\nAdded ${_type} ${objectPing}`;
+        txt += `\n${i18n.modules.logging.l_terms.added} ${_type} ${objectPing}`;
       } else if (oldV && !newV) {
-        txt += `\nRemoved ${_type} ${_type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
+        txt += `\n${i18n.modules.logging.l_terms.removed} ${_type} ${_type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
       } else if (oldV && newV) {
-        txt += `\nChanged ${_type} ${objectPing}`;
+        txt += `\n${i18n.modules.logging.l_terms.changed} ${_type} ${objectPing}`;
       }
       const serOld: {[key: string]: number} = {};
       const serNew: {[key: string]: number} = {};
@@ -330,10 +331,10 @@ export const messages = {
       }
     });
     return new Map([
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', mention],
-      ['_CHANGES_', txt],
-      ['_TYPE_', 'PERMS_CHANGED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', mention],
+      ['CHANGES', txt],
+      ['TYPE', 'PERMS_CHANGED'],
     ]);
   },
 };

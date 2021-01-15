@@ -163,14 +163,14 @@ async function isBypass(member: discord.GuildMember) {
 
 async function log(type: string, usr: discord.User | undefined = undefined, actor: discord.User | undefined = undefined, extras: Map<string, any> | undefined = new Map()) {
   if (usr instanceof discord.User) {
-    extras.set('_USERTAG_', logUtils.getUserTag(usr));
-    extras.set('_USER_ID_', usr.id);
-    extras.set('_USER_', usr);
+    extras.set('USERTAG', logUtils.getUserTag(usr));
+    extras.set('USER_ID', usr.id);
+    extras.set('USER', usr);
   }
   if (actor instanceof discord.User) {
-    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
-    extras.set('_ACTOR_', actor);
-    extras.set('_ACTOR_ID_', actor.id);
+    extras.set('ACTORTAG', logUtils.getActorTag(actor));
+    extras.set('ACTOR', actor);
+    extras.set('ACTOR_ID', actor.id);
   }
   logCustom('ANTIPING', `${type}`, extras);
   /*
@@ -469,9 +469,9 @@ export async function OnMessageCreate(
     }
   }
   if (isMute) {
-    await log('TRIGGERED_MUTE', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
+    await log('TRIGGERED_MUTE', author, undefined, new Map([['MESSAGE_ID', message.id], ['CHANNEL_ID', message.channelId]]));
   } else {
-    await log('TRIGGERED', author, undefined, new Map([['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId]]));
+    await log('TRIGGERED', author, undefined, new Map([['MESSAGE_ID', message.id], ['CHANNEL_ID', message.channelId]]));
   }
 
   await kv.transact(kvDataKey, (prev: any) => {
@@ -545,7 +545,7 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
       }
       return res;
     } catch (e) {
-      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'Ignore'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['ACTION', 'Ignore'], ['MESSAGE_ID', userMsg.id], ['CHANNEL_ID', userMsg.channelId]]));
     }
   }
   return false;
@@ -560,7 +560,7 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
       return res;
     } catch (e) {
       // logMsg = `:x: Tried to Mark MessageID \`${userMsg.id}\` as \`${emojiAction}\` but failed to unmute the user`;
-      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['_ACTION_', 'IgnoreOnce'], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+      await log('FAIL_MARK_UNMUTE', member.user, reactor.user, new Map([['ACTION', 'IgnoreOnce'], ['MESSAGE_ID', userMsg.id], ['CHANNEL_ID', userMsg.channelId]]));
     }
   }
   return false;
@@ -682,11 +682,11 @@ export async function OnMessageReactionAdd(id: string,
   }
   if (validAction) {
     if (notFound) {
-      await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+      await log('FAIL_MARK_MEMBER_NOT_FOUND', user, member.user, new Map([['ACTION', emojiAction], ['MESSAGE_ID', userMsg.id], ['CHANNEL_ID', userMsg.channelId]]));
     } else if (failAction) {
-      await log('FAIL_MARK_ACTION', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+      await log('FAIL_MARK_ACTION', user, member.user, new Map([['ACTION', emojiAction], ['MESSAGE_ID', userMsg.id], ['CHANNEL_ID', userMsg.channelId]]));
     } else {
-      await log('MARK_SUCCESS', user, member.user, new Map([['_ACTION_', emojiAction], ['_MESSAGE_ID_', userMsg.id], ['_CHANNEL_ID_', userMsg.channelId]]));
+      await log('MARK_SUCCESS', user, member.user, new Map([['ACTION', emojiAction], ['MESSAGE_ID', userMsg.id], ['CHANNEL_ID', userMsg.channelId]]));
     }
     await wipeAllUserMessages(userMsg.authorId, wipeAll);
     if (emojiAction.toLowerCase() === 'ignore' || emojiAction.toLowerCase() === 'ignoreonce') {

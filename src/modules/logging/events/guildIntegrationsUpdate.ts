@@ -21,9 +21,9 @@ export const messages = {
       return;
     }
     return new Map([
-      ['_TYPE_', 'INTEGRATIONS_UPDATED'],
-      ['_GUILD_ID_', guild.id],
-      ['_GUILD_NAME_', guild.name],
+      ['TYPE', 'INTEGRATIONS_UPDATED'],
+      ['GUILD_ID', guild.id],
+      ['GUILD_NAME', guild.name],
     ]);
   },
 };

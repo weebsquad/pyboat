@@ -26,30 +26,30 @@ export const messages = {
     log: discord.AuditLogEntry,
     ev: discord.Event.IMessageReactionAdd,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
     const emj = ev.emoji;
     let mention = emj.toMention();
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0].split('?')[0]}`, data, url: mention }]);
+      mp.set('ATTACHMENTS', [{ name: `emoji.${mention.split('.').slice(-1)[0].split('?')[0]}`, data, url: mention }]);
       mention = '';
     }
-    mp.set('_TYPE_', 'ADD_REACTION');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_MESSAGE_ID_', ev.messageId);
-    mp.set('_EMOJI_MENTION_', mention);
-    mp.set('_USERTAG_', getMemberTag(ev.member));
-    mp.set('_USER_ID_', ev.userId);
-    mp.set('_USER_', ev.member.user);
+    mp.set('TYPE', 'ADD_REACTION');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('MESSAGE_ID', ev.messageId);
+    mp.set('EMOJI_MENTION', mention);
+    mp.set('USERTAG', getMemberTag(ev.member));
+    mp.set('USER_ID', ev.userId);
+    mp.set('USER', ev.member.user);
     return mp;
   },
   async dmReaction(
     log: discord.AuditLogEntry,
     ev: discord.Event.IMessageReactionAdd,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map<string, any>();
     const emj = ev.emoji;
     let mention = emj.toMention();
@@ -57,16 +57,16 @@ export const messages = {
     if (emj.type === discord.Emoji.Type.GUILD) {
       mention = `https://cdn.discordapp.com/emojis/${emj.id}.png?v=1`;
       const data = await (await fetch(mention)).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `emoji.${mention.split('.').slice(-1)[0].split('?')[0]}`, data, url: mention }]);
+      mp.set('ATTACHMENTS', [{ name: `emoji.${mention.split('.').slice(-1)[0].split('?')[0]}`, data, url: mention }]);
       mention = '';
     }
 
-    mp.set('_TYPE_', 'ADD_REACTION');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_MESSAGE_ID_', ev.messageId);
-    mp.set('_EMOJI_MENTION_', mention);
-    mp.set('_USERTAG_', getUserTag(_usr));
-    mp.set('_USER_', _usr);
+    mp.set('TYPE', 'ADD_REACTION');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('MESSAGE_ID', ev.messageId);
+    mp.set('EMOJI_MENTION', mention);
+    mp.set('USERTAG', getUserTag(_usr));
+    mp.set('USER', _usr);
 
     return mp;
   },

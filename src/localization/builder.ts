@@ -8,7 +8,7 @@ function transformJson(json: any): IRootObject {
 }
 
 async function fetchLanguage(langCode: string): Promise<IRootObject> {
-  console.log('url', `${globalConfig.localization.cdnUrl}${langCode}.json`);
+  // console.log('url', `${globalConfig.localization.cdnUrl}${langCode}.json`);
   const req = await fetch(`${globalConfig.localization.cdnUrl}${langCode}.json`);
   const json = await req.json();
   return transformJson(json);
@@ -36,10 +36,10 @@ function recursiveDefault(source: any, dest: any) {
   return dest;
 }
 
-export async function buildLanguage(langCode: string): Promise<IRootObject> {
-  console.log('building language', langCode);
+export async function buildLanguage(defaultLang: string, langCode: string): Promise<IRootObject> {
+  // console.log('building language', langCode);
   if (!defaultLanguage) {
-    defaultLanguage = await fetchLanguage(globalConfig.localization.default);
+    defaultLanguage = await fetchLanguage(defaultLang);
   }
   let initial;
   try {

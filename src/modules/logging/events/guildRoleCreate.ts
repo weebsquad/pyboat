@@ -13,9 +13,9 @@ export const messages = {
   newRole(log: discord.AuditLogEntry, role: discord.Role) {
     // maybe ill give a shit to actually check for default props some other time...
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'NEW_ROLE'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'NEW_ROLE'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     return mp;
   },

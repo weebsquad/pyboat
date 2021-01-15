@@ -293,19 +293,19 @@ export async function logAction(actionType: string, actor: discord.User | discor
     return;
   }
   if (member !== null) {
-    extras.set('_USERTAG_', logUtils.getUserTag(member));
-    extras.set('_USER_ID_', member.id);
-    extras.set('_USER_', member);
+    extras.set('USERTAG', logUtils.getUserTag(member));
+    extras.set('USER_ID', member.id);
+    extras.set('USER', member);
   }
   if (actor === null) {
-    extras.set('_ACTORTAG_', 'SYSTEM');
+    extras.set('ACTORTAG', 'SYSTEM');
   } else {
     if (actor instanceof discord.GuildMember) {
       actor = actor.user;
     }
-    extras.set('_ACTORTAG_', logUtils.getActorTag(actor));
-    extras.set('_ACTOR_ID_', actor.id);
-    extras.set('_ACTOR_', actor);
+    extras.set('ACTORTAG', logUtils.getActorTag(actor));
+    extras.set('ACTOR_ID', actor.id);
+    extras.set('ACTOR', actor);
   }
   logCustom('INFRACTIONS', `${actionType}`, extras, id);
 }
@@ -470,7 +470,7 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
   await member.addRole(muteRole);
 
   await addInfraction(member, actor, InfractionType.TEMPMUTE, expiresAt, reason);
-  await logAction('tempmute', actor, member.user, new Map([['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('tempmute', actor, member.user, new Map([['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -502,7 +502,7 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
   await member.addRole(muteRole);
 
   await addInfraction(member, actor, InfractionType.MUTE, undefined, reason);
-  await logAction('mute', actor, member.user, new Map([['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('mute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -533,7 +533,7 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
     return canT;
   }
   await member.removeRole(muteRole);
-  await logAction('unmute', actor, member.user, new Map([['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('unmute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -560,7 +560,7 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
     return 'Failed to kick the member (still in the guild?)';
   } */
   await addInfraction(member, actor, InfractionType.KICK, undefined, reason);
-  await logAction('kick', actor, member.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('kick', actor, member.user, new Map([['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -598,7 +598,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   }
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
   await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
-  await logAction('ban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('ban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -649,7 +649,7 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
     }
   });
   if (results.success.length > 0) {
-    await logAction('massban', actor, null, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''], ['_BANNED_USER_COUNT_', results.success.length.toString()], ['_BANNED_USERS_', results.success.join(', ')]]));
+    await logAction('massban', actor, null, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''], ['BANNED_USER_COUNT', results.success.length.toString()], ['BANNED_USERS', results.success.join(', ')]]));
   }
   return results;
 }
@@ -699,7 +699,7 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
 
   await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
-  await logAction('tempban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('tempban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -738,7 +738,7 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
   await guild.deleteBan(memberId);
   await addInfraction(member, actor, InfractionType.SOFTBAN, undefined, reason);
-  await logAction('softban', actor, usr, new Map([['_DELETE_DAYS_', deleteDays.toString()], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('softban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 /*
@@ -768,7 +768,7 @@ export async function UnBan(member: discord.GuildMember | discord.User, actor: d
   await guild.deleteBan(memberId);
 
   // await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
-  await logAction('unban', actor, usr, new Map([['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('unban', actor, usr, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
 }
 
@@ -1282,12 +1282,12 @@ export function InitializeCommands() {
           await inf.updateStorage();
 
           const extras = new Map<string, any>();
-          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-          extras.set('_ACTOR_', msg.author);
-          extras.set('_ACTOR_ID_', msg.author.id);
-          extras.set('_INFRACTION_ID_', inf.id);
-          extras.set('_TYPE_', 'duration');
-          extras.set('_NEW_VALUE_', utils.escapeString(duration, true));
+          extras.set('ACTORTAG', logUtils.getActorTag(msg.author));
+          extras.set('ACTOR', msg.author);
+          extras.set('ACTOR_ID', msg.author.id);
+          extras.set('INFRACTION_ID', inf.id);
+          extras.set('TYPE', 'duration');
+          extras.set('NEW_VALUE', utils.escapeString(duration, true));
           logCustom('INFRACTIONS', 'EDITED', extras);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`;
         });
@@ -1326,13 +1326,13 @@ export function InitializeCommands() {
           inf.reason = reason;
           await inf.updateStorage();
           const extras = new Map<string, any>();
-          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-          extras.set('_ACTOR_ID_', msg.author.id);
-          extras.set('_ACTOR_', msg.author);
-          extras.set('_USER_ID_', msg.author.id);
-          extras.set('_INFRACTION_ID_', inf.id);
-          extras.set('_TYPE_', 'reason');
-          extras.set('_NEW_VALUE_', utils.escapeString(reason, true));
+          extras.set('ACTORTAG', logUtils.getActorTag(msg.author));
+          extras.set('ACTOR_ID', msg.author.id);
+          extras.set('ACTOR', msg.author);
+          extras.set('USER_ID', msg.author.id);
+          extras.set('INFRACTION_ID', inf.id);
+          extras.set('TYPE', 'reason');
+          extras.set('NEW_VALUE', utils.escapeString(reason, true));
           logCustom('INFRACTIONS', 'EDITED', extras);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`;
         });
@@ -1375,13 +1375,13 @@ export function InitializeCommands() {
           await inf.updateStorage();
 
           const extras = new Map<string, any>();
-          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-          extras.set('_ACTOR_ID_', msg.author.id);
-          extras.set('_ACTOR_', msg.author);
-          extras.set('_USER_ID_', msg.author.id);
-          extras.set('_INFRACTION_ID_', inf.id);
-          extras.set('_TYPE_', 'actor');
-          extras.set('_NEW_VALUE_', actor.toMention());
+          extras.set('ACTORTAG', logUtils.getActorTag(msg.author));
+          extras.set('ACTOR_ID', msg.author.id);
+          extras.set('ACTOR', msg.author);
+          extras.set('USER_ID', msg.author.id);
+          extras.set('INFRACTION_ID', inf.id);
+          extras.set('TYPE', 'actor');
+          extras.set('NEW_VALUE', actor.toMention());
           logCustom('INFRACTIONS', 'EDITED', extras);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`;
         });
@@ -1418,11 +1418,11 @@ export function InitializeCommands() {
           }
           await infsPool.delete(inf.id);
           const extras = new Map<string, any>();
-          extras.set('_ACTORTAG_', logUtils.getActorTag(msg.author));
-          extras.set('_ACTOR_', msg.author);
-          extras.set('_ACTOR_ID_', msg.author.id);
-          extras.set('_USER_ID_', msg.author.id);
-          extras.set('_INFRACTION_ID_', inf.id);
+          extras.set('ACTORTAG', logUtils.getActorTag(msg.author));
+          extras.set('ACTOR', msg.author);
+          extras.set('ACTOR_ID', msg.author.id);
+          extras.set('USER_ID', msg.author.id);
+          extras.set('INFRACTION_ID', inf.id);
           logCustom('INFRACTIONS', 'DELETED', extras);
           return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`;
         });
@@ -1681,7 +1681,7 @@ export async function AL_OnGuildMemberUpdate(
         return;
       }
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-        await logAction('unmute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+        await logAction('unmute', log.user, member.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
       }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
@@ -1691,7 +1691,7 @@ export async function AL_OnGuildMemberUpdate(
 
       await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-        await logAction('mute', log.user, member.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+        await logAction('mute', log.user, member.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
       }
       return;
     }
@@ -1738,7 +1738,7 @@ export async function AL_OnGuildMemberRemove(
   if (isIgnoredActor(log.userId) || isIgnoredUser(memberRemove.user)) {
     return;
   }
-  await logAction('kick', log.user, memberRemove.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+  await logAction('kick', log.user, memberRemove.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
 }
 
 export async function AL_OnGuildBanAdd(
@@ -1765,7 +1765,7 @@ export async function AL_OnGuildBanAdd(
         }
         await ban.delete();
         await addInfraction(ban.user, log.user, InfractionType.SOFTBAN, undefined, reason);
-        await logAction('softban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+        await logAction('softban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
         return;
       }
       const dur = utils.timeArgumentToMs(lastc);
@@ -1777,7 +1777,7 @@ export async function AL_OnGuildBanAdd(
         const expiresAt = utils.composeSnowflake(Date.now() + dur);
         const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
         await addInfraction(ban.user, log.user, InfractionType.TEMPBAN, expiresAt, reason);
-        await logAction('tempban', log.user, ban.user, new Map([['_DELETE_DAYS_', 'unknown'], ['_EXPIRES_', ''], ['_DURATION_', durationText], ['_REASON_', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+        await logAction('tempban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
         return;
       }
     }
@@ -1786,7 +1786,7 @@ export async function AL_OnGuildBanAdd(
   if (isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('ban', log.user, ban.user, new Map([['_REASON_', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+  await logAction('ban', log.user, ban.user, new Map([['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
 }
 
 export async function AL_OnGuildBanRemove(
@@ -1811,7 +1811,7 @@ export async function AL_OnGuildBanRemove(
   if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('unban', log.user, ban.user, new Map([['_REASON_', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+  await logAction('unban', log.user, ban.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
 }
 
 registerSlash(
@@ -2343,12 +2343,12 @@ if (infGroup) {
       await inf.updateStorage();
 
       const extras = new Map<string, any>();
-      extras.set('_ACTORTAG_', logUtils.getActorTag(inter.member.user));
-      extras.set('_ACTOR_', inter.member.user);
-      extras.set('_ACTOR_ID_', inter.member.user.id);
-      extras.set('_INFRACTION_ID_', inf.id);
-      extras.set('_TYPE_', 'duration');
-      extras.set('_NEW_VALUE_', utils.escapeString(duration, true));
+      extras.set('ACTORTAG', logUtils.getActorTag(inter.member.user));
+      extras.set('ACTOR', inter.member.user);
+      extras.set('ACTOR_ID', inter.member.user.id);
+      extras.set('INFRACTION_ID', inf.id);
+      extras.set('TYPE', 'duration');
+      extras.set('NEW_VALUE', utils.escapeString(duration, true));
       logCustom('INFRACTIONS', 'EDITED', extras);
       await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
     },
@@ -2403,13 +2403,13 @@ if (infGroup) {
       inf.reason = reason;
       await inf.updateStorage();
       const extras = new Map<string, any>();
-      extras.set('_ACTORTAG_', logUtils.getActorTag(inter.member.user));
-      extras.set('_ACTOR_ID_', inter.member.user.id);
-      extras.set('_ACTOR_', inter.member.user);
-      extras.set('_USER_ID_', inter.member.user.id);
-      extras.set('_INFRACTION_ID_', inf.id);
-      extras.set('_TYPE_', 'reason');
-      extras.set('_NEW_VALUE_', utils.escapeString(reason, true));
+      extras.set('ACTORTAG', logUtils.getActorTag(inter.member.user));
+      extras.set('ACTOR_ID', inter.member.user.id);
+      extras.set('ACTOR', inter.member.user);
+      extras.set('USER_ID', inter.member.user.id);
+      extras.set('INFRACTION_ID', inf.id);
+      extras.set('TYPE', 'reason');
+      extras.set('NEW_VALUE', utils.escapeString(reason, true));
       logCustom('INFRACTIONS', 'EDITED', extras);
       await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
     },
@@ -2465,13 +2465,13 @@ if (infGroup) {
       await inf.updateStorage();
 
       const extras = new Map<string, any>();
-      extras.set('_ACTORTAG_', logUtils.getActorTag(inter.member.user));
-      extras.set('_ACTOR_ID_', inter.member.user.id);
-      extras.set('_ACTOR_', inter.member.user);
-      extras.set('_USER_ID_', inter.member.user.id);
-      extras.set('_INFRACTION_ID_', inf.id);
-      extras.set('_TYPE_', 'actor');
-      extras.set('_NEW_VALUE_', new_actor.user.toMention());
+      extras.set('ACTORTAG', logUtils.getActorTag(inter.member.user));
+      extras.set('ACTOR_ID', inter.member.user.id);
+      extras.set('ACTOR', inter.member.user);
+      extras.set('USER_ID', inter.member.user.id);
+      extras.set('INFRACTION_ID', inf.id);
+      extras.set('TYPE', 'actor');
+      extras.set('NEW_VALUE', new_actor.user.toMention());
       logCustom('INFRACTIONS', 'EDITED', extras);
       await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
     },
@@ -2518,11 +2518,11 @@ if (infGroup) {
       await inter.acknowledge(true);
       await infsPool.delete(inf.id);
       const extras = new Map<string, any>();
-      extras.set('_ACTORTAG_', logUtils.getActorTag(inter.member.user));
-      extras.set('_ACTOR_', inter.member.user);
-      extras.set('_ACTOR_ID_', inter.member.user.id);
-      extras.set('_USER_ID_', inter.member.user.id);
-      extras.set('_INFRACTION_ID_', inf.id);
+      extras.set('ACTORTAG', logUtils.getActorTag(inter.member.user));
+      extras.set('ACTOR', inter.member.user);
+      extras.set('ACTOR_ID', inter.member.user.id);
+      extras.set('USER_ID', inter.member.user.id);
+      extras.set('INFRACTION_ID', inf.id);
       logCustom('INFRACTIONS', 'DELETED', extras);
       await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
     },

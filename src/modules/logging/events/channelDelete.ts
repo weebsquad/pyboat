@@ -26,9 +26,9 @@ export const messages = {
   async channelDeleted(log: discord.AuditLogEntry, chan: discord.GuildChannel) {
     const parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
     return new Map([
-      ['_TYPE_', 'CHANNEL_DELETED'],
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``],
+      ['TYPE', 'CHANNEL_DELETED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``],
     ]);
   },
 };

@@ -30,19 +30,19 @@ export const messages = {
         return null;
       }
       return new Map([
-        ['_USERTAG_', getUserTag(usr)],
-        ['_USER_ID_', usr.id],
-        ['_USER_', usr],
-        ['_CHANNEL_ID_', tpdata.channelId],
-        ['_TYPE_', 'START_TYPING_DM'],
+        ['USERTAG', getUserTag(usr)],
+        ['USER_ID', usr.id],
+        ['USER', usr],
+        ['CHANNEL_ID', tpdata.channelId],
+        ['TYPE', 'START_TYPING_DM'],
       ]);
     }
     return new Map([
-      ['_USERTAG_', getMemberTag(tpdata.member)],
-      ['_USER_ID_', tpdata.userId],
-      ['_USER_', tpdata.member.user],
-      ['_CHANNEL_ID_', tpdata.channelId],
-      ['_TYPE_', 'START_TYPING_GUILD'],
+      ['USERTAG', getMemberTag(tpdata.member)],
+      ['USER_ID', tpdata.userId],
+      ['USER', tpdata.member.user],
+      ['CHANNEL_ID', tpdata.channelId],
+      ['TYPE', 'START_TYPING_GUILD'],
     ]);
   },
 };

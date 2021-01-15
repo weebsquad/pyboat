@@ -16,26 +16,26 @@ export const messages = {
     typeSent: string,
     others: Map<string, any> | undefined = undefined,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map<string, string>();
-    mp.set('_TYPE_', typeSent);
+    mp.set('TYPE', typeSent);
     if (typeof others !== 'undefined') {
       others.forEach((v, k) => {
-        if (k.substring(0, 1) !== '_') {
-          k = `_${k}`;
+        if (k.substring(0, 1) === '_') {
+          k = k.substring(1);
         }
-        if (k.slice(-1) !== '_') {
-          k += '_';
+        if (k.slice(-1) === '_') {
+          k = k.slice(0, -1);
         }
         k = k.toUpperCase();
         if (typeof v !== 'string') {
-          if (k === '_AUTHOR_') {
-            mp.set('_USERTAG_', getUserTag(v));
-            mp.set('_USER_', v);
+          if (k === 'AUTHOR') {
+            mp.set('USERTAG', getUserTag(v));
+            mp.set('USER', v);
           }
-          if (k === '_MEMBER_') {
-            mp.set('_USERTAG_', getMemberTag(v));
-            mp.set('_USER_', v);
+          if (k === 'MEMBER') {
+            mp.set('USERTAG', getMemberTag(v));
+            mp.set('USER', v);
           }
         }
         if (typeof v !== 'string') {
@@ -59,7 +59,7 @@ export async function logCustom(
   }
   cat = cat.toUpperCase();
   subtype = subtype.toUpperCase();
-  if (placeholders && placeholders.has('_USER_ID_') && isIgnoredUser(placeholders.get('_USER_ID_'))) {
+  if (placeholders && placeholders.has('USER_ID') && isIgnoredUser(placeholders.get('USER_ID'))) {
     return;
   }
   if (cat.substr(0, 1) !== '|') {
