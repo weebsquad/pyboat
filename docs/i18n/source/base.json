@@ -134,7 +134,11 @@
                 "role_not_found": "❌ role not found",
                 "changed_role_name": "✅ Changed your role's name to {ROLE_NAME}",
                 "changed_role_color": "✅ Changed your role's color to {COLOR}",
-                "color_wrong_format": "❌ Color must be formatted as a hex string! (for example `#ff0000`)"
+                "color_wrong_format": "❌ Color must be formatted as a hex string! (for example `#ff0000`)",
+                "already_has_role": "❌ This member already has a custom role",
+                "already_assigned_to": "❌ This role is already assigned to {USER_MENTION}",
+                "set_role": "✅ Set {USER_MENTION}'s role to {ROLE_MENTION}"
+
             }
         }
     }
