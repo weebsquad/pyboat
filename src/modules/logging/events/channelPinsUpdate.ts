@@ -31,15 +31,15 @@ export const messages = {
     }
     const _usr = await utils.getUser(log.targetId);
     const mp = new Map<string, any>([
-      ['_TYPE_', 'MESSAGE_PINNED'],
-      ['_CHANNEL_ID_', ev.channelId],
-      ['_MESSAGE_ID_', log.options.messageId],
-      ['_USER_ID_', log.targetId],
+      ['TYPE', 'MESSAGE_PINNED'],
+      ['CHANNEL_ID', ev.channelId],
+      ['MESSAGE_ID', log.options.messageId],
+      ['USER_ID', log.targetId],
     ]);
-    mp.set('_USERTAG_', '');
+    mp.set('USERTAG', '');
     if (_usr !== null) {
-      mp.set('_USERTAG_', getUserTag(_usr));
-      mp.set('_USER_', _usr);
+      mp.set('USERTAG', getUserTag(_usr));
+      mp.set('USER', _usr);
     }
     return mp;
   },
@@ -52,15 +52,15 @@ export const messages = {
     }
     const _usr = await utils.getUser(log.targetId);
     const mp = new Map<string, any>([
-      ['_TYPE_', 'MESSAGE_UNPINNED'],
-      ['_CHANNEL_ID_', ev.channelId],
-      ['_MESSAGE_ID_', log.options.messageId],
-      ['_USER_ID_', log.targetId],
+      ['TYPE', 'MESSAGE_UNPINNED'],
+      ['CHANNEL_ID', ev.channelId],
+      ['MESSAGE_ID', log.options.messageId],
+      ['USER_ID', log.targetId],
     ]);
     mp.set('_USERTAG_', '');
     if (_usr !== null) {
-      mp.set('_USERTAG_', getUserTag(_usr));
-      mp.set('_USER_', _usr);
+      mp.set('USERTAG', getUserTag(_usr));
+      mp.set('USER', _usr);
     }
     return mp;
   },

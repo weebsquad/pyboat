@@ -203,24 +203,24 @@ async function parseChannelsData(
       }
       const res = await ev.data.messages[el](ev.auditLogEntry, ...ev.payload);
       if (res instanceof Map) {
-        res.set('_KEY_', el);
+        res.set('KEY', el);
         k2.push({ id: ev.keys.indexOf(el), val: res });
       }
     }),
   );
   k2 = k2.sort((a, b) => a.id - b.id).map((v) => v.val);
-  k2 = k2.filter((el: any) => el instanceof Map && el.has('_TYPE_'));
+  k2 = k2.filter((el: any) => el instanceof Map && el.has('TYPE'));
   k2.map((el: Map<string, any>) => {
-    if (!el.has('_TYPE_') || !el.has('_KEY_')) {
+    if (!el.has('TYPE') || !el.has('KEY')) {
       return;
     }
-    const type = el.get('_TYPE_') ?? '';
-    const key = el.get('_KEY_');
+    const type = el.get('TYPE') ?? '';
+    const key = el.get('KEY');
     const isAuditLog = ev.auditLogEntry instanceof discord.AuditLogEntry && conf.config.modules.logging.auditLogs === true
       ? ev.data.isAuditLog(ev.auditLogEntry, key, ...ev.payload)
       : false;
-    if (!el.has('_GUILD_ID_')) {
-      el.set('_GUILD_ID_', ev.guildId);
+    if (!el.has('GUILD_ID')) {
+      el.set('GUILD_ID', ev.guildId);
     }
     el.set('isAuditLog', isAuditLog);
     if (
@@ -237,25 +237,25 @@ async function parseChannelsData(
     }
     if (isAuditLog && ev.auditLogEntry instanceof discord.AuditLogEntry) {
       const { reason } = ev.auditLogEntry;
-      el.set('_ACTORTAG_', utils.getActorTag(ev.auditLogEntry.user));
-      el.set('_ACTOR_ID_', ev.auditLogEntry.user.id);
-      el.set('_ACTOR_', ev.auditLogEntry.user);
+      el.set('ACTORTAG', utils.getActorTag(ev.auditLogEntry.user));
+      el.set('ACTOR_ID', ev.auditLogEntry.user.id);
+      el.set('ACTOR', ev.auditLogEntry.user);
       if (reason !== '') {
-        el.set('_REASON_RAW_', reason);
-        el.set('_REASON_', conf.config.modules.logging.reasonSuffix.replace('_REASON_RAW_', reason));
+        el.set('REASON_RAW', reason);
+        el.set('REASON', conf.config.modules.logging.reasonSuffix.replace('REASON_RAW', reason));
       } else {
-        el.set('_REASON_', '');
-        el.set('_REASON_RAW_', '');
+        el.set('REASON', '');
+        el.set('REASON_RAW', '');
       }
     }
-    if (el.has('_USERTAG_') && !el.has('_USER_ID_') && el.get('_USERTAG_') !== '') {
-      let usrid = `${el.get('_USERTAG_')}`;
-      if (conf.config.modules.logging.userTag === '_MENTION_') {
+    if (el.has('USERTAG') && !el.has('USER_ID') && el.get('USERTAG') !== '') {
+      let usrid = `${el.get('USERTAG')}`;
+      if (conf.config.modules.logging.userTag === 'MENTION') {
         usrid = usrid.substr(2).slice(0, -1);
         if (usrid.includes('!')) {
           usrid = usrid.substr(1);
         }
-        el.set('_USER_ID_', usrid);
+        el.set('USER_ID', usrid);
       }
     }
 
@@ -314,11 +314,11 @@ async function getMessages(
         if (map === undefined || map === null) {
           return;
         }
-        const type = `${map.get('_TYPE_')}`;
+        const type = `${map.get('TYPE')}`;
         let isAuditLog = false;
         const isAl: any = map.get('isAuditLog');
-        if (map.has('_ATTACHMENTS_')) {
-          const thisAtts = map.get('_ATTACHMENTS_');
+        if (map.has('ATTACHMENTS')) {
+          const thisAtts = map.get('ATTACHMENTS');
           atts.push(...thisAtts);
         }
         if (
@@ -390,7 +390,7 @@ async function getMessages(
           if (map === undefined || map === null) {
             return;
           }
-          const type = `${map.get('_TYPE_')}`;
+          const type = `${map.get('TYPE')}`;
           let isAuditLog = false;
           const em = new discord.Embed();
           const authorActor = false;
@@ -411,32 +411,32 @@ async function getMessages(
           if (typeof temp !== 'string') {
             return;
           }
-          if (map.has('_ACTORTAG_')) {
+          if (map.has('ACTORTAG')) {
             let rep = false;
-            if (temp.indexOf('_ACTORTAG_') === 0) {
+            if (temp.indexOf('ACTORTAG') === 0) {
               rep = true;
             } else {
               // clear emoji
               const cleared = temp
-                .substring(0, temp.indexOf('_ACTORTAG_'))
+                .substring(0, temp.indexOf('ACTORTAG'))
                 .split(' ')
                 .join('');
               rep = utils2.containsOnlyEmojis(cleared);
             }
             if (rep) {
               let usr;
-              if (map.has('_ACTOR_')) {
-                usr = map.get('_ACTOR_');
-              } else if (map.get('_ACTORTAG_') === 'SYSTEM') {
+              if (map.has('ACTOR')) {
+                usr = map.get('ACTOR');
+              } else if (map.get('ACTORTAG') === 'SYSTEM') {
                 usr = 'SYSTEM';
               } else if (ev.auditLogEntry instanceof discord.AuditLogEntry) {
                 usr = ev.auditLogEntry.user;
               } else {
                 let usrid = '';
-                if (map.has('_ACTOR_ID_')) {
-                  usrid = map.get('_ACTOR_ID_');
-                } else if (conf.config.modules.logging.actorTag === '_MENTION_') {
-                  usrid = map.get('_ACTORTAG_');
+                if (map.has('ACTOR_ID')) {
+                  usrid = map.get('ACTOR_ID');
+                } else if (conf.config.modules.logging.actorTag === 'MENTION') {
+                  usrid = map.get('ACTORTAG');
                   usrid = usrid.substr(2).slice(0, -1);
                   if (usrid.includes('!')) {
                     usrid = usrid.substr(1);
@@ -453,23 +453,23 @@ async function getMessages(
                   iconUrl: usr.getAvatarUrl(),
                 });
                 addFooter = `Actor: ${usr.id}`;
-                temp = temp.replace('_ACTORTAG_', '');
+                temp = temp.replace('ACTORTAG', '');
               } else if (typeof usr === 'string' && usr === 'SYSTEM') {
                 em.setAuthor({
                   name: usr,
                 });
                 addFooter = `Actor: ${usr}`;
-                temp = temp.replace('_ACTORTAG_', '');
+                temp = temp.replace('ACTORTAG', '');
               }
             }
-          } else if (map.has('_USERTAG_') && map.get('_USERTAG_') !== '') {
+          } else if (map.has('USERTAG') && map.get('USERTAG') !== '') {
             let rep = false;
-            if (temp.indexOf('_USERTAG_') === 0) {
+            if (temp.indexOf('USERTAG') === 0) {
               rep = true;
             } else {
               // clear emoji
               const cleared = temp
-                .substring(0, temp.indexOf('_USERTAG_'))
+                .substring(0, temp.indexOf('USERTAG'))
                 .split(' ')
                 .join('');
               rep = utils2.containsOnlyEmojis(cleared);
@@ -477,12 +477,12 @@ async function getMessages(
             if (rep) {
               let usr;
               let usrid = '';
-              if (map.has('_USER_')) {
-                usr = map.get('_USER_');
-              } else if (map.has('_USER_ID_')) {
-                usrid = map.get('_USER_ID_');
-              } else if (conf.config.modules.logging.userTag === '_MENTION_') {
-                usrid = map.get('_USERTAG_');
+              if (map.has('USER')) {
+                usr = map.get('USER');
+              } else if (map.has('USER_ID')) {
+                usrid = map.get('USER_ID');
+              } else if (conf.config.modules.logging.userTag === 'MENTION') {
+                usrid = map.get('USERTAG');
                 usrid = usrid.substr(2).slice(0, -1);
                 if (usrid.includes('!')) {
                   usrid = usrid.substr(1);
@@ -492,7 +492,7 @@ async function getMessages(
                 usr = await utils2.getUser(usrid);
               }
               if (usr instanceof discord.User) {
-                temp = temp.replace('_USERTAG_', '');
+                temp = temp.replace('USERTAG', '');
                 em.setAuthor({
                   name: usr.getTag(),
                   iconUrl: usr.getAvatarUrl(),
@@ -517,7 +517,7 @@ async function getMessages(
           }
           if (!em.thumbnail || !em.thumbnail.url) {
             // check sent attachments
-            const atts = map.get('_ATTACHMENTS_');
+            const atts = map.get('ATTACHMENTS');
             if (atts && Array.isArray(atts)) {
               const firstShowable: ParsedAttachment | undefined = atts.find((vv: ParsedAttachment) => imageTypes.includes(vv.name.split('.').slice(-1)[0]));
               if (firstShowable) {
@@ -618,12 +618,12 @@ async function getMessages(
                   value: ev.auditLogEntry.reason,
                 },
               ]);
-            } else if (map.has('_REASON_') && map.get('_REASON_').length > 0) {
+            } else if (map.has('REASON') && map.get('REASON').length > 0) {
               em.setFields([
                 {
                   inline: false,
                   name: 'Reason',
-                  value: map.get('_REASON_'),
+                  value: map.get('REASON'),
                 },
               ]);
             }

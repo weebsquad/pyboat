@@ -36,10 +36,10 @@ function recursiveDefault(source: any, dest: any) {
   return dest;
 }
 
-export async function buildLanguage(langCode: string): Promise<IRootObject> {
+export async function buildLanguage(defaultLang: string, langCode: string): Promise<IRootObject> {
   console.log('building language', langCode);
   if (!defaultLanguage) {
-    defaultLanguage = await fetchLanguage(globalConfig.localization.default);
+    defaultLanguage = await fetchLanguage(defaultLang);
   }
   let initial;
   try {

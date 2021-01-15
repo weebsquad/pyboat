@@ -16,10 +16,10 @@ export function isAuditLog(
 
 export const messages = {
   key(log: discord.AuditLogEntry, ...args: any) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
     const type = 'CONFIG_KEY';
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
 };

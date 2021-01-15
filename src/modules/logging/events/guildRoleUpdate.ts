@@ -1,5 +1,6 @@
 import { handleEvent, getUserTag, getMemberTag } from '../main';
 import * as utils from '../../../lib/utils';
+import { language as i18n, setPlaceholders } from '../../../localization/interface';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -42,12 +43,12 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'NAME_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'NAME_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
-    mp.set('_OLD_NAME_', utils.escapeString(oldRole.name, true));
-    mp.set('_NEW_NAME_', utils.escapeString(role.name, true));
+    mp.set('OLD_NAME', utils.escapeString(oldRole.name, true));
+    mp.set('NEW_NAME', utils.escapeString(role.name, true));
     return mp;
   },
   color(
@@ -56,12 +57,12 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'COLOR_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'COLOR_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
-    mp.set('_OLD_COLOR_', oldRole.color.toString(16));
-    mp.set('_NEW_COLOR_', role.color.toString(16));
+    mp.set('OLD_COLOR', oldRole.color.toString(16));
+    mp.set('NEW_COLOR', role.color.toString(16));
     return mp;
   },
   hoist(
@@ -70,12 +71,12 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'HOIST_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'HOIST_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
-    mp.set('_OLD_HOIST_', oldRole.hoist === true ? 'Enabled' : 'Disabled');
-    mp.set('_NEW_HOIST_', role.hoist === true ? 'Enabled' : 'Disabled');
+    mp.set('OLD_HOIST', oldRole.hoist === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled);
+    mp.set('NEW_HOIST', role.hoist === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled);
     return mp;
   },
   mentionable(
@@ -84,17 +85,17 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'MENTIONABLE_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'MENTIONABLE_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set(
-      '_OLD_MENTIONABLE_',
-      oldRole.mentionable === true ? 'Enabled' : 'Disabled',
+      'OLD_MENTIONABLE',
+      oldRole.mentionable === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled,
     );
     mp.set(
-      '_NEW_MENTIONABLE_',
-      role.mentionable === true ? 'Enabled' : 'Disabled',
+      'NEW_MENTIONABLE',
+      role.mentionable === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled,
     );
     return mp;
   },
@@ -104,12 +105,12 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'POSITION_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'POSITION_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
-    mp.set('_OLD_POSITION_', oldRole.position.toString());
-    mp.set('_NEW_POSITION_', role.position.toString());
+    mp.set('OLD_POSITION', oldRole.position.toString());
+    mp.set('NEW_POSITION', role.position.toString());
     return mp;
   },
   managed(
@@ -118,15 +119,15 @@ export const messages = {
     oldRole: discord.Role,
   ) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'MANAGED_CHANGED'],
-      ['_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'MANAGED_CHANGED'],
+      ['ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone')],
     ]);
     mp.set(
-      '_OLD_MANAGED_',
-      oldRole.mentionable === true ? 'Enabled' : 'Disabled',
+      'OLD_MANAGED',
+      oldRole.mentionable === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled,
     );
-    mp.set('_NEW_MANAGED_', role.mentionable === true ? 'Enabled' : 'Disabled');
+    mp.set('NEW_MANAGED', role.mentionable === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled);
     return mp;
   },
   permissions(
@@ -134,7 +135,7 @@ export const messages = {
     role: discord.Role,
     oldRole: discord.Role,
   ) {
-    const mp = new Map([['_ROLE_ID_', role.id]]);
+    const mp = new Map([['ROLE_ID', role.id]]);
     let type = '';
     const newPerms = new utils.Permissions(role.permissions).serialize(false);
     const oldPerms = new utils.Permissions(oldRole.permissions).serialize(false);
@@ -164,7 +165,7 @@ export const messages = {
     if (permsAdded.length > 0 && permsRemoved.length === 0) {
       type = 'PERMS_ADDED';
       mp.set(
-        '_ADDED_PERMS_',
+        'ADDED_PERMS',
         permsAdded
           .map((e: string) => `\`${prettifyPerms(e)}\``)
           .join(',  '),
@@ -172,7 +173,7 @@ export const messages = {
     } else if (permsAdded.length === 0 && permsRemoved.length > 0) {
       type = 'PERMS_REMOVED';
       mp.set(
-        '_REMOVED_PERMS_',
+        'REMOVED_PERMS',
         permsRemoved
           .map((e: string) => `\`${prettifyPerms(e)}\``)
           .join(',  '),
@@ -186,13 +187,13 @@ export const messages = {
         )
         .join('\n');
       cc = `\`\`\`diff\n${cc}\n\`\`\``;
-      mp.set('_CHANGED_PERMS_', cc);
+      mp.set('CHANGED_PERMS', cc);
     }
     if (type === '') {
       return;
     }
-    mp.set('_TYPE_', type);
-    mp.set('_ROLE_MENTION_', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone'));
+    mp.set('TYPE', type);
+    mp.set('ROLE_MENTION', role.id !== role.guildId ? `<@&${role.id}>` : utils.escapeString('@everyone'));
     return mp;
   },
 };

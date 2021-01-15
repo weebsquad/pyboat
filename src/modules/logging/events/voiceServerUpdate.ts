@@ -14,9 +14,9 @@ export const messages = {
     ev: discord.Event.IVoiceServerUpdate,
   ) {
     return new Map([
-      ['_TYPE_', 'CONNECTED'],
-      ['_TOKEN_', ev.token],
-      ['_ENDPOINT_', ev.endpoint],
+      ['TYPE', 'CONNECTED'],
+      ['TOKEN', ev.token],
+      ['ENDPOINT', ev.endpoint],
     ]);
   },
 };

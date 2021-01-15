@@ -2,7 +2,6 @@
 
 import { IRootObject } from './typings';
 import * as builder from './builder';
-import { config } from '../config';
 
 export let language: IRootObject;
 
@@ -23,6 +22,6 @@ export function setPlaceholders(str: string, placeholders: Array<string>): strin
   return str;
 }
 
-export async function Initialize() {
-  language = await builder.buildLanguage(config.language);
+export async function Initialize(defaultLang: string, toBuild: string) {
+  language = await builder.buildLanguage(defaultLang, toBuild);
 }

@@ -105,12 +105,12 @@ export function getMemberTag(member: discord.GuildMember) {
   }
   const nick = member.nick ?? member.user.username;
   const map = new Map([
-    ['_TAG_', utils.escapeString(member.user.getTag())],
-    ['_USERNAME_', utils.escapeString(member.user.username)],
-    ['_DISCRIMINATOR_', member.user.discriminator],
-    ['_NICKNAME_', utils.escapeString(nick)],
-    ['_ID_', member.user.id],
-    ['_MENTION_', member.toMention()],
+    ['{TAG}', utils.escapeString(member.user.getTag())],
+    ['{USERNAME}', utils.escapeString(member.user.username)],
+    ['{DISCRIMINATOR}', member.user.discriminator],
+    ['{NICKNAME}', utils.escapeString(nick)],
+    ['{ID}', member.user.id],
+    ['{MENTION}', member.toMention()],
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
@@ -127,12 +127,12 @@ export function getUserTag(user: discord.User | discord.GuildMember) {
     user = user.user;
   }
   const map = new Map([
-    ['_TAG_', utils.escapeString(user.getTag())],
-    ['_USERNAME_', utils.escapeString(user.username)],
-    ['_DISCRIMINATOR_', user.discriminator],
-    ['_ID_', user.id],
-    ['_NICKNAME_', utils.escapeString(user.username)],
-    ['_MENTION_', user.toMention()],
+    ['{TAG}', utils.escapeString(user.getTag())],
+    ['{USERNAME}', utils.escapeString(user.username)],
+    ['{DISCRIMINATOR}', user.discriminator],
+    ['{ID}', user.id],
+    ['{NICKNAME}', utils.escapeString(user.username)],
+    ['{MENTION}', user.toMention()],
   ]);
   let tg = conf.config.modules.logging.userTag;
   for (const [key, value] of map) {
@@ -204,12 +204,12 @@ export function getActorTag(user: discord.User | discord.GuildMember) {
   }
 
   const map = new Map([
-    ['_TAG_', utils.escapeString(user.getTag())],
-    ['_USERNAME_', utils.escapeString(user.username)],
-    ['_DISCRIMINATOR_', user.discriminator],
-    ['_ID_', user.id],
-    ['_MENTION_', user.toMention()],
-    ['_NICKNAME_', utils.escapeString(nick)],
+    ['{TAG}', utils.escapeString(user.getTag())],
+    ['{USERNAME}', utils.escapeString(user.username)],
+    ['{DISCRIMINATOR}', user.discriminator],
+    ['{ID}', user.id],
+    ['{MENTION}', user.toMention()],
+    ['{NICKNAME}', utils.escapeString(nick)],
   ]);
   let tg = conf.config.modules.logging.actorTag;
   for (const [key, value] of map) {
@@ -228,11 +228,11 @@ export function getLogMessage(
     let obj: string = conf.config.modules.logging.messagesAuditLogs[eventName][eventAction];
     if (
       conf.config.modules.logging.suffixReasonToAuditlog
-      && obj.indexOf('_REASON_') === -1
-      && obj.indexOf('_REASON_RAW_') === -1
+      && obj.indexOf('{REASON}') === -1
+      && obj.indexOf('{REASON_RAW}') === -1
       && !bypassSuffix
     ) {
-      obj += '_REASON_';
+      obj += '{REASON}';
     }
     return obj;
   }
@@ -240,13 +240,11 @@ export function getLogMessage(
 }
 
 export function replacePlaceholders(txt: string, map: Map<string, string>) {
-  // txt = '[_TYPE_] ' + txt;
-
-  for (const [key, value] of map) {
-    if (key.substr(0, 1) !== '_' && key.substr(key.length - 1, 1) !== '_') {
-      continue;
+  for (let [key, value] of map) {
+    if (key.substr(0, 1) === '{' || key.substr(key.length - 1, 1) === '}') {
+      key = key.split('{').join('').split('}').join('');
     }
-    txt = txt.split(key).join(value);
+    txt = txt.split(`{${key}}`).join(value);
   }
   return txt;
 }

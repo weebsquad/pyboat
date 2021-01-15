@@ -20,16 +20,16 @@ export function isAuditLog() {
 export const messages = {
   reconnected(log: discord.AuditLogEntry, guild: discord.Guild) {
     return new Map([
-      ['_TYPE_', 'RECONNECTED'],
-      ['_GUILD_ID_', guild.id],
-      ['_GUILD_NAME_', utils.escapeString(guild.name, true)],
+      ['TYPE', 'RECONNECTED'],
+      ['GUILD_ID', guild.id],
+      ['GUILD_NAME', utils.escapeString(guild.name, true)],
     ]);
   },
   newGuild(log: discord.AuditLogEntry, guild: discord.Guild) {
     return new Map([
-      ['_TYPE_', 'NEW_GUILD'],
-      ['_GUILD_ID_', guild.id],
-      ['_GUILD_NAME_', guild.name],
+      ['TYPE', 'NEW_GUILD'],
+      ['GUILD_ID', guild.id],
+      ['GUILD_NAME', guild.name],
     ]);
   },
 };

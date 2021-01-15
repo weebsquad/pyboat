@@ -29,13 +29,13 @@ export const messages = {
         }
         k = k.toUpperCase();
         if (typeof v !== 'string') {
-          if (k === '_AUTHOR_') {
-            mp.set('_USERTAG_', getUserTag(v));
-            mp.set('_USER_', v);
+          if (k === 'AUTHOR') {
+            mp.set('USERTAG', getUserTag(v));
+            mp.set('USER', v);
           }
-          if (k === '_MEMBER_') {
-            mp.set('_USERTAG_', getMemberTag(v));
-            mp.set('_USER_', v);
+          if (k === 'MEMBER') {
+            mp.set('USERTAG', getMemberTag(v));
+            mp.set('USER', v);
           }
         }
         if (typeof v !== 'string') {
@@ -59,7 +59,7 @@ export async function logCustom(
   }
   cat = cat.toUpperCase();
   subtype = subtype.toUpperCase();
-  if (placeholders && placeholders.has('_USER_ID_') && isIgnoredUser(placeholders.get('_USER_ID_'))) {
+  if (placeholders && placeholders.has('USER_ID') && isIgnoredUser(placeholders.get('USER_ID'))) {
     return;
   }
   if (cat.substr(0, 1) !== '|') {

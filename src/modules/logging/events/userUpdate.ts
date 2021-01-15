@@ -11,10 +11,10 @@ export function isAuditLog() {
 export const messages = {
   userUpdate(log: discord.AuditLogEntry, user: discord.User) {
     return new Map([
-      ['_TYPE_', 'USER_UPDATED'],
-      ['_USER_ID_', user.id],
-      ['_USER_', user],
-      ['_USERTAG_', getUserTag(user)],
+      ['TYPE', 'USER_UPDATED'],
+      ['USER_ID', user.id],
+      ['USER', user],
+      ['USERTAG', getUserTag(user)],
     ]);
   },
 };
