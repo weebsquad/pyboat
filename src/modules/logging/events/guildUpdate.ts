@@ -1,5 +1,6 @@
 import { handleEvent, getUserTag } from '../main';
 import * as utils from '../../../lib/utils';
+import { language as i18n } from '../../../localization/interface';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -118,9 +119,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'NAME_CHANGED'],
-      ['_OLD_NAME_', utils.escapeString(oldGuild.name, true)],
-      ['_NEW_NAME_', utils.escapeString(guild.name, true)],
+      ['TYPE', 'NAME_CHANGED'],
+      ['OLD_NAME', utils.escapeString(oldGuild.name, true)],
+      ['NEW_NAME', utils.escapeString(guild.name, true)],
     ]);
   },
   region(
@@ -129,9 +130,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'REGION_CHANGED'],
-      ['_OLD_REGION_', oldGuild.region],
-      ['_NEW_REGION_', guild.region],
+      ['TYPE', 'REGION_CHANGED'],
+      ['OLD_REGION', oldGuild.region],
+      ['NEW_REGION', guild.region],
     ]);
   },
   description(
@@ -140,9 +141,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'DESCRIPTION_CHANGED'],
-      ['_OLD_DESC_', utils.escapeString(oldGuild.description, true)],
-      ['_NEW_DESC_', utils.escapeString(guild.description, true)],
+      ['TYPE', 'DESCRIPTION_CHANGED'],
+      ['OLD_DESC', utils.escapeString(oldGuild.description, true)],
+      ['NEW_DESC', utils.escapeString(guild.description, true)],
     ]);
   },
   defaultMessageNotifications(
@@ -151,15 +152,15 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     const levels = {
-      0: 'All Messages',
-      1: 'Only Mentions',
+      0: i18n.modules.logging.l_terms.default_message_notifs.all_messages,
+      1: i18n.modules.logging.l_terms.default_message_notifs.only_mentions,
     };
     return new Map([
-      ['_TYPE_', 'DMN_CHANGED'],
+      ['TYPE', 'DMN_CHANGED'],
 
-      ['_OLD_DMN_', levels[oldGuild.defaultMessageNotifications]],
+      ['OLD_DMN', levels[oldGuild.defaultMessageNotifications]],
 
-      ['_NEW_DMN_', levels[guild.defaultMessageNotifications]],
+      ['NEW_DMN', levels[guild.defaultMessageNotifications]],
     ]);
   },
   explicitContentFilter(
@@ -168,14 +169,14 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     const levels = {
-      0: 'Disabled',
-      1: 'Members Without Roles',
-      2: 'All Members',
+      0: i18n.modules.logging.l_terms.explicit_filter.disabled,
+      1: i18n.modules.logging.l_terms.explicit_filter.without_roles,
+      2: i18n.modules.logging.l_terms.explicit_filter.all_members,
     };
     return new Map([
-      ['_TYPE_', 'EXPLICIT_FILTER_CHANGED'],
-      ['_OLD_FILTER_', levels[oldGuild.explicitContentFilter]],
-      ['_NEW_FILTER_', levels[guild.explicitContentFilter]],
+      ['TYPE', 'EXPLICIT_FILTER_CHANGED'],
+      ['OLD_FILTER', levels[oldGuild.explicitContentFilter]],
+      ['NEW_FILTER', levels[guild.explicitContentFilter]],
     ]);
   },
   verificationLevel(
@@ -184,16 +185,16 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     const levels = {
-      0: 'None',
-      1: 'Low',
-      2: 'Medium',
-      3: 'High',
-      4: 'Very High',
+      0: i18n.modules.logging.l_terms.verification_level.none,
+      1: i18n.modules.logging.l_terms.verification_level.low,
+      2: i18n.modules.logging.l_terms.verification_level.medium,
+      3: i18n.modules.logging.l_terms.verification_level.high,
+      4: i18n.modules.logging.l_terms.verification_level.very_high,
     };
     return new Map([
-      ['_TYPE_', 'VERIFICATION_LEVEL_CHANGED'],
-      ['_OLD_LEVEL_', levels[oldGuild.verificationLevel]],
-      ['_NEW_LEVEL_', levels[guild.verificationLevel]],
+      ['TYPE', 'VERIFICATION_LEVEL_CHANGED'],
+      ['OLD_LEVEL', levels[oldGuild.verificationLevel]],
+      ['NEW_LEVEL', levels[guild.verificationLevel]],
     ]);
   },
   async banner(
@@ -216,10 +217,10 @@ export const messages = {
       return null;
     }
     return new Map<string, any>([
-      ['_TYPE_', type],
-      ['_OLD_BANNER_', oldBanner],
-      ['_NEW_BANNER_', newBanner],
-      ['_ATTACHMENTS_', newData ? [{ name: `banner.${newBanner.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newBanner }] : []],
+      ['TYPE', type],
+      ['OLD_BANNER', oldBanner],
+      ['NEW_BANNER', newBanner],
+      ['ATTACHMENTS', newData ? [{ name: `banner.${newBanner.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newBanner }] : []],
     ]);
   },
   async icon(
@@ -242,10 +243,10 @@ export const messages = {
       return null;
     }
     return new Map<string, any>([
-      ['_TYPE_', type],
-      ['_OLD_ICON_', oldIcon],
-      ['_NEW_ICON_', newIcon],
-      ['_ATTACHMENTS_', newData ? [{ name: `icon.${newIcon.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newIcon }] : []],
+      ['TYPE', type],
+      ['OLD_ICON', oldIcon],
+      ['NEW_ICON', newIcon],
+      ['ATTACHMENTS', newData ? [{ name: `icon.${newIcon.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newIcon }] : []],
     ]);
   },
   maxPresences(
@@ -254,9 +255,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'PRESENCES_CHANGED'],
-      ['_OLD_PRES_', oldGuild.maxPresences.toString()],
-      ['_NEW_PRES_', guild.maxPresences.toString()],
+      ['TYPE', 'PRESENCES_CHANGED'],
+      ['OLD_PRES', oldGuild.maxPresences.toString()],
+      ['NEW_PRES', guild.maxPresences.toString()],
     ]);
   },
   mfaLevel(
@@ -265,13 +266,13 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     const levels = {
-      0: 'Disabled',
-      1: 'Enabled',
+      0: i18n.modules.logging.l_terms.disabled,
+      1: i18n.modules.logging.l_terms.enabled,
     };
     return new Map([
-      ['_TYPE_', 'MFA_LEVEL_CHANGED'],
-      ['_OLD_LEVEL_', levels[oldGuild.mfaLevel]],
-      ['_NEW_LEVEL_', levels[guild.mfaLevel]],
+      ['TYPE', 'MFA_LEVEL_CHANGED'],
+      ['OLD_LEVEL', levels[oldGuild.mfaLevel]],
+      ['NEW_LEVEL', levels[guild.mfaLevel]],
     ]);
   },
   ownerId(
@@ -280,9 +281,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'OWNER_CHANGED'],
-      ['_OLD_OWNER_', oldGuild.ownerId],
-      ['_NEW_OWNER_', guild.ownerId],
+      ['TYPE', 'OWNER_CHANGED'],
+      ['OLD_OWNER', oldGuild.ownerId],
+      ['NEW_OWNER', guild.ownerId],
     ]);
   },
   afkChannelId(
@@ -302,9 +303,9 @@ export const messages = {
       return null;
     }
     return new Map([
-      ['_TYPE_', type],
-      ['_OLD_CHANNEL_', oldGuild.afkChannelId],
-      ['_NEW_CHANNEL_', guild.afkChannelId],
+      ['TYPE', type],
+      ['OLD_CHANNEL', oldGuild.afkChannelId],
+      ['NEW_CHANNEL', guild.afkChannelId],
     ]);
   },
   afkTimeout(
@@ -313,9 +314,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'AFKTIMEOUT_CHANGED'],
-      ['_OLD_TIMEOUT_', oldGuild.afkTimeout.toString()],
-      ['_NEW_TIMEOUT_', guild.afkTimeout.toString()],
+      ['TYPE', 'AFKTIMEOUT_CHANGED'],
+      ['OLD_TIMEOUT', oldGuild.afkTimeout.toString()],
+      ['NEW_TIMEOUT', guild.afkTimeout.toString()],
     ]);
   },
   premiumTier(
@@ -323,12 +324,12 @@ export const messages = {
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
-    const oldTier = oldGuild.premiumTier !== null ? oldGuild.premiumTier.toString() : 'None';
-    const newTier = guild.premiumTier !== null ? guild.premiumTier.toString() : 'None';
+    const oldTier = oldGuild.premiumTier !== null ? oldGuild.premiumTier.toString() : i18n.modules.logging.l_terms.none;
+    const newTier = guild.premiumTier !== null ? guild.premiumTier.toString() : i18n.modules.logging.l_terms.none;
     return new Map([
-      ['_TYPE_', 'BOOST_TIER_CHANGED'],
-      ['_OLD_TIER_', oldTier],
-      ['_NEW_TIER_', newTier],
+      ['TYPE', 'BOOST_TIER_CHANGED'],
+      ['OLD_TIER', oldTier],
+      ['NEW_TIER', newTier],
     ]);
   },
   premiumSubscriptionCount(
@@ -337,9 +338,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'BOOST_SUBSCRIPTIONS_CHANGED'],
-      ['_OLD_SUBS_', oldGuild.premiumSubscriptionCount.toString()],
-      ['_NEW_SUBS_', guild.premiumSubscriptionCount.toString()],
+      ['TYPE', 'BOOST_SUBSCRIPTIONS_CHANGED'],
+      ['OLD_SUBS', oldGuild.premiumSubscriptionCount.toString()],
+      ['NEW_SUBS', guild.premiumSubscriptionCount.toString()],
     ]);
   },
   preferredLocale(
@@ -348,9 +349,9 @@ export const messages = {
     oldGuild: discord.Guild,
   ) {
     return new Map([
-      ['_TYPE_', 'PREFERRED_LOCALE_CHANGED'],
-      ['_OLD_LOCALE_', oldGuild.preferredLocale],
-      ['_NEW_LOCALE_', guild.preferredLocale],
+      ['TYPE', 'PREFERRED_LOCALE_CHANGED'],
+      ['OLD_LOCALE', oldGuild.preferredLocale],
+      ['NEW_LOCALE', guild.preferredLocale],
     ]);
   },
   async splash(
@@ -373,10 +374,10 @@ export const messages = {
       return null;
     }
     return new Map<string, any>([
-      ['_TYPE_', type],
-      ['_OLD_SPLASH_', oldSplash],
-      ['_NEW_SPLASH_', newSplash],
-      ['_ATTACHMENTS_', newData ? [{ name: `splash.${newSplash.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newSplash }] : []],
+      ['TYPE', type],
+      ['OLD_SPLASH', oldSplash],
+      ['NEW_SPLASH', newSplash],
+      ['ATTACHMENTS', newData ? [{ name: `splash.${newSplash.split('.').slice(-1)[0].split('?')[0]}`, data: newData, url: newSplash }] : []],
     ]);
   },
   systemChannelId(
@@ -398,9 +399,9 @@ export const messages = {
       return null;
     }
     return new Map([
-      ['_TYPE_', type],
-      ['_OLD_CHANNEL_', oldChannel],
-      ['_NEW_CHANNEL_', newChannel],
+      ['TYPE', type],
+      ['OLD_CHANNEL', oldChannel],
+      ['NEW_CHANNEL', newChannel],
     ]);
   },
   vanityUrlCode(
@@ -422,9 +423,9 @@ export const messages = {
       return null;
     }
     return new Map([
-      ['_TYPE_', type],
-      ['_OLD_VANITY_', oldVanity],
-      ['_NEW_VANITY_', newVanity],
+      ['TYPE', type],
+      ['OLD_VANITY', oldVanity],
+      ['NEW_VANITY', newVanity],
     ]);
   },
   widgetEnabled(
@@ -432,12 +433,12 @@ export const messages = {
     guild: discord.Guild,
     oldGuild: discord.Guild,
   ) {
-    const widget = guild.widgetEnabled === true ? 'Enabled' : 'Disabled';
-    const widgetOld = oldGuild.widgetEnabled === true ? 'Enabled' : 'Disabled';
+    const widget = guild.widgetEnabled === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled;
+    const widgetOld = oldGuild.widgetEnabled === true ? i18n.modules.logging.l_terms.enabled : i18n.modules.logging.l_terms.disabled;
     return new Map([
-      ['_TYPE_', 'WIDGET_CHANGED'],
-      ['_OLD_WIDGET_', widgetOld],
-      ['_NEW_WIDGET_', widget],
+      ['TYPE', 'WIDGET_CHANGED'],
+      ['OLD_WIDGET', widgetOld],
+      ['NEW_WIDGET', widget],
     ]);
   },
   widgetChannelId(
@@ -459,9 +460,9 @@ export const messages = {
       return null;
     }
     return new Map([
-      ['_TYPE_', type],
-      ['_OLD_CHANNEL_', oldChannel],
-      ['_NEW_CHANNEL_', newChannel],
+      ['TYPE', type],
+      ['OLD_CHANNEL', oldChannel],
+      ['NEW_CHANNEL', newChannel],
     ]);
   },
   features(
@@ -485,14 +486,14 @@ export const messages = {
     });
     if (featsAdded.length > 0 && featsRemoved.length === 0) {
       type = 'FEATURES_ADDED';
-      mp.set('_ADDED_FEATURES_', featsAdded.join(', '));
+      mp.set('ADDED_FEATURES', featsAdded.join(', '));
     } else if (featsAdded.length === 0 && featsRemoved.length > 0) {
       type = 'FEATURES_REMOVED';
-      mp.set('_REMOVED_FEATURES_', featsRemoved.join(', '));
+      mp.set('REMOVED_FEATURES', featsRemoved.join(', '));
     } else {
       type = 'FEATURES_CHANGED';
       mp.set(
-        '_CHANGED_FEATURES_',
+        'CHANGED_FEATURES',
         featsAdded
           .map((e: string) => `**+**${e}`)
           .concat(
@@ -501,7 +502,7 @@ export const messages = {
           .join(', '),
       );
     }
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
 };

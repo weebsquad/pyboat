@@ -38,13 +38,13 @@ export const messages = {
     oldMember: discord.GuildMember,
   ) {
     const mp = new Map();
-    mp.set('_TYPE_', 'MEMBER_LEFT');
-    mp.set('_USER_ID_', member.user.id);
-    mp.set('_USERTAG_', getUserTag(member.user));
-    mp.set('_USER_', member.user);
-    mp.set('_RESIDENCE_DURATION_', '?');
+    mp.set('TYPE', 'MEMBER_LEFT');
+    mp.set('USER_ID', member.user.id);
+    mp.set('USERTAG', getUserTag(member.user));
+    mp.set('USER', member.user);
+    mp.set('RESIDENCE_DURATION', '?');
     if (oldMember instanceof discord.GuildMember) {
-      mp.set('_RESIDENCE_DURATION_', getLongAgoFormat(new Date(oldMember.joinedAt).getTime(), 2, true));
+      mp.set('RESIDENCE_DURATION', getLongAgoFormat(new Date(oldMember.joinedAt).getTime(), 2, true));
     }
     return mp;
   },
@@ -53,10 +53,10 @@ export const messages = {
     member: discord.Event.IGuildMemberRemove,
   ) {
     const mp = new Map();
-    mp.set('_TYPE_', 'MEMBER_KICKED');
-    mp.set('_USER_ID_', member.user.id);
-    mp.set('_USERTAG_', getUserTag(member.user));
-    mp.set('_USER_', member.user);
+    mp.set('TYPE', 'MEMBER_KICKED');
+    mp.set('USER_ID', member.user.id);
+    mp.set('USERTAG', getUserTag(member.user));
+    mp.set('USER', member.user);
     return mp;
   },
 };

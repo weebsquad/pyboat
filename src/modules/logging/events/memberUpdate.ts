@@ -58,7 +58,7 @@ export const messages = {
     member: discord.GuildMember,
     oldMember: discord.GuildMember,
   ) {
-    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]);
+    const mp = new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]);
     let type = '';
     if (member.premiumSince !== null && oldMember.premiumSince === null) {
       type = 'BOOSTING_STARTED';
@@ -71,7 +71,7 @@ export const messages = {
     if (type === '') {
       return false;
     }
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
   discriminator(
@@ -80,12 +80,12 @@ export const messages = {
     oldMember: discord.GuildMember,
   ) {
     return new Map([
-      ['_USERTAG_', getMemberTag(member)],
-      ['_TYPE_', 'DISCRIMINATOR_CHANGED'],
-      ['_OLD_DISCRIMINATOR_', oldMember.user.discriminator],
-      ['_NEW_DISCRIMINATOR_', member.user.discriminator],
-      ['_USER_ID_', member.user.id],
-      ['_USER_', member.user],
+      ['USERTAG', getMemberTag(member)],
+      ['TYPE', 'DISCRIMINATOR_CHANGED'],
+      ['OLD_DISCRIMINATOR', oldMember.user.discriminator],
+      ['NEW_DISCRIMINATOR', member.user.discriminator],
+      ['USER_ID', member.user.id],
+      ['USER', member.user],
     ]);
   },
   username(
@@ -94,12 +94,12 @@ export const messages = {
     oldMember: discord.GuildMember,
   ) {
     return new Map([
-      ['_USERTAG_', getMemberTag(member)],
-      ['_TYPE_', 'USERNAME_CHANGED'],
-      ['_OLD_USERNAME_', oldMember.user.username],
-      ['_NEW_USERNAME_', member.user.username],
-      ['_USER_ID_', member.user.id],
-      ['_USER_', member.user],
+      ['USERTAG', getMemberTag(member)],
+      ['TYPE', 'USERNAME_CHANGED'],
+      ['OLD_USERNAME', oldMember.user.username],
+      ['NEW_USERNAME', member.user.username],
+      ['USER_ID', member.user.id],
+      ['USER', member.user],
     ]);
   },
   async avatar(
@@ -107,27 +107,27 @@ export const messages = {
     member: discord.GuildMember,
     oldMember: discord.GuildMember,
   ) {
-    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]);
+    const mp = new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]);
     let type = '';
     if (member.user.avatar === null && oldMember.user.avatar !== null) {
       type = 'AVATAR_REMOVED';
-      mp.set('_OLD_AVATAR_', oldMember.user.getAvatarUrl());
+      mp.set('OLD_AVATAR', oldMember.user.getAvatarUrl());
       const data = await (await fetch(oldMember.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${oldMember.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: oldMember.user.getAvatarUrl() }]);
+      mp.set('ATTACHMENTS', [{ name: `avatar.${oldMember.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: oldMember.user.getAvatarUrl() }]);
     } else if (member.user.avatar !== null && oldMember.user.avatar === null) {
       type = 'AVATAR_ADDED';
-      mp.set('_NEW_AVATAR_', member.user.getAvatarUrl());
+      mp.set('NEW_AVATAR', member.user.getAvatarUrl());
       const data = await (await fetch(member.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
+      mp.set('ATTACHMENTS', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
     } else {
       type = 'AVATAR_CHANGED';
-      mp.set('_NEW_AVATAR_', member.user.getAvatarUrl());
-      mp.set('_OLD_AVATAR_', oldMember.user.getAvatarUrl());
+      mp.set('NEW_AVATAR', member.user.getAvatarUrl());
+      mp.set('OLD_AVATAR', oldMember.user.getAvatarUrl());
       const data = await (await fetch(member.user.getAvatarUrl())).arrayBuffer();
-      mp.set('_ATTACHMENTS_', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
+      mp.set('ATTACHMENTS', [{ name: `avatar.${member.user.getAvatarUrl().split('.').slice(-1)[0].split('?')[0]}`, data, url: member.user.getAvatarUrl() }]);
     }
 
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
   roles(
@@ -138,7 +138,7 @@ export const messages = {
     const rolesAdded = [];
     const rolesRemoved = [];
     let type = '';
-    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]);
+    const mp = new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]);
     member.roles.forEach((rl) => {
       if (oldMember.roles.indexOf(rl) === -1) {
         rolesAdded.push(rl);
@@ -152,7 +152,7 @@ export const messages = {
     if (rolesAdded.length > 0 && rolesRemoved.length === 0) {
       type = 'ROLES_ADDED';
       mp.set(
-        '_ADDED_ROLES_',
+        'ADDED_ROLES',
         rolesAdded
           .map((e: string) => `<@&${e}>`)
           .join('  '),
@@ -160,7 +160,7 @@ export const messages = {
     } else if (rolesAdded.length === 0 && rolesRemoved.length > 0) {
       type = 'ROLES_REMOVED';
       mp.set(
-        '_REMOVED_ROLES_',
+        'REMOVED_ROLES',
         rolesRemoved
           .map((e: string) => `<@&${e}>`)
           .join('  '),
@@ -168,7 +168,7 @@ export const messages = {
     } else {
       type = 'ROLES_CHANGED';
       mp.set(
-        '_CHANGED_ROLES_',
+        'CHANGED_ROLES',
         rolesAdded
           .map((e: string) => `**+**<@&${e}>`)
           .concat(
@@ -177,7 +177,7 @@ export const messages = {
           .join('  '),
       );
     }
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
   nickname(
@@ -186,19 +186,19 @@ export const messages = {
     oldMember: discord.GuildMember,
   ) {
     let type = '';
-    const mp = new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]);
+    const mp = new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]);
     if (oldMember.nick === null && member.nick !== null) {
       type = 'NICK_ADDED';
-      mp.set('_NEW_NICK_', member.nick);
+      mp.set('NEW_NICK', member.nick);
     } else if (oldMember.nick !== null && member.nick === null) {
       type = 'NICK_REMOVED';
-      mp.set('_OLD_NICK_', oldMember.nick);
+      mp.set('OLD_NICK', oldMember.nick);
     } else if (oldMember.nick !== null && member.nick !== null) {
       type = 'NICK_CHANGED';
-      mp.set('_NEW_NICK_', member.nick);
-      mp.set('_OLD_NICK_', oldMember.nick);
+      mp.set('NEW_NICK', member.nick);
+      mp.set('OLD_NICK', oldMember.nick);
     }
-    mp.set('_TYPE_', type);
+    mp.set('TYPE', type);
     return mp;
   },
 };

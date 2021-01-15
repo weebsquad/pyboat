@@ -19,11 +19,11 @@ export const messages = {
     log: discord.AuditLogEntry,
     ev: discord.Event.IMessageReactionRemoveAll,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_TYPE_', 'REMOVED_ALL_REACTIONS');
-    mp.set('_CHANNEL_ID_', ev.channelId);
-    mp.set('_MESSAGE_ID_', ev.messageId);
+    mp.set('TYPE', 'REMOVED_ALL_REACTIONS');
+    mp.set('CHANNEL_ID', ev.channelId);
+    mp.set('MESSAGE_ID', ev.messageId);
     return mp;
   },
 };

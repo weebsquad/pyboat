@@ -37,20 +37,20 @@ export const messages = {
     if (message.author === null || !(oldMessage instanceof discord.Message)) {
       return;
     }
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_AUTHOR_', getMemberTag(message.member));
-    mp.set('_USERTAG_', getMemberTag(message.member));
-    mp.set('_USER_', message.author);
-    mp.set('_USER_ID_', message.author.id);
-    mp.set('_TYPE_', 'MESSAGE_CONTENT_UPDATED_GUILD');
-    mp.set('_CHANNEL_ID_', message.channelId);
+    mp.set('AUTHOR', getMemberTag(message.member));
+    mp.set('USERTAG', getMemberTag(message.member));
+    mp.set('USER', message.author);
+    mp.set('USER_ID', message.author.id);
+    mp.set('TYPE', 'MESSAGE_CONTENT_UPDATED_GUILD');
+    mp.set('CHANNEL_ID', message.channelId);
     mp.set(
-      '_CONTENT_BEFORE_',
+      'CONTENT_BEFORE',
       await utils2.parseMessageContent(oldMessage, true),
     );
-    mp.set('_CONTENT_AFTER_', await utils2.parseMessageContent(message, true));
-    mp.set('_MESSAGE_ID_', message.id);
+    mp.set('CONTENT_AFTER', await utils2.parseMessageContent(message, true));
+    mp.set('MESSAGE_ID', message.id);
     return mp;
   },
   async dmMessageContent(
@@ -61,20 +61,20 @@ export const messages = {
     if (message.author === null || !(oldMessage instanceof discord.Message)) {
       return;
     }
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_AUTHOR_', getUserTag(message.author));
-    mp.set('_USERTAG_', getUserTag(message.author));
-    mp.set('_USER_', message.author);
-    mp.set('_USER_ID_', message.author.id);
-    mp.set('_TYPE_', 'MESSAGE_CONTENT_UPDATED_DM');
-    mp.set('_CHANNEL_ID_', message.channelId);
+    mp.set('AUTHOR', getUserTag(message.author));
+    mp.set('USERTAG', getUserTag(message.author));
+    mp.set('USER', message.author);
+    mp.set('USER_ID', message.author.id);
+    mp.set('TYPE', 'MESSAGE_CONTENT_UPDATED_DM');
+    mp.set('CHANNEL_ID', message.channelId);
     mp.set(
-      '_CONTENT_BEFORE_',
+      'CONTENT_BEFORE',
       await utils2.parseMessageContent(oldMessage, true),
     );
-    mp.set('_CONTENT_AFTER_', await utils2.parseMessageContent(message, true));
-    mp.set('_MESSAGE_ID_', message.id);
+    mp.set('CONTENT_AFTER', await utils2.parseMessageContent(message, true));
+    mp.set('MESSAGE_ID', message.id);
     return mp;
   },
 };

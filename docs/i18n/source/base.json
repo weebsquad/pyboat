@@ -84,6 +84,400 @@
         "deleted_config": "{USER_MENTION} done!\n\nFeel free to request a new config by typing `.config.`"
     },
     "modules": {
+        "logging": {
+            "l_terms": {
+                "webhook": "Webhook",
+                "none": "None",
+                "jump_to_message": "Jump to message",
+                "yes": "Yes",
+                "no": "No",
+                "trueval": "True",
+                "falseval": "False",
+                "enabled": "Enabled",
+                "disabled": "Disabled",
+                "added": "Added",
+                "removed": "Removed",
+                "changed": "Changed",
+                "edited_emoji": "Edited emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** **changed**: `{OLD_VALUE}` ➡️ `{NEW_VALUE}",
+                "edited_emoji_roles": "Edited emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** **changed**: roles: {NEW_VALUE}",
+                "removed_emoji": "Removed emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** from the server",
+                "changed_roles": "changed **roles**",
+                "added_emoji": "Added emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** to the server",
+                "default_message_notifs": {
+                    "all_messages": "All Messages",
+                    "only_mentions": "Only Mentions"
+                },
+                "explicit_filter": {
+                    "disabled": "Disabled",
+                    "without_roles": "Members without roles",
+                    "all_members": "All Members"
+                },
+                "verification_level": {
+                    "none": "None",
+                    "low": "Low",
+                    "medium": "Medium",
+                    "high": "High",
+                    "very_high": "Very High"
+                }
+            },
+            "l_messages": {
+                "DEBUG": {
+                    "BOT_ERROR": "⛔ Bot error\n```js\n{ERROR}\n```",
+                    "BOT_STARTED": "✅ Bot code reloaded",
+                    "RAW_EVENT": "📥 received `{EVENT}` / Queue: **{QUEUE}**",
+                    "CRON_RAN": "⌚ Cron task `{CRON_NAME}` executed.",
+                    "BLACKLISTED_USER_ACTION": "⛔ global-blacklisted user {USERTAG} tried to perform {ACTION}"
+                  },
+                  "|REACTROLES": {
+                    "ROLE_ADDED": "🛡️ {USERTAG} reacted with {EMOJI} to a message in <#{CHANNEL_ID}> **[**`{MESSAGE_ID}`**]** to get role <@&{ROLE_ID}>",
+                    "ROLE_REMOVED": "🛡️ {USERTAG} reacted with {EMOJI} to a message in <#{CHANNEL_ID}> **[**`{MESSAGE_ID}`**]** to remove role <@&{ROLE_ID}>"
+                  },
+                  "|PERSIST": {
+                    "SAVED": "💾 {USERTAG} backup data saved.",
+                    "RESTORED": "💾 {USERTAG} backup data restored."
+                  },
+                  "|INFRACTIONS": {
+                    "KICK": "👢 {ACTORTAG} kicked {USERTAG}{REASON}",
+                    "MUTE": "🔇 {ACTORTAG} muted {USERTAG}{REASON}",
+                    "UNMUTE": "🔊 {ACTORTAG} unmuted {USERTAG}{REASON}",
+                    "TEMPMUTE": "🔇 {ACTORTAG} temp-muted {USERTAG} for {DURATION}{REASON}",
+                    "TEMPMUTE_EXPIRED": "⏰ {USERTAG} 's tempmute expired.",
+                    "BAN": "🔨 {ACTORTAG} banned {USERTAG}{REASON}",
+                    "UNBAN": "🌀 {ACTORTAG} unbanned {USERTAG}{REASON}",
+                    "SOFTBAN": "🌀 {ACTORTAG} softbanned {USERTAG} (deleting {DELETE_DAYS} days of their messages){REASON}",
+                    "TEMPBAN": "🔨 {ACTORTAG} temp-banned {USERTAG} for {DURATION}{REASON}",
+                    "TEMPBAN_EXPIRED": "⏰ {USERTAG} 's tempban expired.",
+                    "MASSBAN": "🔨🔨🔨 {ACTORTAG} mass-banned {BANNED_USER_COUNT} users **[**`{BANNED_USERS}`**]**{REASON}",
+                    "EDITED": "✎ {ACTORTAG} edited infraction id `{INFRACTION_ID}` : **{TYPE}** : `{NEW_VALUE}`",
+                    "DELETED": "❕ {ACTORTAG} deleted infraction id `{INFRACTION_ID}`"
+                  },
+                  "|CORE": {
+                    "BLACKLISTED_USER_ACTION": "⛔ blacklisted user {USERTAG} tried to perform {ACTION}"
+                  },
+                  "|COMMANDS": {
+                    "CHAT_COMMAND_USED": "🛠️ {USERTAG} used chat command in <#{CHANNEL_ID}> : `{COMMAND_NAME}`",
+                    "SLASH_COMMAND_USED": "🛠️ {USERTAG} used slash command in <#{CHANNEL_ID}> : **/**`{COMMAND_NAME}`{ARGUMENTS}"
+                  },
+                  "|ADMIN": {
+                    "CLEAN": "🗑️ {ACTORTAG} cleaned **{MESSAGES}** messages_CHANNEL_{USERTAG}",
+                    "LOCKED_CHANNEL": "🔒 {ACTORTAG} locked <#{CHANNEL_ID}>{DURATION}{REASON}",
+                    "UNLOCKED_CHANNEL": "🔓 {ACTORTAG} unlocked <#{CHANNEL_ID}>{REASON}",
+                    "LOCKED_GUILD": "🔒 {ACTORTAG} locked the server{DURATION}{REASON}",
+                    "UNLOCKED_GUILD": "🔓 {ACTORTAG} unlocked the server{REASON}",
+                    "SLOWMODE": "🐌 {ACTORTAG} set slowmode on <#{CHANNEL_ID}> to **{SECONDS}s**{DURATION}{REASON}",
+                    "TEMPROLE": "🛡️ {ACTORTAG} added role {ROLE_MENTION} to {USERTAG} for {DURATION}{REASON}",
+                    "TEMPROLE_EXPIRED": "🛡️ {USERTAG}'s temprole {ROLE_MENTION} expired",
+                    "ROLE_ADDED": "🛡️ {ACTORTAG} added role {ROLE_MENTION} to {USERTAG}{REASON}",
+                    "ROLE_REMOVED": "🛡️ {ACTORTAG} removed role {ROLE_MENTION} from {USERTAG}{REASON}",
+                    "NICKNAME": "🧧 {ACTORTAG} changed {USERTAG}'s nickname to `{NEW_NICK}`"
+                  },
+                  "|ANTISPAM": {
+                    "ANTIRAID": "❕ Message Anti Raid triggered with `{FLAGS}` and action `{ACTION}` was automatically performed",
+                    "ANTIRAID_VIOLATION": "❕ Message Anti Raid triggered with `{FLAGS}` and there were **_DELETED_MESSAGES_** messages deleted.",
+                    "VIOLATION": "🧰 {USERTAG} violated anti-spam flags: `{FLAGS}` and had **_DELETED_MESSAGES_** messages deleted."
+                  },
+                  "|CENSOR": {
+                    "CENSORED_MESSAGE": "💬 {USERTAG} had their message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}> censored: `{CENSOR_MESSAGE}`**[**:{CENSOR_TP}**]** => `{CENSOR_TARGET}`",
+                    "CENSORED_USERNAME": "💬 {USERTAG} had their name of `{OLD_NAME}` censored: `{CENSOR_MESSAGE}`**[**:{CENSOR_TP}**]** => `{CENSOR_TARGET}`"
+                  },
+                  "|ANTIPING": {
+                    "FAIL_MARK_MEMBER_NOT_FOUND": "{ACTORTAG} tried to mark anti-ping punishment of {USERTAG} as {ACTION} but {USERTAG} left the server",
+                    "FAIL_MARK_UNMUTE": "{ACTORTAG} tried to mark anti-ping punishment of {USERTAG} as {ACTION} but failed to unmute",
+                    "FAIL_MARK_ACTION": "{ACTORTAG} tried to mark anti-ping punishment of {USERTAG} as {ACTION} but I failed to {ACTION} them",
+                    "MARK_SUCCESS": "{ACTORTAG} successfully marked {USERTAG} 's punishment in <#{CHANNEL_ID}> as {ACTION}",
+                    "LEFT_BANNED": "{USERTAG} left the server with pending anti-ping punishments and was auto-banned",
+                    "TRIGGERED": "{USERTAG} triggered anti-ping in <#{CHANNEL_ID}>",
+                    "TRIGGERED_MUTE": "{USERTAG} triggered anti-ping in <#{CHANNEL_ID}> and was auto-muted"
+                  },
+                
+                  "CHANNEL_CREATE": {
+                    "CHANNEL_CREATED": "🔧 new channel created: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "DM_CHANNEL_OPENED": "📑 {USERTAG} opened a dm channel with the bot"
+                  },
+                  "CHANNEL_UPDATE": {
+                    "NAME_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** name updated: `{OLD_NAME}` => `{NEW_NAME}`",
+                    "CATEGORY_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed category: {OLD_MENTION} => {NEW_MENTION}",
+                    "TYPE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed type: `{OLD_TYPE}` => `{NEW_TYPE}`",
+                    "NSFW_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** nsfw status set to **{NEW_NSFW}**",
+                    "TOPIC_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed topic: `{OLD_TOPIC}` => `{NEW_TOPIC}`",
+                    "SLOWMODE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed slowmode: **{OLD_SLOWMODE}s** => **{NEW_SLOWMODE}s**",
+                    "BITRATE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrated: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
+                    "USERLIMIT_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed user limit: **{OLD_LIMIT}** => **{NEW_LIMIT}**",
+                    "PERMS_SYNCED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions synchronized with {PARENT_MENTION}",
+                    "PERMS_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions changed: {CHANGES}"
+                  },
+                  "CHANNEL_DELETE": {
+                    "CHANNEL_DELETED": "🔧 channel deleted: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
+                  },
+                  "CHANNEL_PINS_UPDATE": {
+                    "MESSAGE_PINNED": "📌 pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                  },
+                  "GUILD_MEMBER_ADD": {
+                    "BOT_ADDED": "<:bot:735780703945490542> {USERTAG} was added to the server",
+                    "MEMBER_JOIN": "📥 {USERTAG} joined the server (account created {ACCOUNT_AGE} ago)"
+                  },
+                  "GUILD_MEMBER_REMOVE": {
+                    "MEMBER_LEFT": "📤 {USERTAG} left the server, they were here for {RESIDENCE_DURATION}"
+                  },
+                  "GUILD_BAN_ADD": {
+                    "MEMBER_BANNED": "🔨 {USERTAG} was banned from the server"
+                  },
+                  "GUILD_BAN_REMOVE": {
+                    "MEMBER_UNBANNED": "🌀 {USERTAG} was unbanned from the server"
+                  },
+                  "GUILD_MEMBER_UPDATE": {
+                    "NICK_ADDED": "🧧 {USERTAG} nickname added `{NEW_NICK}`",
+                    "NICK_CHANGED": "🧧 {USERTAG} nickname changed from `{OLD_NICK}` to `{NEW_NICK}`",
+                    "NICK_REMOVED": "🧧 {USERTAG} nickname removed of `{OLD_NICK}`",
+                    "ROLES_ADDED": "🛡️ {USERTAG} role(s) added: {ADDED_ROLES}",
+                    "ROLES_REMOVED": "🛡️ {USERTAG} role(s) removed: {REMOVED_ROLES}",
+                    "ROLES_CHANGED": "🛡️ {USERTAG} roles changed: {CHANGED_ROLES}",
+                    "AVATAR_ADDED": "🖼️ {USERTAG} added avatar",
+                    "AVATAR_REMOVED": "🖼️ {USERTAG} removed their avatar",
+                    "AVATAR_CHANGED": "🖼️ {USERTAG} changed their avatar",
+                    "USERNAME_CHANGED": "📃 {USERTAG} changed their username from `{OLD_USERNAME}` to `{NEW_USERNAME}`",
+                    "DISCRIMINATOR_CHANGED": "📃 {USERTAG} changed their discriminator from `{OLD_DISCRIMINATOR}` to `{NEW_DISCRIMINATOR}`",
+                    "BOOSTING_STARTED": "📈 {USERTAG} boosted the server",
+                    "BOOSTING_STOPPED": "📉 {USERTAG} unboosted the server"
+                  },
+                  "GUILD_CREATE": {
+                    "RECONNECTED": "🛰️ {GUILD_NAME} **[**||`{GUILD_ID}`||**]** reconnected to gateway",
+                    "NEW_GUILD": "🔮 {GUILD_NAME} **[**||`{GUILD_ID}`||**]** new guild added"
+                  },
+                  "GUILD_INTEGRATIONS_UPDATE": {
+                    "INTEGRATIONS_UPDATED": "💸 {GUILD_NAME} **[**||`{GUILD_ID}`||**]** integrations have updated"
+                  },
+                  "GUILD_EMOJIS_UPDATE": {
+                    "EDITED_EMOJIS": "🙂 {MESSAGE}",
+                    "ADDED_EMOJIS": "🙂 {MESSAGE}",
+                    "REMOVED_EMOJIS": "🙂 {MESSAGE}"
+                  },
+                  "GUILD_UPDATE": {
+                    "NAME_CHANGED": "server name changed from `{OLD_NAME}` to `{NEW_NAME}`",
+                    "REGION_CHANGED": "server region changed from **{OLD_REGION}** to **{NEW_REGION}**",
+                    "DESCRIPTION_CHANGED": "server description changed from `{OLD_DESC}` to `{NEW_DESC}`",
+                    "DMN_CHANGED": "server default message notifications changed from **{OLD_DMN}** to **{NEW_DMN}**",
+                    "EXPLICIT_FILTER_CHANGED": "server explicit content filter changed from **{OLD_FILTER}** to **{NEW_FILTER}**",
+                    "VERIFICATION_LEVEL_CHANGED": "server verification level changed from **{OLD_LEVEL}** to **{NEW_LEVEL}**",
+                    "BANNER_ADDED": "server banner added",
+                    "BANNER_REMOVED": "server banner removed",
+                    "BANNER_CHANGED": "server banner changed",
+                    "ICON_ADDED": "server icon added",
+                    "ICON_REMOVED": "server icon removed",
+                    "ICON_CHANGED": "server icon changed",
+                    "PRESENCES_CHANGED": "server max presences changed from **{OLD_PRES}** to **{NEW_PRES}**",
+                    "MFA_LEVEL_CHANGED": "server 2fa requirement for moderation changed from **{OLD_LEVEL}** to **{NEW_LEVEL}**",
+                    "OWNER_CHANGED": "server ownership changed from <@!{OLD_OWNER}> to <@!{NEW_OWNER}>",
+                    "AFKCHANNEL_ADDED": "server voice afk channel set to <#{NEW_CHANNEL}>",
+                    "AFKCHANNEL_REMOVED": "server voice afk channel removed: <#{OLD_CHANNEL}>",
+                    "AFKCHANNEL_CHANGED": "server voice afk channel changed from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>",
+                    "AFKTIMEOUT_CHANGED": "server voice afk timeout changed from **{OLD_TIMEOUT}**s to **{NEW_TIMEOUT}**s",
+                    "BOOST_TIER_CHANGED": "server boost tier changed from **{OLD_TIER}** to **{NEW_TIER}**",
+                    "BOOST_SUBSCRIPTIONS_CHANGED": "server boost count changed from **{OLD_SUBS}** to **{NEW_SUBS}**",
+                    "PREFERRED_LOCALE_CHANGED": "server preferred locale changed from `{OLD_LOCALE}` to `{NEW_LOCALE}`",
+                    "SPLASH_ADDED": "server splash added",
+                    "SPLASH_REMOVED": "server splash removed",
+                    "SPLASH_CHANGED": "server splash changed",
+                    "SYSTEM_CHANNEL_ADDED": "server system channel added <#{NEW_CHANNEL}>",
+                    "SYSTEM_CHANNEL_REMOVED": "server system channel removed <#{OLD_CHANNEL}>",
+                    "SYSTEM_CHANNEL_CHANGED": "server system channel changed from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>",
+                    "VANITY_URL_ADDED": "server vanity url added `{NEW_VANITY}`",
+                    "VANITY_URL_REMOVED": "server vanity url removed `{OLD_VANITY}`",
+                    "VANITY_URL_CHANGED": "server vanity url changed from `{OLD_VANITY}` to `{NEW_VANITY}`",
+                    "WIDGET_CHANGED": "server widget changed from **{OLD_WIDGET}** to **{NEW_WIDGET}**",
+                    "WIDGET_CHANNEL_ADDED": "server widget channel changed to <#{NEW_CHANNEL}>",
+                    "WIDGET_CHANNEL_REMOVED": "server widget channel removed from <#{OLD_CHANNEL}>",
+                    "WIDGET_CHANNEL_CHANGED": "server widget channel changed from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>",
+                    "FEATURES_REMOVED": "server features removed `{REMOVED_FEATURES}`",
+                    "FEATURES_CHANGED": "server features changed `{CHANGED_FEATURES}`",
+                    "FEATURES_ADDED": "server features added `{ADDED_FEATURES}`"
+                  },
+                  "GUILD_ROLE_CREATE": {
+                    "NEW_ROLE": "⚙️ new role created **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** "
+                  },
+                  "GUILD_ROLE_UPDATE": {
+                    "NAME_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** name was changed:  \n**•** __Before__: `{OLD_NAME}`\n**•** __After__:   `{NEW_NAME}`",
+                    "COLOR_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** color was changed: `#{OLD_COLOR}` ➡️ `#{NEW_COLOR}`",
+                    "HOIST_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** hoist state was changed to `{NEW_HOIST}` ",
+                    "MENTIONABLE_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** mentionable state was changed to `{NEW_MENTIONABLE}` ",
+                    "POSITION_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** position was changed: `{OLD_POSITION}` ➡️ `{NEW_POSITION}`",
+                    "MANAGED_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** managed role status was changed to `{NEW_MANAGED}`",
+                    "PERMS_ADDED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions granted: {ADDED_PERMS}",
+                    "PERMS_REMOVED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions revoked: {REMOVED_PERMS}",
+                    "PERMS_CHANGED": "⚙️ role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions edited: {CHANGED_PERMS}"
+                  },
+                  "GUILD_ROLE_DELETE": {
+                    "REMOVED_ROLE": "⚙️ role `{ROLE_NAME}` **[**||`{ROLE_ID}`||**]** was deleted"
+                  },
+                  "MESSAGE_UPDATE": {
+                    "MESSAGE_CONTENT_UPDATED_GUILD": "✏️ {USERTAG} edited their message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: \n**•** __Before__: {CONTENT_BEFORE}\n**•** __After__:   {CONTENT_AFTER}  <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_CONTENT_UPDATED_DM": "✏️ {USERTAG} edited their message **[**||`{MESSAGE_ID}`||**]** in the bot's dms: \n**•** __Before__: {CONTENT_BEFORE}\n**•** __After__:   {CONTENT_AFTER}"
+                  },
+                  "MESSAGE_DELETE": {
+                    "MESSAGE_DELETED_DM": "🗑️ message by {USERTAG} **[**||`{MESSAGE_ID}`||**]** was deleted in the bot's dms: {CONTENT}",
+                    "MESSAGE_DELETED_GUILD": "🗑️ {USERTAG} message deleted **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}",
+                    "MESSAGE_DELETED_GUILD_WEBHOOK": "🗑️ Webhook message deleted **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}",
+                    "MESSAGE_DELETED_DM_NO_CACHE": "🗑️ message **[**||`{MESSAGE_ID}`||**]** was deleted in the bot's dms (no data)",
+                    "MESSAGE_DELETED_GUILD_NO_CACHE": "🗑️ message **[**||`{MESSAGE_ID}`||**]** was deleted in <#{CHANNEL_ID}> (no data)"
+                  },
+                  "MESSAGE_DELETE_BULK": {
+                    "MESSAGES_DELETED": "🗑️ _COUNT_ messages were deleted in <#{CHANNEL_ID}>"
+                  },
+                  "MESSAGE_REACTION_ADD": {
+                    "ADD_REACTION": "🙂 {USERTAG} added reaction to message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                  },
+                  "MESSAGE_REACTION_REMOVE": {
+                    "REMOVED_REACTION": "🙂 {USERTAG} removed reaction from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                  },
+                  "MESSAGE_REACTION_REMOVE_ALL": {
+                    "REMOVED_ALL_REACTIONS": "🙂 all reactions removed from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                  },
+                  "USER_UPDATE": {
+                    "USER_UPDATED": "⚙️ bot user was updated {USERTAG}"
+                  },
+                  "VOICE_STATE_UPDATE": {
+                    "SERVER_DEAFENED": "🔇 {USERTAG} was server deafened in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_UNDEAFENED": "🔊 {USERTAG} was server undeafened in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_MUTED": "🎤 {USERTAG} was server muted in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_UNMUTED": "🎤 {USERTAG} was server unmuted in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SELF_DEAFENED": "🔇 {USERTAG} deafened themselves in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SELF_UNDEAFENED": "🔊 {USERTAG} undeafened themselves in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SELF_MUTED": "🎤 {USERTAG} muted themselves in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SELF_UNMUTED": "🎤 {USERTAG} unmuted themselves in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "START_STREAM": "🖥️ {USERTAG} started streaming in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "STOP_STREAM": "🖥️ {USERTAG} stopped streaming in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "ENTERED_CHANNEL": "☎️ {USERTAG} joined {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "LEFT_CHANNEL": "☎️ {USERTAG} left {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "MOVED_CHANNEL": "➡️ {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**"
+                  },
+                  "VOICE_SERVER_UPDATE": {
+                    "CONNECTED": "connected to voice @`_ENDPOINT_` with token ||`{TOKEN}`||"
+                  },
+                  "TYPING_START": {
+                    "START_TYPING_GUILD": "✍️ {USERTAG} started typing in <#{CHANNEL_ID}>",
+                    "START_TYPING_DM": "✍️ {USERTAG} started typing in the bot DMs"
+                  },
+                  "WEBHOOKS_UPDATE": {
+                    "WEBHOOK_UPDATED": "🧾 webhook updated in <#{CHANNEL_ID}>"
+                  }
+            },
+            "l_messages_logs": {
+                "CHANNEL_CREATE": {
+                    "CHANNEL_CREATED": "🔧 {ACTORTAG} created new channel: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
+                  },
+                  "CHANNEL_UPDATE": {
+                    "NAME_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** name updated: `{OLD_NAME}` => `{NEW_NAME}`",
+                    "CATEGORY_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed category: {OLD_MENTION} => {NEW_MENTION}",
+                    "TYPE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed type: `{OLD_TYPE}` => `{NEW_TYPE}`",
+                    "NSFW_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** nsfw status set to **{NEW_NSFW}**",
+                    "TOPIC_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed topic: `{OLD_TOPIC}` => `{NEW_TOPIC}`",
+                    "SLOWMODE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed slowmode: **{OLD_SLOWMODE}s** => **{NEW_SLOWMODE}s**",
+                    "BITRATE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrated: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
+                    "USERLIMIT_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed user limit: **{OLD_LIMIT}** => **{NEW_LIMIT}**",
+                    "PERMS_SYNCED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions synchronized with {PARENT_MENTION}",
+                    "PERMS_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions changed: {CHANGES}"
+                  },
+                  "CHANNEL_DELETE": {
+                    "CHANNEL_DELETED": "🔧 {ACTORTAG} deleted channel: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
+                  },
+                  "CHANNEL_PINS_UPDATE": {
+                    "MESSAGE_PINNED": "📌 {ACTORTAG} pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 {ACTORTAG} unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                  },
+                  "GUILD_MEMBER_ADD": {
+                    "BOT_ADDED": "<:bot:735780703945490542> {ACTORTAG} added {USERTAG} to the server"
+                  },
+                  "GUILD_MEMBER_REMOVE": {
+                    "MEMBER_KICKED": "👢 {ACTORTAG} kicked {USERTAG} from the server"
+                  },
+                  "GUILD_BAN_ADD": {
+                    "MEMBER_BANNED": "🔨 {ACTORTAG} banned {USERTAG} from the server"
+                  },
+                  "GUILD_BAN_REMOVE": {
+                    "MEMBER_UNBANNED": "🌀 {ACTORTAG} unbanned {USERTAG} from the server"
+                  },
+                  "GUILD_MEMBER_UPDATE": {
+                    "NICK_ADDED": "🧧 {ACTORTAG} added {USERTAG} 's nickname : `{NEW_NICK}`",
+                    "NICK_CHANGED": "🧧 {ACTORTAG} changed {USERTAG} 's nickname from `{OLD_NICK}` to `{NEW_NICK}`",
+                    "NICK_REMOVED": "🧧 {ACTORTAG} removed {USERTAG} 's nickname of `{OLD_NICK}`",
+                    "ROLES_ADDED": "🛡️ {ACTORTAG} added role(s) to {USERTAG} : {ADDED_ROLES}",
+                    "ROLES_REMOVED": "🛡️ {ACTORTAG} removed role(s) from {USERTAG} : {REMOVED_ROLES}",
+                    "ROLES_CHANGED": "🛡️ {ACTORTAG} changed roles of {USERTAG} : {CHANGED_ROLES}"
+                  },
+                  "GUILD_EMOJIS_UPDATE": {
+                    "EDITED_EMOJIS": "🙂 {ACTORTAG} {MESSAGE}",
+                    "ADDED_EMOJIS": "🙂 {ACTORTAG} {MESSAGE}",
+                    "REMOVED_EMOJIS": "🙂 {ACTORTAG} {MESSAGE}"
+                  },
+                  "GUILD_UPDATE": {
+                    "NAME_CHANGED": "{ACTORTAG} changed server name from `{OLD_NAME}` to `{NEW_NAME}`",
+                    "REGION_CHANGED": "{ACTORTAG} changed server region from **{OLD_REGION}** to **{NEW_REGION}**",
+                    "DESCRIPTION_CHANGED": "{ACTORTAG} changed server description from `{OLD_DESC}` to `{NEW_DESC}`",
+                    "DMN_CHANGED": "{ACTORTAG} changed server default message notifications from **{OLD_DMN}** to **{NEW_DMN}**",
+                    "EXPLICIT_FILTER_CHANGED": "{ACTORTAG} changed server explicit content filter from **{OLD_FILTER}** to **{NEW_FILTER}**",
+                    "VERIFICATION_LEVEL_CHANGED": "{ACTORTAG} changed server verification level from **{OLD_LEVEL}** to **{NEW_LEVEL}**",
+                    "BANNER_ADDED": "{ACTORTAG} added server banner",
+                    "BANNER_REMOVED": "{ACTORTAG} removed server banner",
+                    "BANNER_CHANGED": "{ACTORTAG} changed server banner to",
+                    "ICON_ADDED": "{ACTORTAG} added server icon",
+                    "ICON_REMOVED": "{ACTORTAG} removed server icon",
+                    "ICON_CHANGED": "{ACTORTAG} changed server icon",
+                    "MFA_LEVEL_CHANGED": "{ACTORTAG} changed server 2fa requirement for moderation from **{OLD_LEVEL}** to **{NEW_LEVEL}**",
+                    "OWNER_CHANGED": "<@!{OLD_OWNER}> transferred server ownership to <@!{NEW_OWNER}>",
+                    "AFKCHANNEL_ADDED": "{ACTORTAG} set server voice afk channel to <#{NEW_CHANNEL}>",
+                    "AFKCHANNEL_REMOVED": "{ACTORTAG} removed server voice afk channel: <#{OLD_CHANNEL}>",
+                    "AFKCHANNEL_CHANGED": "{ACTORTAG} changed server voice afk channel from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>",
+                    "AFKTIMEOUT_CHANGED": "{ACTORTAG} changed server voice afk timeout from **{OLD_TIMEOUT}**s to **{NEW_TIMEOUT}**s",
+                    "PREFERRED_LOCALE_CHANGED": "{ACTORTAG} changed server preferred locale from `{OLD_LOCALE}` to `{NEW_LOCALE}`",
+                    "SPLASH_ADDED": "{ACTORTAG} added server splash",
+                    "SPLASH_REMOVED": "{ACTORTAG} removed server splash",
+                    "SPLASH_CHANGED": "{ACTORTAG} changed server splash",
+                    "SYSTEM_CHANNEL_ADDED": "{ACTORTAG} added server system channel <#{NEW_CHANNEL}>",
+                    "SYSTEM_CHANNEL_REMOVED": "{ACTORTAG} removed server system channel <#{OLD_CHANNEL}>",
+                    "SYSTEM_CHANNEL_CHANGED": "{ACTORTAG} changed server system channel from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>",
+                    "VANITY_URL_ADDED": "{ACTORTAG} added server vanity url `{NEW_VANITY}`",
+                    "VANITY_URL_REMOVED": "{ACTORTAG} removed server vanity url `{OLD_VANITY}`",
+                    "VANITY_URL_CHANGED": "{ACTORTAG} changed server vanity url from `{OLD_VANITY}` to `{NEW_VANITY}`",
+                    "WIDGET_CHANGED": "{ACTORTAG} changed server widget from **{OLD_WIDGET}** to **{NEW_WIDGET}**",
+                    "WIDGET_CHANNEL_ADDED": "{ACTORTAG} changed server widget channel to <#{NEW_CHANNEL}>",
+                    "WIDGET_CHANNEL_REMOVED": "{ACTORTAG} removed server widget channel from <#{OLD_CHANNEL}>",
+                    "WIDGET_CHANNEL_CHANGED": "{ACTORTAG} changed server widget channel from <#{OLD_CHANNEL}> to <#{NEW_CHANNEL}>"
+                  },
+                  "GUILD_ROLE_CREATE": {
+                    "NEW_ROLE": "⚙️ {ACTORTAG} created new role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** "
+                  },
+                  "GUILD_ROLE_UPDATE": {
+                    "NAME_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** name:  \n**•** __Before__: `{OLD_NAME}`\n**•** __After__:   `{NEW_NAME}`",
+                    "COLOR_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** color: `#{OLD_COLOR}` ➡️ `#{NEW_COLOR}`",
+                    "HOIST_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** hoist state to `{NEW_HOIST}` ",
+                    "MENTIONABLE_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** mentionable state to `{NEW_MENTIONABLE}` ",
+                    "POSITION_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** position: `{OLD_POSITION}` ➡️ `{NEW_POSITION}`",
+                    "MANAGED_CHANGED": "⚙️ {ACTORTAG} changed role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** managed status to `{NEW_MANAGED}`",
+                    "PERMS_ADDED": "⚙️ {ACTORTAG} granted role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions: {ADDED_PERMS}",
+                    "PERMS_REMOVED": "⚙️ {ACTORTAG} revoked role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions: {REMOVED_PERMS}",
+                    "PERMS_CHANGED": "⚙️ {ACTORTAG} edited role **(**{ROLE_MENTION}**)** **[**||`{ROLE_ID}`||**]** permissions: {CHANGED_PERMS}"
+                  },
+                  "GUILD_ROLE_DELETE": {
+                    "REMOVED_ROLE": "⚙️ {ACTORTAG} deleted role `{ROLE_NAME}` **[**||`{ROLE_ID}`||**]** "
+                  },
+                
+                  "MESSAGE_DELETE": {
+                    "MESSAGE_DELETED_GUILD": "🗑️ {ACTORTAG} deleted message by _AUTHOR_ **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}"
+                  },
+                  "MESSAGE_DELETE_BULK": {
+                    "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted _COUNT_ messages in <#{CHANNEL_ID}>"
+                  },
+                  "VOICE_STATE_UPDATE": {
+                    "SERVER_DEAFENED": "🔇 {ACTORTAG} server deafened {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_UNDEAFENED": "🔊 {ACTORTAG} server undeafened {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_MUTED": "🎤 {ACTORTAG} server muted {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "SERVER_UNMUTED": "🎤 {ACTORTAG} server unmuted {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "LEFT_CHANNEL": "☎️ {ACTORTAG} disconnected {USERTAG} from {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "MOVED_CHANNEL": "➡️ {ACTORTAG} moved {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**"
+                  }
+            }
+        },
         "tags": {
             "footer": "Requested by {USER_TAG} ({USER_ID})",
             "tag": "Tag",
@@ -96,8 +490,8 @@
                 "name_length": "Tag name must be between 2 and 20 characters in length and may only contain alphanumeric characters!",
                 "invalid_name": "Invalid tag name!",
                 "content_length": "Tag content may only be up to {MAX_LENGTH} characters in size!",
-                "edited_tag": "Edited tag with name `${TAG_NAME}` !",
-                "saved_tag":  "Saved tag with name `${TAG_NAME}` !"
+                "edited_tag": "Edited tag with name `{TAG_NAME}` !",
+                "saved_tag":  "Saved tag with name `{TAG_NAME}` !"
             },
             "delete": {
                 "deleted_tag": "Deleted tag `{TAG_NAME}` !"
@@ -127,6 +521,7 @@
                 "cleared_reminders": "✅ cleared {COUNT} reminders!"
             },
             "curs": {
+                "not_enabled": "Custom User Roles are not enabled on this server",
                 "dont_have_role": "❌ You do not have a custom role!",
                 "check_role": "Your custom role is: {ROLE_MENTION}\nTo set the name of it, type `{PREFIX}cur name <name>`\nTo set the color, type `{PREFIX}cur color <color>`",
                 "check_role_slash": "Your custom role is: {ROLE_MENTION}>\nTo set the name of it, type **/**`cur name <name>`\nTo set the color, type **/**`cur color <color>`",
@@ -136,9 +531,94 @@
                 "changed_role_color": "✅ Changed your role's color to {COLOR}",
                 "color_wrong_format": "❌ Color must be formatted as a hex string! (for example `#ff0000`)",
                 "already_has_role": "❌ This member already has a custom role",
+                "has_no_role": "❌ This member has no custom role",
+                "cleared_role": "✅ Cleared {USER_MENTION}'s custom role!",
+                "deleted_role": "✅ Deleted {USER_MENTION}'s custom role!",
                 "already_assigned_to": "❌ This role is already assigned to {USER_MENTION}",
                 "set_role": "✅ Set {USER_MENTION}'s role to {ROLE_MENTION}"
-
+            },
+            "snipe": {
+                "no_message": "Nothing to snipe.",
+                "user_not_found": "User not found",
+                "requested_by": "Requested by: {USER_TAG}",
+                "said": "{USER_MENTION} said ..."
+            },
+            "random": {
+                "coin": "The coin comes up as .... **{RESULT}** !",
+                "coin_tails": "Tails",
+                "coin_heads": "Heads",
+                "number_minimum_wrong": "Error: Minimum value must be lower than the maximum value!",
+                "number": "Result (`{MINIMUM}`-`{MAXIMUM}`) - **{RESULT}** !"
+            },
+            "snowflake": "```\nID: {SNOWFLAKE}\nTimestamp: {DATE}\n```",
+            "avatar": {
+                "avatar_of": "Avatar of {USER_TAG}: \n{AVATAR_URL}",
+                "requested_by": "Requested by {USER_TAG} ({USER_ID})"
+            },
+            "server": {
+                "guild_not_found": "Guild not found",
+                "bot_user_not_found": "Bot user not found",
+                "preferred_locale": "Preferred Locale",
+                "boosts": "Boosts",
+                "boost_tier": "Boost Tier",
+                "system_channel": "System Channel",
+                "vanity_url": "Vanity Url",
+                "description": "Description",
+                "widget_no_channel": "No channel",
+                "widget": "Widget",
+                "none": "None",
+                "information": "Information",
+                "id": "ID",
+                "created": "**Created**: {TIME} ago",
+                "owner": "Owner",
+                "vc_region": "Voice Region",
+                "features": "Features",
+                "channels": "Channels",
+                "other_counts": "Other Counts",
+                "roles": "Roles",
+                "emojis": "Emojis",
+                "bans": "Bans",
+                "invites": "Invites",
+                "members": "Members"
+            },
+            "info": {
+                "user_not_found": "❌ User not found!",
+                "user": "User",
+                "bot": "Bot",
+                "profile": "Profile",
+                "custom_status": "Custom Status",
+                "status": "Status",
+                "online": "Online",
+                "idle": "Idle",
+                "busy": "Busy",
+                "offline": "Offline",
+                "discord_badges": "Discord Badges",
+                "discord_staff": "Discord Staff",
+                "discord_partner": "Discord Partner",
+                "hypesquad": "Hypesquad",
+                "bug_hunter": "Bug Hunter",
+                "hs_bravery": "Bravery",
+                "hs_brilliance": "Brilliance",
+                "hs_balance": "Balance",
+                "early_supporter": "Early Supporter",
+                "team_user": "Team User",
+                "system": "System",
+                "golden_bug_hunter": "Golden Bug Hunter",
+                "verified_bot": "Verified Bot",
+                "early_bot_dev": "Early Bot Developer",
+                "pyboat_badges": "PyBoat Badges",
+                "member_info": "Member Information",
+                "joined": "**Joined**: {TIME} ago",
+                "nickname": "Nickname",
+                "boosting_since": "**Boosting since**: {TIME} ago",
+                "roles": "Roles",
+                "key_roles": "Key Roles",
+                "infractions": "Infractions** (This Server)",
+                "infractions_applied": "Applied",
+                "infractions_received": "Received",
+                "permissions": "Permissions",
+                "staff": "Staff",
+                "bot_level": "Bot Level"
             }
         }
     }

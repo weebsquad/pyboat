@@ -12,9 +12,9 @@ export function isAuditLog(log: discord.AuditLogEntry) {
 export const messages = {
   removedRole(log: discord.AuditLogEntry, role: discord.Role) {
     const mp = new Map([
-      ['_ROLE_ID_', role.id],
-      ['_TYPE_', 'REMOVED_ROLE'],
-      ['_ROLE_NAME_', utils.escapeString(role.name, true)],
+      ['ROLE_ID', role.id],
+      ['TYPE', 'REMOVED_ROLE'],
+      ['ROLE_NAME', utils.escapeString(role.name, true)],
     ]);
     return mp;
   },

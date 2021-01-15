@@ -21,11 +21,11 @@ export const messages = {
     log: discord.AuditLogEntry,
     ev: discord.Event.IMessageDeleteBulk,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map();
-    mp.set('_TYPE_', 'MESSAGES_DELETED');
-    mp.set('_COUNT_', ev.ids.length);
-    mp.set('_CHANNEL_ID_', ev.channelId);
+    mp.set('TYPE', 'MESSAGES_DELETED');
+    mp.set('COUNT', ev.ids.length);
+    mp.set('CHANNEL_ID', ev.channelId);
     return mp;
   },
 };

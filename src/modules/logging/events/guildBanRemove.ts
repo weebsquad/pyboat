@@ -13,7 +13,7 @@ export function isAuditLog(log: discord.AuditLogEntry) {
 
 export const messages = {
   memberUnbanned(log: discord.AuditLogEntry, ban: discord.GuildBan) {
-    return new Map([['_USERTAG_', getUserTag(ban.user)], ['_USER_', ban.user], ['_TYPE_', 'MEMBER_UNBANNED'], ['_USER_ID_', ban.user.id]]);
+    return new Map([['USERTAG', getUserTag(ban.user)], ['USER', ban.user], ['TYPE', 'MEMBER_UNBANNED'], ['USER_ID', ban.user.id]]);
   },
 };
 

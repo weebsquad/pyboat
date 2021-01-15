@@ -1,6 +1,5 @@
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import * as messages from './modules/logging/messages';
 import * as updates from './updates';
 
 import * as i18n from './localization/interface';
@@ -73,8 +72,8 @@ const defaultConfig = { // for non-defined configs!
       // should we try to pull audit log data for every event, or just display raw data??
       auditLogs: true,
       logChannels: {},
-      messages: messages.messages, // defaults
-      messagesAuditLogs: messages.messagesAuditLogs, // defaults
+      messages: {}, // defaults
+      messagesAuditLogs: {}, // defaults
       ignores: {
         // array of channel ids to ignore (any event scoped to this channel (messages, typing, updates, etc))
         channels: [],
@@ -485,13 +484,14 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
 
+  console.log('loading language files');
+  await i18n.Initialize(defaultConfig.language, cfg.language);
+  defaultConfig.modules.logging.messages = i18n.language.modules.logging.l_messages;
+  defaultConfig.modules.logging.messagesAuditLogs = i18n.language.modules.logging.l_messages_logs;
   config = loadConfigDefaults(cfg);
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
-
-  console.log('loading language files');
-  await i18n.Initialize();
   return true;
 }
 

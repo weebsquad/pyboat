@@ -26,9 +26,9 @@ export const messages = {
   async channelCreated(log: discord.AuditLogEntry, chan: discord.GuildChannel) {
     const parent = typeof chan.parentId === 'string' ? await discord.getGuildCategory(chan.parentId) : null;
     return new Map([
-      ['_TYPE_', 'CHANNEL_CREATED'],
-      ['_CHANNEL_ID_', chan.id],
-      ['_CHANNEL_MENTION_', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``}`],
+      ['TYPE', 'CHANNEL_CREATED'],
+      ['CHANNEL_ID', chan.id],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${chan.type === discord.Channel.Type.GUILD_TEXT ? chan.toMention() : `${getChannelEmoji(chan)}\`${utils.escapeString(chan.name, true)}\``}`],
     ]);
   },
   async dmChannelOpened(log: discord.AuditLogEntry, chan: discord.DmChannel) {
@@ -36,7 +36,7 @@ export const messages = {
     if (usr === null) {
       return;
     }
-    return new Map([['_TYPE_', 'DM_CHANNEL_OPENED'], ['_USERTAG_', getUserTag(usr)]]);
+    return new Map([['TYPE', 'DM_CHANNEL_OPENED'], ['USERTAG', getUserTag(usr)]]);
   },
 };
 
