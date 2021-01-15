@@ -130,9 +130,46 @@ export interface ISet {
     saved_tag: string;
 }
 export interface IInfo {
-    by: string;
-    uses: string;
-    created: string;
+    by?: string;
+    uses?: string;
+    created?: string;
+    user_not_found?: string;
+    user?: string;
+    bot?: string;
+    profile?: string;
+    custom_status?: string;
+    status?: string;
+    online?: string;
+    idle?: string;
+    busy?: string;
+    offline?: string;
+    discord_badges?: string;
+    discord_staff?: string;
+    discord_partner?: string;
+    hypesquad?: string;
+    bug_hunter?: string;
+    hs_bravery?: string;
+    hs_brilliance?: string;
+    hs_balance?: string;
+    early_supporter?: string;
+    team_user?: string;
+    system?: string;
+    golden_bug_hunter?: string;
+    verified_bot?: string;
+    early_bot_dev?: string;
+    pyboat_badges?: string;
+    member_info?: string;
+    joined?: string;
+    nickname?: string;
+    boosting_since?: string;
+    roles?: string;
+    key_roles?: string;
+    infractions?: string;
+    infractions_applied?: string;
+    infractions_received?: string;
+    permissions?: string;
+    staff?: string;
+    bot_level?: string;
 }
 export interface IClearall {
     cleared_tags: string;
@@ -145,6 +182,12 @@ export interface IUtilities {
     time_improper: string;
     reminders: IReminders;
     curs: ICurs;
+    snipe: ISnipe;
+    random: IRandom;
+    snowflake: string;
+    avatar: IAvatar;
+    server: IServer;
+    info: IInfo;
 }
 export interface IReminders {
     remind_message: string;
@@ -156,6 +199,7 @@ export interface IReminders {
     cleared_reminders: string;
 }
 export interface ICurs {
+    not_enabled: string;
     dont_have_role: string;
     check_role: string;
     check_role_slash: string;
@@ -165,6 +209,52 @@ export interface ICurs {
     changed_role_color: string;
     color_wrong_format: string;
     already_has_role: string;
+    has_no_role: string;
+    cleared_role: string;
+    deleted_role: string;
     already_assigned_to: string;
     set_role: string;
+}
+export interface ISnipe {
+    no_message: string;
+    user_not_found: string;
+    requested_by: string;
+    said: string;
+}
+export interface IRandom {
+    coin: string;
+    coin_tails: string;
+    coin_heads: string;
+    number_minimum_wrong: string;
+    number: string;
+}
+export interface IAvatar {
+    avatar_of: string;
+    requested_by: string;
+}
+export interface IServer {
+    guild_not_found: string;
+    bot_user_not_found: string;
+    preferred_locale: string;
+    boosts: string;
+    boost_tier: string;
+    system_channel: string;
+    vanity_url: string;
+    description: string;
+    widget_no_channel: string;
+    widget: string;
+    none: string;
+    information: string;
+    id: string;
+    created: string;
+    owner: string;
+    vc_region: string;
+    features: string;
+    channels: string;
+    other_counts: string;
+    roles: string;
+    emojis: string;
+    bans: string;
+    invites: string;
+    members: string;
 }
