@@ -236,6 +236,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         }
       }
     }
+    /*
     if (typeof thisCfg.duplicateMessages === 'string') {
       const trigger = thisCfg.duplicateMessages;
       if (trigger.includes('/')) {
@@ -258,7 +259,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
           }
         }
       }
-    }
+    } */
     if (flagged.length > 0) {
       flaggedOnce = true;
       const cleanDuration = typeof thisCfg.cleanDuration === 'number' && thisCfg.cleanDuration > 0 ? Math.min(MAX_POOL_ENTRY_LIFETIME, thisCfg.cleanDuration) : undefined;
