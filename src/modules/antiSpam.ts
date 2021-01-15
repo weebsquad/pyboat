@@ -280,7 +280,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         }
         if (logAct === true) {
           if (VALID_ACTIONS_GLOBAL.includes(action)) {
-            logCustom('ANTISPAM', 'ANTIRAID', new Map([['_ACTION_', action], ['_FLAGS_', flagged.join(', ')]]));
+            logCustom('ANTISPAM', 'ANTIRAID', new Map([['ACTION', action], ['FLAGS', flagged.join(', ')]]));
             if (typeof config.modules.antiSpam.antiRaidPingRole === 'string' && config.modules.antiSpam.antiRaidPingRole.length > 6 && typeof config.modules.antiSpam.antiRaidPingChannel === 'string' && config.modules.antiSpam.antiRaidPingChannel.length > 6) {
               const roleId = config.modules.antiSpam.antiRaidPingRole;
               const channelID = config.modules.antiSpam.antiRaidPingChannel;
@@ -477,10 +477,10 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
   if (flaggedOnce) {
     if (!flaggedAntiraid) {
       // if (messageRemovedCount > 0) {
-      logCustom('ANTISPAM', 'VIOLATION', new Map([['_USERTAG_', getUserTag(msg.author)], ['_USER_ID_', msg.author.id], ['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+      logCustom('ANTISPAM', 'VIOLATION', new Map([['USERTAG', getUserTag(msg.author)], ['USER_ID', msg.author.id], ['FLAGS', flagged.join(', ')], ['DELETED_MESSAGES', messageRemovedCount.toString()]]));
       // }
     } else {
-      logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['_FLAGS_', flagged.join(', ')], ['_DELETED_MESSAGES_', messageRemovedCount.toString()]]));
+      logCustom('ANTISPAM', 'ANTIRAID_VIOLATION', new Map([['FLAGS', flagged.join(', ')], ['DELETED_MESSAGES', messageRemovedCount.toString()]]));
     }
   }
 

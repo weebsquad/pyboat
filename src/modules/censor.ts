@@ -456,7 +456,7 @@ export async function censorMessage(message: discord.GuildMemberMessage, check: 
   }
   await processViolations(message.id, message.member, channel, conf);
   await message.delete();
-  logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_MESSAGE_ID_', message.id], ['_CHANNEL_ID_', message.channelId], ['_USERTAG_', getMemberTag(message.member)], ['_USER_ID_', message.author.id]]));
+  logCustom('CENSOR', 'CENSORED_MESSAGE', new Map([['CENSOR_TP', check.type], ['CENSOR_MESSAGE', check.message], ['CENSOR_TARGET', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['MESSAGE_ID', message.id], ['CHANNEL_ID', message.channelId], ['USERTAG', getMemberTag(message.member)], ['USER_ID', message.author.id]]));
 }
 export async function checkMessage(message: discord.Message.AnyMessage) {
   if (message.guildId === null || !(message.member instanceof discord.GuildMember) || message.type !== discord.Message.Type.DEFAULT || message.webhookId !== null || !message.author || message.author.bot === true || message.flags !== 0) {
@@ -664,7 +664,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     if (check instanceof CensorCheck) {
       if (check.check === true) {
         await member.edit({ nick: `censored name (${Math.floor(Math.min(9999, 1000 + (Math.random() * 10000)))})` });
-        logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['_CENSOR_TP_', check.type], ['_CENSOR_MESSAGE_', check.message], ['_OLD_NAME_', utils.escapeString(visibleName, true)], ['_CENSOR_TARGET_', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id]]));
+        logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['CENSOR_TP', check.type], ['CENSOR_MESSAGE', check.message], ['OLD_NAME', utils.escapeString(visibleName, true)], ['CENSOR_TARGET', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id]]));
         await processViolations(eventId, member, undefined, appConfigs[i]);
         return false;
       }

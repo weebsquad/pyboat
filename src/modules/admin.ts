@@ -160,7 +160,7 @@ export class Action { // class action lawsuit lmao
         this.active = false;
       } else {
         await gm.removeRole(this.targetValue);
-        logCustom('ADMIN', 'TEMPROLE_EXPIRED', new Map([['_USERTAG_', getMemberTag(gm)], ['_ROLE_MENTION_', `<@&${this.targetValue}>`]]));
+        logCustom('ADMIN', 'TEMPROLE_EXPIRED', new Map([['USERTAG', getMemberTag(gm)], ['ROLE_MENTION', `<@&${this.targetValue}>`]]));
       }
     }
     // remove states of things
@@ -590,17 +590,17 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   if (seconds > 0 && duration > 0) {
     await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, undefined, reason);
   }
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_SECONDS_', seconds.toString()], ['_CHANNEL_ID_', channel.id], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['SECONDS', seconds.toString()], ['CHANNEL_ID', channel.id], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`;
+    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('ACTORTAG')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -653,22 +653,22 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     await addAction(channel, actor, ActionType.LOCK_CHANNEL, exp, undefined, undefined, reason);
   }
   await channel.edit({ permissionOverwrites: newOws });
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_CHANNEL_ID_', channel.id], ['_REASON_', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['CHANNEL_ID', channel.id], ['REASON', '']]);
   let type = 'LOCKED_CHANNEL';
   if (state === false) {
     type = 'UNLOCKED_CHANNEL';
   }
 
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('_ACTORTAG_')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason, true)}\`` : ''}`;
+    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('ACTORTAG')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason, true)}\`` : ''}`;
     const res:any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -720,17 +720,17 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     await addAction(guild, actor, ActionType.LOCK_GUILD, exp, undefined, undefined, reason);
   }
   await defaultRole.edit({ permissions: Number(perms.bitfield) });
-  const placeholders = new Map([['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
   let type = 'LOCKED_GUILD';
   if (state === false) {
     type = 'UNLOCKED_GUILD';
   }
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', type, placeholders);
   return true;
@@ -776,13 +776,13 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
   const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
   await addAction(target, actor, ActionType.TEMPROLE, exp, undefined, role.id, reason);
   await target.addRole(role.id);
-  const placeholders = new Map([['_ROLE_MENTION_', role.toMention()], ['_USERTAG_', getMemberTag(target)], ['_ACTORTAG_', 'SYSTEM'], ['_DURATION_', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['_REASON_', '']]);
+  const placeholders = new Map([['ROLE_MENTION', role.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   logCustom('ADMIN', 'TEMPROLE', placeholders);
   return true;
@@ -828,13 +828,13 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   } else {
     await target.removeRole(roleTxt.id);
   }
-  const placeholders = new Map([['_ROLE_MENTION_', roleTxt.toMention()], ['_USERTAG_', getMemberTag(target)], ['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  const placeholders = new Map([['ROLE_MENTION', roleTxt.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['REASON', '']]);
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
   const type = state === true ? 'ROLE_ADDED' : 'ROLE_REMOVED';
   logCustom('ADMIN', type, placeholders);
@@ -865,13 +865,13 @@ export async function Nick(actor: discord.GuildMember | null, target: discord.Gu
   }
   await target.edit({ nick: newNick });
 
-  const placeholders = new Map([['_NEW_NICK_', newNick === null ? 'None' : utils.escapeString(newNick)], ['_USERTAG_', getMemberTag(target)], ['_ACTORTAG_', 'SYSTEM'], ['_REASON_', '']]);
+  const placeholders = new Map([['NEW_NICK', newNick === null ? 'None' : utils.escapeString(newNick)], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['REASON', '']]);
   if (actor !== null) {
-    placeholders.set('_ACTORTAG_', getActorTag(actor));
-    placeholders.set('_ACTOR_ID_', actor.user.id);
+    placeholders.set('ACTORTAG', getActorTag(actor));
+    placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('_REASON_', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
   }
 
   logCustom('ADMIN', 'NICKNAME', placeholders);
@@ -993,17 +993,17 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   await Promise.all(promises);
   cleaning = false;
   if (deleted.length > 0) {
-    const _placeholders = new Map([['_MESSAGES_', deleted.length.toString()], ['_ACTORTAG_', 'SYSTEM'], ['_CHANNEL_', ''], ['_USERTAG_', '']]);
+    const _placeholders = new Map([['MESSAGES', deleted.length.toString()], ['ACTORTAG', 'SYSTEM'], ['CHANNEL', ''], ['USERTAG', '']]);
     if (actor !== null) {
-      _placeholders.set('_ACTORTAG_', getActorTag(actor));
-      _placeholders.set('_ACTOR_ID_', actor.user.id);
+      _placeholders.set('ACTORTAG', getActorTag(actor));
+      _placeholders.set('ACTOR_ID', actor.user.id);
     }
     if (typeof channelTarget === 'string') {
-      _placeholders.set('_CHANNEL_', ` in <#${channelTarget}>`);
+      _placeholders.set('CHANNEL', ` in <#${channelTarget}>`);
     }
     if (typeof memberId === 'string') {
-      _placeholders.set('_USERTAG_', ` from ${getUserTag(target)}`);
-      _placeholders.set('_USER_ID_', memberId);
+      _placeholders.set('USERTAG', ` from ${getUserTag(target)}`);
+      _placeholders.set('USER_ID', memberId);
     }
     logCustom('ADMIN', 'CLEAN', _placeholders);
   }
@@ -1216,7 +1216,7 @@ async function savePersistData(member: discord.GuildMember): Promise<boolean> {
   }
   const newObj = new MemberPersist(member.user.id, member.roles, member.nick, utils.getUserAuth(member), channels);
   await persistPool.saveToPool(newObj);
-  logCustom('PERSIST', 'SAVED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
+  logCustom('PERSIST', 'SAVED', new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]));
   return true;
 }
 
@@ -1306,7 +1306,7 @@ async function restorePersistData(member: discord.GuildMember) {
   }
 
   await persistPool.editPool(member.user.id, undefined);
-  logCustom('PERSIST', 'RESTORED', new Map([['_USERTAG_', getMemberTag(member)], ['_USER_ID_', member.user.id], ['_USER_', member.user]]));
+  logCustom('PERSIST', 'RESTORED', new Map([['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id], ['USER', member.user]]));
   return true;
 }
 export async function OnChannelCreate(
@@ -1584,7 +1584,7 @@ export async function handleReactRoles(idts: string, reaction: discord.Event.IMe
     if (typeRole === false) {
       logType = 'ROLE_REMOVED';
     }
-    const placeholders = new Map([['_USERTAG_', getMemberTag(memNew)], ['_USER_ID_', reaction.userId], ['_CHANNEL_ID_', reaction.channelId], ['_MESSAGE_ID_', reaction.messageId], ['_EMOJI_', reaction.emoji.toMention()], ['_ROLE_ID_', found.role]]);
+    const placeholders = new Map([['USERTAG', getMemberTag(memNew)], ['USER_ID', reaction.userId], ['CHANNEL_ID', reaction.channelId], ['MESSAGE_ID', reaction.messageId], ['EMOJI', reaction.emoji.toMention()], ['ROLE_ID', found.role]]);
     logCustom('REACTROLES', logType, placeholders, idts);
   }
 }

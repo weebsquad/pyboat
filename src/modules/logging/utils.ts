@@ -240,10 +240,9 @@ export function getLogMessage(
 }
 
 export function replacePlaceholders(txt: string, map: Map<string, string>) {
+  console.log('replacePlaceholders', 'txt', txt, 'map', map);
   for (let [key, value] of map) {
-    if (key.substr(0, 1) === '{' || key.substr(key.length - 1, 1) === '}') {
-      key = key.split('{').join('').split('}').join('');
-    }
+    key = key.split('{').join('').split('}').join('');
     txt = txt.split(`{${key}}`).join(value);
   }
   return txt;

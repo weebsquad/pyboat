@@ -57,7 +57,7 @@ export const messages = {
       ['MESSAGE_ID', log.options.messageId],
       ['USER_ID', log.targetId],
     ]);
-    mp.set('_USERTAG_', '');
+    mp.set('USERTAG', '');
     if (_usr !== null) {
       mp.set('USERTAG', getUserTag(_usr));
       mp.set('USER', _usr);

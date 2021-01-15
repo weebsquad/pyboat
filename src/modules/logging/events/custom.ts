@@ -16,16 +16,16 @@ export const messages = {
     typeSent: string,
     others: Map<string, any> | undefined = undefined,
   ) {
-    // let mp = new Map([['_USERTAG_', getUserTag(member)]]);
+    // let mp = new Map([['USERTAG', getUserTag(member)]]);
     const mp = new Map<string, string>();
-    mp.set('_TYPE_', typeSent);
+    mp.set('TYPE', typeSent);
     if (typeof others !== 'undefined') {
       others.forEach((v, k) => {
-        if (k.substring(0, 1) !== '_') {
-          k = `_${k}`;
+        if (k.substring(0, 1) === '_') {
+          k = k.substring(1);
         }
-        if (k.slice(-1) !== '_') {
-          k += '_';
+        if (k.slice(-1) === '_') {
+          k = k.slice(0, -1);
         }
         k = k.toUpperCase();
         if (typeof v !== 'string') {

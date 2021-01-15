@@ -96,7 +96,7 @@ export const messages = {
 
     const mp = new Map();
     let msg = '';
-    mp.set('_TYPE_', 'EDITED_EMOJIS');
+    mp.set('TYPE', 'EDITED_EMOJIS');
     for (const [k, v] of changed) {
       const emj = ev.emojis.find((e) => e.id === k);
       const emjOld = oldEv.emojis.find((e) => e.id === k);
@@ -148,7 +148,7 @@ export const messages = {
   ) {
     const edited = getChanges(ev, oldEv);
     const { added } = edited;
-    const mp = new Map([['_TYPE_', 'ADDED_EMOJIS']]);
+    const mp = new Map([['TYPE', 'ADDED_EMOJIS']]);
     let msg = '';
     added.forEach((newE: discord.Emoji) => {
       if (msg !== '') {
@@ -166,7 +166,7 @@ export const messages = {
   ) {
     const edited = getChanges(ev, oldEv);
     const { removed } = edited;
-    const mp = new Map([['_TYPE_', 'REMOVED_EMOJIS']]);
+    const mp = new Map([['TYPE', 'REMOVED_EMOJIS']]);
     let msg = '';
     removed.forEach((newE: discord.Emoji) => {
       if (msg !== '') {

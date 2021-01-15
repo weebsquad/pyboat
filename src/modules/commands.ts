@@ -190,13 +190,13 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
       'COMMANDS',
       'SLASH_COMMAND_USED',
       new Map<string, any>([
-        ['_COMMAND_NAME_', fullCmdName],
-        ['_AUTHOR_', interaction.member.user],
-        ['_USER_', interaction.member.user],
-        ['_USER_ID_', interaction.member.user.id],
-        ['_MEMBER_', interaction.member],
-        ['_CHANNEL_ID_', interaction.channelId],
-        ['_ARGUMENTS_', argsString],
+        ['COMMAND_NAME', fullCmdName],
+        ['AUTHOR', interaction.member.user],
+        ['USER', interaction.member.user],
+        ['USER_ID', interaction.member.user.id],
+        ['MEMBER', interaction.member],
+        ['CHANNEL_ID', interaction.channelId],
+        ['ARGUMENTS', argsString],
       ]),
     );
   }
@@ -532,12 +532,12 @@ export async function OnMessageCreate(
             'COMMANDS',
             'CHAT_COMMAND_USED',
             new Map<string, any>([
-              ['_COMMAND_NAME_', utils.escapeString(parsedTxt, true)],
-              ['_AUTHOR_', msg.author],
-              ['_USER_', msg.author],
-              ['_USER_ID_', msg.author.id],
-              ['_MEMBER_', msg.member],
-              ['_CHANNEL_ID_', msg.channelId],
+              ['COMMAND_NAME', utils.escapeString(parsedTxt, true)],
+              ['AUTHOR', msg.author],
+              ['USER', msg.author],
+              ['USER_ID', msg.author.id],
+              ['MEMBER', msg.member],
+              ['CHANNEL_ID', msg.channelId],
             ]),
           );
         }
