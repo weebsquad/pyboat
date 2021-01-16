@@ -461,7 +461,7 @@
                     "REMOVED_ROLE": "crwdns1232:0{ACTORTAG}crwdnd1232:0{ROLE_NAME}crwdnd1232:0*||`{ROLE_ID}`||*crwdne1232:0"
                 },
                 "MESSAGE_DELETE": {
-                    "MESSAGE_DELETED_GUILD": "crwdns1234:0{ACTORTAG}crwdnd1234:0*||`{MESSAGE_ID}`||*crwdnd1234:0#{CHANNEL_ID}crwdnd1234:0{CONTENT}crwdne1234:0"
+                    "MESSAGE_DELETED_GUILD": "crwdns1408:0{ACTORTAG}crwdnd1408:0{AUTHOR}crwdnd1408:0*||`{MESSAGE_ID}`||*crwdnd1408:0#{CHANNEL_ID}crwdnd1408:0{CONTENT}crwdne1408:0"
                 },
                 "MESSAGE_DELETE_BULK": {
                     "MESSAGES_DELETED": "crwdns1236:0{ACTORTAG}crwdnd1236:0#{CHANNEL_ID}crwdne1236:0"
