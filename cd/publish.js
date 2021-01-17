@@ -328,6 +328,7 @@ getDeploymentIds().then(async (objDeps) => {
     }
   }
 }).catch((e) => {
+  console.error(`Deploy error:\n${e}`);
   if (isGh && !isDebug) {
     sendWebhook(`Deploy error:\n${e}`);
   }
