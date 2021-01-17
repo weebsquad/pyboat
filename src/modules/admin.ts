@@ -1128,7 +1128,16 @@ export async function getStoredUserOverwrites(userId: string) {
   }
   return res;
 }
+let storeDataTm;
+let lastStoreDate = Date.now();
+function startStoreChannelData() {
+  if(!storeDataTm || (Date.now() - lastStoreDate) > 1000*60) {
+    storeDataTm = setTimeout(async () => {await storeChannelData()}, 3000);
+    lastStoreDate = Date.now();
+  }
+}
 export async function storeChannelData() {
+  lastStoreDate = Date.now();
   const guild = await discord.getGuild();
   const channels = await guild.getChannels();
   const userOverrides: any = {};
@@ -1136,7 +1145,11 @@ export async function storeChannelData() {
     const _dt = [];
     let isSync = false;
     if (ch.parentId && ch.parentId !== null) {
-      const parent = await discord.getGuildCategory(ch.parentId);
+      let parent;
+      try {
+      parent = await discord.getGuildCategory(ch.parentId);
+      } catch(_) {
+      }
       if (parent && parent !== null) {
         let anyDiff = false;
         const parentOws = parent.permissionOverwrites;
@@ -1175,6 +1188,7 @@ export async function storeChannelData() {
   if (Object.keys(userOverrides).length > 0) {
     await kvOverrides.put('channels', userOverrides);
   }
+  storeDataTm = null;
 }
 function getPersistConf(member: discord.GuildMember, levelForce: number | undefined = undefined) {
   let lvl = utils.getUserAuth(member);
@@ -1317,7 +1331,7 @@ export async function OnChannelCreate(
   if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
     return;
   }
-  await storeChannelData();
+  startStoreChannelData();
 }
 export async function OnChannelDelete(
   id: string,
@@ -1327,7 +1341,7 @@ export async function OnChannelDelete(
   if (!config.modules.admin.persist || typeof config.modules.admin.persist !== 'object' || config.modules.admin.persist.enabled !== true) {
     return;
   }
-  await storeChannelData();
+  startStoreChannelData();
 }
 export async function OnChannelUpdate(
   id: string,
@@ -1350,7 +1364,7 @@ export async function OnChannelUpdate(
     return true;
   });
   if (!hasChange) {
-    await storeChannelData();
+    startStoreChannelData();
     return;
   }
   hasChange = oldChannel.permissionOverwrites.every((ow) => {
@@ -1364,7 +1378,7 @@ export async function OnChannelUpdate(
     return true;
   });
   if (!hasChange) {
-    await storeChannelData();
+    startStoreChannelData();
   }
 }
 

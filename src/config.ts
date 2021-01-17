@@ -363,14 +363,6 @@ let loadingConf = false;
 let lastTry = Date.now();
 export async function InitializeConfig(bypass = false): Promise<boolean> {
   const resC = await beginLoad(bypass);
-  /*
-  try {
-  await pylon.requestCpuBurst(async () => {
-    res = await beginLoad(bypass);
-  }, 200);
-  } catch(_) {
-    res = await beginLoad(bypass);
-  } */
   return resC;
 }
 async function beginLoad(bypass: boolean): Promise<boolean> {
