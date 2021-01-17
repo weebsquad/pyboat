@@ -1131,8 +1131,10 @@ export async function getStoredUserOverwrites(userId: string) {
 let storeDataTm;
 let lastStoreDate = Date.now();
 function startStoreChannelData() {
-  if(!storeDataTm || (Date.now() - lastStoreDate) > 1000*60) {
-    storeDataTm = setTimeout(async () => {await storeChannelData()}, 3000);
+  if (!storeDataTm || (Date.now() - lastStoreDate) > 1000 * 60) {
+    storeDataTm = setTimeout(async () => {
+      await storeChannelData();
+    }, 3000);
     lastStoreDate = Date.now();
   }
 }
@@ -1147,8 +1149,8 @@ export async function storeChannelData() {
     if (ch.parentId && ch.parentId !== null) {
       let parent;
       try {
-      parent = await discord.getGuildCategory(ch.parentId);
-      } catch(_) {
+        parent = await discord.getGuildCategory(ch.parentId);
+      } catch (_) {
       }
       if (parent && parent !== null) {
         let anyDiff = false;
