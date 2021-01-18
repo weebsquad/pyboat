@@ -274,7 +274,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       }
     }
   }
-  if (isTargetAdmin === true && !isOverride && actor.user.id !== targetId) {
+  if (isTargetAdmin === true && actor.user.id !== targetId) {
     if (!isGuildOwner) {
       return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable to this user, please have the server owner perform it.';
     }
