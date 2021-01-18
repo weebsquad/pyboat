@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-async-promise-executor */
+/* eslint-disable eqeqeq */
 import { config, globalConfig, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
 import * as constants from '../constants/constants';
@@ -1170,14 +1171,16 @@ export async function storeChannelData() {
     if (isSync) {
       return;
     }
-    const usrs = ch.permissionOverwrites.filter((ov) => ov.type === discord.Channel.PermissionOverwriteType.MEMBER);
+    // @ts-ignore
+    const usrs = ch.permissionOverwrites.filter((ov) => ov.type == 1);
     if (usrs.length > 0) {
       usrs.forEach((ov) => {
         const newobj: any = { id: ov.id };
-        if (ov.allow !== 0) {
+
+        if (ov.allow != 0) {
           newobj.allow = ov.allow;
         }
-        if (ov.deny !== 0) {
+        if (ov.deny != 0) {
           newobj.deny = ov.deny;
         }
         _dt.push(newobj);
