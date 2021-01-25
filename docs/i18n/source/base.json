@@ -466,7 +466,7 @@
                     "MESSAGE_DELETED_GUILD": "🗑️ {ACTORTAG} deleted message by {AUTHOR} **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}"
                   },
                   "MESSAGE_DELETE_BULK": {
-                    "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted _COUNT_ messages in <#{CHANNEL_ID}>"
+                    "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted {COUNT} messages in <#{CHANNEL_ID}>"
                   },
                   "VOICE_STATE_UPDATE": {
                     "SERVER_DEAFENED": "🔇 {ACTORTAG} server deafened {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
