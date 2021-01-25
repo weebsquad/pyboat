@@ -159,7 +159,7 @@
                     "SLASH_COMMAND_USED": "🛠️ {USERTAG} used slash command in <#{CHANNEL_ID}> : **/**`{COMMAND_NAME}`{ARGUMENTS}"
                   },
                   "|ADMIN": {
-                    "CLEAN": "🗑️ {ACTORTAG} cleaned **{MESSAGES}** messages_CHANNEL_{USERTAG}",
+                    "CLEAN": "🗑️ {ACTORTAG} cleaned **{MESSAGES}** messages{CHANNEL}{USERTAG}",
                     "LOCKED_CHANNEL": "🔒 {ACTORTAG} locked <#{CHANNEL_ID}>{DURATION}{REASON}",
                     "UNLOCKED_CHANNEL": "🔓 {ACTORTAG} unlocked <#{CHANNEL_ID}>{REASON}",
                     "LOCKED_GUILD": "🔒 {ACTORTAG} locked the server{DURATION}{REASON}",
