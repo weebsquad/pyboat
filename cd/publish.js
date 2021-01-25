@@ -52,6 +52,7 @@ async function getNonActivePylonGuilds() {
     } });
   const txt = await res.text();
   if (txt === 'unauthorized') {
+    console.log('unauthorized at /available/');
     throw new Error('Pylon Token Unauthorized');
   }
   //  console.log(res.status, res.statusText);
