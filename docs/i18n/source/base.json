@@ -322,7 +322,7 @@
                     "MESSAGE_DELETED_GUILD_NO_CACHE": "🗑️ message **[**||`{MESSAGE_ID}`||**]** was deleted in <#{CHANNEL_ID}> (no data)"
                   },
                   "MESSAGE_DELETE_BULK": {
-                    "MESSAGES_DELETED": "🗑️ _COUNT_ messages were deleted in <#{CHANNEL_ID}>"
+                    "MESSAGES_DELETED": "🗑️ {COUNT} messages were deleted in <#{CHANNEL_ID}>"
                   },
                   "MESSAGE_REACTION_ADD": {
                     "ADD_REACTION": "🙂 {USERTAG} added reaction to message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
@@ -466,7 +466,7 @@
                     "MESSAGE_DELETED_GUILD": "🗑️ {ACTORTAG} deleted message by {AUTHOR} **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {CONTENT}"
                   },
                   "MESSAGE_DELETE_BULK": {
-                    "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted _COUNT_ messages in <#{CHANNEL_ID}>"
+                    "MESSAGES_DELETED": "🗑️ {ACTORTAG} deleted {COUNT} messages in <#{CHANNEL_ID}>"
                   },
                   "VOICE_STATE_UPDATE": {
                     "SERVER_DEAFENED": "🔇 {ACTORTAG} server deafened {USERTAG} in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
