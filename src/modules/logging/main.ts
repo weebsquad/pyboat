@@ -533,12 +533,15 @@ async function getMessages(
             && jumps[0].includes('discord.com')
           ) {
             msg = msg.split(jumps[0]).join('');
-            const name = jumps[0]
+            let name = jumps[0]
               .match(/\<[^<>]*\>/g)[0]
               .split('<')
               .join('')
               .split('>')
               .join('');
+            if (name.length === 0) {
+              name = '​‍‍‌‌‌';
+            } // zws
             const val = jumps[0].match(
               /\[[^\[\]]*\]\(https:.*channels\/.{18}\/.{18}\/.{18}\)$/g,
             )[0];
@@ -636,7 +639,7 @@ async function getMessages(
             icoFooter = cfg.footerAvatar;
           }
           if (footr !== '') {
-            em.setFooter({ text: footr, iconUrl: icoFooter });
+            em.setFooter({ text: footr, iconUrl: icoFooter ?? undefined });
           }
           embeds.push(em);
         }),

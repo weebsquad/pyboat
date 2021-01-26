@@ -71,29 +71,35 @@ export async function executeWebhook(
   if (Array.isArray(embeds) && embeds.length > 0) {
     embeds = embeds.map((e: any) => {
       for (const key in embedsRemaps) {
-        const value = embedsRemaps[key];
-        if (typeof e[key] === 'undefined' || e[key] === null) {
+        const value = e[key];
+        if (typeof e[key] === 'undefined' || e[key] === null || (Array.isArray(e[key]) && e[key].length === 0)) {
           continue;
         }
         for (const prop in value) {
-          const conv = value[prop];
-          if (typeof e[key][prop] === 'undefined' || e[key][prop] === null) {
+          const conv = embedsRemaps[key][prop];
+          if (typeof conv === 'undefined' || conv === null) {
             continue;
           }
           e[key][conv] = e[key][prop];
           delete e[key][prop];
         }
       }
+      for (const key in e) {
+        const value = e[key];
+        if (value === null || typeof value === 'undefined' || (Array.isArray(value) && value.length === 0)) {
+          delete e[key];
+        }
+      }
       return e;
     });
   }
   const bodyJson: { [key: string]: any } = {
-    content: content.length > 0 ? content : undefined,
+    content: content.length > 0 ? content : '',
     username,
     avatar_url,
-    tts: tts ? true : undefined,
-    embeds: Array.isArray(embeds) && embeds.length > 0 ? embeds : undefined,
-    allowed_mentions: allowed_mentions || undefined,
+    tts: !!tts,
+    embeds: Array.isArray(embeds) && embeds.length > 0 ? embeds : [],
+    allowed_mentions: allowed_mentions || {},
   };
   for (const k in bodyJson) {
     if (typeof bodyJson[k] === 'undefined') {
@@ -110,7 +116,7 @@ export async function executeWebhook(
   const { status } = response;
   if (status !== 204) {
     const text = await response.json();
-    logError(`Webhook - ${status} - `, text);
+    logError(`Webhook - ${status} - `, JSON.stringify(text));
     return false;
   }
 
