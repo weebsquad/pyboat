@@ -658,11 +658,11 @@
           "tr_terms": {
             "requested_by": "Requested by {USER_TAG} {USER_ID}",
             "jump_message": "Jump to message",
-            "cant_translate": "{USER_MENTION} I couldn't translate that! :(",
+            "cant_translate": "{USER_MENTION} ❌ I couldn't translate that! :(",
             "pirate_api": {
-              "only_english": "{USER_MENTION} Only english-sourced messages can be pirate spoken! <:pirate:713103123912065024>",
-              "random_fail": "{USER_MENTION} the pirate api decided to fail for whatever reason <:pirate:713103123912065024>",
-              "lol_shit_api": "{USER_MENTION} <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
+              "only_english": "{USER_MENTION} ❌  Only english-sourced messages can be pirate spoken! <:pirate:713103123912065024>",
+              "random_fail": "{USER_MENTION} ❌ the pirate api decided to fail for whatever reason <:pirate:713103123912065024>",
+              "lol_shit_api": "{USER_MENTION} ❌ <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
             }
           }
         },
@@ -688,7 +688,7 @@
           "error_executing_command": "**There has been an error executing this command**\n\n__{ERROR}__",
           "error_logged": "**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.",
           "arguments_string": " with arguments {ARGS}",
-          "argument_error": "⚠️Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
+          "argument_error": "⚠️ Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
           "other_error": "❌ **There was an error running that command**\n[{ERROR_NAME}] - __{ERROR_MESSAGE}__",
           "unknown_subcommand": "Unknown sub-command for `{COMMAND_PARENT}`, try:\n{SUB_COMMANDS}",
           "cmd_general": {
@@ -697,8 +697,8 @@
             "mylevel_admin": "You are bot access level **{LEVEL}** and a global admin",
             "ping": "Pong @{MSG_DIFF_MS}ms, sent message in {SENT_MSG_MS}ms",
             "cmd_nickme": {
-              "no_permission": "I don't have permissions to change my nickname!",
-              "already_nickname": "I already have that nickname!",
+              "no_permission": "❌ I don't have permissions to change my nickname!",
+              "already_nickname": "❌ I already have that nickname!",
               "done": "Done!"
             }
           }
@@ -742,6 +742,134 @@
           "softban_reason": "AntiPing Softban",
           "ban_reason": "AntiPing Ban",
           "auto_ban_left_reason": "AntiPing AutoBan for leaving the server with pending autoping punishments"
+        },
+        "admin": {
+          "slowmode_expired": "Slowmode expired",
+          "channel_lock_expired": "Channel lock expired",
+          "guild_lock_expired": "Guild lock expired",
+          "no_target_bot": "❌ You may not target me",
+          "bot_cant_manage_messages": "❌ I can't manage messages",
+          "bot_cant_manage_roles": "❌ I can't manage roles",
+          "bot_cant_manage_nicknames": "❌ I can't manage nicknames",
+          "bot_cant_manage_target": "❌ I can't manage that target",
+          "bot_cant_manage_role": "❌ I can't manage that role",
+          "actor_cant_assign_role_hierarchy": "❌ You can't assign that role because it is at or above your highest role",
+          "actor_cant_manage_roles": "❌ You can't manage roles",
+          "actor_cant_manage_nicknames": "❌ You can't manage nicknames",
+          "actor_cant_view_channel": "❌ You don't have access to that channel",
+          "actor_cant_manage_messages": "❌ You can't manage messages in that channel",
+          "actor_cant_target_self": "❌ You can't target yourself",
+          "actor_cant_target_level": "❌ You can't target this user (due to their level of {LEVEL})",
+          "actor_cant_target_roles": "❌ You can't target this user (due to their role hierarchy)",
+          "actor_cant_target_globaladmin": "❌ You can't target this user as they are a global admin.\nIf you really believe this action is applicable to this user, please have the server owner perform it.",
+          "cant_manage_channel": "❌ I can't manage this channel",
+          "invalid_channel": "❌ Invalid channel",
+          "invalid_duration": "❌ Invalid duration",
+          "for_time": " for {TIME}",
+          "reason": " **with reason** `{REASON}`",
+          "unknown_role": "❌ Role ID/Name not found",
+          "role_inexistent": "❌ Role ID#({ROLE_ID}) not found in the guild",
+          "adm_slowmode": {
+            "channel_already_slowmode": "❌ Channel is already at this slowmode",
+            "slowmode_enabled": "**This channel has been set to {SECONDS}s slowmode by **{ACTOR_TAG}",
+            "slowmode_disabled": "**This channel has had slowmode disabled by **{ACTOR_TAG}",
+            "slowmode_cmd": "✅ Set slowmode on {CHANNEL_MENTION} to **{SECONDS}s**",
+            "slowmode_failed": "❌ Failed to set slowmode"
+          },
+          "adm_lock_channel": {
+            "already_locked": "❌ Channel already locked",
+            "not_locked": "❌ Channel not locked",
+            "locked": "**This channel has been locked by **{ACTOR_TAG}",
+            "unlocked": "**This channel has been unlocked by **{ACTOR_TAG}",
+            "locked_fail": "❌ Failed to lock channel",
+            "locked_cmd": "✅ Locked channel",
+            "unlocked_cmd": "✅ Unlocked channel",
+            "unlocked_fail": "❌ Failed to unlock channel"
+          },
+          "adm_lock_guild": {
+            "cant_edit_role": "❌ I can't edit the role {ROLE_MENTION}",
+            "already_locked": "❌ Guild already locked",
+            "not_locked": "❌ Guild not locked",
+            "failed_lock": "❌ Failed to lock guild",
+            "locked_cmd": "✅ Locked Guild",
+            "unlocked_cmd": "✅ Unlocked Guild",
+            "failed_unlock": "❌ Failed to unlock guild"
+          },
+          "already_has_role": "❌ Target already has this role",
+          "already_doesnt_have_role": "❌ Target does not have this role",
+          "adm_nick": {
+            "already_has_nick": "❌ The target already has this nickname!"
+          },
+          "adm_clean": {
+            "too_many_msgs": "❌ Can't clean that many messages at once!",
+            "already_cleaning": "❌ Already performing a clean operation, please try again later",
+            "from_user": "from {USER_TAG}",
+            "in_channel": "in {CHANNEL_MENTION}",
+            "failed_clean": "❌ Failed to clean messages",
+            "cleaned_messages_user": "✅ Cleaned {COUNT} messages from {USER_MENTION}",
+            "no_messages_cleaned": "❌ No messages were cleaned.",
+            "cleaned_messages_channel": "✅ Cleaned {COUNT} messages in {CHANNEL_MENTION}",
+            "cleaned_messages_all": "✅ Cleaned {COUNT} messages.",
+            "cleaned_messages_bots": "✅ Cleaned {COUNT} messages from bots in this channel"
+          },
+          "adm_inv_prune": {
+            "no_invites": "❌ No invites were pruned",
+            "pruned": "✅ {COUNT} total invites pruned!"
+          },
+          "no_locked_roles": "❌ No locked roles are configured",
+          "could_not_find_role": "❌ Could not find that role",
+          "adm_role_unlock": {
+            "not_locked": "❌ This role is not locked",
+            "already_unlocked": "❌ This role is already temporarily unlocked!",
+            "unlocked": "✅ Role unlocked for 5 minutes"
+          },
+          "adm_role_add": {
+            "failed_add": "❌ Failed to add role",
+            "added_role": "✅ Added role {ROLE_MENTION} to {USER_MENTION}"
+          },
+          "adm_role_remove": {
+            "failed_remove": "❌ Failed to remove role",
+            "removed_role": "✅ Removed role {ROLE_MENTION} from {USER_MENTION}"
+          },
+          "role_spread_in_progress": "❌ A role all or role nuke is already in progress! Please wait for those to finish",
+          "adm_role_all": "✅ OK! I will slowly apply {ROLE_MENTION} to every member of the server that doesn't already have it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.",
+          "adm_nuke_all": "✅ OK! I will slowly remove {ROLE_MENTION} from every member of the server that has it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.",
+          "group_roles_disabled": "❌ Group roles are disabled!",
+          "role_incorrectly_configured": "❌ Role incorrectly configured",
+          "group_already_has_role": "❌ You already have this role!",
+          "group_doesnt_have_role": "❌ You do not have this role!",
+          "group_has_staff_perms": "❌ You may not join this role because it has staff permissions assigned.",
+          "group_joined": "✅ I gave you the {ROLE_MENTION} role!",
+          "group_left": "✅ I took the {ROLE_MENTION} role from you!",
+          "failed_nickname": "❌ Failed to set nickname",
+          "set_nickname": "✅ Set {USER_MENTION}'s nickname to `{NEW_NICK}`",
+          "duration_malformed": "❌ Duration improperly formatted! Please use `1h30m` formatting",
+          "exceeds_duration": "❌ Duration must be between a minute and a month",
+          "temprole_added": "✅ Added role {ROLE_MENTION} to {USER_MENTION} for {DURATION}",
+          "temprole_failed": "❌ Failed to add role",
+          "adm_roles_list": {
+            "no_roles": "❌ No roles found",
+            "level_short": "Lvl",
+            "hoisted_short": "[H]",
+            "mentionable_short": "[M]",
+            "properties": "ID | <Properties> | Name"
+          },
+          "adm_actions": {
+            "no_active": "❌ There are no active actions!",
+            "title": "**Displaying latest {COUNT} active actions**\n\n**ID** | **Actor** | **Target** | **Type** | **Reason**\n",
+            "more_actions": "\n\n**...** and {REMAINING} more actions"
+          },
+          "adm_backup": {
+            "restored": "✅ Successfully restored {USER_MENTION}",
+            "failed_restore": "❌ Failed to restore backup data for {USER_MENTION}",
+            "saved": "✅ Successfully saved backup data {USER_MENTION}",
+            "failed_save": "❌ Failed to save backup data for {USER_MENTION} (do they have any data to save?)",
+            "user_not_found": "❌ User not found!",
+            "no_data": "❌ No backup data found for this user",
+            "none": "None",
+            "data_display": "**Member backup for **{USER_MENTION}:\n**Roles**: {ROLES}\n**Nick**: {NICKNAME}**Channel Overwrites**: {CHANNEL_OVERWRITE_COUNT}",
+            "deleted": "✅ Successfully deleted backup data for {USER_MENTION}"
+          }
         }
     }
 }
