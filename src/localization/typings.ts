@@ -113,6 +113,7 @@ export interface IModules {
     counting: ICounting;
     antispam: IAntispam;
     antiping: IAntiping;
+    admin: IAdmin;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -730,4 +731,144 @@ export interface IAntiping {
     softban_reason: string;
     ban_reason: string;
     auto_ban_left_reason: string;
+}
+export interface IAdmin {
+    slowmode_expired: string;
+    channel_lock_expired: string;
+    guild_lock_expired: string;
+    no_target_bot: string;
+    bot_cant_manage_messages: string;
+    bot_cant_manage_roles: string;
+    bot_cant_manage_nicknames: string;
+    bot_cant_manage_target: string;
+    bot_cant_manage_role: string;
+    actor_cant_assign_role_hierarchy: string;
+    actor_cant_manage_roles: string;
+    actor_cant_manage_nicknames: string;
+    actor_cant_view_channel: string;
+    actor_cant_manage_messages: string;
+    actor_cant_target_self: string;
+    actor_cant_target_level: string;
+    actor_cant_target_roles: string;
+    actor_cant_target_globaladmin: string;
+    cant_manage_channel: string;
+    invalid_channel: string;
+    invalid_duration: string;
+    for_time: string;
+    reason: string;
+    unknown_role: string;
+    role_inexistent: string;
+    adm_slowmode: IAdm_slowmode;
+    adm_lock_channel: IAdm_lock_channel;
+    adm_lock_guild: IAdm_lock_guild;
+    already_has_role: string;
+    already_doesnt_have_role: string;
+    adm_nick: IAdm_nick;
+    adm_clean: IAdm_clean;
+    adm_inv_prune: IAdm_inv_prune;
+    no_locked_roles: string;
+    could_not_find_role: string;
+    adm_role_unlock: IAdm_role_unlock;
+    adm_role_add: IAdm_role_add;
+    adm_role_remove: IAdm_role_remove;
+    role_spread_in_progress: string;
+    adm_role_all: string;
+    adm_nuke_all: string;
+    group_roles_disabled: string;
+    role_incorrectly_configured: string;
+    group_already_has_role: string;
+    group_doesnt_have_role: string;
+    group_has_staff_perms: string;
+    group_joined: string;
+    group_left: string;
+    failed_nickname: string;
+    set_nickname: string;
+    duration_malformed: string;
+    exceeds_duration: string;
+    temprole_added: string;
+    temprole_failed: string;
+    adm_roles_list: IAdm_roles_list;
+    adm_actions: IAdm_actions;
+    adm_backup: IAdm_backup;
+}
+export interface IAdm_slowmode {
+    channel_already_slowmode: string;
+    slowmode_enabled: string;
+    slowmode_disabled: string;
+    slowmode_cmd: string;
+    slowmode_failed: string;
+}
+export interface IAdm_lock_channel {
+    already_locked: string;
+    not_locked: string;
+    locked: string;
+    unlocked: string;
+    locked_fail: string;
+    locked_cmd: string;
+    unlocked_cmd: string;
+    unlocked_fail: string;
+}
+export interface IAdm_lock_guild {
+    cant_edit_role: string;
+    already_locked: string;
+    not_locked: string;
+    failed_lock: string;
+    locked_cmd: string;
+    unlocked_cmd: string;
+    failed_unlock: string;
+}
+export interface IAdm_nick {
+    already_has_nick: string;
+}
+export interface IAdm_clean {
+    too_many_msgs: string;
+    already_cleaning: string;
+    from_user: string;
+    in_channel: string;
+    failed_clean: string;
+    cleaned_messages_user: string;
+    no_messages_cleaned: string;
+    cleaned_messages_channel: string;
+    cleaned_messages_all: string;
+    cleaned_messages_bots: string;
+}
+export interface IAdm_inv_prune {
+    no_invites: string;
+    pruned: string;
+}
+export interface IAdm_role_unlock {
+    not_locked: string;
+    already_unlocked: string;
+    unlocked: string;
+}
+export interface IAdm_role_add {
+    failed_add: string;
+    added_role: string;
+}
+export interface IAdm_role_remove {
+    failed_remove: string;
+    removed_role: string;
+}
+export interface IAdm_roles_list {
+    no_roles: string;
+    level_short: string;
+    hoisted_short: string;
+    mentionable_short: string;
+    properties: string;
+}
+export interface IAdm_actions {
+    no_active: string;
+    title: string;
+    more_actions: string;
+}
+export interface IAdm_backup {
+    restored: string;
+    failed_restore: string;
+    saved: string;
+    failed_save: string;
+    user_not_found: string;
+    no_data: string;
+    none: string;
+    data_display: string;
+    deleted: string;
 }

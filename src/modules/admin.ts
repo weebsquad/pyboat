@@ -10,6 +10,7 @@ import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
 // const BOT_DELETE_DAYS = 60 * 60 * 1000;
@@ -139,20 +140,20 @@ export class Action { // class action lawsuit lmao
     if (this.type === ActionType.SLOWMODE) {
       const channel = await guild.getChannel(this.targetId);
       if (channel !== null && channel instanceof discord.GuildTextChannel) {
-        await SlowmodeChannel(null, channel, this.previous, undefined, 'Slowmode expired');
+        await SlowmodeChannel(null, channel, this.previous, undefined, i18n.modules.admin.slowmode_expired);
         this.active = false;
       }
     } else if (this.type === ActionType.LOCK_CHANNEL) {
       const channel = await guild.getChannel(this.targetId);
       if (channel !== null && channel instanceof discord.GuildTextChannel) {
         this.active = false;
-        await LockChannel(null, channel, false, 0, 'Channel lock expired');
+        await LockChannel(null, channel, false, 0, i18n.modules.admin.channel_lock_expired);
       } else {
         this.active = false;
       }
     } else if (this.type === ActionType.LOCK_GUILD) {
       this.active = false;
-      await LockGuild(null, false, 0, 'Guild lock expired');
+      await LockGuild(null, false, 0, i18n.modules.admin.guild_lock_expired);
     } else if (this.type === ActionType.TEMPROLE) {
       const gm = await guild.getMember(this.targetId);
       if (gm === null) {
@@ -479,19 +480,19 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   const guild = await actor.getGuild();
   const isGuildOwner = guild.ownerId === actor.user.id;
   if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
-    return 'You may not target me';
+    return i18n.modules.admin.no_target_bot;
   }
   const me = await guild.getMember(discord.getBotId());
   const amIOwner = guild.ownerId === me.user.id;
   // check bot can actually do it
   if (!amIOwner && actionType === ActionType.CLEAN && !channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-    return 'I can\'t manage messages';
+    return i18n.modules.admin.bot_cant_manage_messages;
   }
   if (!amIOwner && (actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !me.can(discord.Permissions.MANAGE_ROLES)) {
-    return 'I can\'t manage roles';
+    return i18n.modules.admin.bot_cant_manage_roles;
   }
   if (!amIOwner && actionType === ActionType.NICKNAME && !me.can(discord.Permissions.MANAGE_NICKNAMES)) {
-    return 'I can\'t manage nicknames';
+    return i18n.modules.admin.bot_cant_manage_nicknames;
   }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
@@ -500,18 +501,18 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
   if (!amIOwner && target instanceof discord.GuildMember && highestRoleTarget instanceof discord.Role && actionType === ActionType.NICKNAME) {
     if (target.user.id !== discord.getBotId() && highestRoleTarget.position >= highestRoleMe.position) {
-      return 'I can\'t manage that target';
+      return i18n.modules.admin.bot_cant_manage_target;
     }
   }
 
   if (extraTarget instanceof discord.Role && (actionType === ActionType.TEMPROLE || actionType === ActionType.ROLE)) {
     if (!amIOwner && extraTarget.position >= highestRoleMe.position) {
-      return 'I can\'t assign that role';
+      return i18n.modules.admin.bot_cant_manage_role;
     }
     if (actor !== null && !isOverride && !isGuildOwner) {
       const highestRoleActor = await utils.getMemberHighestRole(actor);
       if (extraTarget.position >= highestRoleActor.position) {
-        return 'You can\'t assign that role because it is at or above your highest role';
+        return i18n.modules.admin.actor_cant_assign_role_hierarchy;
       }
     }
   }
@@ -524,18 +525,18 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
 
     if (requireExtraPerms === true) {
       if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
-        return 'You can\'t manage roles';
+        return i18n.modules.admin.actor_cant_manage_roles;
       } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
-        return 'You can\'t manage nicknames';
+        return i18n.modules.admin.actor_cant_manage_nicknames;
       } if (actionType === ActionType.CLEAN && (!channel.canMember(actor, discord.Permissions.READ_MESSAGES) || !channel.canMember(actor, discord.Permissions.SEND_MESSAGES))) {
-        return 'You don\'t have access to that channel';
+        return i18n.modules.admin.actor_cant_view_channel;
       } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
-        return 'You can\'t manage messages in that channel';
+        return i18n.modules.admin.actor_cant_manage_messages;
       }
     }
     if (actor.user.id === targetId) {
       if (!allowSelf) {
-        return 'You can\'t target yourself';
+        return i18n.modules.admin.actor_cant_target_self;
       }
       return true;
     }
@@ -543,19 +544,19 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       const actorLevel = utils.getUserAuth(actor);
       const targetLevel = utils.getUserAuth(target);
       if (actorLevel <= targetLevel) {
-        return `You can't target this user (due to their level of ${targetLevel})`;
+        return setPlaceholders(i18n.modules.admin.actor_cant_target_level, ['level', targetLevel.toString()]);
       }
     }
     if (checkRoles === true) {
       const highestActor = await utils.getMemberHighestRole(actor);
       if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
-        return 'You can\'t target this user (due to their role hierarchy)';
+        return i18n.modules.admin.actor_cant_target_roles;
       }
     }
   }
   if (isTargetAdmin === true && !isOverride && actor.user.id !== targetId) {
     if (!isGuildOwner) {
-      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable to this user, please have the server owner perform it.';
+      return i18n.modules.admin.actor_cant_target_globaladmin;
     }
   }
   return true;
@@ -571,7 +572,7 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
     return;
   }
   if (!channel.canMember(me, discord.Permissions.MANAGE_CHANNELS)) {
-    return 'I can\'t manage this channel';
+    return i18n.modules.admin.cant_manage_channel;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -580,10 +581,10 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
     reason = reason.substr(0, 100);
   }
   if (!(channel instanceof discord.GuildTextChannel)) {
-    return 'Invalid channel';
+    return i18n.modules.admin.invalid_channel;
   }
   if (channel.rateLimitPerUser === seconds) {
-    return 'Channel is already at this slowmode';
+    return i18n.modules.admin.adm_slowmode.channel_already_slowmode;
   }
   const oldValue = channel.rateLimitPerUser;
   await channel.edit({ rateLimitPerUser: seconds });
@@ -591,17 +592,17 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   if (seconds > 0 && duration > 0) {
     await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, undefined, reason);
   }
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['SECONDS', seconds.toString()], ['CHANNEL_ID', channel.id], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['SECONDS', seconds.toString()], ['CHANNEL_ID', channel.id], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**${seconds > 0 ? `This channel has been set to ${seconds}s slowmode` : ' This channel has had slowmode disabled'}** by ${placeholders.get('ACTORTAG')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`;
+    const txt = `${setPlaceholders(seconds > 0 ? i18n.modules.admin.adm_slowmode.slowmode_enabled : i18n.modules.admin.adm_slowmode.slowmode_disabled, ['seconds', seconds.toString(), 'actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)])}${reason.length > 0 ?? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)])}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -618,7 +619,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     return;
   }
   if (!channel.canMember(me, discord.Permissions.MANAGE_ROLES) || !channel.canMember(me, discord.Permissions.MANAGE_CHANNELS)) {
-    return 'I can\'t manage this channel';
+    return i18n.modules.admin.cant_manage_channel;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -627,7 +628,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     reason = reason.substr(0, 100);
   }
   if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
-    return 'Invalid channel';
+    return i18n.modules.admin.invalid_channel;
   }
   const defaultOw = channel.permissionOverwrites.find((ow) => ow.id === guild.id);
   if (!defaultOw) {
@@ -635,9 +636,9 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
   }
   const perms = new utils.Permissions(defaultOw.deny);
   if (perms.has('SEND_MESSAGES', false) && state === true) {
-    return 'Channel already locked';
+    return i18n.modules.admin.adm_lock_channel.already_locked;
   } if (!perms.has('SEND_MESSAGES', false) && !state) {
-    return 'Channel not locked';
+    return i18n.modules.admin.adm_lock_channel.not_locked;
   }
   const newOws = channel.permissionOverwrites.map((ow) => {
     if (ow.id === guild.id) {
@@ -654,7 +655,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     await addAction(channel, actor, ActionType.LOCK_CHANNEL, exp, undefined, undefined, reason);
   }
   await channel.edit({ permissionOverwrites: newOws });
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['CHANNEL_ID', channel.id], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['CHANNEL_ID', channel.id], ['REASON', '']]);
   let type = 'LOCKED_CHANNEL';
   if (state === false) {
     type = 'UNLOCKED_CHANNEL';
@@ -665,11 +666,11 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `**This channel has been ${state === true ? 'locked' : 'unlocked'} by **${placeholders.get('ACTORTAG')}${duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''}${reason.length > 0 ? ` **with reason** \`${utils.escapeString(reason, true)}\`` : ''}`;
+    const txt = `${setPlaceholders(state === true ? i18n.modules.admin.adm_lock_channel.locked : i18n.modules.admin.adm_lock_channel.unlocked, ['actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)])}${reason.length > 0 ?? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)])}`;
     const res:any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -686,7 +687,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     return;
   }
   if (!me.can(discord.Permissions.MANAGE_ROLES)) {
-    return 'I can\'t manage roles';
+    return i18n.modules.admin.bot_cant_manage_roles;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -702,14 +703,14 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
   if (defaultRole.id !== guild.id) {
     const myHighest = await utils.getMemberHighestRole(me);
     if (myHighest.position <= defaultRole.position) {
-      return `I can\'t edit the role ${defaultRole.toMention()} !`;
+      return setPlaceholders(i18n.modules.admin.adm_lock_guild.cant_edit_role, ['role_mention', defaultRole.toMention()]);
     }
   }
   const perms = new utils.Permissions(defaultRole.permissions);
   if (!perms.has('SEND_MESSAGES', false) && state === true) {
-    return 'Guild already locked';
+    return i18n.modules.admin.adm_lock_guild.already_locked;
   } if (perms.has('SEND_MESSAGES', false) && !state) {
-    return 'Guild not locked';
+    return i18n.modules.admin.adm_lock_guild.not_locked;
   }
   if (state === true) {
     perms.remove('SEND_MESSAGES');
@@ -721,7 +722,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     await addAction(guild, actor, ActionType.LOCK_GUILD, exp, undefined, undefined, reason);
   }
   await defaultRole.edit({ permissions: Number(perms.bitfield) });
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   let type = 'LOCKED_GUILD';
   if (state === false) {
     type = 'UNLOCKED_GUILD';
@@ -731,7 +732,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
   logCustom('ADMIN', type, placeholders);
   return true;
@@ -743,7 +744,7 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
     return false;
   }
   if (duration === 0) {
-    return 'Invalid duration';
+    return i18n.modules.admin.invalid_duration;
   }
   const me = await guild.getMember(discord.getBotId());
   if (me === null) {
@@ -753,11 +754,11 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
   if (!(role instanceof discord.Role)) {
     const rlId = await getRoleIdByText(role);
     if (rlId === null) {
-      return 'Role ID/Name not found';
+      return i18n.modules.admin.unknown_role;
     }
     role = await guild.getRole(rlId);
     if (!(role instanceof discord.Role)) {
-      return `Role ID#(${rlId}) not found in the guild`;
+      return setPlaceholders(i18n.modules.admin.role_inexistent, ['role_id', rlId]);
     }
   }
   const canT = await canTarget(actor, target, undefined, role, ActionType.TEMPROLE);
@@ -765,7 +766,7 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
     return canT;
   }
   if (target.roles.includes(role.id)) {
-    return 'Target already has this role';
+    return i18n.modules.admin.already_has_role;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -777,13 +778,13 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
   const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
   await addAction(target, actor, ActionType.TEMPROLE, exp, undefined, role.id, reason);
   await target.addRole(role.id);
-  const placeholders = new Map([['ROLE_MENTION', role.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, 'second')}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ROLE_MENTION', role.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
   logCustom('ADMIN', 'TEMPROLE', placeholders);
   return true;
@@ -801,11 +802,11 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   if (!(roleTxt instanceof discord.Role)) {
     const rlId = await getRoleIdByText(roleTxt);
     if (rlId === null) {
-      return 'Role ID/Name not found';
+      return i18n.modules.admin.unknown_role;
     }
     roleTxt = await guild.getRole(rlId);
     if (!(roleTxt instanceof discord.Role)) {
-      return `Role ID#(${rlId}) not found in the guild`;
+      return setPlaceholders(i18n.modules.admin.role_inexistent, ['role_id', rlId]);
     }
   }
   const canT = await canTarget(actor, target, undefined, roleTxt, ActionType.ROLE);
@@ -813,9 +814,9 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
     return canT;
   }
   if (target.roles.includes(roleTxt.id) && state === true) {
-    return 'Target already has this role';
+    return i18n.modules.admin.already_has_role;
   } if (!target.roles.includes(roleTxt.id) && !state) {
-    return 'Target does not have this role';
+    return i18n.modules.admin.already_doesnt_have_role;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -835,7 +836,7 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
   const type = state === true ? 'ROLE_ADDED' : 'ROLE_REMOVED';
   logCustom('ADMIN', type, placeholders);
@@ -856,7 +857,7 @@ export async function Nick(actor: discord.GuildMember | null, target: discord.Gu
     return canT;
   }
   if (target.nick === newNick) {
-    return 'The target already has this nickname!';
+    return i18n.modules.admin.adm_nick.already_has_nick;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -872,7 +873,7 @@ export async function Nick(actor: discord.GuildMember | null, target: discord.Gu
     placeholders.set('ACTOR_ID', actor.user.id);
   }
   if (reason.length > 0) {
-    placeholders.set('REASON', ` with reason \`${utils.escapeString(reason, true)}\``);
+    placeholders.set('REASON', setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]));
   }
 
   logCustom('ADMIN', 'NICKNAME', placeholders);
@@ -901,7 +902,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
     return false;
   }
   if (count > MAX_COMMAND_CLEAN) {
-    return 'Cant clean that many messages at once!';
+    return i18n.modules.admin.adm_clean.too_many_msgs;
   }
   const canT = await canTarget(actor, target, channel, undefined, ActionType.CLEAN);
   if (canT !== true) {
@@ -909,7 +910,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   }
 
   if (cleaning === true && !bypassCleaning) {
-    return 'Already running a clean operation, please try again later';
+    return i18n.modules.admin.adm_clean.already_cleaning;
   }
   const diff = dtBegin - 500;
   let query = { authorId: memberId, channelId: channelTarget };
@@ -1000,10 +1001,10 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
       _placeholders.set('ACTOR_ID', actor.user.id);
     }
     if (typeof channelTarget === 'string') {
-      _placeholders.set('CHANNEL', ` in <#${channelTarget}>`);
+      _placeholders.set('CHANNEL', setPlaceholders(i18n.modules.admin.adm_clean.in_channel, ['channel_mention', `<#${channelTarget}>`]));
     }
     if (typeof memberId === 'string') {
-      _placeholders.set('USERTAG', ` from ${getUserTag(target)}`);
+      _placeholders.set('USERTAG', setPlaceholders(i18n.modules.admin.adm_clean.from_user, ['user_tag', getUserTag(target)]));
       _placeholders.set('USER_ID', memberId);
     }
     logCustom('ADMIN', 'CLEAN', _placeholders);
@@ -1646,14 +1647,14 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
       const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, member, msg.member, chan, count, msg.channelId);
       if (typeof res !== 'number') {
         if (res === false) {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to clean user');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from ${user.getTag()}`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_user, ['count', res.toString(), 'user_mention', user.getTag()]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
     },
     {
@@ -1672,14 +1673,14 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
       const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, channel, count, channel.id);
       if (typeof res !== 'number') {
         if (res === false) {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${channel.id}>`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', channel.toMention()]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
     },
     {
@@ -1699,14 +1700,14 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
       const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count, msg.channelId);
       if (typeof res !== 'number') {
         if (res === false) {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from <#${msg.channelId}>`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', `<#${msg.channelId}>`]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
     },
     {
@@ -1726,14 +1727,14 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
       const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, {}, msg.member, chan, count);
       if (typeof res !== 'number') {
         if (res === false) {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to clean');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_all, ['count', res.toString()]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
     },
     {
@@ -1752,14 +1753,14 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
       const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, { bot: true }, msg.member, chan, count, msg.channelId);
       if (typeof res !== 'number') {
         if (res === false) {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to clean bot messages');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, `Cleared ${res} messages from bots`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_bots, ['count', res.toString()]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'No messages were cleared.');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
     },
     {
@@ -1801,9 +1802,9 @@ export function InitializeCommands() {
           }
         }));
         if (cleared === 0) {
-          await infractions.confirmResult(undefined, msg, false, 'No invites were pruned!');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_inv_prune.no_invites);
         } else {
-          await infractions.confirmResult(undefined, msg, true, `${cleared} total invites pruned!`);
+          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_inv_prune.pruned, ['count', cleared.toString()]));
         }
       },
       {
@@ -1821,26 +1822,26 @@ export function InitializeCommands() {
       (ctx) => ({ roleText: ctx.text() }),
       async (msg, { roleText }) => {
         if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
-          await infractions.confirmResult(undefined, msg, false, 'No locked roles are configured');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.no_locked_roles);
           return;
         }
         const roleId = await getRoleIdByText(roleText);
         const guildRole = await (await msg.getGuild()).getRole(roleId);
         if (guildRole === null) {
-          await infractions.confirmResult(undefined, msg, false, 'Could not find that role');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.could_not_find_role);
           return;
         }
         if (!config.modules.admin.lockedRoles.includes(guildRole.id)) {
-          await infractions.confirmResult(undefined, msg, false, 'This role is not locked');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.not_locked);
           return;
         }
         const kvc = await roleLockKv.get(guildRole.id);
         if (typeof kvc === 'boolean') {
-          await infractions.confirmResult(undefined, msg, false, 'This role is already temporarily unlocked!');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
           return;
         }
         await roleLockKv.put(guildRole.id, true, { ttl: 1000 * 60 * 5 });
-        await infractions.confirmResult(undefined, msg, true, 'Role unlocked for 5 minutes');
+        await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_role_unlock.unlocked);
       },
       {
         permissions: {
@@ -1861,9 +1862,9 @@ export function InitializeCommands() {
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
-          await infractions.confirmResult(undefined, msg, true, `Added role <@&${rlid}> to ${member.toMention()}`);
+          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', `<@&${rlid}>`]));
         } else {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to add role');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_add.failed_add);
         }
       },
       {
@@ -1886,9 +1887,9 @@ export function InitializeCommands() {
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
-          await infractions.confirmResult(undefined, msg, true, `Removed role <@&${rlid}> from ${member.toMention()}`);
+          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', `<@&${rlid}>`]));
         } else {
-          await infractions.confirmResult(undefined, msg, false, 'Failed to remove role');
+          await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_remove.failed_remove);
         }
       },
       {
@@ -1905,7 +1906,7 @@ export function InitializeCommands() {
       async (msg, { role }) => {
         const rlid = await getRoleIdByText(role);
         if (rlid === null) {
-          const res: any = await msg.inlineReply('Role not found!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
           return;
         }
@@ -1913,33 +1914,31 @@ export function InitializeCommands() {
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          const res: any = await msg.inlineReply('Bot member not found!');
-          saveMessage(res);
           return;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
-          const res: any = await msg.inlineReply('Role not found!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
           return;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
-          const res: any = await msg.inlineReply('I can\'t manage that role!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.bot_cant_manage_role);
           saveMessage(res);
           return;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
-          const res: any = await msg.inlineReply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_spread_in_progress);
           saveMessage(res);
           return;
         }
         await roleAllKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.inlineReply({ content: `OK! I will slowly apply ${thisRole.toMention()} to every member of the server that doesn\'t already have it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_nuke_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
         saveMessage(res);
       },
       {
@@ -1957,7 +1956,7 @@ export function InitializeCommands() {
       async (msg, { role }) => {
         const rlid = await getRoleIdByText(role);
         if (rlid === null) {
-          const res: any = await msg.inlineReply('Role not found!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
           return;
         }
@@ -1965,33 +1964,31 @@ export function InitializeCommands() {
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          const res: any = await msg.inlineReply('Bot member not found!');
-          saveMessage(res);
           return;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
-          const res: any = await msg.inlineReply('Role not found!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
           return;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
-          const res: any = await msg.inlineReply('I can\'t manage that role!');
+          const res: any = await msg.inlineReply(i18n.modules.admin.bot_cant_manage_role);
           saveMessage(res);
           return;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
-          const res: any = await msg.inlineReply('A role all or role nuke is already in progress! Please wait for those to finish, thanks');
+          const res: any = await msg.inlineReply(i18n.modules.admin.role_spread_in_progress);
           saveMessage(res);
           return;
         }
         await roleNukeKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.inlineReply({ content: `OK! I will slowly remove ${thisRole.toMention()} from every member of the server that has it.\n\nThis process will be very slow due to Pylon restrictions, and there will not be any confirmation of when this is completed!\nThanks for your understanding.`, allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_role_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
         saveMessage(res);
       },
       {
@@ -2009,21 +2006,21 @@ export function InitializeCommands() {
       async (msg, { roleName }) => {
         const res: any = await msg.inlineReply(async () => {
           if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-            return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
+            return { content: i18n.modules.admin.group_roles_disabled };
           }
           const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
           if (!thisRole) {
-            return { content: `${discord.decor.Emojis.X} Role not found` };
+            return { content: i18n.modules.admin.role_inexistent };
           }
           if (typeof thisRole !== 'string' || thisRole.length < 5) {
-            return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+            return { content: i18n.modules.admin.role_incorrectly_configured };
           }
           const guildRole = await (await msg.getGuild()).getRole(thisRole);
           if (guildRole === null) {
-            return { content: `${discord.decor.Emojis.X} Role not found` };
+            return { content: i18n.modules.admin.role_inexistent };
           }
           if (msg.member.roles.includes(guildRole.id)) {
-            return { content: `${discord.decor.Emojis.X} You already have this role!` };
+            return { content: i18n.modules.admin.group_already_has_role };
           }
           let perms = new utils.Permissions(guildRole.permissions).serialize(true);
           for (const key in perms) {
@@ -2035,10 +2032,10 @@ export function InitializeCommands() {
           const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
           const noStaff = perms.every((p) => !staffPerms.includes(p));
           if (!noStaff) {
-            return { content: `${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.` };
+            return { content: i18n.modules.admin.group_has_staff_perms };
           }
           await msg.member.addRole(guildRole.id);
-          return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${guildRole.toMention()} role!` };
+          return { allowedMentions: {}, content: setPlaceholders(i18n.modules.admin.group_joined, ['role_mention', guildRole.toMention()]) };
         });
         saveMessage(res);
       },
@@ -2056,24 +2053,24 @@ export function InitializeCommands() {
       async (msg, { roleName }) => {
         const res: any = await msg.inlineReply(async () => {
           if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-            return { content: `${discord.decor.Emojis.X} Group roles are not enabled!` };
+            return { content: i18n.modules.admin.group_roles_disabled };
           }
           const thisRole = utils.objectFlip(config.modules.admin.groupRoles)[roleName.toLowerCase()];
           if (!thisRole) {
-            return { content: `${discord.decor.Emojis.X} Role not found` };
+            return { content: i18n.modules.admin.role_inexistent };
           }
           if (typeof thisRole !== 'string' || thisRole.length < 5) {
-            return { content: `${discord.decor.Emojis.X} Role incorrectly configured` };
+            return { content: i18n.modules.admin.role_incorrectly_configured };
           }
           const guildRole = await (await msg.getGuild()).getRole(thisRole);
           if (guildRole === null) {
-            return { content: `${discord.decor.Emojis.X} Role not found` };
+            return { content: i18n.modules.admin.role_inexistent };
           }
           if (!msg.member.roles.includes(guildRole.id)) {
-            return { content: `${discord.decor.Emojis.X} You do not have this role!` };
+            return { content: i18n.modules.admin.group_doesnt_have_role };
           }
           await msg.member.removeRole(guildRole.id);
-          return { allowedMentions: {}, content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${guildRole.toMention()} role from you!` };
+          return { allowedMentions: {}, content: setPlaceholders(i18n.modules.admin.group_left, ['role_mention', guildRole.toMention()]) };
         });
         saveMessage(res);
       },
@@ -2096,9 +2093,9 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname, true)}\``);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.set_nickname, ['user_mention', member.user.getTag(), 'new_nick', nickname === null ? i18n.modules.admin.adm_backup.none : utils.escapeString(nickname, true)]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to set nickname');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.failed_nickname);
       }
     },
     {
@@ -2116,12 +2113,12 @@ export function InitializeCommands() {
     async (msg, { member, duration, roleText }) => {
       const dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
+        const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
         saveMessage(res);
         return;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-        const res: any = await msg.inlineReply('duration must be between a minute and a month');
+        const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
         saveMessage(res);
         return;
       }
@@ -2133,9 +2130,9 @@ export function InitializeCommands() {
       }
       if (res === true) {
         const rlid = await getRoleIdByText(roleText);
-        await infractions.confirmResult(undefined, msg, true, `Added role <@&${rlid}> to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.temprole_added, ['role_mention', `<@&${rlid}>`, 'user_mention', member.toMention(), 'duration', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]));
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to add role');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_add.failed_add);
       }
     },
     {
@@ -2158,12 +2155,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
           return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.inlineReply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
           return;
         }
@@ -2174,9 +2171,9 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Locked channel${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to lock channel');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_channel.locked_fail);
       }
     },
     {
@@ -2200,9 +2197,9 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, 'Unlocked channel');
+        await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_lock_channel.unlocked_cmd);
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to unlock channel');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_channel.unlocked_fail);
       }
     },
     {
@@ -2221,12 +2218,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
           return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.inlineReply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
           return;
         }
@@ -2240,10 +2237,10 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, 'second') : '';
-        await infractions.confirmResult(undefined, msg, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**${txtDur !== '' ? ` for ${txtDur}` : ''}`);
+        const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
+        await infractions.confirmResult(undefined, msg, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ?? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur])}`);
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to set slowmode');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
       }
     },
     {
@@ -2262,12 +2259,12 @@ export function InitializeCommands() {
       if (duration !== null) {
         dur = utils.timeArgumentToMs(duration);
         if (dur === 0) {
-          const res: any = await msg.inlineReply('duration malformed (try 1h30m format)');
+          const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
           return;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-          const res: any = await msg.inlineReply('duration must be between a minute and a month');
+          const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
           return;
         }
@@ -2278,9 +2275,9 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to lock guild');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_guild.failed_lock);
       }
     },
     {
@@ -2300,9 +2297,9 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, 'Unlocked Guild');
+        await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_lock_guild.unlocked_cmd);
       } else {
-        await infractions.confirmResult(undefined, msg, false, 'Failed to unlock guild');
+        await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_guild.failed_unlock);
       }
     },
     {
@@ -2329,7 +2326,7 @@ export function InitializeCommands() {
       }
       roles = roles.filter((role) => role.id !== guild.id);
       if (roles.length === 0) {
-        const res: any = await msg.inlineReply({ content: 'No roles found' });
+        const res: any = await msg.inlineReply({ content: i18n.modules.admin.adm_roles_list.no_roles });
         saveMessage(res);
         return;
       }
@@ -2346,13 +2343,13 @@ export function InitializeCommands() {
         }
         const props = [];
         if (typeof config.levels === 'object' && typeof config.levels.roles === 'object' && typeof config.levels.roles[role.id] === 'number' && config.levels.roles[role.id] > 0) {
-          props.push(`Lvl ${config.levels.roles[role.id]}`);
+          props.push(`${i18n.modules.admin.adm_roles_list.level_short} ${config.levels.roles[role.id]}`);
         }
         if (role.mentionable === true) {
-          props.push('[M]');
+          props.push(i18n.modules.admin.adm_roles_list.mentionable_short);
         }
         if (role.hoist === true) {
-          props.push('[H]');
+          props.push(i18n.modules.admin.adm_roles_list.hoisted_short);
         }
         // dt[currKey].push([props.join(', '), role.id, role.name]);
         const prp = props.length > 0 ? props.join(', ') : '';
@@ -2362,7 +2359,7 @@ export function InitializeCommands() {
           currKey += 1;
         }
         if (!Array.isArray(dt[currKey])) {
-          dt[currKey] = ['ID | <Properties> | Name', ''];
+          dt[currKey] = [i18n.modules.admin.adm_roles_list.properties, ''];
         }
         dt[currKey].push(thisTxt);
       });
@@ -2389,10 +2386,10 @@ export function InitializeCommands() {
         if (id === null) {
           const infs = (await actionPool.getByQuery<Action>({ active: true }));
           if (infs.length === 0) {
-            return { content: 'There are no active actions!' };
+            return { content: i18n.modules.admin.adm_actions.no_active };
           }
           const last10 = infs.slice(0, Math.max(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} active actions**\n\n**ID** | **Actor** | **Target** | **Type** | **Reason**\n`;
+          let txt = setPlaceholders(i18n.modules.admin.adm_actions.title, ['count', Math.min(last10.length, 10).toString()]);
           last10.map((inf) => {
             let targMention;
             // todo properly format this
@@ -2400,7 +2397,7 @@ export function InitializeCommands() {
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more actions`;
+            txt += setPlaceholders(i18n.modules.admin.adm_actions.more_actions, ['remaining', remaining.toString()]);
           }
           const emb = new discord.Embed();
           emb.setDescription(txt);
@@ -2431,12 +2428,12 @@ export function InitializeCommands() {
             if (ret === true) {
               return {
                 allowedMentions: {},
-                content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully restored ${member.toMention()}`,
+                content: setPlaceholders(i18n.modules.admin.adm_backup.restored, ['user_mention', member.toMention()]),
               };
             }
             return {
               allowedMentions: {},
-              content: `${discord.decor.Emojis.X} Failed to restore ${member.toMention()}`,
+              content: setPlaceholders(i18n.modules.admin.adm_backup.failed_restore, ['user_mention', member.toMention()]),
             };
           });
           saveMessage(res);
@@ -2458,12 +2455,12 @@ export function InitializeCommands() {
             if (ret === true) {
               return {
                 allowedMentions: {},
-                content: `${discord.decor.Emojis.WHITE_CHECK_MARK} Successfully saved ${member.toMention()}`,
+                content: setPlaceholders(i18n.modules.admin.adm_backup.saved, ['user_mention', member.toMention()]),
               };
             }
             return {
               allowedMentions: {},
-              content: `${discord.decor.Emojis.X} Failed to save data for ${member.toMention()} , (do they have any data to save?)`,
+              content: setPlaceholders(i18n.modules.admin.adm_backup.failed_save, ['user_mention', member.toMention()]),
             };
           });
           saveMessage(res);
@@ -2483,18 +2480,18 @@ export function InitializeCommands() {
           const res: any = await msg.inlineReply(async () => {
             const usr = await utils.getUser(user.replace(/\D/g, ''));
             if (!usr) {
-              return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
+              return { content: i18n.modules.admin.adm_backup.user_not_found, allowedMentions: {} };
             }
             const thisObj = await persistPool.getById<MemberPersist>(usr.id);
             if (!thisObj) {
-              return { content: `${discord.decor.Emojis.X} no backup found for this member` };
+              return { content: i18n.modules.admin.adm_backup.no_data };
             }
-            let rls = 'None';
+            let rls = i18n.modules.admin.adm_backup.none;
             if (thisObj.roles.length > 0) {
               const rlsfo = thisObj.roles.map((rl) => `<@&${rl}>`).join(', ');
               rls = rlsfo;
             }
-            const txt = `**Member backup for **<@!${usr.id}>:\n**Roles**: ${thisObj.roles.length === 0 ? 'None' : rls}\n**Nick**: ${thisObj.nick === null || typeof thisObj.nick !== 'string' ? 'None' : `\`${utils.escapeString(thisObj.nick)}\``}${Array.isArray(thisObj.channels) ? `\n**Channel Overwrites**: ${thisObj.channels.length}` : ''}`;
+            const txt = setPlaceholders(i18n.modules.admin.adm_backup.data_display, ['user_mention', usr.toMention(), 'roles', thisObj.roles.length === 0 ? i18n.modules.admin.adm_backup.none : rls, 'nickname', thisObj.nick === null || typeof thisObj.nick !== 'string' ? i18n.modules.admin.adm_backup.none : `\`${utils.escapeString(thisObj.nick)}\``, 'channel_overwrite_count', Array.isArray(thisObj.channels) ? thisObj.channels.length.toString() : '0']);
             return { content: txt, allowedMentions: {} };
           });
           saveMessage(res);
@@ -2513,15 +2510,15 @@ export function InitializeCommands() {
         async (msg, { user }) => {
           const usr = await utils.getUser(user.replace(/\D/g, ''));
           if (!usr) {
-            return { content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} };
+            return { content: i18n.modules.admin.adm_backup.user_not_found, allowedMentions: {} };
           }
           const res: any = await msg.inlineReply(async () => {
             const thiskv = await persistPool.getById<MemberPersist>(usr.id);
             if (!thiskv) {
-              return `${discord.decor.Emojis.X} no backup found for this member`;
+              return i18n.modules.admin.adm_backup.no_data;
             }
             await persistPool.editPool(usr.id, undefined);
-            return `${discord.decor.Emojis.WHITE_CHECK_MARK} successfully deleted!`;
+            return setPlaceholders(i18n.modules.admin.adm_backup.deleted, ['user_mention', user.toMention()]);
           });
           saveMessage(res);
         },
@@ -2577,7 +2574,7 @@ if (cleanGroup) {
           await inter.acknowledge(false);
         }
         if (res === false) {
-          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean user');
+          await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResultInteraction(undefined, inter, false, res);
         }
@@ -2586,12 +2583,12 @@ if (cleanGroup) {
         if (!acked) {
           await inter.acknowledge(true);
         }
-        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${user.user.getTag()}`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_user, ['count', res.toString(), 'user_mention', user.user.toMention()]));
       } else {
         if (!acked) {
           await inter.acknowledge(false);
         }
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
       }
     },
@@ -2635,7 +2632,7 @@ if (cleanGroup) {
           await inter.acknowledge(false);
         }
         if (res === false) {
-          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+          await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResultInteraction(undefined, inter, false, res);
         }
@@ -2644,12 +2641,12 @@ if (cleanGroup) {
         if (!acked) {
           await inter.acknowledge(true);
         }
-        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', channel.toMention()]));
       } else {
         if (!acked) {
           await inter.acknowledge(false);
         }
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
       }
     },
@@ -2693,7 +2690,7 @@ if (cleanGroup) {
           await inter.acknowledge(false);
         }
         if (res === false) {
-          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+          await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResultInteraction(undefined, inter, false, res);
         }
@@ -2702,12 +2699,12 @@ if (cleanGroup) {
         if (!acked) {
           await inter.acknowledge(true);
         }
-        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from ${channel.toMention()}`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', channel.toMention()]));
       } else {
         if (!acked) {
           await inter.acknowledge(false);
         }
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
       }
     },
@@ -2751,7 +2748,7 @@ if (cleanGroup) {
           await inter.acknowledge(false);
         }
         if (res === false) {
-          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean channel');
+          await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResultInteraction(undefined, inter, false, res);
         }
@@ -2760,12 +2757,12 @@ if (cleanGroup) {
         if (!acked) {
           await inter.acknowledge(true);
         }
-        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_all, ['count', res.toString()]));
       } else {
         if (!acked) {
           await inter.acknowledge(false);
         }
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
       }
     },
@@ -2809,7 +2806,7 @@ if (cleanGroup) {
           await inter.acknowledge(false);
         }
         if (res === false) {
-          await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to clean bot messages');
+          await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
         } else if (typeof res === 'string') {
           await infractions.confirmResultInteraction(undefined, inter, false, res);
         }
@@ -2818,12 +2815,12 @@ if (cleanGroup) {
         if (!acked) {
           await inter.acknowledge(true);
         }
-        await infractions.confirmResultInteraction(undefined, inter, true, `Cleared ${res} messages from bots`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_bots, ['count', res.toString()]));
       } else {
         if (!acked) {
           await inter.acknowledge(false);
         }
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No messages were cleared.');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
       }
     },
@@ -2869,11 +2866,11 @@ if (invitesGroup) {
       }));
       if (cleared === 0) {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No invites were pruned!');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_inv_prune.no_invites);
         return false;
       }
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `${cleared} total invites pruned!`);
+      await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_inv_prune.pruned, ['count', cleared.toString()]));
       return true;
     },
     {
@@ -2909,23 +2906,23 @@ if (groupRole) {
     async (inter, { role }) => {
       if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'No locked roles are configured');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.no_locked_roles);
         return false;
       }
       if (!config.modules.admin.lockedRoles.includes(role.id)) {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'This role is not locked');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.not_locked);
         return false;
       }
       const kvc = await roleLockKv.get(role.id);
       if (typeof kvc === 'boolean') {
         await inter.acknowledge(false);
-        await infractions.confirmResultInteraction(undefined, inter, false, 'This role is already temporarily unlocked!');
+        await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
         return false;
       }
       await inter.acknowledge(true);
       await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
-      await infractions.confirmResultInteraction(undefined, inter, true, 'Role unlocked for 5 minutes');
+      await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_role_unlock.unlocked);
     },
     {
       module: 'admin',
@@ -2956,11 +2953,11 @@ if (groupRole) {
       }
       if (res === true) {
         await inter.acknowledge(true);
-        await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.user.toMention()}`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', role.toMention(), 'user_mention', member.user.toMention()]));
         return true;
       }
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_add.failed_add);
       return false;
     },
     {
@@ -2992,11 +2989,11 @@ if (groupRole) {
       }
       if (res === true) {
         await inter.acknowledge(true);
-        await infractions.confirmResultInteraction(undefined, inter, true, `Removed role <@&${role.id}> to ${member.user.toMention()}`);
+        await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', role.toMention(), 'user_mention', member.user.toMention()]));
         return true;
       }
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to remove role');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_remove.failed_remove);
       return false;
     },
     {
@@ -3021,18 +3018,18 @@ if (groupRole) {
     async (inter, { role }) => {
       if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
+        await inter.respondEphemeral(i18n.modules.admin.group_roles_disabled);
         return false;
       }
       const thisRole = config.modules.admin.groupRoles[role.id];
       if (typeof thisRole !== 'string' || thisRole.length < 5) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+        await inter.respondEphemeral(i18n.modules.admin.role_incorrectly_configured);
         return false;
       }
       if (inter.member.roles.includes(role.id)) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You already have this role!`);
+        await inter.respondEphemeral(i18n.modules.admin.group_already_has_role);
         return false;
       }
       let perms = new utils.Permissions(role.permissions).serialize(true);
@@ -3046,13 +3043,13 @@ if (groupRole) {
       const noStaff = perms.every((p) => !staffPerms.includes(p));
       if (!noStaff) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You may not join this role because it has staff permissions assigned.`);
+        await inter.respondEphemeral(i18n.modules.admin.group_has_staff_perms);
         return false;
       }
       await inter.acknowledge(true);
       await inter.member.addRole(role.id);
 
-      await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I gave you the ${role.toMention()} role!`, allowedMentions: {} });
+      await interactionChannelRespond(inter, { content: setPlaceholders(i18n.modules.admin.group_joined, ['role_mention', role.toMention()]), allowedMentions: {} });
     },
     {
       module: 'admin',
@@ -3076,24 +3073,24 @@ if (groupRole) {
     async (inter, { role }) => {
       if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Group roles are not enabled!`);
+        await inter.respondEphemeral(i18n.modules.admin.group_roles_disabled);
         return false;
       }
       const thisRole = config.modules.admin.groupRoles[role.id];
       if (typeof thisRole !== 'string' || thisRole.length < 5) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Role incorrectly configured`);
+        await inter.respondEphemeral(i18n.modules.admin.role_incorrectly_configured);
         return false;
       }
       if (!inter.member.roles.includes(role.id)) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You do not have this role!`);
+        await inter.respondEphemeral(i18n.modules.admin.group_doesnt_have_role);
         return false;
       }
       await inter.acknowledge(true);
       await inter.member.removeRole(role.id);
 
-      await interactionChannelRespond(inter, { content: `${discord.decor.Emojis.WHITE_CHECK_MARK} I took the ${role.toMention()} role from you!`, allowedMentions: {} });
+      await interactionChannelRespond(inter, { content: setPlaceholders(i18n.modules.admin.group_left, ['role_mention', role.toMention()]), allowedMentions: {} });
     },
     {
       module: 'admin',
@@ -3127,11 +3124,11 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Set ${member.user.getTag()}'s nickname to \`${nickname === null ? 'None' : utils.escapeString(nickname, true)}\``);
+      await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.set_nickname, ['user_mention', member.user.getTag(), 'new_nick', nickname === null ? i18n.modules.admin.adm_backup.none : utils.escapeString(nickname, true)]));
       return true;
     }
     await inter.acknowledge(false);
-    await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to set nickname');
+    await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.failed_nickname);
     return false;
   },
   {
@@ -3157,12 +3154,12 @@ registerSlash(
     const dur = utils.timeArgumentToMs(duration);
     if (dur === 0) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral('duration malformed (try 1h30m format)');
+      await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
       return false;
     }
     if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral('duration must be between a minute and a month');
+      await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
       return false;
     }
 
@@ -3174,10 +3171,10 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Added role <@&${role.id}> to ${member.toMention()}${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.temprole_added, ['role_mention', role.toMention(), 'user_mention', member.toMention(), 'duration', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]));
     } else {
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to add role');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_add.failed_add);
       return false;
     }
   },
@@ -3208,12 +3205,12 @@ registerSlash(
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration malformed (try 1h30m format)');
+        await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration must be between a minute and a month');
+        await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return false;
       }
     }
@@ -3225,10 +3222,10 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Locked channel${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
     } else {
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock channel');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_channel.locked_fail);
       return false;
     }
   },
@@ -3261,10 +3258,10 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, 'Unlocked channel');
+      await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_lock_channel.unlocked_cmd);
     } else {
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock channel');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_channel.unlocked_fail);
       return false;
     }
   },
@@ -3299,12 +3296,12 @@ registerSlash(
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration malformed (try 1h30m format)');
+        await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration must be between a minute and a month');
+        await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return false;
       }
     }
@@ -3315,12 +3312,12 @@ registerSlash(
       return false;
     }
     if (res === true) {
-      const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, 'second') : '';
+      const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Set slowmode on ${channel.toMention()} to **${seconds}s**${txtDur !== '' ? ` for ${txtDur}` : ''}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ?? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur])}`);
     } else {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to set slowmode');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
       return false;
     }
   },
@@ -3347,12 +3344,12 @@ registerSlash(
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration malformed (try 1h30m format)');
+        await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('duration must be between a minute and a month');
+        await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return;
       }
     }
@@ -3364,10 +3361,10 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `Locked Guild${dur > 0 ? ` for ${utils.getLongAgoFormat(dur, 2, false, 'second')}` : ''}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
     } else {
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to lock guild');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_guild.failed_lock);
     }
   },
   {
@@ -3393,10 +3390,10 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, 'Unlocked Guild');
+      await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_lock_guild.unlocked_cmd);
     } else {
       await inter.acknowledge(false);
-      await infractions.confirmResultInteraction(undefined, inter, false, 'Failed to unlock guild');
+      await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_guild.failed_unlock);
     }
   },
   {
@@ -3429,7 +3426,7 @@ registerSlash(
     roles = roles.filter((role) => role.id !== guild.id);
     if (roles.length === 0) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral('No roles found');
+      await inter.respondEphemeral(i18n.modules.admin.adm_roles_list.no_roles);
       return;
     }
     await inter.acknowledge(true);
@@ -3446,13 +3443,13 @@ registerSlash(
       }
       const props = [];
       if (typeof config.levels === 'object' && typeof config.levels.roles === 'object' && typeof config.levels.roles[role.id] === 'number' && config.levels.roles[role.id] > 0) {
-        props.push(`Lvl ${config.levels.roles[role.id]}`);
+        props.push(`${i18n.modules.admin.adm_roles_list.level_short} ${config.levels.roles[role.id]}`);
       }
       if (role.mentionable === true) {
-        props.push('[M]');
+        props.push(i18n.modules.admin.adm_roles_list.mentionable_short);
       }
       if (role.hoist === true) {
-        props.push('[H]');
+        props.push(i18n.modules.admin.adm_roles_list.hoisted_short);
       }
       // dt[currKey].push([props.join(', '), role.id, role.name]);
       const prp = props.length > 0 ? props.join(', ') : '';
@@ -3462,7 +3459,7 @@ registerSlash(
         currKey += 1;
       }
       if (!Array.isArray(dt[currKey])) {
-        dt[currKey] = ['ID | <Properties> | Name', ''];
+        dt[currKey] = [i18n.modules.admin.adm_roles_list.properties, ''];
       }
       dt[currKey].push(thisTxt);
     });
