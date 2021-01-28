@@ -12,8 +12,8 @@ import * as crons from '../lib/crons';
 import * as github from '../lib/github';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 import { registerChatOn, registerChatRaw, registerChatSubCallback } from '../modules/commands';
-import {language as i18n} from '../localization/interface'
-import {buildLanguage} from '../localization/builder'
+import { language as i18n } from '../localization/interface';
+import { buildLanguage } from '../localization/builder';
 
 type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
@@ -32,14 +32,14 @@ function arrayEquals<T>(array1: T[], array2: T[]): boolean {
 
 function jsonWordCounter(json: any) {
   let count = 0;
-  if(typeof json === 'string') {
+  if (typeof json === 'string') {
     json.split(' ').map((word) => {
-      if(word.length > 2 && /^[a-z]+$/i.test(word)) {
+      if (word.length > 2 && /^[a-z]+$/i.test(word)) {
         count++;
       }
     });
   } else {
-    for(const key in json) {
+    for (const key in json) {
       count += jsonWordCounter(json[key]);
     }
   }
