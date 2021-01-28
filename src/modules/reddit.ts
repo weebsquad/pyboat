@@ -1,6 +1,7 @@
 import * as utils from '../lib/utils';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 import { config } from '../config';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 enum FormatMode {
     'PLAIN' = 'PLAIN',
@@ -126,7 +127,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
     }
     embed.setTitle(title);
     embed.setUrl(`https://reddit.com${data.permalink}`);
-    embed.setAuthor({ name: `Posted by /u/${data.author}`, url: `https://reddit.com/u/${data.author}` });
+    embed.setAuthor({ name: setPlaceholders(i18n.modules.reddit.red_terms.posted_by, ['user_name', data.author]), url: `https://reddit.com/u/${data.author}` });
     let image;
     if (data.media) {
       if (data.media.oembed) {
@@ -156,7 +157,7 @@ async function sendPost(channel: discord.GuildTextChannel | discord.GuildNewsCha
     }
     let footr = `/r/${subConfig.name}`;
     if (subConfig.stats) {
-      footr += ` | ${data.ups} upvotes | ${data.downs} downvotes | ${data.num_comments} comments`;
+      footr += ` | ${data.ups} ${i18n.modules.reddit.red_terms.upvotes} | ${data.downs} ${i18n.modules.reddit.red_terms.downvotes} | ${data.num_comments} ${i18n.modules.reddit.red_terms.comments}`;
     }
     embed.setFooter({ text: footr });
 

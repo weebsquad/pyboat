@@ -107,6 +107,7 @@ export interface IModules {
     utilities: IUtilities;
     starboard: IStarboard;
     translation: ITranslation;
+    reddit: IReddit;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -645,4 +646,13 @@ export interface IPirate_api {
     only_english: string;
     random_fail: string;
     lol_shit_api: string;
+}
+export interface IReddit {
+    red_terms: IRed_terms;
+}
+export interface IRed_terms {
+    posted_by: string;
+    upvotes: string;
+    downvotes: string;
+    comments: string;
 }

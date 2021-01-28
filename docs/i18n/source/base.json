@@ -665,6 +665,14 @@
               "lol_shit_api": "{USER_MENTION} <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
             }
           }
+        },
+        "reddit": {
+          "red_terms": {
+            "posted_by": "Posted by /u/{USER_NAME}",
+            "upvotes": "Upvotes",
+            "downvotes": "Downvotes",
+            "comments": "Comments"
+          }
         }
     }
 }
