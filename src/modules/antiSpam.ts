@@ -10,13 +10,13 @@ import * as constants from '../constants/constants';
 import { logCustom } from './logging/events/custom';
 import { getUserTag } from './logging/main';
 import * as admin from './admin';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const removeWhenComparing = ['\n', '\r', '\t', ' '];
 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
-const ACTION_REASON = 'Too many spam violations';
 
 export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
 class MessageEntry {
@@ -272,7 +272,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         let noRun = false;
         let logAct = false;
         if (action === 'LOCK_GUILD') {
-          const res = await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+          const res = await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), i18n.modules.antispam.action_reason);
           if (res === true) {
             logAct = true;
           }
@@ -287,7 +287,7 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
               const rolePing = await guild.getRole(roleId);
               const channelPing = await guild.getChannel(channelID);
               if (rolePing instanceof discord.Role && (channelPing instanceof discord.GuildTextChannel || channelPing instanceof discord.GuildNewsChannel)) {
-                await channelPing.sendMessage({ content: `Hey ${rolePing.toMention()} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **${action}** action, but you might want to take care of the offending users manually.`, allowedMentions: { roles: [rolePing.id] } });
+                await channelPing.sendMessage({ content: setPlaceholders(i18n.modules.antispam.raid_channel_msg, ['role_mention', rolePing.toMention(), 'action', action]), allowedMentions: { roles: [rolePing.id] } });
               }
             }
           }
@@ -295,22 +295,22 @@ export async function doChecks(msg: discord.GuildMemberMessage) {
         if (!noRun) {
           switch (action) {
             case 'KICK':
-              await infractions.Kick(member, null, ACTION_REASON);
+              await infractions.Kick(member, null, i18n.modules.antispam.action_reason);
               break;
             case 'SOFTBAN':
-              await infractions.SoftBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
+              await infractions.SoftBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, i18n.modules.antispam.action_reason);
               break;
             case 'MUTE':
-              await infractions.Mute(member, null, ACTION_REASON);
+              await infractions.Mute(member, null, i18n.modules.antispam.action_reason);
               break;
             case 'BAN':
-              await infractions.Ban(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
+              await infractions.Ban(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, i18n.modules.antispam.action_reason);
               break;
             case 'TEMPMUTE':
-              await infractions.TempMute(member, null, actionDuration, ACTION_REASON);
+              await infractions.TempMute(member, null, actionDuration, i18n.modules.antispam.action_reason);
               break;
             case 'TEMPBAN': {
-              await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
+              await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, i18n.modules.antispam.action_reason);
               break;
             }
             default:

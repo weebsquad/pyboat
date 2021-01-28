@@ -111,6 +111,7 @@ export interface IModules {
     commands: ICommands;
     censor: ICensor;
     counting: ICounting;
+    antispam: IAntispam;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -713,4 +714,8 @@ export interface ICensor {
 export interface ICounting {
     reset: string;
     set: string;
+}
+export interface IAntispam {
+    action_reason: string;
+    raid_channel_msg: string;
 }

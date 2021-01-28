@@ -727,6 +727,11 @@
         "counting": {
           "reset": "**Count has been reset by {USER_TAG}**",
           "set": "**Count has been set to {VALUE} by {USER_TAG}**"
-        }
+        },
+        "antispam": {
+          "action_reason": "Too many spam violations",
+          "raid_channel_msg": "Hey {ROLE_MENTION} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **{ACTION}** action, but you might want to take care of the offending users."
+        },
+        "antiping": {}
     }
 }
