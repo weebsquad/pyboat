@@ -12,6 +12,8 @@ import * as crons from '../lib/crons';
 import * as github from '../lib/github';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 import { registerChatOn, registerChatRaw, registerChatSubCallback } from '../modules/commands';
+import {language as i18n} from '../localization/interface'
+import {buildLanguage} from '../localization/builder'
 
 type Runner<T> = (setup: T) => Promise<void>;
 type Setup<T> = () => Promise<T> | T;
@@ -28,6 +30,21 @@ function arrayEquals<T>(array1: T[], array2: T[]): boolean {
   );
 }
 
+function jsonWordCounter(json: any) {
+  let count = 0;
+  if(typeof json === 'string') {
+    json.split(' ').map((word) => {
+      if(word.length > 2 && /^[a-z]+$/i.test(word)) {
+        count++;
+      }
+    });
+  } else {
+    for(const key in json) {
+      count += jsonWordCounter(json[key]);
+    }
+  }
+  return count;
+}
 async function runTests<T = undefined>(
   globalRunner: (test: TestF<T>) => void,
   filter = '',
@@ -1061,6 +1078,21 @@ export function InitializeCommands() {
           AL_OnMessageDelete(utils.composeSnowflake(), m.guildId, {}, ev, m);
         }
         const res: any = await m.inlineReply(`Done sending ${count} message delete logs`);
+        admin.saveMessage(res);
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+    registerChatRaw(
+      sub,
+      'i18nwords',
+      async (m) => {
+        const englando = await buildLanguage(globalConfig.localization.default, '');
+        const wordCount = jsonWordCounter(englando);
+        const res: any = await m.inlineReply(`i18n (source) has **${wordCount.toLocaleString()}** calculated words`);
         admin.saveMessage(res);
       },
       {
