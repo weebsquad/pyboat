@@ -620,6 +620,39 @@
                 "staff": "Staff",
                 "bot_level": "Bot Level"
             }
+        },
+        "starboard": {
+          "s_terms": {
+            "user": "User",
+            "message": "Message",
+            "jump_msg": "Jump to message",
+            "message_deleted": "Message Deleted",
+            "stars": "Stars",
+            "leaderboard": "Leaderboard",
+            "ranks": "Ranks",
+            "received": "Received",
+            "given": "Given",
+            "starred_posts": "Starred Posts"
+          },
+          "stars_block": {
+            "already_blocked": "{USER_MENTION} is not blocked from the starboard!",
+            "blocked": "Added {USER_MENTION} to the starboard blocklist"
+          },
+          "stars_unblock": {
+            "not_blocked": "{USER_MENTION} is not blocked from the starboard!",
+            "unblocked": "Removed {USER_MENTION} from the starboard blocklist"
+          },
+          "stars_lock": {
+            "already_locked": "The starboard is already locked",
+            "locked": "Locked the starboard"
+          },
+          "stars_unlock": {
+            "not_locked": "The starboard is not locked",
+            "unlocked": "Unlocked the starboard"
+          },
+          "stars_stats": {
+            "no_stats": "❌ No stats found for {USER_MENTION}"
+          }
         }
     }
 }

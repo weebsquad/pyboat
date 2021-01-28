@@ -105,6 +105,7 @@ export interface IModules {
     logging: ILogging;
     tags: ITags;
     utilities: IUtilities;
+    starboard: IStarboard;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -590,4 +591,43 @@ export interface IServer {
     bans: string;
     invites: string;
     members: string;
+}
+export interface IStarboard {
+    s_terms: IS_terms;
+    stars_block: IStars_block;
+    stars_unblock: IStars_unblock;
+    stars_lock: IStars_lock;
+    stars_unlock: IStars_unlock;
+    stars_stats: IStars_stats;
+}
+export interface IS_terms {
+    user: string;
+    message: string;
+    jump_msg: string;
+    message_deleted: string;
+    stars: string;
+    leaderboard: string;
+    ranks: string;
+    received: string;
+    given: string;
+    starred_posts: string;
+}
+export interface IStars_block {
+    already_blocked: string;
+    blocked: string;
+}
+export interface IStars_unblock {
+    not_blocked: string;
+    unblocked: string;
+}
+export interface IStars_lock {
+    already_locked: string;
+    locked: string;
+}
+export interface IStars_unlock {
+    not_locked: string;
+    unlocked: string;
+}
+export interface IStars_stats {
+    no_stats: string;
 }

@@ -5,6 +5,7 @@ import * as c2 from '../lib/commands2';
 import { StoragePool } from '../lib/storagePools';
 import { saveMessage } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const MAX_LIFETIME = 336;
 
@@ -82,7 +83,7 @@ export class StarredMessage {
         const newEmbed = new discord.Embed();
         newEmbed.setAuthor({ iconUrl: ogMsg.author.getAvatarUrl(), name: ogMsg.author.getTag() });
         newEmbed.setTimestamp(new Date().toISOString());
-        newEmbed.setFooter({ text: `User: ${ogMsg.author.id} | Message: ${ogMsg.id}` });
+        newEmbed.setFooter({ text: `${i18n.modules.starboard.s_terms.user}: ${ogMsg.author.id} | ${i18n.modules.starboard.s_terms.message}: ${ogMsg.id}` });
         const attachs: Array<string> = [];
         const rejectedattach: Array<string> = [];
         if (ogMsg.attachments.length > 0) {
@@ -104,7 +105,7 @@ export class StarredMessage {
         if (attachs.length === 1) {
           newEmbed.setImage({ url: attachs[0] });
         }
-        newEmbed.setFields([{ inline: true, name: '​​​', value: `→ [Jump to message](https://discord.com/channels/${guildId}/${ogMsg.channelId}/${ogMsg.id})` }]);
+        newEmbed.setFields([{ inline: true, name: '​​​', value: `→ [${i18n.modules.starboard.s_terms.jump_msg}](https://discord.com/channels/${guildId}/${ogMsg.channelId}/${ogMsg.id})` }]);
         if (ogMsg.content.length > 0) {
           let cont = ogMsg.content;
           if (cont.length > 1605) {
@@ -225,8 +226,8 @@ export class StarredMessage {
         if (typeof boardCfg.maxReacts === 'number') {
           emb.setColor(getColor(boardCfg.maxReacts, this.getReactorCount()));
         }
-        if (finalize === true && emb.footer && !emb.footer.text.toLowerCase().includes('message deleted')) {
-          emb.setFooter({ text: `Message Deleted | ${emb.footer.text}` });
+        if (finalize === true && emb.footer && !emb.footer.text.toLowerCase().includes(i18n.modules.starboard.s_terms.message_deleted.toLowerCase())) {
+          emb.setFooter({ text: `${i18n.modules.starboard.s_terms.message_deleted} | ${emb.footer.text}` });
         }
         const emjUse = typeof boardCfg.maxEmoji === 'string' && typeof boardCfg.maxReacts === 'number' && this.getReactorCount() >= boardCfg.maxReacts ? boardCfg.maxEmoji : this.emojiMention;
         /* if (emjUse === boardCfg.maxReacts && emjUse.length > 2 && emjUse.length < 7) {
@@ -476,8 +477,8 @@ export async function OnMessageReactionAdd(
     boardCfg = config.modules.starboard.channels[reaction.channelId];
     if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && message.embeds[0].footer !== null && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
       const foot = message.embeds[0].footer.text;
-      if (!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
-        const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
+      if (!foot.toLowerCase().includes(i18n.modules.starboard.s_terms.message_deleted.toLowerCase()) && foot.toLowerCase().includes(`${i18n.modules.starboard.s_terms.user.toLowerCase()}:`) && foot.toLowerCase().includes(`${i18n.modules.starboard.s_terms.message.toLowerCase()}:`)) {
+        const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split(`${i18n.modules.starboard.s_terms.message.toLowerCase()}:`)[1];
         msgId = messageid;
         const chanid = message.content.split('-')[1].split(' ').join('').substring(2).split('>')
           .join('');
@@ -633,8 +634,8 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
     boardCfg = config.modules.starboard.channels[reaction.channelId];
     if (message.embeds.length === 1 && typeof message.embeds[0].footer === 'object' && message.embeds[0].footer !== null && typeof message.embeds[0].footer.text === 'string' && message.embeds[0].footer.text.length > 0) {
       const foot = message.embeds[0].footer.text;
-      if (!foot.toLowerCase().includes('message deleted') && foot.toLowerCase().includes('user:') && foot.toLowerCase().includes('message:')) {
-        const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split('message:')[1];
+      if (!foot.toLowerCase().includes(i18n.modules.starboard.s_terms.message_deleted.toLowerCase()) && foot.toLowerCase().includes(`${i18n.modules.starboard.s_terms.user.toLowerCase()}:`) && foot.toLowerCase().includes(`${i18n.modules.starboard.s_terms.message.toLowerCase()}:`)) {
+        const messageid = foot.toLowerCase().split(' ').join('').split('|')[1].split(`${i18n.modules.starboard.s_terms.message.toLowerCase()}:`)[1];
         msgId = messageid;
         const chanid = message.content.split('-')[1].split(' ').join('').substring(2).split('>')
           .join('');
@@ -827,7 +828,7 @@ export function InitializeCommands() {
               } else {
                 pos = `\` ${i.toString()} \``;
               }
-              txt.push(`${pos} ${tag} - ${st.received} stars`);
+              txt.push(`${pos} ${tag} - ${st.received} ${i18n.modules.starboard.s_terms.stars.toLowerCase()}`);
             }
             const isTop = top10.find((st) => st.id === msg.author.id);
             if (!isTop) {
@@ -838,15 +839,15 @@ export function InitializeCommands() {
             }
             const allStars = stats.reduce((a, b) => a + b.received, 0);
 
-            emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
+            emb.setDescription(`${discord.decor.Emojis.TROPHY} **${i18n.modules.starboard.s_terms.leaderboard}**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **${i18n.modules.starboard.s_terms.ranks}**\n${txt.join('\n')}`);
           } else {
             const stats = await statsKv.getById<StarStats>(user.id);
             if (typeof stats === 'undefined') {
-              return { content: `${discord.decor.Emojis.X} ${msg.author.toMention()} no stats found for ${user.getTag()}` };
+              return { content: setPlaceholders(i18n.modules.starboard.stars_stats.no_stats, ['user_mention', msg.author.toMention()]) };
             }
             emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
             emb.setColor(0xe1eb34);
-            emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
+            emb.setDescription(`⭐ **${i18n.modules.starboard.s_terms.received}** - **${stats.received}**\n⭐ **${i18n.modules.starboard.s_terms.given}** - **${stats.given}**\n⭐ **${i18n.modules.starboard.s_terms.starred_posts}** - **${stats.posts}**`);
           }
 
           return { content: '', allowedMentions: {}, embed: emb };
@@ -868,7 +869,7 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === true) {
-            return `${msg.author.toMention()}, ${user.toMention()} is already blocked from the starboard!`;
+            return setPlaceholders(i18n.modules.starboard.stars_block.already_blocked, ['user_mention', user.toMention()]);
           }
           let blocks = await kv.get('blocks');
           if (!Array.isArray(blocks)) {
@@ -876,7 +877,7 @@ export function InitializeCommands() {
           }
           blocks.push(user.id);
           await kv.put('blocks', blocks);
-          return `${msg.author.toMention()}, added ${user.toMention()} to the starboard blocklist`;
+          return setPlaceholders(i18n.modules.starboard.stars_block.blocked, ['user_mention', user.toMention()]);
         });
         saveMessage(res);
       },
@@ -895,7 +896,7 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const isb = await isBlocked(user.id);
           if (isb === false) {
-            return `${msg.author.toMention()}, ${user.toMention()} is not blocked from the starboard!`;
+            return setPlaceholders(i18n.modules.starboard.stars_unblock.not_blocked, ['user_mention', user.toMention()]);
           }
           let blocks = await kv.get('blocks');
           if (!Array.isArray(blocks)) {
@@ -903,7 +904,7 @@ export function InitializeCommands() {
           }
           blocks.splice(blocks.indexOf(user.id), 1);
           await kv.put('blocks', blocks);
-          return `${msg.author.toMention()}, removed ${user.toMention()} from the starboard blocklist`;
+          return setPlaceholders(i18n.modules.starboard.stars_unblock.unblocked, ['user_mention', user.toMention()]);
         });
         saveMessage(res);
       },
@@ -921,10 +922,10 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
           if (lock === true) {
-            return `${msg.author.toMention()}, the starboard is already locked.`;
+            return i18n.modules.starboard.stars_lock.already_locked;
           }
           await kv.put('lock', true);
-          return `${msg.author.toMention()}, locked the starboard!`;
+          return i18n.modules.starboard.stars_lock.locked;
         });
         saveMessage(res);
       },
@@ -942,10 +943,10 @@ export function InitializeCommands() {
         const res: any = await msg.inlineReply(async () => {
           const lock: any = await kv.get('lock');
           if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
-            return `${msg.author.toMention()}, the starboard is not locked.`;
+            return i18n.modules.starboard.stars_unlock.not_locked;
           }
           await kv.put('lock', false);
-          return `${msg.author.toMention()}, unlocked the starboard!`;
+          return i18n.modules.starboard.stars_unlock.unlocked;
         });
         saveMessage(res);
       },
@@ -1002,7 +1003,7 @@ if (starsGroup) {
           } else {
             pos = `\` ${i.toString()} \``;
           }
-          txt.push(`${pos} ${tag} - ${st.received} stars`);
+          txt.push(`${pos} ${tag} - ${st.received} ${i18n.modules.starboard.s_terms.stars.toLowerCase()}`);
         }
         const isTop = top10.find((st) => st.id === inter.member.user.id);
         if (!isTop) {
@@ -1013,18 +1014,18 @@ if (starsGroup) {
         }
         const allStars = stats.reduce((a, b) => a + b.received, 0);
 
-        emb.setDescription(`${discord.decor.Emojis.TROPHY} **Leaderboard**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **Ranks**\n${txt.join('\n')}`);
+        emb.setDescription(`${discord.decor.Emojis.TROPHY} **${i18n.modules.starboard.s_terms.leaderboard}**\n\n${discord.decor.Emojis.STAR} **${allStars}**\n${discord.decor.Emojis.BLOND_HAIRED_PERSON} **${stats.length}**\n\n${discord.decor.Emojis.CHART_WITH_UPWARDS_TREND} **${i18n.modules.starboard.s_terms.ranks}**\n${txt.join('\n')}`);
       } else {
         user = user.user;
         const stats = await statsKv.getById<StarStats>(user.id);
         if (typeof stats === 'undefined') {
           await inter.acknowledge(false);
-          await inter.respondEphemeral(`${discord.decor.Emojis.X} no stats found for ${user.getTag()}`);
+          await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_stats.no_stats, ['user_mention', user.toMention()]));
           return false;
         }
         emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
         emb.setColor(0xe1eb34);
-        emb.setDescription(`⭐ **Received** - **${stats.received}**\n⭐ **Given** - **${stats.given}**\n⭐ **Starred Posts** - **${stats.posts}**`);
+        emb.setDescription(`⭐ **${i18n.modules.starboard.s_terms.received}** - **${stats.received}**\n⭐ **${i18n.modules.starboard.s_terms.given}** - **${stats.given}**\n⭐ **${i18n.modules.starboard.s_terms.starred_posts}** - **${stats.posts}**`);
       }
       await inter.acknowledge(true);
 
@@ -1048,7 +1049,7 @@ if (starsGroup) {
       const isb = await isBlocked(user.id);
       if (isb === true) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${user.toMention()} is already blocked from the starboard!`);
+        await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_block.already_blocked, ['user_mention', user.toMention()]));
         return false;
       }
       let blocks = await kv.get('blocks');
@@ -1058,7 +1059,7 @@ if (starsGroup) {
       await inter.acknowledge(true);
       blocks.push(user.id);
       await kv.put('blocks', blocks);
-      await interactionChannelRespond(inter, `${inter.member.user.toMention()}, added ${user.toMention()} to the starboard blocklist`);
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.starboard.stars_block.blocked, ['user_mention', user.toMention()]));
     },
     {
       parent: 'stars',
@@ -1078,7 +1079,7 @@ if (starsGroup) {
       const isb = await isBlocked(user.id);
       if (isb === false) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${user.toMention()} is not blocked from the starboard!`);
+        await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_unblock.not_blocked, ['user_mention', user.toMention()]));
         return false;
       }
       let blocks = await kv.get('blocks');
@@ -1088,7 +1089,7 @@ if (starsGroup) {
       await inter.acknowledge(true);
       blocks.splice(blocks.indexOf(user.id), 1);
       await kv.put('blocks', blocks);
-      await interactionChannelRespond(inter, `${inter.member.user.toMention()}, removed ${user.toMention()} from the starboard blocklist`);
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.starboard.stars_unblock.unblocked, ['user_mention', user.toMention()]));
     },
     {
       parent: 'stars',
@@ -1107,11 +1108,11 @@ if (starsGroup) {
       const lock: any = await kv.get('lock');
       if (lock === true) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('The starboard is already locked.');
+        await inter.respondEphemeral(i18n.modules.starboard.stars_lock.already_locked);
         return false;
       }
       await kv.put('lock', true);
-      await interactionChannelRespond(inter, `${inter.member.user.toMention()}, locked the starboard!`);
+      await interactionChannelRespond(inter, i18n.modules.starboard.stars_lock.locked);
     },
     {
       parent: 'stars',
@@ -1130,11 +1131,11 @@ if (starsGroup) {
       const lock: any = await kv.get('lock');
       if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('The starboard is not locked.');
+        await inter.respondEphemeral(i18n.modules.starboard.stars_unlock.not_locked);
         return false;
       }
       await kv.put('lock', false);
-      await interactionChannelRespond(inter, `${inter.member.user.toMention()}, unlocked the starboard!`);
+      await interactionChannelRespond(inter, i18n.modules.starboard.stars_unlock.unlocked);
     },
     {
       parent: 'stars',
