@@ -723,6 +723,10 @@
           "too_many_caps": "Too many capital letters",
           "illegal_chars": "Illegal characters",
           "censored_name": "censored name ({NUMBER})"
+        },
+        "counting": {
+          "reset": "**Count has been reset by {USER_TAG}**",
+          "set": "**Count has been set to {VALUE} by {USER_TAG}**"
         }
     }
 }

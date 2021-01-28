@@ -1,5 +1,6 @@
 import { config } from '../config';
 import * as utils from '../lib/utils';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const kv = new pylon.KVNamespace('counting');
 
@@ -104,7 +105,7 @@ export async function OnMessageCreate(
       await kv.delete(`counting_current${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
-      `**Count has been reset by ${message.author.getTag()}**`,
+      setPlaceholders(i18n.modules.counting.reset, ['user_tag', message.author.getTag()]),
     );
     await updateTopic(message.channelId);
     await delet(message);
@@ -121,7 +122,7 @@ export async function OnMessageCreate(
       await kv.delete(`counting_lastuser${message.channelId}`);
     } catch (e) {}
     (await message.getChannel()).sendMessage(
-      `**Count has been set to ${num} by ${message.author.getTag()}**`,
+      setPlaceholders(i18n.modules.counting.set, ['value', num.toString(), 'user_tag', message.author.getTag()]),
     );
     await updateTopic(message.channelId);
     await delet(message);

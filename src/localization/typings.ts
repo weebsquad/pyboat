@@ -110,6 +110,7 @@ export interface IModules {
     reddit: IReddit;
     commands: ICommands;
     censor: ICensor;
+    counting: ICounting;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -708,4 +709,8 @@ export interface ICensor {
     too_many_caps: string;
     illegal_chars: string;
     censored_name: string;
+}
+export interface ICounting {
+    reset: string;
+    set: string;
 }
