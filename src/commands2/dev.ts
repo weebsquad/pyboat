@@ -34,7 +34,7 @@ function jsonWordCounter(json: any) {
   let count = 0;
   if (typeof json === 'string') {
     json.split(' ').map((word) => {
-      if (word.length > 2 && /^[a-z]+$/i.test(word)) {
+      if (word.length > 2 && /^[a-z]+$/ig.test(word)) {
         count++;
       }
     });
