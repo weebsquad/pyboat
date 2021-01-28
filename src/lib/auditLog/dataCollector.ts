@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import { formatDiagnosticsWithColorAndContext } from 'typescript';
 import * as utils from '../utils';
 
@@ -69,7 +70,8 @@ export const auditLogDefinitions: {[key: string]: any} = {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
       if (perms.added.length === 1) {
         const thisp = perms.added[0];
-        if (thisp.id === log.options.id && thisp.type === log.options.type) {
+        // @ts-ignore
+        if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
           if (log.changes.allow.newValue === thisp.allow && log.changes.deny.newValue === thisp.deny) {
             return true;
           }
@@ -82,8 +84,9 @@ export const auditLogDefinitions: {[key: string]: any} = {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
       if (perms.changed.length === 1) {
         const thisp = perms.changed[0];
-        if (thisp.id === log.options.id && thisp.type === log.options.type) {
-          const oldpe = dt[0].permissionOverwrites.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === thisp.id);
+        // @ts-ignore
+        if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
+          const oldpe = dt[1].permissionOverwrites.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === thisp.id);
           if (!oldpe) {
             return false;
           }
@@ -107,7 +110,8 @@ export const auditLogDefinitions: {[key: string]: any} = {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
       if (perms.removed.length === 1) {
         const thisp = perms.removed[0];
-        if (thisp.id === log.options.id && thisp.type === log.options.type) {
+        // @ts-ignore
+        if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
           if (log.changes.allow.oldValue === thisp.allow && log.changes.deny.oldValue === thisp.deny) {
             return true;
           }
