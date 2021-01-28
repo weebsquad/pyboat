@@ -6,6 +6,7 @@ import * as gTranslate from '../lib/gTranslate';
 import * as constants from '../constants/translation';
 import * as admin from '../modules/admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw } from '../modules/commands';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const { config, Ranks } = conf;
 const kv = new pylon.KVNamespace('commands_general');
@@ -54,7 +55,8 @@ export function InitializeCommands() {
     cmdGroup,
     'mylevel',
     async (msg) => {
-      const res: any = await msg.inlineReply(`${msg.author.toMention()} you are bot access level **${utils.getUserAuth(msg.member)}**${utils.isGlobalAdmin(msg.author.id) ? ' and a global admin!' : ''}`);
+      const stringShow = utils.isGlobalAdmin(msg.author.id) ? i18n.modules.commands.cmd_general.mylevel_admin : i18n.modules.commands.cmd_general.mylevel;
+      const res: any = await msg.inlineReply(setPlaceholders(stringShow, ['level', utils.getUserAuth(msg.member).toString()]));
       admin.saveMessage(res);
     },
     {
@@ -73,7 +75,7 @@ export function InitializeCommands() {
       const msgd = new Date();
       const edmsg: any = await msg.inlineReply('<a:loading:735794724480483409>');
       const td = new Date().getTime() - msgd.getTime();
-      await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+      await edmsg.edit(setPlaceholders(i18n.modules.commands.cmd_general.ping, ['msg_diff_ms', msgdiff.toString(), 'sent_msg_ms', td.toString()]));
       admin.saveMessage(edmsg);
     },
     {
@@ -93,16 +95,16 @@ export function InitializeCommands() {
         const guild = await msg.getGuild();
         const me = await guild.getMember(discord.getBotId());
         if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
-          return 'I don\'t have permissions to change my nickname!';
+          return i18n.modules.commands.cmd_general.cmd_nickme.no_permission;
         }
         if (nick === me.nick) {
-          return 'I already have that nickname!';
+          return i18n.modules.commands.cmd_general.cmd_nickme.already_nickname;
         }
         if (nick === 'invisible') {
           nick = ' ឵឵ ';
         } // invis chars
         await me.edit({ nick });
-        return 'Done!';
+        return i18n.modules.commands.cmd_general.cmd_nickme.done;
       });
       admin.saveMessage(res);
     },
@@ -193,7 +195,7 @@ export function InitializeCommands() {
 registerSlash(
   { name: 'help', description: 'Shows the bot\'s help explanation' },
   async (inter) => {
-    await inter.respondEphemeral('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
+    await inter.respondEphemeral(i18n.modules.commands.cmd_general.help);
     return false;
   }, {
     staticAck: false,
@@ -223,7 +225,8 @@ registerSlash(
 registerSlash(
   { name: 'mylevel', description: 'Shows your bot access level' },
   async (inter) => {
-    await inter.respondEphemeral(`${inter.member.user.toMention()} you are bot access level **${utils.getUserAuth(inter.member)}**${utils.isGlobalAdmin(inter.member.user.id) ? ' and a global admin!' : ''}`);
+    const stringShow = utils.isGlobalAdmin(inter.member.user.id) ? i18n.modules.commands.cmd_general.mylevel_admin : i18n.modules.commands.cmd_general.mylevel;
+    await inter.respondEphemeral(setPlaceholders(stringShow, ['level', utils.getUserAuth(inter.member).toString()]));
     return false;
   }, {
     staticAck: false,
@@ -245,7 +248,7 @@ registerSlash(
       return;
     }
     const td = new Date().getTime() - msgd.getTime();
-    await edmsg.edit(`Pong @${msgdiff}ms, sent message in ${td}ms`);
+    await edmsg.edit(setPlaceholders(i18n.modules.commands.cmd_general.ping, ['msg_diff_ms', msgdiff.toString(), 'sent_msg_ms', td.toString()]));
   }, {
     staticAck: true,
     permissions: {

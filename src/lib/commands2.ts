@@ -3,6 +3,7 @@ import { moduleDefinitions } from '../modules/_init_';
 import { config, globalConfig, Ranks } from '../config';
 import { registeredSlashCommands, registeredSlashCommandGroups, SlashGroupHasSubcommands, chatErrorHandler } from '../modules/commands';
 import * as utils from './utils';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 /* eslint-disable prefer-destructuring */
 /* eslint-disable import/no-mutable-exports */
 export let cmdgroups = [];
@@ -176,7 +177,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
       const ownr = await filterActualOwner(msg);
       const ov = await filterOverridingGlobalAdmin(msg);
       return ownr || ov;
-    }, 'Must be the server owner');
+    }, i18n.modules.commands.must_be_server_owner);
   } else {
     let ov: undefined | CmdOverride;
     if (typeof overrideableInfo === 'string' && overrideableInfo.length > 1 && typeof config.modules.commands.overrides === 'object') {
@@ -185,7 +186,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
     }
     const txtErr = [];
     if (level > 0) {
-      txtErr.push(`Must be bot access level ${level}`);
+      txtErr.push(setPlaceholders(i18n.modules.commands.must_be_level, ['level', level.toString()]));
     }
     if (typeof ov === 'object') {
       if (Array.isArray(ov.rolesWhitelist)) {
@@ -194,10 +195,10 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
           rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
         }
         if (rls.length > 0) {
-          txtErr.push(`Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`);
+          txtErr.push(setPlaceholders(i18n.modules.commands.must_have_roles, ['roles', rls.map((rl) => `<@&${rl}>`).join(', ')]));
         }
       } else if (Array.isArray(ov.rolesBlacklist) && ov.rolesBlacklist.length > 0) {
-        txtErr.push(`Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`);
+        txtErr.push(setPlaceholders(i18n.modules.commands.must_not_have_roles, ['roles', ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')]));
       }
       if (Array.isArray(ov.channelsWhitelist)) {
         let chs = ov.channelsWhitelist;
@@ -205,10 +206,10 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
           chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
         }
         if (chs.length > 0) {
-          txtErr.push(`Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`);
+          txtErr.push(setPlaceholders(i18n.modules.commands.must_be_on_channel, ['channels', chs.map((ch) => `<#${ch}>`).join(', ')]));
         }
       } else if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.length > 0) {
-        txtErr.push(`Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`);
+        txtErr.push(setPlaceholders(i18n.modules.commands.must_not_be_on_channel, ['channels', ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')]));
       }
     }
 
@@ -255,7 +256,7 @@ export function getFilters(overrideableInfo: string | null, level: number, owner
         const override = await filterOverridingGlobalAdmin(msg);
         const theirLevel = utils.getUserAuth(msg.member);
         return ownr || override || (typeof ov.bypassLevel === 'number' && theirLevel >= ov.bypassLevel);
-      }, 'this command is disabled');
+      }, i18n.modules.commands.command_disabled);
     }
     if (config.modules.commands.hideNoAccess && config.modules.commands.hideNoAccess === true) {
       _f = F.silent(_f);
@@ -281,7 +282,7 @@ export async function checkPerms(member: discord.GuildMember, guild: discord.Gui
   }
   if (owner === true) {
     retVal.access = isOverridingGlobalAdmin || isOwner;
-    retVal.errors.push('Must be the server owner');
+    retVal.errors.push(i18n.modules.commands.must_be_server_owner);
     return retVal;
   }
   let ov: undefined | CmdOverride;
@@ -295,7 +296,7 @@ export async function checkPerms(member: discord.GuildMember, guild: discord.Gui
       retVal.access = true;
     } else {
       retVal.access = false;
-      retVal.errors.push('This command is disabled');
+      retVal.errors.push(i18n.modules.commands.command_disabled);
     }
   } else if (typeof level !== 'number') {
     retVal.access = false;
@@ -309,7 +310,7 @@ export async function checkPerms(member: discord.GuildMember, guild: discord.Gui
 
       if (!ov) {
         if (!val) {
-          return `Must be bot access level ${level}`;
+          return setPlaceholders(i18n.modules.commands.must_be_level, ['level', level.toString()]);
         }
         return true;
       }
@@ -319,19 +320,19 @@ export async function checkPerms(member: discord.GuildMember, guild: discord.Gui
         }
       }
       if (Array.isArray(ov.channelsBlacklist) && ov.channelsBlacklist.includes(channelId)) {
-        return `Must not be on the following channels: ${ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')}`;
+        return setPlaceholders(i18n.modules.commands.must_not_be_on_channel, ['channels', ov.channelsBlacklist.map((ch) => `<#${ch}>`).join(', ')]);
       }
       if (Array.isArray(ov.channelsWhitelist) && ov.channelsWhitelist.length > 0 && !ov.channelsWhitelist.includes(channelId)) {
         let chs = ov.channelsWhitelist;
         if (Array.isArray(ov.channelsBlacklist)) {
           chs = chs.filter((ch) => !ov.channelsBlacklist.includes(ch));
         }
-        return `Must be on the following channels: ${chs.map((ch) => `<#${ch}>`).join(', ')}`;
+        return setPlaceholders(i18n.modules.commands.must_be_on_channel, ['channels', chs.map((ch) => `<#${ch}>`).join(', ')]);
       }
       if (Array.isArray(ov.rolesBlacklist)) {
         const matches = member.roles.find((rlid) => ov.rolesBlacklist.includes(rlid));
         if (typeof matches !== 'undefined') {
-          return `Must not have any of the following role(s): ${ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')}`;
+          return setPlaceholders(i18n.modules.commands.must_not_have_roles, ['roles', ov.rolesBlacklist.map((rl) => `<@&${rl}>`).join(', ')]);
         }
       }
       if (Array.isArray(ov.rolesWhitelist) && ov.rolesWhitelist.length > 0) {
@@ -341,11 +342,11 @@ export async function checkPerms(member: discord.GuildMember, guild: discord.Gui
           if (Array.isArray(ov.rolesBlacklist)) {
             rls = rls.filter((rl) => !ov.rolesBlacklist.includes(rl));
           }
-          return `Must have any of the following role(s): ${rls.map((rl) => `<@&${rl}>`).join(', ')}`;
+          return setPlaceholders(i18n.modules.commands.must_have_roles, ['roles', rls.map((rl) => `<@&${rl}>`).join(', ')]);
         }
       }
       if (!val) {
-        return `Must be bot access level ${level}`;
+        return setPlaceholders(i18n.modules.commands.must_be_level, ['level', level.toString()]);
       }
       return true;
     };

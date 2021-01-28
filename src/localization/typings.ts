@@ -108,6 +108,7 @@ export interface IModules {
     starboard: IStarboard;
     translation: ITranslation;
     reddit: IReddit;
+    commands: ICommands;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -655,4 +656,35 @@ export interface IRed_terms {
     upvotes: string;
     downvotes: string;
     comments: string;
+}
+export interface ICommands {
+    must_be_server_owner: string;
+    must_be_level: string;
+    must_have_roles: string;
+    must_not_have_roles: string;
+    must_be_on_channel: string;
+    must_not_be_on_channel: string;
+    command_disabled: string;
+    cant_use_command_title: string;
+    cant_use_command_description: string;
+    must_meet_criteria: string;
+    error_executing_command: string;
+    error_logged: string;
+    arguments_string: string;
+    argument_error: string;
+    other_error: string;
+    unknown_subcommand: string;
+    cmd_general: ICmd_general;
+}
+export interface ICmd_general {
+    help: string;
+    mylevel: string;
+    mylevel_admin: string;
+    ping: string;
+    cmd_nickme: ICmd_nickme;
+}
+export interface ICmd_nickme {
+    no_permission: string;
+    already_nickname: string;
+    done: string;
 }

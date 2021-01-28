@@ -673,6 +673,36 @@
             "downvotes": "Downvotes",
             "comments": "Comments"
           }
+        },
+        "commands": {
+          "must_be_server_owner": "Must be the server owner",
+          "must_be_level": "Must be bot access level {LEVEL}",
+          "must_have_roles": "Must have any of the following role(s): {ROLES}",
+          "must_not_have_roles": "Must not have any of the following role(s): {ROLES}",
+          "must_be_on_channel": "Must be on any of the following channels: {CHANNELS}",
+          "must_not_be_on_channel": "Must not be on any of the following channels: {CHANNELS}",
+          "command_disabled": "This command is disabled",
+          "cant_use_command_title": "🔒 You can't use that command!",
+          "cant_use_command_description": "**You can't use that command!**\n__You must meet all of following criteria:__\n\n{EXECUTION_CRITERIA}",
+          "must_meet_criteria": "__You must meet all of following criteria:__\n\n{EXECUTION_CRITERIA}",
+          "error_executing_command": "**There has been an error executing this command**\n\n__{ERROR}__",
+          "error_logged": "**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.",
+          "arguments_string": " with arguments {ARGS}",
+          "argument_error": "⚠️Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
+          "other_error": "❌ **There was an error running that command**\n[{ERROR_NAME}] - __{ERROR_MESSAGE}__",
+          "unknown_subcommand": "Unknown sub-command for `{COMMAND_PARENT}`, try:\n{SUB_COMMANDS}",
+          "cmd_general": {
+            "help": "PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)",
+            "mylevel": "You are bot access level **{LEVEL}**",
+            "mylevel_admin": "You are bot access level **{LEVEL}** and a global admin",
+            "ping": "Pong @{MSG_DIFF_MS}ms, sent message in {SENT_MSG_MS}ms",
+            "cmd_nickme": {
+              "no_permission": "I don't have permissions to change my nickname!",
+              "already_nickname": "I already have that nickname!",
+              "done": "Done!"
+            }
+          }
+
         }
     }
 }

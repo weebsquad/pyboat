@@ -6,6 +6,7 @@ import * as admin from './admin';
 import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
@@ -72,7 +73,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
       try {
         await interaction.acknowledge(false);
       } catch (_) {}
-      await interaction.respondEphemeral('**This command is disabled**');
+      await interaction.respondEphemeral(i18n.modules.commands.command_disabled);
       return;
     }
   }
@@ -99,10 +100,10 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
         await interaction.acknowledge(false);
       } catch (_) {}
       if (perms.errors.length > 0) {
-        if (perms.errors.includes('This command is disabled')) {
-          await interaction.respondEphemeral('This command is disabled');
+        if (perms.errors.includes(i18n.modules.commands.command_disabled)) {
+          await interaction.respondEphemeral(i18n.modules.commands.command_disabled);
         } else {
-          await interaction.respondEphemeral(`**You can't use that command!**\n__You must meet all of following criteria:__\n\n${perms.errors.join('\n')}`);
+          await interaction.respondEphemeral(setPlaceholders(i18n.modules.commands.cant_use_command_description, ['execution_criteria', perms.errors.join('\n')]));
         }
       }
       return;
@@ -134,12 +135,12 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
       try {
         const emsg: any = JSON.parse(_e.messageExtended).message;
         if (emsg && errorsDisplay.includes(emsg.toLowerCase())) {
-          await interaction.respondEphemeral(`**There has been an error executing this command**\n\n__${emsg}__`);
+          await interaction.respondEphemeral(setPlaceholders(i18n.modules.commands.error_executing_command, ['error', emsg]));
           return;
         }
       } catch (e) {}
     }
-    await interaction.respondEphemeral('**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.');
+    await interaction.respondEphemeral(i18n.modules.commands.error_logged);
     logDebug(
       'BOT_ERROR',
       new Map<string, any>([
@@ -184,7 +185,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
       }
     }
     if (argsString !== '') {
-      argsString = ` with arguments ${argsString}`;
+      argsString = setPlaceholders(i18n.modules.commands.arguments_string, ['args', argsString]);
     }
     logCustom(
       'COMMANDS',
@@ -277,13 +278,13 @@ export async function executeChatCommand(opts: string | discord.command.ICommand
     if (!perms.access) {
       if (perms.errors.length > 0) {
         let txtErr = '';
-        if (perms.errors.includes('This command is disabled')) {
-          txtErr = 'This command is disabled';
+        if (perms.errors.includes(i18n.modules.commands.command_disabled)) {
+          txtErr = i18n.modules.commands.command_disabled;
         } else {
-          txtErr = `__You must meet all of following criteria:__\n${perms.errors.join('\n')}`;
+          txtErr = setPlaceholders(i18n.modules.commands.must_meet_criteria, ['execution_criteria', perms.errors.join('\n')]);
         }
         const emb = new discord.Embed();
-        emb.setTitle(`${discord.decor.Emojis.LOCK} You can't use that command!`);
+        emb.setTitle(i18n.modules.commands.cant_use_command_title);
         emb.setColor(0xff0505);
         emb.setDescription(txtErr);
         let sentMsg;
@@ -376,12 +377,12 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
       if (matchingArgErrorName) {
         [matchingArgErrorName] = matchingArgErrorName;
       }
-      msgReply = `${discord.decor.Emojis.WARNING} Argument Error (\`${matchingArgErrorName}\`: __${error.message}__)\n\`\`\`\n${usageString}\n\`\`\``;
+      msgReply = setPlaceholders(i18n.modules.commands.argument_error, ['arg_name', matchingArgErrorName, 'error', error.message, 'usage', usageString]);
     } else if (errorsDisplay.includes(error.message.toLowerCase())) {
-      msgReply = `${discord.decor.Emojis.X} **There was an error running that command**\n[${error.name}] - __${error.message}__`;
+      msgReply = setPlaceholders(i18n.modules.commands.other_error, ['error_name', error.name, 'error_message', error.message]);
     } else {
       utils.logError(error);
-      msgReply = `${discord.decor.Emojis.X} **There was an error running that command**\n__This has been reported to the Bot Developer__`;
+      msgReply = i18n.modules.commands.error_logged;
       logDebug(
         'BOT_ERROR',
         new Map<string, any>([
@@ -433,7 +434,7 @@ export async function unknownHandler(message, group) {
     }
   }
   if (subNames.length > 0) {
-    msgReply = `Unknown sub-command for \`${utils.escapeString(<string>cmdInitial, true)}\`, try:\n${subNames.join(', ')}`;
+    msgReply = setPlaceholders(i18n.modules.commands.unknown_subcommand, ['command_parent', utils.escapeString(<string>cmdInitial, true), 'sub_commands', subNames.join(', ')]);
   }
 
   if (msgReply.length > 0) {
