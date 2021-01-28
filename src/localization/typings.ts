@@ -90,6 +90,7 @@ export interface IRanks {
     moderator: string;
     administrator: string;
     owner: string;
+    system: string;
 }
 export interface IConfig {
     cant_download_file: string;

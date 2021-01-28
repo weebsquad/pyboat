@@ -71,7 +71,8 @@
         "authorized": "Authorized",
         "moderator": "Moderator",
         "administrator": "Administrator",
-        "owner": "Owner"
+        "owner": "Owner",
+        "system": "System"
     },
     "config": {
         "cant_download_file": "{USER_MENTION} I couldn't grab that file, is another bot deleting the file?",

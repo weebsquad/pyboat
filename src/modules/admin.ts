@@ -354,7 +354,7 @@ export async function addAction(target: discord.Guild | discord.GuildChannel | d
     return;
   }
   if (actor === null) {
-    actor = 'SYSTEM';
+    actor = discord.getBotId();
   }
   let targetId;
   if (target instanceof discord.GuildMember) {
@@ -592,7 +592,7 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   if (seconds > 0 && duration > 0) {
     await addAction(channel, actor, ActionType.SLOWMODE, exp, oldValue, undefined, reason);
   }
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['SECONDS', seconds.toString()], ['CHANNEL_ID', channel.id], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', i18n.ranks.system], ['SECONDS', seconds.toString()], ['CHANNEL_ID', channel.id], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
@@ -655,7 +655,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
     await addAction(channel, actor, ActionType.LOCK_CHANNEL, exp, undefined, undefined, reason);
   }
   await channel.edit({ permissionOverwrites: newOws });
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['CHANNEL_ID', channel.id], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', i18n.ranks.system], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['CHANNEL_ID', channel.id], ['REASON', '']]);
   let type = 'LOCKED_CHANNEL';
   if (state === false) {
     type = 'UNLOCKED_CHANNEL';
@@ -722,7 +722,7 @@ export async function LockGuild(actor: discord.GuildMember | null, state: boolea
     await addAction(guild, actor, ActionType.LOCK_GUILD, exp, undefined, undefined, reason);
   }
   await defaultRole.edit({ permissions: Number(perms.bitfield) });
-  const placeholders = new Map([['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ACTORTAG', i18n.ranks.system], ['DURATION', duration > 0 ? ` for ${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   let type = 'LOCKED_GUILD';
   if (state === false) {
     type = 'UNLOCKED_GUILD';
@@ -778,7 +778,7 @@ export async function TempRole(actor: discord.GuildMember | null, target: discor
   const exp = duration > 0 ? utils.composeSnowflake(Date.now() + duration) : undefined;
   await addAction(target, actor, ActionType.TEMPROLE, exp, undefined, role.id, reason);
   await target.addRole(role.id);
-  const placeholders = new Map([['ROLE_MENTION', role.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['DURATION', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
+  const placeholders = new Map([['ROLE_MENTION', role.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', i18n.ranks.system], ['DURATION', duration > 0 ? `${utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)}` : ''], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
@@ -830,7 +830,7 @@ export async function Role(actor: discord.GuildMember | null, target: discord.Gu
   } else {
     await target.removeRole(roleTxt.id);
   }
-  const placeholders = new Map([['ROLE_MENTION', roleTxt.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['REASON', '']]);
+  const placeholders = new Map([['ROLE_MENTION', roleTxt.toMention()], ['USERTAG', getMemberTag(target)], ['ACTORTAG', i18n.ranks.system], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
@@ -867,7 +867,7 @@ export async function Nick(actor: discord.GuildMember | null, target: discord.Gu
   }
   await target.edit({ nick: newNick });
 
-  const placeholders = new Map([['NEW_NICK', newNick === null ? 'None' : utils.escapeString(newNick)], ['USERTAG', getMemberTag(target)], ['ACTORTAG', 'SYSTEM'], ['REASON', '']]);
+  const placeholders = new Map([['NEW_NICK', newNick === null ? 'None' : utils.escapeString(newNick)], ['USERTAG', getMemberTag(target)], ['ACTORTAG', i18n.ranks.system], ['REASON', '']]);
   if (actor !== null) {
     placeholders.set('ACTORTAG', getActorTag(actor));
     placeholders.set('ACTOR_ID', actor.user.id);
@@ -995,7 +995,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
   await Promise.all(promises);
   cleaning = false;
   if (deleted.length > 0) {
-    const _placeholders = new Map([['MESSAGES', deleted.length.toString()], ['ACTORTAG', 'SYSTEM'], ['CHANNEL', ''], ['USERTAG', '']]);
+    const _placeholders = new Map([['MESSAGES', deleted.length.toString()], ['ACTORTAG', i18n.ranks.system], ['CHANNEL', ''], ['USERTAG', '']]);
     if (actor !== null) {
       _placeholders.set('ACTORTAG', getActorTag(actor));
       _placeholders.set('ACTOR_ID', actor.user.id);
@@ -2393,7 +2393,7 @@ export function InitializeCommands() {
           last10.map((inf) => {
             let targMention;
             // todo properly format this
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** ${inf.targetId} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {

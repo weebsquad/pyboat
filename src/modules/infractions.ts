@@ -8,6 +8,7 @@ import { getUserAuth, StoragePool } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, registerChatSubCallback } from './commands';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 export const infsPool = new utils.StoragePool('infractions', 0, 'id', 'ts');
 
@@ -151,7 +152,7 @@ export async function clearInfractions() {
 }
 export async function addInfraction(target: discord.GuildMember | discord.User | string, actor: discord.GuildMember | discord.User | string | null, type: InfractionType, expires: string | undefined = '', reason = '') {
   if (!actor) {
-    actor = 'SYSTEM';
+    actor = discord.getBotId();
   }
   let targetId;
   if (target instanceof discord.GuildMember) {
@@ -298,7 +299,7 @@ export async function logAction(actionType: string, actor: discord.User | discor
     extras.set('USER', member);
   }
   if (actor === null) {
-    extras.set('ACTORTAG', 'SYSTEM');
+    extras.set('ACTORTAG', i18n.ranks.system);
   } else {
     if (actor instanceof discord.GuildMember) {
       actor = actor.user;
@@ -596,7 +597,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   if (deleteDays < 0) {
     deleteDays = 0;
   }
-  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
+  await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : i18n.ranks.system}): ${reason}` });
   await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
   await logAction('ban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
   return true;
@@ -643,7 +644,7 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
         continue;
       }
 
-      await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : 'SYSTEM'}): ${reason}` });
+      await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : i18n.ranks.system}): ${reason}` });
       await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
       results.success.push(memberId);
     }
@@ -1160,7 +1161,7 @@ export function InitializeCommands() {
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? i18n.ranks.system : `${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
@@ -1192,7 +1193,7 @@ export function InitializeCommands() {
           const last10 = infs.slice(0, Math.min(infs.length, 10));
           let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
           last10.map((inf) => {
-            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+            txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
@@ -1231,7 +1232,7 @@ export function InitializeCommands() {
             return { content: `${discord.decor.Emojis.X}No infraction found` };
           }
           const inf = infs[0];
-          const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+          const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           const emb = new discord.Embed();
           emb.setDescription(txt);
           emb.setTimestamp(new Date().toISOString());
@@ -1507,12 +1508,12 @@ export function InitializeCommands() {
         (ctx) => ({ actor: ctx.user() }),
         async (msg, { actor }) => {
           const res:any = await msg.inlineReply(async () => {
-            const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? 'SYSTEM' : actor.id }));
+            const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? discord.getBotId() : actor.id }));
             if (infs.length === 0) {
               return { content: 'There are no infractions by this actor' };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? 'SYSTEM' : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
@@ -1544,7 +1545,7 @@ export function InitializeCommands() {
         'system',
         async (msg) => {
           const res:any = await msg.inlineReply(async () => {
-            const infs = (await infsPool.getByQuery<Infraction>({ actorId: 'SYSTEM' }));
+            const infs = (await infsPool.getByQuery<Infraction>({ actorId: discord.getBotId() }));
             if (infs.length === 0) {
               return { content: 'There are no infractions by system' };
             }
@@ -1562,7 +1563,7 @@ export function InitializeCommands() {
               txt = '**No infractions found by **SYSTEM';
             }
             emb.setDescription(txt);
-            emb.setAuthor({ name: 'SYSTEM' });
+            emb.setAuthor({ name: i18n.ranks.system });
             emb.setTimestamp(new Date().toISOString());
 
             return { embed: emb, allowedMentions: {}, content: '' };
@@ -1589,7 +1590,7 @@ export function InitializeCommands() {
             const last10 = infs.slice(0, Math.min(infs.length, 10));
             let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
             last10.map((inf) => {
-              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
@@ -1627,7 +1628,7 @@ export function InitializeCommands() {
             const last10 = infs.slice(0, Math.min(infs.length, 10));
             let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
             last10.map((inf) => {
-              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+              txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
@@ -2190,7 +2191,7 @@ if (infGroup) {
       const last10 = infs.slice(0, Math.min(infs.length, 10));
       let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
       last10.map((inf) => {
-        txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+        txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
       });
       const remaining = infs.length - last10.length;
       if (remaining > 0) {
@@ -2228,7 +2229,7 @@ if (infGroup) {
       const last10 = infs.slice(0, Math.min(infs.length, 10));
       let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
       last10.map((inf) => {
-        txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+        txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM'|| inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
       });
       const remaining = infs.length - last10.length;
       if (remaining > 0) {
@@ -2275,7 +2276,7 @@ if (infGroup) {
       }
       await inter.acknowledge(true);
       const inf = infs[0];
-      const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+      const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM'|| inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
       const emb = new discord.Embed();
       emb.setDescription(txt);
       emb.setTimestamp(new Date().toISOString());
@@ -2652,7 +2653,7 @@ registerSlashSub(
       },
       async (inter, { actor }) => {
         actor = actor.user;
-        const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? 'SYSTEM' : actor.id }));
+        const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? discord.getBotId() : actor.id }));
         if (infs.length === 0) {
           await inter.acknowledge(false);
           await inter.respondEphemeral('There are no infractions by this actor');
@@ -2660,7 +2661,7 @@ registerSlashSub(
         }
         await inter.acknowledge(true);
         const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? 'SYSTEM' : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
@@ -2695,7 +2696,7 @@ registerSlashSub(
         description: 'Search infractions applied by the bot automatically',
       },
       async (inter) => {
-        const infs = (await infsPool.getByQuery<Infraction>({ actorId: 'SYSTEM' }));
+        const infs = (await infsPool.getByQuery<Infraction>({ actorId: discord.getBotId() }));
         if (infs.length === 0) {
           await inter.acknowledge(false);
           await inter.respondEphemeral('There are no infractions by system');
@@ -2716,7 +2717,7 @@ registerSlashSub(
           txt = '**No infractions found by **SYSTEM';
         }
         emb.setDescription(txt);
-        emb.setAuthor({ name: 'SYSTEM' });
+        emb.setAuthor({ name: i18n.ranks.system });
         emb.setTimestamp(new Date().toISOString());
 
         await interactionChannelRespond(inter, { embed: emb, allowedMentions: {}, content: '' });
@@ -2751,7 +2752,7 @@ registerSlashSub(
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
         last10.map((inf) => {
-          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {
@@ -2796,7 +2797,7 @@ registerSlashSub(
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
         last10.map((inf) => {
-          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? 'SYSTEM' : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+          txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {

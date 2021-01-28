@@ -8,6 +8,7 @@ import { eventData } from './tracking';
 import { logDebug } from './events/custom';
 import * as queue from './queue';
 import { ParsedAttachment } from './classes';
+import { language as i18n, setPlaceholders } from '../../localization/interface';
 
 const thisGuildId = typeof conf.guildId === 'string' ? conf.guildId : discord.getGuildId();
 export * from './utils';
@@ -427,7 +428,7 @@ async function getMessages(
               let usr;
               if (map.has('ACTOR')) {
                 usr = map.get('ACTOR');
-              } else if (map.get('ACTORTAG') === 'SYSTEM') {
+              } else if (map.get('ACTORTAG') === i18n.ranks.system) {
                 usr = 'SYSTEM';
               } else if (ev.auditLogEntry instanceof discord.AuditLogEntry) {
                 usr = ev.auditLogEntry.user;
