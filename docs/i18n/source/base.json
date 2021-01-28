@@ -658,11 +658,11 @@
           "tr_terms": {
             "requested_by": "Requested by {USER_TAG} {USER_ID}",
             "jump_message": "Jump to message",
-            "cant_translate": "{USER_MENTION} I couldn't translate that! :(",
+            "cant_translate": "{USER_MENTION} ❌ I couldn't translate that! :(",
             "pirate_api": {
-              "only_english": "{USER_MENTION} Only english-sourced messages can be pirate spoken! <:pirate:713103123912065024>",
-              "random_fail": "{USER_MENTION} the pirate api decided to fail for whatever reason <:pirate:713103123912065024>",
-              "lol_shit_api": "{USER_MENTION} <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
+              "only_english": "{USER_MENTION} ❌  Only english-sourced messages can be pirate spoken! <:pirate:713103123912065024>",
+              "random_fail": "{USER_MENTION} ❌ the pirate api decided to fail for whatever reason <:pirate:713103123912065024>",
+              "lol_shit_api": "{USER_MENTION} ❌ <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
             }
           }
         },
@@ -688,7 +688,7 @@
           "error_executing_command": "**There has been an error executing this command**\n\n__{ERROR}__",
           "error_logged": "**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.",
           "arguments_string": " with arguments {ARGS}",
-          "argument_error": "⚠️Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
+          "argument_error": "⚠️ Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
           "other_error": "❌ **There was an error running that command**\n[{ERROR_NAME}] - __{ERROR_MESSAGE}__",
           "unknown_subcommand": "Unknown sub-command for `{COMMAND_PARENT}`, try:\n{SUB_COMMANDS}",
           "cmd_general": {
@@ -697,8 +697,8 @@
             "mylevel_admin": "You are bot access level **{LEVEL}** and a global admin",
             "ping": "Pong @{MSG_DIFF_MS}ms, sent message in {SENT_MSG_MS}ms",
             "cmd_nickme": {
-              "no_permission": "I don't have permissions to change my nickname!",
-              "already_nickname": "I already have that nickname!",
+              "no_permission": "❌ I don't have permissions to change my nickname!",
+              "already_nickname": "❌ I already have that nickname!",
               "done": "Done!"
             }
           }
@@ -860,15 +860,15 @@
             "more_actions": "\n\n**...** and {REMAINING} more actions"
           },
           "adm_backup": {
-            "restored": "Successfully restored {USER_MENTION}",
-            "failed_restore": "Failed to restore backup data for {USER_MENTION}",
-            "saved": "Successfully saved backup data {USER_MENTION}",
-            "failed_save": "Failed to save backup data for {USER_MENTION} (do they have any data to save?)",
-            "user_not_found": "User not found!",
-            "no_data": "No backup data found for this user",
+            "restored": "✅ Successfully restored {USER_MENTION}",
+            "failed_restore": "❌ Failed to restore backup data for {USER_MENTION}",
+            "saved": "✅ Successfully saved backup data {USER_MENTION}",
+            "failed_save": "❌ Failed to save backup data for {USER_MENTION} (do they have any data to save?)",
+            "user_not_found": "❌ User not found!",
+            "no_data": "❌ No backup data found for this user",
             "none": "None",
             "data_display": "**Member backup for **{USER_MENTION}:\n**Roles**: {ROLES}\n**Nick**: {NICKNAME}**Channel Overwrites**: {CHANNEL_OVERWRITE_COUNT}",
-            "deleted": "Successfully deleted backup data for {USER_MENTION}"
+            "deleted": "✅ Successfully deleted backup data for {USER_MENTION}"
           }
         }
     }
