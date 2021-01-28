@@ -352,7 +352,7 @@
                     "MOVED_CHANNEL": "➡️ {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**"
                   },
                   "VOICE_SERVER_UPDATE": {
-                    "CONNECTED": "connected to voice @`_ENDPOINT_` with token ||`{TOKEN}`||"
+                    "CONNECTED": "connected to voice @`{ENDPOINT}` with token ||`{TOKEN}`||"
                   },
                   "TYPING_START": {
                     "START_TYPING_GUILD": "✍️ {USERTAG} started typing in <#{CHANNEL_ID}>",
