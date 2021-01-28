@@ -7,6 +7,7 @@ import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
 import * as inf from './infractions';
 import { saveMessage } from './admin';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 export const kv = new pylon.KVNamespace('antiPing');
 
@@ -398,14 +399,14 @@ export async function OnMessageCreate(
   if (typeof data === 'object' && typeof config.modules.antiPing.pingsForAutoMute === 'number' && config.modules.antiPing.pingsForAutoMute > 0 && typeof data[author.id] === 'object' && Object.keys(data[author.id]).length >= config.modules.antiPing.pingsForAutoMute - 1 && !inf.isMuted(authorMember)) {
     isMute = true;
     try {
-      await inf.Mute(authorMember, null, 'AntiPing Auto-Mute due to spamming mentions');
+      await inf.Mute(authorMember, null, i18n.modules.antiping.repeated_mute_reason);
     } catch (e) {
       isMute = false; // fallback meme
     }
   }
   let muteText = '';
   if (isMute) {
-    muteText = '\n>> **You were muted for pinging users after a warning** <<\n';
+    muteText = i18n.modules.antiping.displayed_mute_reason;
   }
   const msgtorep = `${message.author.toMention()} ${msg}\n${muteText}\n${
     config.modules.antiPing.actualCaughtMessage
@@ -502,22 +503,26 @@ export async function OnMessageCreate(
   return false; // So nothing else runs :))
 }
 
-export async function OnMessageDelete(id: string,
-                                      guildId: string,
-                                      ev: discord.Event.IMessageDelete,
-                                      oldMessage: discord.Message.AnyMessage | null) {
+export async function OnMessageDelete(
+  id: string,
+  guildId: string,
+  ev: discord.Event.IMessageDelete,
+  oldMessage: discord.Message.AnyMessage | null,
+) {
   // check if deleted message is bot's reply
   await messageDeleted(ev.id);
 }
-export async function OnMessageDeleteBulk(id: string,
-                                          guildId: string,
-                                          ev: discord.Event.IMessageDeleteBulk) {
+export async function OnMessageDeleteBulk(
+  id: string,
+  guildId: string,
+  ev: discord.Event.IMessageDeleteBulk,
+) {
   await messagesDeleted(ev.ids);
 }
 
 export async function EmojiActionMute(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.Mute(member, reactor, 'AntiPing Mute');
+    const res = await inf.Mute(member, reactor, i18n.modules.antiping.normal_mute_reason);
     if (typeof res !== 'boolean') {
       return false;
     }
@@ -539,7 +544,7 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
 
   if (inf.isMuted(member)) {
     try {
-      const res = await inf.UnMute(member, reactor, 'Auto unmute due to AntiPing Ignore');
+      const res = await inf.UnMute(member, reactor, i18n.modules.antiping.unmute_ignore);
       if (typeof res !== 'boolean') {
         return false;
       }
@@ -553,7 +558,7 @@ export async function EmojiActionIgnore(guild: discord.Guild, member: discord.Gu
 export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   if (inf.isMuted(member)) {
     try {
-      const res = await inf.UnMute(member, reactor, 'Auto unmute due to AntiPing IgnoreOnce');
+      const res = await inf.UnMute(member, reactor, i18n.modules.antiping.unmute_ignore_once);
       if (typeof res !== 'boolean') {
         return false;
       }
@@ -567,7 +572,7 @@ export async function EmojiActionIgnoreOnce(guild: discord.Guild, member: discor
 }
 export async function EmojiActionKick(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
   try {
-    const res = await inf.Kick(member, reactor, 'AntiPing Kick');
+    const res = await inf.Kick(member, reactor, i18n.modules.antiping.kick_reason);
     if (typeof res !== 'boolean') {
       return false;
     }
@@ -577,7 +582,7 @@ export async function EmojiActionKick(guild: discord.Guild, member: discord.Guil
   return false;
 }
 export async function EmojiActionSoftban(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  const res = await inf.SoftBan(member, reactor, 7, 'AntiPing Softban');
+  const res = await inf.SoftBan(member, reactor, 7, i18n.modules.antiping.softban_reason);
   if (typeof res !== 'boolean') {
     return false;
   }
@@ -585,15 +590,17 @@ export async function EmojiActionSoftban(guild: discord.Guild, member: discord.G
 }
 
 export async function EmojiActionBan(guild: discord.Guild, member: discord.GuildMember, reactor: discord.GuildMember, userMsg: any) {
-  const res = await inf.Ban(member, reactor, 7, 'AntiPing Ban');
+  const res = await inf.Ban(member, reactor, 7, i18n.modules.antiping.ban_reason);
   if (typeof res !== 'boolean') {
     return false;
   }
   return res;
 }
-export async function OnMessageReactionAdd(id: string,
-                                           guildId: string,
-                                           ev: discord.Event.IMessageReactionAdd) {
+export async function OnMessageReactionAdd(
+  id: string,
+  guildId: string,
+  ev: discord.Event.IMessageReactionAdd,
+) {
   const { member } = ev;
   const { messageId } = ev;
   const { emoji } = ev;
@@ -695,10 +702,12 @@ export async function OnMessageReactionAdd(id: string,
   }
 }
 
-export async function AL_OnGuildMemberRemove(id: string,
-                                             guildId: string,
-                                             log: any,
-                                             member: discord.Event.IGuildMemberRemove) {
+export async function AL_OnGuildMemberRemove(
+  id: string,
+  guildId: string,
+  log: any,
+  member: discord.Event.IGuildMemberRemove,
+) {
   // If they leave after memeing us
   const data = await kv.get(kvDataKey);
   if (!data) {
@@ -726,15 +735,17 @@ export async function AL_OnGuildMemberRemove(id: string,
   if (!isBan) {
     // TODO > Update bot's message to reflect that user has left the guild, easier to ban manually in this case lol
   } else {
-    await inf.Ban(user, null, 7, 'AntiPing AutoBan for leaving the server with pending autoping punishments');
+    await inf.Ban(user, null, 7, i18n.modules.antiping.auto_ban_left_reason);
     wipeAllUserMessages(user.id, true);
     log('LEFT_BANNED', user);
     await clearUserData(user.id);
   }
 }
-export async function OnGuildBanAdd(id: string,
-                                    guildId: string,
-                                    ban: discord.GuildBan) {
+export async function OnGuildBanAdd(
+  id: string,
+  guildId: string,
+  ban: discord.GuildBan,
+) {
   // If they get banned after memeing us (let's clear their shit)
   const { user } = ban;
   wipeAllUserMessages(user.id, true);

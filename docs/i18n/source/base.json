@@ -732,6 +732,16 @@
           "action_reason": "Too many spam violations",
           "raid_channel_msg": "Hey {ROLE_MENTION} ! It looks like a raid is occuring!\n\nI've gone ahead and automatically taken the **{ACTION}** action, but you might want to take care of the offending users."
         },
-        "antiping": {}
+        "antiping": {
+          "repeated_mute_reason": "AntiPing Auto-Mute due to spamming mentions",
+          "displayed_mute_reason": "\n>> **You were muted for pinging users after a warning** <<\n",
+          "normal_mute_reason": "AntiPing Mute",
+          "unmute_ignore": "Auto unmute due to AntiPing Ignore",
+          "unmute_ignore_once": "Auto unmute due to AntiPing IgnoreOnce",
+          "kick_reason": "AntiPing Kick",
+          "softban_reason": "AntiPing Softban",
+          "ban_reason": "AntiPing Ban",
+          "auto_ban_left_reason": "AntiPing AutoBan for leaving the server with pending autoping punishments"
+        }
     }
 }

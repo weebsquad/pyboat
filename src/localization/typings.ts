@@ -112,6 +112,7 @@ export interface IModules {
     censor: ICensor;
     counting: ICounting;
     antispam: IAntispam;
+    antiping: IAntiping;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -718,4 +719,15 @@ export interface ICounting {
 export interface IAntispam {
     action_reason: string;
     raid_channel_msg: string;
+}
+export interface IAntiping {
+    repeated_mute_reason: string;
+    displayed_mute_reason: string;
+    normal_mute_reason: string;
+    unmute_ignore: string;
+    unmute_ignore_once: string;
+    kick_reason: string;
+    softban_reason: string;
+    ban_reason: string;
+    auto_ban_left_reason: string;
 }
