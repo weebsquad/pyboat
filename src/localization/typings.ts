@@ -114,6 +114,7 @@ export interface IModules {
     antispam: IAntispam;
     antiping: IAntiping;
     admin: IAdmin;
+    infractions: IInfractions;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -871,4 +872,20 @@ export interface IAdm_backup {
     none: string;
     data_display: string;
     deleted: string;
+}
+export interface IInfractions {
+    targeting: ITargeting;
+}
+export interface ITargeting {
+    bot_cant_kick: string;
+    bot_cant_ban: string;
+    bot_cant_manage_roles: string;
+    bot_cant_manage_mute_role: string;
+    bot_cant_perform_action: string;
+    cant_target_bot: string;
+    actor_cant_kick: string;
+    actor_cant_ban: string;
+    actor_cant_roles: string;
+    actor_cant_level: string;
+    cant_self_target: string;
 }
