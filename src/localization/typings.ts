@@ -106,6 +106,7 @@ export interface IModules {
     tags: ITags;
     utilities: IUtilities;
     starboard: IStarboard;
+    translation: ITranslation;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -630,4 +631,18 @@ export interface IStars_unlock {
 }
 export interface IStars_stats {
     no_stats: string;
+}
+export interface ITranslation {
+    tr_terms: ITr_terms;
+}
+export interface ITr_terms {
+    requested_by: string;
+    jump_message: string;
+    cant_translate: string;
+    pirate_api: IPirate_api;
+}
+export interface IPirate_api {
+    only_english: string;
+    random_fail: string;
+    lol_shit_api: string;
 }

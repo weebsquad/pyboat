@@ -653,6 +653,18 @@
           "stars_stats": {
             "no_stats": "❌ No stats found for {USER_MENTION}"
           }
+        },
+        "translation": {
+          "tr_terms": {
+            "requested_by": "Requested by {USER_TAG} {USER_ID}",
+            "jump_message": "Jump to message",
+            "cant_translate": "{USER_MENTION} I couldn't translate that! :(",
+            "pirate_api": {
+              "only_english": "{USER_MENTION} Only english-sourced messages can be pirate spoken! <:pirate:713103123912065024>",
+              "random_fail": "{USER_MENTION} the pirate api decided to fail for whatever reason <:pirate:713103123912065024>",
+              "lol_shit_api": "{USER_MENTION} <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
+            }
+          }
         }
     }
 }

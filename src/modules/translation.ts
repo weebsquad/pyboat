@@ -3,6 +3,7 @@ import * as constants from '../constants/translation';
 import * as utils from '../lib/utils';
 import { saveMessage } from './admin';
 import { config } from '../config';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const kv = new pylon.KVNamespace('translation');
 
@@ -146,7 +147,7 @@ export async function translationEmbed(
   richEmbed.setDescription(text);
   richEmbed.setFooter({
     iconUrl: caller.getAvatarUrl(),
-    text: `Requested by ${caller.getTag()} (${caller.id})`
+    text: setPlaceholders(i18n.modules.translation.tr_terms.requested_by, ['user_tag', caller.getTag(), 'user_id', caller.id])
   });
   richEmbed.setTimestamp(new Date().toISOString());
   await channel.sendMessage({ embed: richEmbed });
@@ -178,7 +179,7 @@ export async function OnMessageReactionAdd(
     return;
   }
   if(utils.isBlacklisted(reaction.member)) {
-      const jmp = '<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})'.split('CHANNEL_ID').join(reaction.channelId).split('GUILD_ID').join(guildId).split('MESSAGE_ID').join(reaction.messageId);
+      const jmp = `<>[→ ${i18n.modules.translation.tr_terms.jump_message}](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})`.split('CHANNEL_ID').join(reaction.channelId).split('GUILD_ID').join(guildId).split('MESSAGE_ID').join(reaction.messageId);
     await utils.reportBlockedAction(reaction.member, `translation reaction attempt on <#${reaction.channelId}> on a message by <@!${reaction.userId}> ${jmp}`);
   return;
   }
@@ -251,8 +252,7 @@ if(typeof config.modules.translation.level === 'number') {
     });
     if (typeof foundEn === 'undefined') {
       const res: any = await channel.sendMessage(
-        reaction.member.toMention() +
-          ' , only english messages can be pirate-spoken <:pirate:713103123912065024>'
+          setPlaceholders(i18n.modules.translation.tr_terms.pirate_api.only_english, ['user_mention', reaction.member.toMention()])
       );
       saveMessage(res);
       return false;
@@ -260,16 +260,14 @@ if(typeof config.modules.translation.level === 'number') {
     const pirateey = await pirateSpeak(message.content);
     if (typeof pirateey !== 'string') {
       const res: any = await channel.sendMessage(
-        reaction.member.toMention() +
-          ' , pirate api decided to fail for whatever reason <:pirate:713103123912065024>'
+          setPlaceholders(i18n.modules.translation.tr_terms.pirate_api.random_fail, ['user_mention', reaction.member.toMention()])
       );
       saveMessage(res);
       return false;
     }
     if (pirateey.toLowerCase() === message.content.toLowerCase()) {
       const res: any = await channel.sendMessage(
-        reaction.member.toMention() +
-          " <:pirate:713103123912065024> the pirate api is dogshit and decided to return the exact same text that we sent it, so i won't display it <:pirate:713103123912065024>"
+          setPlaceholders(i18n.modules.translation.tr_terms.pirate_api.lol_shit_api, ['user_mention', reaction.member.toMention()])
       );
       saveMessage(res);
       return false;
@@ -301,7 +299,7 @@ if(typeof config.modules.translation.level === 'number') {
     message.content.toLowerCase() === translation.translatedText.toLowerCase()
   ) {
     const res: any = await channel.sendMessage(
-      reaction.member.toMention() + " , I couldn't translate that! :("
+      setPlaceholders(i18n.modules.translation.tr_terms.cant_translate, ['user_mention', reaction.member.toMention()])
     );
     saveMessage(res);
     if (
