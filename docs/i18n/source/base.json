@@ -71,7 +71,8 @@
         "authorized": "Authorized",
         "moderator": "Moderator",
         "administrator": "Administrator",
-        "owner": "Owner"
+        "owner": "Owner",
+        "system": "System"
     },
     "config": {
         "cant_download_file": "{USER_MENTION} I couldn't grab that file, is another bot deleting the file?",
@@ -352,7 +353,7 @@
                     "MOVED_CHANNEL": "➡️ {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**"
                   },
                   "VOICE_SERVER_UPDATE": {
-                    "CONNECTED": "connected to voice @`_ENDPOINT_` with token ||`{TOKEN}`||"
+                    "CONNECTED": "connected to voice @`{ENDPOINT}` with token ||`{TOKEN}`||"
                   },
                   "TYPING_START": {
                     "START_TYPING_GUILD": "✍️ {USERTAG} started typing in <#{CHANNEL_ID}>",
@@ -869,6 +870,21 @@
             "none": "None",
             "data_display": "**Member backup for **{USER_MENTION}:\n**Roles**: {ROLES}\n**Nick**: {NICKNAME}**Channel Overwrites**: {CHANNEL_OVERWRITE_COUNT}",
             "deleted": "✅ Successfully deleted backup data for {USER_MENTION}"
+          }
+        },
+        "infractions": {
+          "targeting": {
+            "bot_cant_kick": "❌ I can't kick members",
+            "bot_cant_ban": "❌ I can't ban members",
+            "bot_cant_manage_roles": "❌ I can't manage roles",
+            "bot_cant_manage_mute_role": "❌ I can't manage the mute role",
+            "bot_cant_perform_action": "❌ I can't {ACTION} this member",
+            "cant_target_bot": "❌ You may not target me",
+            "actor_cant_kick": "You can't kick members",
+            "actor_cant_ban": "You can't ban members",
+            "actor_cant_roles": "You can't manage roles",
+            "actor_cant_level": "You can't target this user (due to their level of {LEVEL})",
+            "cant_self_target": "You can't target yourself"
           }
         }
     }
