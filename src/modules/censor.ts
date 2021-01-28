@@ -5,12 +5,12 @@ import { logCustom } from './logging/events/custom';
 import { getMemberTag } from './logging/main';
 import * as infractions from './infractions';
 import * as admin from './admin';
+import { language as i18n, setPlaceholders } from '../localization/interface';
 
 const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 'ç'];
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN', 'LOCK_GUILD', 'LOCK_CHANNEL'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
-const ACTION_REASON = 'Too many censor violations';
 const kvPool = new utils.StoragePool('censor', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
 class PoolEntry {
   ts: number;
@@ -259,7 +259,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
               inARow = 0;
             }
             if (inARow >= thisCfg.caps.followed) {
-              toRet.caps.push(`${inARow} followed`);
+              toRet.caps.push(setPlaceholders(i18n.modules.censor.capitals_followed, ['capitals', inARow.toString()]));
               break;
             }
           }
@@ -275,7 +275,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
     if (typeof charCfg.newLines === 'number' && charCfg.newLines > 0 && txt.includes('\n')) {
       const newlines = txt.split('\n').length - 1;
       if (newlines > charCfg.newLines) {
-        toRet.chars.push(`${newlines}/${charCfg.newLines} newlines`);
+        toRet.chars.push(setPlaceholders(i18n.modules.censor.capitals_followed, ['found', newlines.toString(), 'max', charCfg.newlines.toString()]));
       }
     }
 
@@ -289,7 +289,7 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
         }
       }
       if (Array.isArray(asciiremoved) && asciiremoved.length > 0) {
-        toRet.chars.push(`Illegal ASCII: ${asciiremoved.join(', ')}`);
+        toRet.chars.push(setPlaceholders(i18n.modules.censor.illegal_ascii, ['ascii', asciiremoved.join(', ')]));
       }
     }
   }
@@ -314,14 +314,14 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
     const deniedCodes = typeof invCfg.blacklist === 'object' && Array.isArray(invCfg.blacklist.codes) ? invCfg.blacklist.codes : [];
 
     if (invites.length > 5) {
-      return new CensorCheck(true, CensorType.INVITE, 'Too many codes', undefined, _stop);
+      return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.too_many_codes, undefined, _stop);
     }
 
     for (let i = 0; i < invites.length; i++) {
       const inv: string | discord.Invite = invites[i];
       if (!(inv instanceof discord.Invite)) {
         if (deniedCodes.length > 0 && deniedCodes.includes(inv)) {
-          return new CensorCheck(true, CensorType.INVITE, 'Invite code in blacklist', inv, _stop);
+          return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.invite_in_blocklist, inv, _stop);
         }
         continue;
       }
@@ -330,19 +330,19 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
       }
       if (Array.isArray(allowedGuilds) && !allowedGuilds.includes(inv.guild.id)) {
         if (!(inv.guild.id === guildId && allowSelf === true) && !(inv.guild.vanityUrlCode !== null && typeof inv.guild.vanityUrlCode === 'string' && inv.guild.vanityUrlCode.length >= 2 && allowVanities === true)) {
-          return new CensorCheck(true, CensorType.INVITE, 'Guild not in whitelist', inv.guild.id, _stop);
+          return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.guild_not_allowed, inv.guild.id, _stop);
         }
       }
       if (deniedGuilds.length > 0 && deniedGuilds.includes(inv.guild.id)) {
-        return new CensorCheck(true, CensorType.INVITE, 'Guild in blacklist', inv.guild.id, _stop);
+        return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.guild_in_blocklist, inv.guild.id, _stop);
       }
       if (Array.isArray(allowedCodes) && !allowedCodes.includes(inv)) {
         if (!(inv.guild.id === guildId && allowSelf === true) && !(inv.guild.vanityUrlCode !== null && typeof inv.guild.vanityUrlCode === 'string' && inv.guild.vanityUrlCode.length >= 2 && allowVanities === true)) {
-          return new CensorCheck(true, CensorType.INVITE, 'Invite code not in whitelist', inv.guild.id, _stop);
+          return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.invite_not_allowed, inv.guild.id, _stop);
         }
       }
       if (deniedCodes.length > 0 && deniedCodes.includes(inv)) {
-        return new CensorCheck(true, CensorType.INVITE, 'Invite code in blacklist', inv.guild.id, _stop);
+        return new CensorCheck(true, CensorType.INVITE, i18n.modules.censor.invite_in_blocklist, inv.guild.id, _stop);
       }
     }
   }
@@ -356,7 +356,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
       const url = urls[i];
       const host = url.hostname;
       if (denied.includes(host)) {
-        return new CensorCheck(true, CensorType.URL, 'Domain in blacklist', host, _stop);
+        return new CensorCheck(true, CensorType.URL, i18n.modules.censor.domain_in_blocklist, host, _stop);
       }
       if (Array.isArray(allowed) && !allowed.includes(host)) {
         if (allowSubdomains === true && host.includes('.') && host.split('.').length > 2) {
@@ -366,24 +366,24 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
             continue;
           }
         }
-        return new CensorCheck(true, CensorType.URL, 'Domain not in whitelist', host, _stop);
+        return new CensorCheck(true, CensorType.URL, i18n.modules.censor.domain_not_allowed, host, _stop);
       }
     }
   }
   if ((typeof thisCfg.zalgo === 'object' || thisCfg.zalgo === true) && Array.isArray(zalgo) && zalgo.length > 0) {
-    return new CensorCheck(true, CensorType.ZALGO, 'Zalgo found', zalgo.length.toString(), _stop);
+    return new CensorCheck(true, CensorType.ZALGO, i18n.modules.censor.zalgo_found, zalgo.length.toString(), _stop);
   }
   if (typeof thisCfg.words === 'object' && Array.isArray(words) && words.length > 0) {
-    return new CensorCheck(true, CensorType.WORD, 'Blocked words found', words.join(', '), _stop);
+    return new CensorCheck(true, CensorType.WORD, i18n.modules.censor.blocked_words, words.join(', '), _stop);
   }
   if (typeof thisCfg.tokens === 'object' && Array.isArray(tokens) && tokens.length > 0) {
-    return new CensorCheck(true, CensorType.TOKEN, 'Blocked tokens found', tokens.join(', '), _stop);
+    return new CensorCheck(true, CensorType.TOKEN, i18n.modules.censor.blocked_tokens, tokens.join(', '), _stop);
   }
   if (typeof thisCfg.caps === 'object' && Array.isArray(caps) && caps.length > 0) {
-    return new CensorCheck(true, CensorType.CAPS, 'Too many capital letters', caps.join(', '), _stop);
+    return new CensorCheck(true, CensorType.CAPS, i18n.modules.censor.too_many_caps, caps.join(', '), _stop);
   }
   if (typeof thisCfg.chars === 'object' && Array.isArray(chars) && chars.length > 0) {
-    return new CensorCheck(true, CensorType.CHAR, 'Illegal characters', chars.join(', '), _stop);
+    return new CensorCheck(true, CensorType.CHAR, i18n.modules.censor.illegal_chars, chars.join(', '), _stop);
   }
   return new CensorCheck(false, undefined, undefined, undefined, _stop);
 }
@@ -403,31 +403,31 @@ export async function processViolations(id: string, member: discord.GuildMember,
   const { action, actionDuration, actionValue, individuals } = isVio;
   switch (action) {
     case 'KICK':
-      await infractions.Kick(member, null, ACTION_REASON);
+      await infractions.Kick(member, null, i18n.modules.censor.action_reason);
       break;
     case 'SOFTBAN':
-      await infractions.SoftBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
+      await infractions.SoftBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, i18n.modules.censor.action_reason);
       break;
     case 'MUTE':
-      await infractions.Mute(member, null, ACTION_REASON);
+      await infractions.Mute(member, null, i18n.modules.censor.action_reason);
       break;
     case 'BAN':
-      await infractions.Ban(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
+      await infractions.Ban(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, i18n.modules.censor.action_reason);
       break;
     case 'TEMPMUTE':
-      await infractions.TempMute(member, null, actionDuration, ACTION_REASON);
+      await infractions.TempMute(member, null, actionDuration, i18n.modules.censor.action_reason);
       break;
     case 'TEMPBAN':
-      await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, ACTION_REASON);
+      await infractions.TempBan(member, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, actionDuration, i18n.modules.censor.action_reason);
       break;
     case 'SLOWMODE':
-      await admin.SlowmodeChannel(null, channel!, actionValue!, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      await admin.SlowmodeChannel(null, channel!, actionValue!, utils.timeArgumentToMs(actionDuration), i18n.modules.censor.action_reason);
       break;
     case 'LOCK_CHANNEL':
-      await admin.LockChannel(null, channel!, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      await admin.LockChannel(null, channel!, true, utils.timeArgumentToMs(actionDuration), i18n.modules.censor.action_reason);
       break;
     case 'LOCK_GUILD':
-      await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), ACTION_REASON);
+      await admin.LockGuild(null, true, utils.timeArgumentToMs(actionDuration), i18n.modules.censor.action_reason);
       break;
     case 'MASSBAN':
 
@@ -442,7 +442,7 @@ export async function processViolations(id: string, member: discord.GuildMember,
           objs.push(usr);
         }
       }));
-      await infractions.MassBan(objs, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, ACTION_REASON);
+      await infractions.MassBan(objs, null, typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0, i18n.modules.censor.action_reason);
       break;
     default:
       break;
@@ -663,7 +663,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     const check = checkCensors(_newd, appConfigs[i]);
     if (check instanceof CensorCheck) {
       if (check.check === true) {
-        await member.edit({ nick: `censored name (${Math.floor(Math.min(9999, 1000 + (Math.random() * 10000)))})` });
+        await member.edit({ nick: setPlaceholders(i18n.modules.censor.censored_name, ['number', Math.floor(Math.min(9999, 1000 + (Math.random() * 10000))).toString()]) });
         logCustom('CENSOR', 'CENSORED_USERNAME', new Map([['CENSOR_TP', check.type], ['CENSOR_MESSAGE', check.message], ['OLD_NAME', utils.escapeString(visibleName, true)], ['CENSOR_TARGET', typeof check.target !== 'undefined' ? check.target : 'unknown'], ['USERTAG', getMemberTag(member)], ['USER_ID', member.user.id]]));
         await processViolations(eventId, member, undefined, appConfigs[i]);
         return false;

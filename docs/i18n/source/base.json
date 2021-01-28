@@ -703,6 +703,26 @@
             }
           }
 
+        },
+        "censor": {
+          "capitals_followed": "{CAPITALS} followed",
+          "characters": "{FOUND}/{MAX} characters",
+          "newlines": "{FOUND}/{MAX} newlines",
+          "illegal_ascii": "Illegal ASCII: {ASCII}",
+          "action_reason": "Too many censor violations",
+          "too_many_codes": "Too many codes",
+          "invite_in_blocklist": "Invite code in blocklist",
+          "guild_not_allowed": "Guild not in allowlist",
+          "guild_in_blocklist": "Guild in blocklist",
+          "invite_not_allowed": "Invite code not in allowlist",
+          "domain_in_blocklist": "Domain in blocklist",
+          "domain_not_allowed": "Domain not in allowlist",
+          "zalgo_found": "Zalgo found",
+          "blocked_words": "Blocked words found",
+          "blocked_tokens": "Blocked tokens found",
+          "too_many_caps": "Too many capital letters",
+          "illegal_chars": "Illegal characters",
+          "censored_name": "censored name ({NUMBER})"
         }
     }
 }

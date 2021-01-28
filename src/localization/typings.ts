@@ -109,6 +109,7 @@ export interface IModules {
     translation: ITranslation;
     reddit: IReddit;
     commands: ICommands;
+    censor: ICensor;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -687,4 +688,24 @@ export interface ICmd_nickme {
     no_permission: string;
     already_nickname: string;
     done: string;
+}
+export interface ICensor {
+    capitals_followed: string;
+    characters: string;
+    newlines: string;
+    illegal_ascii: string;
+    action_reason: string;
+    too_many_codes: string;
+    invite_in_blocklist: string;
+    guild_not_allowed: string;
+    guild_in_blocklist: string;
+    invite_not_allowed: string;
+    domain_in_blocklist: string;
+    domain_not_allowed: string;
+    zalgo_found: string;
+    blocked_words: string;
+    blocked_tokens: string;
+    too_many_caps: string;
+    illegal_chars: string;
+    censored_name: string;
 }
