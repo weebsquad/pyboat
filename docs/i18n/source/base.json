@@ -804,8 +804,8 @@
           "adm_clean": {
             "too_many_msgs": "❌ Can't clean that many messages at once!",
             "already_cleaning": "❌ Already performing a clean operation, please try again later",
-            "from_user": "from {USER_TAG}",
-            "in_channel": "in {CHANNEL_MENTION}",
+            "from_user": " from {USER_TAG}",
+            "in_channel": " in {CHANNEL_MENTION}",
             "failed_clean": "❌ Failed to clean messages",
             "cleaned_messages_user": "✅ Cleaned {COUNT} messages from {USER_MENTION}",
             "no_messages_cleaned": "❌ No messages were cleaned.",
