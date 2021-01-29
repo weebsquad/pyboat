@@ -795,10 +795,13 @@ export function InitializeCommands() {
     'snowflake',
     (ctx) => ({ snowflake: ctx.string() }),
     async (msg, { snowflake }) => {
-      const normalTs = utils.getSnowflakeDate(snowflake);
-      const res: any = await msg.inlineReply(
-        setPlaceholders(i18n.modules.utilities.snowflake, ['snowflake', snowflake, 'date', new Date(normalTs)]),
-      );
+      const res: any = await msg.inlineReply(async () => {
+        if (snowflake.length > 25 || snowflake.length < 15 || !utils.isNumeral(snowflake)) {
+          return i18n.modules.utilities.snowflake_wrong;
+        }
+        const normalTs = utils.getSnowflakeDate(snowflake);
+        return setPlaceholders(i18n.modules.utilities.snowflake, ['snowflake', snowflake, 'date', new Date(normalTs)]);
+      });
       saveMessage(res);
     },
     {

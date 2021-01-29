@@ -529,6 +529,7 @@ export interface IUtilities {
     snipe: ISnipe;
     random: IRandom;
     snowflake: string;
+    snowflake_wrong: string;
     avatar: IAvatar;
     server: IServer;
     info: IInfo;

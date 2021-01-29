@@ -24,6 +24,10 @@ export function isNormalInteger(str, checkPositive = false) {
   const n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && (n >= 0 || !checkPositive);
 }
+
+export function isNumeral(str: string) {
+  return /^\d+$/.test(str);
+}
 function stdTimezoneOffset(dt: Date) {
     var jan = new Date(dt.getFullYear(), 0, 1);
     var jul = new Date(dt.getFullYear(), 6, 1);
