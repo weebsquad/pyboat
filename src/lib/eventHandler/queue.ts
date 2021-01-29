@@ -23,6 +23,7 @@ export class QueuedEvent {
 
 const cpuTimePerEvent = 23; // to determine when to use burst :P
 const interval = 5000;
+let timeoutCheck;
 
 export let queue = new Array<QueuedEvent>();
 // let timeout: any;
@@ -44,6 +45,7 @@ export function checkLocks() {
   return true;
 }
 export async function resolveQueue() {
+  timeoutCheck = undefined;
   if (checkLocks() !== true) {
     return false;
   }
@@ -182,16 +184,21 @@ export function cleanQueue(q: Array<QueuedEvent> | undefined = undefined) {
 }
 
 async function resetInterval(retry = true) {
+  if (timeoutCheck) {
+    return;
+  }
   const _r = checkLocks();
   if (_r === true) {
-    setTimeout(resolveQueue, Math.ceil(interval / 2));
+    timeoutCheck = setTimeout(resolveQueue, Math.ceil(interval / 2));
   } else {
+
+    /*
     if (!retry) {
       return;
     }
     setTimeout(() => {
       resetInterval(false);
-    }, _r);
+    }, _r); */
   }
 }
 
