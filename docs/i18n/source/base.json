@@ -552,6 +552,7 @@
                 "number": "Result (`{MINIMUM}`-`{MAXIMUM}`) - **{RESULT}** !"
             },
             "snowflake": "```\nID: {SNOWFLAKE}\nTimestamp: {DATE}\n```",
+            "snowflake_wrong": "❌ You must provide a valid snowflake!",
             "avatar": {
                 "avatar_of": "Avatar of {USER_TAG}: \n{AVATAR_URL}",
                 "requested_by": "Requested by {USER_TAG} ({USER_ID})"
