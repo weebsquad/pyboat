@@ -344,12 +344,12 @@ export async function confirmResult(me: discord.GuildMember | undefined | null, 
     let replyMsg;
     if (msg === true) {
       try {
-        let emj = '';
+        const emj = '';
         if (result === true) {
-          emj = discord.decor.Emojis.WHITE_CHECK_MARK;
+          // emj = discord.decor.Emojis.WHITE_CHECK_MARK;
         }
         if (result === false) {
-          emj = discord.decor.Emojis.X;
+          // emj = discord.decor.Emojis.X;
         }
         replyMsg = await ogMsg.inlineReply({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
           allowedMentions: {} });
@@ -401,12 +401,12 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
     let replyMsg;
     if (msg === true) {
       try {
-        let emj = '';
+        const emj = '';
         if (result === true) {
-          emj = discord.decor.Emojis.WHITE_CHECK_MARK;
+          // emj = discord.decor.Emojis.WHITE_CHECK_MARK;
         }
         if (result === false) {
-          emj = discord.decor.Emojis.X;
+          // emj = discord.decor.Emojis.X;
           await interaction.respondEphemeral(`${emj !== '' ? `${emj} ` : ''}${txt}`);
         } else {
           replyMsg = await interactionChannelRespond(interaction, { content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
