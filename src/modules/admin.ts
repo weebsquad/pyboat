@@ -1862,7 +1862,7 @@ export function InitializeCommands() {
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
-          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', `<@&${rlid}>`]));
+          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', `<@&${rlid}>`, 'user_mention', member.user.toMention()]));
         } else {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_add.failed_add);
         }
@@ -1887,7 +1887,7 @@ export function InitializeCommands() {
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
-          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', `<@&${rlid}>`]));
+          await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', `<@&${rlid}>`, 'user_mention', member.user.toMention()]));
         } else {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_remove.failed_remove);
         }
