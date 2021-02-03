@@ -202,7 +202,7 @@
                     "NSFW_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** nsfw status set to **{NEW_NSFW}**",
                     "TOPIC_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed topic: `{OLD_TOPIC}` => `{NEW_TOPIC}`",
                     "SLOWMODE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed slowmode: **{OLD_SLOWMODE}s** => **{NEW_SLOWMODE}s**",
-                    "BITRATE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrated: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
+                    "BITRATE_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrate: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
                     "USERLIMIT_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed user limit: **{OLD_LIMIT}** => **{NEW_LIMIT}**",
                     "PERMS_SYNCED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions synchronized with {PARENT_MENTION}",
                     "PERMS_CHANGED": "🔧 channel edited: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions changed: {CHANGES}"
@@ -374,7 +374,7 @@
                     "NSFW_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** nsfw status set to **{NEW_NSFW}**",
                     "TOPIC_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed topic: `{OLD_TOPIC}` => `{NEW_TOPIC}`",
                     "SLOWMODE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed slowmode: **{OLD_SLOWMODE}s** => **{NEW_SLOWMODE}s**",
-                    "BITRATE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrated: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
+                    "BITRATE_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed bitrate: **{OLD_BITRATE}kbps** => **{NEW_BITRATE}kbps**",
                     "USERLIMIT_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** changed user limit: **{OLD_LIMIT}** => **{NEW_LIMIT}**",
                     "PERMS_SYNCED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions synchronized with {PARENT_MENTION}",
                     "PERMS_CHANGED": "🔧 {ACTORTAG} edited channel {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]** permissions changed: {CHANGES}"
