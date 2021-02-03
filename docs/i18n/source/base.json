@@ -122,13 +122,6 @@
                 }
             },
             "l_messages": {
-                "DEBUG": {
-                    "BOT_ERROR": "⛔ Bot error\n```js\n{ERROR}\n```",
-                    "BOT_STARTED": "✅ Bot code reloaded",
-                    "RAW_EVENT": "📥 received `{EVENT}` / Queue: **{QUEUE}**",
-                    "CRON_RAN": "⌚ Cron task `{CRON_NAME}` executed.",
-                    "BLACKLISTED_USER_ACTION": "⛔ global-blacklisted user {USERTAG} tried to perform {ACTION}"
-                  },
                   "|REACTROLES": {
                     "ROLE_ADDED": "🛡️ {USERTAG} reacted with {EMOJI} to a message in <#{CHANNEL_ID}> **[**`{MESSAGE_ID}`**]** to get role <@&{ROLE_ID}>",
                     "ROLE_REMOVED": "🛡️ {USERTAG} reacted with {EMOJI} to a message in <#{CHANNEL_ID}> **[**`{MESSAGE_ID}`**]** to remove role <@&{ROLE_ID}>"

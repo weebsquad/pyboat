@@ -480,6 +480,14 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   await i18n.Initialize(defaultConfig.language, cfg.language);
   defaultConfig.modules.logging.messages = i18n.language.modules.logging.l_messages;
   defaultConfig.modules.logging.messagesAuditLogs = i18n.language.modules.logging.l_messages_logs;
+  // @ts-ignore
+  defaultConfig.modules.logging.messages.DEBUG = {
+    BOT_ERROR: '⛔ Bot error\n```js\n{ERROR}\n```',
+    BOT_STARTED: '✅ Bot code reloaded',
+    RAW_EVENT: '📥 received `{EVENT}` / Queue: **{QUEUE}**',
+    CRON_RAN: '⌚ Cron task `{CRON_NAME}` executed.',
+    BLACKLISTED_USER_ACTION: '⛔ global-blacklisted user {USERTAG} tried to perform {ACTION}',
+  };
   config = loadConfigDefaults(cfg);
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());

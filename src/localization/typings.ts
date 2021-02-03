@@ -161,7 +161,6 @@ export interface IVerification_level {
     very_high: string;
 }
 export interface IL_messages {
-    DEBUG: IDEBUG;
     '|REACTROLES': {
         ROLE_ADDED: string;
         ROLE_REMOVED: string;
@@ -250,13 +249,6 @@ export interface IL_messages {
     VOICE_SERVER_UPDATE: IVOICE_SERVER_UPDATE;
     TYPING_START: ITYPING_START;
     WEBHOOKS_UPDATE: IWEBHOOKS_UPDATE;
-}
-export interface IDEBUG {
-    BOT_ERROR: string;
-    BOT_STARTED: string;
-    RAW_EVENT: string;
-    CRON_RAN: string;
-    BLACKLISTED_USER_ACTION: string;
 }
 export interface ICHANNEL_CREATE {
     CHANNEL_CREATED: string;
