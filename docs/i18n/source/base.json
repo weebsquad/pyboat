@@ -918,7 +918,7 @@
             "inf_info": "**Displaying information for Infraction ID **#{INF_ID}\n\n**Actor**: {ACTOR_TAG} (`{ACTOR_ID}`)\n**Target**: {TARGET_MENTION} (`{TARGET_ID}`)\n**Type**: __{TYPE}__\n**Active**: {ACTIVE}\n**Created**: {CREATED_DATE}\n**Expires**: {EXPIRES}\n**Reason**: `{REASON}`",
             "inf_not_active": "❌ This infractions is not active.",
             "cannot_edit_inf": "❌ You cannot edit other people's infractions.",
-            "inf_duration_updated": "Infraction's duration updated!",
+            "inf_duration_updated": "✅ Infraction's duration updated!",
             "inf_reason_updated": "✅ Infraction's reason updated!",
             "cannot_assign_system": "❌ You cannot assign infractions to me.",
             "inf_actor_updated": "✅ Infraction's actor updated!",
