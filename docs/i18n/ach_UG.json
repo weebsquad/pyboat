@@ -84,55 +84,540 @@
         "deleted_config": "crwdns330:0{USER_MENTION}crwdne330:0"
     },
     "modules": {
-        "tags": {
-            "shared": {
-                "footer": "crwdns332:0{USER_TAG}crwdnd332:0{USER_ID}crwdne332:0",
-                "tag": "crwdns334:0crwdne334:0",
-                "cant_edit_others": "crwdns336:0crwdne336:0",
-                "tag_not_found": "crwdns338:0crwdne338:0"
+        "logging": {
+            "l_terms": {
+                "webhook": "crwdns710:0crwdne710:0",
+                "none": "crwdns712:0crwdne712:0",
+                "jump_to_message": "crwdns714:0crwdne714:0",
+                "yes": "crwdns716:0crwdne716:0",
+                "no": "crwdns718:0crwdne718:0",
+                "trueval": "crwdns720:0crwdne720:0",
+                "falseval": "crwdns722:0crwdne722:0",
+                "enabled": "crwdns724:0crwdne724:0",
+                "disabled": "crwdns726:0crwdne726:0",
+                "added": "crwdns728:0crwdne728:0",
+                "removed": "crwdns730:0crwdne730:0",
+                "changed": "crwdns732:0crwdne732:0",
+                "edited_emoji": "crwdns734:0{EMOJI_MENTION}crwdnd734:0*||`{EMOJI_ID}`||*crwdnd734:0{OLD_VALUE}crwdnd734:0{NEW_VALUE}crwdne734:0",
+                "edited_emoji_roles": "crwdns736:0{EMOJI_MENTION}crwdnd736:0*||`{EMOJI_ID}`||*crwdnd736:0{NEW_VALUE}crwdne736:0",
+                "removed_emoji": "crwdns738:0{EMOJI_MENTION}crwdnd738:0*||`{EMOJI_ID}`||*crwdne738:0",
+                "changed_roles": "crwdns740:0crwdne740:0",
+                "added_emoji": "crwdns742:0{EMOJI_MENTION}crwdnd742:0*||`{EMOJI_ID}`||*crwdne742:0",
+                "default_message_notifs": {
+                    "all_messages": "crwdns744:0crwdne744:0",
+                    "only_mentions": "crwdns746:0crwdne746:0"
+                },
+                "explicit_filter": {
+                    "disabled": "crwdns748:0crwdne748:0",
+                    "without_roles": "crwdns750:0crwdne750:0",
+                    "all_members": "crwdns752:0crwdne752:0"
+                },
+                "verification_level": {
+                    "none": "crwdns754:0crwdne754:0",
+                    "low": "crwdns756:0crwdne756:0",
+                    "medium": "crwdns758:0crwdne758:0",
+                    "high": "crwdns760:0crwdne760:0",
+                    "very_high": "crwdns762:0crwdne762:0"
+                }
             },
-            "commands": {
-                "show": {
-                    "no_tag_found": "crwdns340:0crwdne340:0"
+            "l_messages": {
+                "DEBUG": {
+                    "BOT_ERROR": "crwdns764:0{ERROR}crwdne764:0",
+                    "BOT_STARTED": "crwdns766:0crwdne766:0",
+                    "RAW_EVENT": "crwdns768:0{EVENT}crwdnd768:0{QUEUE}crwdne768:0",
+                    "CRON_RAN": "crwdns770:0{CRON_NAME}crwdne770:0",
+                    "BLACKLISTED_USER_ACTION": "crwdns772:0{USERTAG}crwdnd772:0{ACTION}crwdne772:0"
                 },
-                "set": {
-                    "name_length": "crwdns342:0crwdne342:0",
-                    "invalid_name": "crwdns344:0crwdne344:0",
-                    "content_length": "crwdns346:0{MAX_LENGTH}crwdne346:0",
-                    "edited_tag": "crwdns348:0${TAG_NAME}crwdne348:0",
-                    "saved_tag": "crwdns350:0${TAG_NAME}crwdne350:0"
+                "|REACTROLES": {
+                    "ROLE_ADDED": "crwdns774:0{USERTAG}crwdnd774:0{EMOJI}crwdnd774:0#{CHANNEL_ID}crwdnd774:0{MESSAGE_ID}crwdnd774:0{ROLE_ID}crwdne774:0",
+                    "ROLE_REMOVED": "crwdns776:0{USERTAG}crwdnd776:0{EMOJI}crwdnd776:0#{CHANNEL_ID}crwdnd776:0{MESSAGE_ID}crwdnd776:0{ROLE_ID}crwdne776:0"
                 },
-                "delete": {
-                    "deleted_tag": "crwdns352:0{TAG_NAME}crwdne352:0"
+                "|PERSIST": {
+                    "SAVED": "crwdns778:0{USERTAG}crwdne778:0",
+                    "RESTORED": "crwdns780:0{USERTAG}crwdne780:0"
                 },
-                "info": {
-                    "by": "crwdns354:0crwdne354:0",
-                    "uses": "crwdns356:0crwdne356:0",
-                    "created": "crwdns358:0crwdne358:0"
+                "|INFRACTIONS": {
+                    "KICK": "crwdns782:0{ACTORTAG}crwdnd782:0{USERTAG}crwdnd782:0{REASON}crwdne782:0",
+                    "MUTE": "crwdns784:0{ACTORTAG}crwdnd784:0{USERTAG}crwdnd784:0{REASON}crwdne784:0",
+                    "UNMUTE": "crwdns786:0{ACTORTAG}crwdnd786:0{USERTAG}crwdnd786:0{REASON}crwdne786:0",
+                    "TEMPMUTE": "crwdns788:0{ACTORTAG}crwdnd788:0{USERTAG}crwdnd788:0{DURATION}crwdnd788:0{REASON}crwdne788:0",
+                    "TEMPMUTE_EXPIRED": "crwdns790:0{USERTAG}crwdne790:0",
+                    "BAN": "crwdns792:0{ACTORTAG}crwdnd792:0{USERTAG}crwdnd792:0{REASON}crwdne792:0",
+                    "UNBAN": "crwdns794:0{ACTORTAG}crwdnd794:0{USERTAG}crwdnd794:0{REASON}crwdne794:0",
+                    "SOFTBAN": "crwdns796:0{ACTORTAG}crwdnd796:0{USERTAG}crwdnd796:0{DELETE_DAYS}crwdnd796:0{REASON}crwdne796:0",
+                    "TEMPBAN": "crwdns798:0{ACTORTAG}crwdnd798:0{USERTAG}crwdnd798:0{DURATION}crwdnd798:0{REASON}crwdne798:0",
+                    "TEMPBAN_EXPIRED": "crwdns800:0{USERTAG}crwdne800:0",
+                    "MASSBAN": "crwdns802:0{ACTORTAG}crwdnd802:0{BANNED_USER_COUNT}crwdnd802:0{BANNED_USERS}crwdnd802:0{REASON}crwdne802:0",
+                    "EDITED": "crwdns804:0{ACTORTAG}crwdnd804:0{INFRACTION_ID}crwdnd804:0{TYPE}crwdnd804:0{NEW_VALUE}crwdne804:0",
+                    "DELETED": "crwdns806:0{ACTORTAG}crwdnd806:0{INFRACTION_ID}crwdne806:0"
                 },
-                "clearall": {
-                    "cleared_tags": "crwdns360:0{COUNT}crwdne360:0"
+                "|CORE": {
+                    "BLACKLISTED_USER_ACTION": "crwdns808:0{USERTAG}crwdnd808:0{ACTION}crwdne808:0"
                 },
-                "list": {
-                    "no_tags": "crwdns362:0crwdne362:0",
-                    "tag_list": "crwdns364:0crwdne364:0"
+                "|COMMANDS": {
+                    "CHAT_COMMAND_USED": "crwdns810:0{USERTAG}crwdnd810:0#{CHANNEL_ID}crwdnd810:0{COMMAND_NAME}crwdne810:0",
+                    "SLASH_COMMAND_USED": "crwdns812:0{USERTAG}crwdnd812:0#{CHANNEL_ID}crwdnd812:0{COMMAND_NAME}crwdnd812:0{ARGUMENTS}crwdne812:0"
+                },
+                "|ADMIN": {
+                    "CLEAN": "crwdns814:0{ACTORTAG}crwdnd814:0{MESSAGES}crwdnd814:0{USERTAG}crwdne814:0",
+                    "LOCKED_CHANNEL": "crwdns816:0{ACTORTAG}crwdnd816:0#{CHANNEL_ID}crwdnd816:0{DURATION}crwdnd816:0{REASON}crwdne816:0",
+                    "UNLOCKED_CHANNEL": "crwdns818:0{ACTORTAG}crwdnd818:0#{CHANNEL_ID}crwdnd818:0{REASON}crwdne818:0",
+                    "LOCKED_GUILD": "crwdns820:0{ACTORTAG}crwdnd820:0{DURATION}crwdnd820:0{REASON}crwdne820:0",
+                    "UNLOCKED_GUILD": "crwdns822:0{ACTORTAG}crwdnd822:0{REASON}crwdne822:0",
+                    "SLOWMODE": "crwdns824:0{ACTORTAG}crwdnd824:0#{CHANNEL_ID}crwdnd824:0{SECONDS}crwdnd824:0{DURATION}crwdnd824:0{REASON}crwdne824:0",
+                    "TEMPROLE": "crwdns826:0{ACTORTAG}crwdnd826:0{ROLE_MENTION}crwdnd826:0{USERTAG}crwdnd826:0{DURATION}crwdnd826:0{REASON}crwdne826:0",
+                    "TEMPROLE_EXPIRED": "crwdns828:0{USERTAG}crwdnd828:0{ROLE_MENTION}crwdne828:0",
+                    "ROLE_ADDED": "crwdns830:0{ACTORTAG}crwdnd830:0{ROLE_MENTION}crwdnd830:0{USERTAG}crwdnd830:0{REASON}crwdne830:0",
+                    "ROLE_REMOVED": "crwdns832:0{ACTORTAG}crwdnd832:0{ROLE_MENTION}crwdnd832:0{USERTAG}crwdnd832:0{REASON}crwdne832:0",
+                    "NICKNAME": "crwdns834:0{ACTORTAG}crwdnd834:0{USERTAG}crwdnd834:0{NEW_NICK}crwdne834:0"
+                },
+                "|ANTISPAM": {
+                    "ANTIRAID": "crwdns836:0{FLAGS}crwdnd836:0{ACTION}crwdne836:0",
+                    "ANTIRAID_VIOLATION": "crwdns838:0{FLAGS}crwdne838:0",
+                    "VIOLATION": "crwdns840:0{USERTAG}crwdnd840:0{FLAGS}crwdne840:0"
+                },
+                "|CENSOR": {
+                    "CENSORED_MESSAGE": "crwdns842:0{USERTAG}crwdnd842:0*||`{MESSAGE_ID}`||*crwdnd842:0#{CHANNEL_ID}crwdnd842:0{CENSOR_MESSAGE}crwdnd842:0{CENSOR_TP}crwdnd842:0{CENSOR_TARGET}crwdne842:0",
+                    "CENSORED_USERNAME": "crwdns844:0{USERTAG}crwdnd844:0{OLD_NAME}crwdnd844:0{CENSOR_MESSAGE}crwdnd844:0{CENSOR_TP}crwdnd844:0{CENSOR_TARGET}crwdne844:0"
+                },
+                "|ANTIPING": {
+                    "FAIL_MARK_MEMBER_NOT_FOUND": "crwdns846:0{ACTORTAG}crwdnd846:0{USERTAG}crwdnd846:0{ACTION}crwdnd846:0{USERTAG}crwdne846:0",
+                    "FAIL_MARK_UNMUTE": "crwdns848:0{ACTORTAG}crwdnd848:0{USERTAG}crwdnd848:0{ACTION}crwdne848:0",
+                    "FAIL_MARK_ACTION": "crwdns850:0{ACTORTAG}crwdnd850:0{USERTAG}crwdnd850:0{ACTION}crwdnd850:0{ACTION}crwdne850:0",
+                    "MARK_SUCCESS": "crwdns852:0{ACTORTAG}crwdnd852:0{USERTAG}crwdnd852:0#{CHANNEL_ID}crwdnd852:0{ACTION}crwdne852:0",
+                    "LEFT_BANNED": "crwdns854:0{USERTAG}crwdne854:0",
+                    "TRIGGERED": "crwdns856:0{USERTAG}crwdnd856:0#{CHANNEL_ID}crwdne856:0",
+                    "TRIGGERED_MUTE": "crwdns858:0{USERTAG}crwdnd858:0#{CHANNEL_ID}crwdne858:0"
+                },
+                "CHANNEL_CREATE": {
+                    "CHANNEL_CREATED": "crwdns860:0{CHANNEL_MENTION}crwdnd860:0*||`{CHANNEL_ID}`||*crwdne860:0",
+                    "DM_CHANNEL_OPENED": "crwdns862:0{USERTAG}crwdne862:0"
+                },
+                "CHANNEL_UPDATE": {
+                    "NAME_CHANGED": "crwdns864:0{CHANNEL_MENTION}crwdnd864:0*||`{CHANNEL_ID}`||*crwdnd864:0{OLD_NAME}crwdnd864:0{NEW_NAME}crwdne864:0",
+                    "CATEGORY_CHANGED": "crwdns866:0{CHANNEL_MENTION}crwdnd866:0*||`{CHANNEL_ID}`||*crwdnd866:0{OLD_MENTION}crwdnd866:0{NEW_MENTION}crwdne866:0",
+                    "TYPE_CHANGED": "crwdns868:0{CHANNEL_MENTION}crwdnd868:0*||`{CHANNEL_ID}`||*crwdnd868:0{OLD_TYPE}crwdnd868:0{NEW_TYPE}crwdne868:0",
+                    "NSFW_CHANGED": "crwdns870:0{CHANNEL_MENTION}crwdnd870:0*||`{CHANNEL_ID}`||*crwdnd870:0{NEW_NSFW}crwdne870:0",
+                    "TOPIC_CHANGED": "crwdns872:0{CHANNEL_MENTION}crwdnd872:0*||`{CHANNEL_ID}`||*crwdnd872:0{OLD_TOPIC}crwdnd872:0{NEW_TOPIC}crwdne872:0",
+                    "SLOWMODE_CHANGED": "crwdns874:0{CHANNEL_MENTION}crwdnd874:0*||`{CHANNEL_ID}`||*crwdnd874:0{OLD_SLOWMODE}crwdnd874:0{NEW_SLOWMODE}crwdne874:0",
+                    "BITRATE_CHANGED": "crwdns876:0{CHANNEL_MENTION}crwdnd876:0*||`{CHANNEL_ID}`||*crwdnd876:0{OLD_BITRATE}crwdnd876:0{NEW_BITRATE}crwdne876:0",
+                    "USERLIMIT_CHANGED": "crwdns878:0{CHANNEL_MENTION}crwdnd878:0*||`{CHANNEL_ID}`||*crwdnd878:0{OLD_LIMIT}crwdnd878:0{NEW_LIMIT}crwdne878:0",
+                    "PERMS_SYNCED": "crwdns880:0{CHANNEL_MENTION}crwdnd880:0*||`{CHANNEL_ID}`||*crwdnd880:0{PARENT_MENTION}crwdne880:0",
+                    "PERMS_CHANGED": "crwdns882:0{CHANNEL_MENTION}crwdnd882:0*||`{CHANNEL_ID}`||*crwdnd882:0{CHANGES}crwdne882:0"
+                },
+                "CHANNEL_DELETE": {
+                    "CHANNEL_DELETED": "crwdns884:0{CHANNEL_MENTION}crwdnd884:0*||`{CHANNEL_ID}`||*crwdne884:0"
+                },
+                "CHANNEL_PINS_UPDATE": {
+                    "MESSAGE_PINNED": "crwdns886:0*||`{MESSAGE_ID}`||*crwdnd886:0{USERTAG}crwdnd886:0#{CHANNEL_ID}crwdnd886:0{GUILD_ID}crwdnd886:0{CHANNEL_ID}crwdnd886:0{MESSAGE_ID}crwdne886:0",
+                    "MESSAGE_UNPINNED": "crwdns888:0*||`{MESSAGE_ID}`||*crwdnd888:0{USERTAG}crwdnd888:0#{CHANNEL_ID}crwdnd888:0{GUILD_ID}crwdnd888:0{CHANNEL_ID}crwdnd888:0{MESSAGE_ID}crwdne888:0"
+                },
+                "GUILD_MEMBER_ADD": {
+                    "BOT_ADDED": "crwdns890:0{USERTAG}crwdne890:0",
+                    "MEMBER_JOIN": "crwdns892:0{USERTAG}crwdnd892:0{ACCOUNT_AGE}crwdne892:0"
+                },
+                "GUILD_MEMBER_REMOVE": {
+                    "MEMBER_LEFT": "crwdns894:0{USERTAG}crwdnd894:0{RESIDENCE_DURATION}crwdne894:0"
+                },
+                "GUILD_BAN_ADD": {
+                    "MEMBER_BANNED": "crwdns896:0{USERTAG}crwdne896:0"
+                },
+                "GUILD_BAN_REMOVE": {
+                    "MEMBER_UNBANNED": "crwdns898:0{USERTAG}crwdne898:0"
+                },
+                "GUILD_MEMBER_UPDATE": {
+                    "NICK_ADDED": "crwdns900:0{USERTAG}crwdnd900:0{NEW_NICK}crwdne900:0",
+                    "NICK_CHANGED": "crwdns902:0{USERTAG}crwdnd902:0{OLD_NICK}crwdnd902:0{NEW_NICK}crwdne902:0",
+                    "NICK_REMOVED": "crwdns904:0{USERTAG}crwdnd904:0{OLD_NICK}crwdne904:0",
+                    "ROLES_ADDED": "crwdns906:0{USERTAG}crwdnd906:0{ADDED_ROLES}crwdne906:0",
+                    "ROLES_REMOVED": "crwdns908:0{USERTAG}crwdnd908:0{REMOVED_ROLES}crwdne908:0",
+                    "ROLES_CHANGED": "crwdns910:0{USERTAG}crwdnd910:0{CHANGED_ROLES}crwdne910:0",
+                    "AVATAR_ADDED": "crwdns912:0{USERTAG}crwdne912:0",
+                    "AVATAR_REMOVED": "crwdns914:0{USERTAG}crwdne914:0",
+                    "AVATAR_CHANGED": "crwdns916:0{USERTAG}crwdne916:0",
+                    "USERNAME_CHANGED": "crwdns918:0{USERTAG}crwdnd918:0{OLD_USERNAME}crwdnd918:0{NEW_USERNAME}crwdne918:0",
+                    "DISCRIMINATOR_CHANGED": "crwdns920:0{USERTAG}crwdnd920:0{OLD_DISCRIMINATOR}crwdnd920:0{NEW_DISCRIMINATOR}crwdne920:0",
+                    "BOOSTING_STARTED": "crwdns922:0{USERTAG}crwdne922:0",
+                    "BOOSTING_STOPPED": "crwdns924:0{USERTAG}crwdne924:0"
+                },
+                "GUILD_CREATE": {
+                    "RECONNECTED": "crwdns926:0{GUILD_NAME}crwdnd926:0*||`{GUILD_ID}`||*crwdne926:0",
+                    "NEW_GUILD": "crwdns928:0{GUILD_NAME}crwdnd928:0*||`{GUILD_ID}`||*crwdne928:0"
+                },
+                "GUILD_INTEGRATIONS_UPDATE": {
+                    "INTEGRATIONS_UPDATED": "crwdns930:0{GUILD_NAME}crwdnd930:0*||`{GUILD_ID}`||*crwdne930:0"
+                },
+                "GUILD_EMOJIS_UPDATE": {
+                    "EDITED_EMOJIS": "crwdns932:0{MESSAGE}crwdne932:0",
+                    "ADDED_EMOJIS": "crwdns934:0{MESSAGE}crwdne934:0",
+                    "REMOVED_EMOJIS": "crwdns936:0{MESSAGE}crwdne936:0"
+                },
+                "GUILD_UPDATE": {
+                    "NAME_CHANGED": "crwdns938:0{OLD_NAME}crwdnd938:0{NEW_NAME}crwdne938:0",
+                    "REGION_CHANGED": "crwdns940:0{OLD_REGION}crwdnd940:0{NEW_REGION}crwdne940:0",
+                    "DESCRIPTION_CHANGED": "crwdns942:0{OLD_DESC}crwdnd942:0{NEW_DESC}crwdne942:0",
+                    "DMN_CHANGED": "crwdns944:0{OLD_DMN}crwdnd944:0{NEW_DMN}crwdne944:0",
+                    "EXPLICIT_FILTER_CHANGED": "crwdns946:0{OLD_FILTER}crwdnd946:0{NEW_FILTER}crwdne946:0",
+                    "VERIFICATION_LEVEL_CHANGED": "crwdns948:0{OLD_LEVEL}crwdnd948:0{NEW_LEVEL}crwdne948:0",
+                    "BANNER_ADDED": "crwdns950:0crwdne950:0",
+                    "BANNER_REMOVED": "crwdns952:0crwdne952:0",
+                    "BANNER_CHANGED": "crwdns954:0crwdne954:0",
+                    "ICON_ADDED": "crwdns956:0crwdne956:0",
+                    "ICON_REMOVED": "crwdns958:0crwdne958:0",
+                    "ICON_CHANGED": "crwdns960:0crwdne960:0",
+                    "PRESENCES_CHANGED": "crwdns962:0{OLD_PRES}crwdnd962:0{NEW_PRES}crwdne962:0",
+                    "MFA_LEVEL_CHANGED": "crwdns964:0{OLD_LEVEL}crwdnd964:0{NEW_LEVEL}crwdne964:0",
+                    "OWNER_CHANGED": "crwdns966:0{OLD_OWNER}crwdnd966:0{NEW_OWNER}crwdne966:0",
+                    "AFKCHANNEL_ADDED": "crwdns968:0#{NEW_CHANNEL}crwdne968:0",
+                    "AFKCHANNEL_REMOVED": "crwdns970:0#{OLD_CHANNEL}crwdne970:0",
+                    "AFKCHANNEL_CHANGED": "crwdns972:0#{OLD_CHANNEL}crwdnd972:0#{NEW_CHANNEL}crwdne972:0",
+                    "AFKTIMEOUT_CHANGED": "crwdns974:0{OLD_TIMEOUT}crwdnd974:0{NEW_TIMEOUT}crwdne974:0",
+                    "BOOST_TIER_CHANGED": "crwdns976:0{OLD_TIER}crwdnd976:0{NEW_TIER}crwdne976:0",
+                    "BOOST_SUBSCRIPTIONS_CHANGED": "crwdns978:0{OLD_SUBS}crwdnd978:0{NEW_SUBS}crwdne978:0",
+                    "PREFERRED_LOCALE_CHANGED": "crwdns980:0{OLD_LOCALE}crwdnd980:0{NEW_LOCALE}crwdne980:0",
+                    "SPLASH_ADDED": "crwdns982:0crwdne982:0",
+                    "SPLASH_REMOVED": "crwdns984:0crwdne984:0",
+                    "SPLASH_CHANGED": "crwdns986:0crwdne986:0",
+                    "SYSTEM_CHANNEL_ADDED": "crwdns988:0#{NEW_CHANNEL}crwdne988:0",
+                    "SYSTEM_CHANNEL_REMOVED": "crwdns990:0#{OLD_CHANNEL}crwdne990:0",
+                    "SYSTEM_CHANNEL_CHANGED": "crwdns992:0#{OLD_CHANNEL}crwdnd992:0#{NEW_CHANNEL}crwdne992:0",
+                    "VANITY_URL_ADDED": "crwdns994:0{NEW_VANITY}crwdne994:0",
+                    "VANITY_URL_REMOVED": "crwdns996:0{OLD_VANITY}crwdne996:0",
+                    "VANITY_URL_CHANGED": "crwdns998:0{OLD_VANITY}crwdnd998:0{NEW_VANITY}crwdne998:0",
+                    "WIDGET_CHANGED": "crwdns1000:0{OLD_WIDGET}crwdnd1000:0{NEW_WIDGET}crwdne1000:0",
+                    "WIDGET_CHANNEL_ADDED": "crwdns1002:0#{NEW_CHANNEL}crwdne1002:0",
+                    "WIDGET_CHANNEL_REMOVED": "crwdns1004:0#{OLD_CHANNEL}crwdne1004:0",
+                    "WIDGET_CHANNEL_CHANGED": "crwdns1006:0#{OLD_CHANNEL}crwdnd1006:0#{NEW_CHANNEL}crwdne1006:0",
+                    "FEATURES_REMOVED": "crwdns1008:0{REMOVED_FEATURES}crwdne1008:0",
+                    "FEATURES_CHANGED": "crwdns1010:0{CHANGED_FEATURES}crwdne1010:0",
+                    "FEATURES_ADDED": "crwdns1012:0{ADDED_FEATURES}crwdne1012:0"
+                },
+                "GUILD_ROLE_CREATE": {
+                    "NEW_ROLE": "crwdns1014:0{ROLE_MENTION}crwdnd1014:0*||`{ROLE_ID}`||*crwdne1014:0"
+                },
+                "GUILD_ROLE_UPDATE": {
+                    "NAME_CHANGED": "crwdns1016:0{ROLE_MENTION}crwdnd1016:0*||`{ROLE_ID}`||*crwdnd1016:0__Before__crwdnd1016:0{OLD_NAME}crwdnd1016:0__After__crwdnd1016:0{NEW_NAME}crwdne1016:0",
+                    "COLOR_CHANGED": "crwdns1018:0{ROLE_MENTION}crwdnd1018:0*||`{ROLE_ID}`||*crwdnd1018:0#{OLD_COLOR}crwdnd1018:0#{NEW_COLOR}crwdne1018:0",
+                    "HOIST_CHANGED": "crwdns1020:0{ROLE_MENTION}crwdnd1020:0*||`{ROLE_ID}`||*crwdnd1020:0{NEW_HOIST}crwdne1020:0",
+                    "MENTIONABLE_CHANGED": "crwdns1022:0{ROLE_MENTION}crwdnd1022:0*||`{ROLE_ID}`||*crwdnd1022:0{NEW_MENTIONABLE}crwdne1022:0",
+                    "POSITION_CHANGED": "crwdns1024:0{ROLE_MENTION}crwdnd1024:0*||`{ROLE_ID}`||*crwdnd1024:0{OLD_POSITION}crwdnd1024:0{NEW_POSITION}crwdne1024:0",
+                    "MANAGED_CHANGED": "crwdns1026:0{ROLE_MENTION}crwdnd1026:0*||`{ROLE_ID}`||*crwdnd1026:0{NEW_MANAGED}crwdne1026:0",
+                    "PERMS_ADDED": "crwdns1028:0{ROLE_MENTION}crwdnd1028:0*||`{ROLE_ID}`||*crwdnd1028:0{ADDED_PERMS}crwdne1028:0",
+                    "PERMS_REMOVED": "crwdns1030:0{ROLE_MENTION}crwdnd1030:0*||`{ROLE_ID}`||*crwdnd1030:0{REMOVED_PERMS}crwdne1030:0",
+                    "PERMS_CHANGED": "crwdns1032:0{ROLE_MENTION}crwdnd1032:0*||`{ROLE_ID}`||*crwdnd1032:0{CHANGED_PERMS}crwdne1032:0"
+                },
+                "GUILD_ROLE_DELETE": {
+                    "REMOVED_ROLE": "crwdns1034:0{ROLE_NAME}crwdnd1034:0*||`{ROLE_ID}`||*crwdne1034:0"
+                },
+                "MESSAGE_UPDATE": {
+                    "MESSAGE_CONTENT_UPDATED_GUILD": "crwdns1036:0{USERTAG}crwdnd1036:0*||`{MESSAGE_ID}`||*crwdnd1036:0#{CHANNEL_ID}crwdnd1036:0__Before__crwdnd1036:0{CONTENT_BEFORE}crwdnd1036:0__After__crwdnd1036:0{CONTENT_AFTER}crwdnd1036:0{GUILD_ID}crwdnd1036:0{CHANNEL_ID}crwdnd1036:0{MESSAGE_ID}crwdne1036:0",
+                    "MESSAGE_CONTENT_UPDATED_DM": "crwdns1038:0{USERTAG}crwdnd1038:0*||`{MESSAGE_ID}`||*crwdnd1038:0__Before__crwdnd1038:0{CONTENT_BEFORE}crwdnd1038:0__After__crwdnd1038:0{CONTENT_AFTER}crwdne1038:0"
+                },
+                "MESSAGE_DELETE": {
+                    "MESSAGE_DELETED_DM": "crwdns1040:0{USERTAG}crwdnd1040:0*||`{MESSAGE_ID}`||*crwdnd1040:0{CONTENT}crwdne1040:0",
+                    "MESSAGE_DELETED_GUILD": "crwdns1042:0{USERTAG}crwdnd1042:0*||`{MESSAGE_ID}`||*crwdnd1042:0#{CHANNEL_ID}crwdnd1042:0{CONTENT}crwdne1042:0",
+                    "MESSAGE_DELETED_GUILD_WEBHOOK": "crwdns1044:0*||`{MESSAGE_ID}`||*crwdnd1044:0#{CHANNEL_ID}crwdnd1044:0{CONTENT}crwdne1044:0",
+                    "MESSAGE_DELETED_DM_NO_CACHE": "crwdns1046:0*||`{MESSAGE_ID}`||*crwdne1046:0",
+                    "MESSAGE_DELETED_GUILD_NO_CACHE": "crwdns1048:0*||`{MESSAGE_ID}`||*crwdnd1048:0#{CHANNEL_ID}crwdne1048:0"
+                },
+                "MESSAGE_DELETE_BULK": {
+                    "MESSAGES_DELETED": "crwdns1050:0#{CHANNEL_ID}crwdne1050:0"
+                },
+                "MESSAGE_REACTION_ADD": {
+                    "ADD_REACTION": "crwdns1052:0{USERTAG}crwdnd1052:0*||`{MESSAGE_ID}`||*crwdnd1052:0#{CHANNEL_ID}crwdnd1052:0{EMOJI_MENTION}crwdnd1052:0{GUILD_ID}crwdnd1052:0{CHANNEL_ID}crwdnd1052:0{MESSAGE_ID}crwdne1052:0"
+                },
+                "MESSAGE_REACTION_REMOVE": {
+                    "REMOVED_REACTION": "crwdns1054:0{USERTAG}crwdnd1054:0*||`{MESSAGE_ID}`||*crwdnd1054:0#{CHANNEL_ID}crwdnd1054:0{EMOJI_MENTION}crwdnd1054:0{GUILD_ID}crwdnd1054:0{CHANNEL_ID}crwdnd1054:0{MESSAGE_ID}crwdne1054:0"
+                },
+                "MESSAGE_REACTION_REMOVE_ALL": {
+                    "REMOVED_ALL_REACTIONS": "crwdns1056:0*||`{MESSAGE_ID}`||*crwdnd1056:0#{CHANNEL_ID}crwdnd1056:0{GUILD_ID}crwdnd1056:0{CHANNEL_ID}crwdnd1056:0{MESSAGE_ID}crwdne1056:0"
+                },
+                "USER_UPDATE": {
+                    "USER_UPDATED": "crwdns1058:0{USERTAG}crwdne1058:0"
+                },
+                "VOICE_STATE_UPDATE": {
+                    "SERVER_DEAFENED": "crwdns1060:0{USERTAG}crwdnd1060:0{CHANNEL_MENTION}crwdnd1060:0*||`{CHANNEL_ID}`||*crwdne1060:0",
+                    "SERVER_UNDEAFENED": "crwdns1062:0{USERTAG}crwdnd1062:0{CHANNEL_MENTION}crwdnd1062:0*||`{CHANNEL_ID}`||*crwdne1062:0",
+                    "SERVER_MUTED": "crwdns1064:0{USERTAG}crwdnd1064:0{CHANNEL_MENTION}crwdnd1064:0*||`{CHANNEL_ID}`||*crwdne1064:0",
+                    "SERVER_UNMUTED": "crwdns1066:0{USERTAG}crwdnd1066:0{CHANNEL_MENTION}crwdnd1066:0*||`{CHANNEL_ID}`||*crwdne1066:0",
+                    "SELF_DEAFENED": "crwdns1068:0{USERTAG}crwdnd1068:0{CHANNEL_MENTION}crwdnd1068:0*||`{CHANNEL_ID}`||*crwdne1068:0",
+                    "SELF_UNDEAFENED": "crwdns1070:0{USERTAG}crwdnd1070:0{CHANNEL_MENTION}crwdnd1070:0*||`{CHANNEL_ID}`||*crwdne1070:0",
+                    "SELF_MUTED": "crwdns1072:0{USERTAG}crwdnd1072:0{CHANNEL_MENTION}crwdnd1072:0*||`{CHANNEL_ID}`||*crwdne1072:0",
+                    "SELF_UNMUTED": "crwdns1074:0{USERTAG}crwdnd1074:0{CHANNEL_MENTION}crwdnd1074:0*||`{CHANNEL_ID}`||*crwdne1074:0",
+                    "START_STREAM": "crwdns1076:0{USERTAG}crwdnd1076:0{CHANNEL_MENTION}crwdnd1076:0*||`{CHANNEL_ID}`||*crwdne1076:0",
+                    "STOP_STREAM": "crwdns1078:0{USERTAG}crwdnd1078:0{CHANNEL_MENTION}crwdnd1078:0*||`{CHANNEL_ID}`||*crwdne1078:0",
+                    "ENTERED_CHANNEL": "crwdns1080:0{USERTAG}crwdnd1080:0{CHANNEL_MENTION}crwdnd1080:0*||`{CHANNEL_ID}`||*crwdne1080:0",
+                    "LEFT_CHANNEL": "crwdns1082:0{USERTAG}crwdnd1082:0{CHANNEL_MENTION}crwdnd1082:0*||`{CHANNEL_ID}`||*crwdne1082:0",
+                    "MOVED_CHANNEL": "crwdns1084:0{USERTAG}crwdnd1084:0{OLD_CHANNEL_MENTION}crwdnd1084:0*||`{OLD_CHANNEL_ID}`||*crwdnd1084:0{NEW_CHANNEL_MENTION}crwdnd1084:0*||`{NEW_CHANNEL_ID}`||*crwdne1084:0"
+                },
+                "VOICE_SERVER_UPDATE": {
+                    "CONNECTED": "crwdns1086:0{TOKEN}crwdne1086:0"
+                },
+                "TYPING_START": {
+                    "START_TYPING_GUILD": "crwdns1088:0{USERTAG}crwdnd1088:0#{CHANNEL_ID}crwdne1088:0",
+                    "START_TYPING_DM": "crwdns1090:0{USERTAG}crwdne1090:0"
+                },
+                "WEBHOOKS_UPDATE": {
+                    "WEBHOOK_UPDATED": "crwdns1092:0#{CHANNEL_ID}crwdne1092:0"
+                }
+            },
+            "l_messages_logs": {
+                "CHANNEL_CREATE": {
+                    "CHANNEL_CREATED": "crwdns1094:0{ACTORTAG}crwdnd1094:0{CHANNEL_MENTION}crwdnd1094:0*||`{CHANNEL_ID}`||*crwdne1094:0"
+                },
+                "CHANNEL_UPDATE": {
+                    "NAME_CHANGED": "crwdns1096:0{ACTORTAG}crwdnd1096:0{CHANNEL_MENTION}crwdnd1096:0*||`{CHANNEL_ID}`||*crwdnd1096:0{OLD_NAME}crwdnd1096:0{NEW_NAME}crwdne1096:0",
+                    "CATEGORY_CHANGED": "crwdns1098:0{ACTORTAG}crwdnd1098:0{CHANNEL_MENTION}crwdnd1098:0*||`{CHANNEL_ID}`||*crwdnd1098:0{OLD_MENTION}crwdnd1098:0{NEW_MENTION}crwdne1098:0",
+                    "TYPE_CHANGED": "crwdns1100:0{ACTORTAG}crwdnd1100:0{CHANNEL_MENTION}crwdnd1100:0*||`{CHANNEL_ID}`||*crwdnd1100:0{OLD_TYPE}crwdnd1100:0{NEW_TYPE}crwdne1100:0",
+                    "NSFW_CHANGED": "crwdns1102:0{ACTORTAG}crwdnd1102:0{CHANNEL_MENTION}crwdnd1102:0*||`{CHANNEL_ID}`||*crwdnd1102:0{NEW_NSFW}crwdne1102:0",
+                    "TOPIC_CHANGED": "crwdns1104:0{ACTORTAG}crwdnd1104:0{CHANNEL_MENTION}crwdnd1104:0*||`{CHANNEL_ID}`||*crwdnd1104:0{OLD_TOPIC}crwdnd1104:0{NEW_TOPIC}crwdne1104:0",
+                    "SLOWMODE_CHANGED": "crwdns1106:0{ACTORTAG}crwdnd1106:0{CHANNEL_MENTION}crwdnd1106:0*||`{CHANNEL_ID}`||*crwdnd1106:0{OLD_SLOWMODE}crwdnd1106:0{NEW_SLOWMODE}crwdne1106:0",
+                    "BITRATE_CHANGED": "crwdns1108:0{ACTORTAG}crwdnd1108:0{CHANNEL_MENTION}crwdnd1108:0*||`{CHANNEL_ID}`||*crwdnd1108:0{OLD_BITRATE}crwdnd1108:0{NEW_BITRATE}crwdne1108:0",
+                    "USERLIMIT_CHANGED": "crwdns1110:0{ACTORTAG}crwdnd1110:0{CHANNEL_MENTION}crwdnd1110:0*||`{CHANNEL_ID}`||*crwdnd1110:0{OLD_LIMIT}crwdnd1110:0{NEW_LIMIT}crwdne1110:0",
+                    "PERMS_SYNCED": "crwdns1112:0{ACTORTAG}crwdnd1112:0{CHANNEL_MENTION}crwdnd1112:0*||`{CHANNEL_ID}`||*crwdnd1112:0{PARENT_MENTION}crwdne1112:0",
+                    "PERMS_CHANGED": "crwdns1114:0{ACTORTAG}crwdnd1114:0{CHANNEL_MENTION}crwdnd1114:0*||`{CHANNEL_ID}`||*crwdnd1114:0{CHANGES}crwdne1114:0"
+                },
+                "CHANNEL_DELETE": {
+                    "CHANNEL_DELETED": "crwdns1116:0{ACTORTAG}crwdnd1116:0{CHANNEL_MENTION}crwdnd1116:0*||`{CHANNEL_ID}`||*crwdne1116:0"
+                },
+                "CHANNEL_PINS_UPDATE": {
+                    "MESSAGE_PINNED": "crwdns1118:0{ACTORTAG}crwdnd1118:0*||`{MESSAGE_ID}`||*crwdnd1118:0{USERTAG}crwdnd1118:0#{CHANNEL_ID}crwdnd1118:0{GUILD_ID}crwdnd1118:0{CHANNEL_ID}crwdnd1118:0{MESSAGE_ID}crwdne1118:0",
+                    "MESSAGE_UNPINNED": "crwdns1120:0{ACTORTAG}crwdnd1120:0*||`{MESSAGE_ID}`||*crwdnd1120:0{USERTAG}crwdnd1120:0#{CHANNEL_ID}crwdnd1120:0{GUILD_ID}crwdnd1120:0{CHANNEL_ID}crwdnd1120:0{MESSAGE_ID}crwdne1120:0"
+                },
+                "GUILD_MEMBER_ADD": {
+                    "BOT_ADDED": "crwdns1122:0{ACTORTAG}crwdnd1122:0{USERTAG}crwdne1122:0"
+                },
+                "GUILD_MEMBER_REMOVE": {
+                    "MEMBER_KICKED": "crwdns1124:0{ACTORTAG}crwdnd1124:0{USERTAG}crwdne1124:0"
+                },
+                "GUILD_BAN_ADD": {
+                    "MEMBER_BANNED": "crwdns1126:0{ACTORTAG}crwdnd1126:0{USERTAG}crwdne1126:0"
+                },
+                "GUILD_BAN_REMOVE": {
+                    "MEMBER_UNBANNED": "crwdns1128:0{ACTORTAG}crwdnd1128:0{USERTAG}crwdne1128:0"
+                },
+                "GUILD_MEMBER_UPDATE": {
+                    "NICK_ADDED": "crwdns1130:0{ACTORTAG}crwdnd1130:0{USERTAG}crwdnd1130:0{NEW_NICK}crwdne1130:0",
+                    "NICK_CHANGED": "crwdns1132:0{ACTORTAG}crwdnd1132:0{USERTAG}crwdnd1132:0{OLD_NICK}crwdnd1132:0{NEW_NICK}crwdne1132:0",
+                    "NICK_REMOVED": "crwdns1134:0{ACTORTAG}crwdnd1134:0{USERTAG}crwdnd1134:0{OLD_NICK}crwdne1134:0",
+                    "ROLES_ADDED": "crwdns1136:0{ACTORTAG}crwdnd1136:0{USERTAG}crwdnd1136:0{ADDED_ROLES}crwdne1136:0",
+                    "ROLES_REMOVED": "crwdns1138:0{ACTORTAG}crwdnd1138:0{USERTAG}crwdnd1138:0{REMOVED_ROLES}crwdne1138:0",
+                    "ROLES_CHANGED": "crwdns1140:0{ACTORTAG}crwdnd1140:0{USERTAG}crwdnd1140:0{CHANGED_ROLES}crwdne1140:0"
+                },
+                "GUILD_EMOJIS_UPDATE": {
+                    "EDITED_EMOJIS": "crwdns1142:0{ACTORTAG}crwdnd1142:0{MESSAGE}crwdne1142:0",
+                    "ADDED_EMOJIS": "crwdns1144:0{ACTORTAG}crwdnd1144:0{MESSAGE}crwdne1144:0",
+                    "REMOVED_EMOJIS": "crwdns1146:0{ACTORTAG}crwdnd1146:0{MESSAGE}crwdne1146:0"
+                },
+                "GUILD_UPDATE": {
+                    "NAME_CHANGED": "crwdns1148:0{ACTORTAG}crwdnd1148:0{OLD_NAME}crwdnd1148:0{NEW_NAME}crwdne1148:0",
+                    "REGION_CHANGED": "crwdns1150:0{ACTORTAG}crwdnd1150:0{OLD_REGION}crwdnd1150:0{NEW_REGION}crwdne1150:0",
+                    "DESCRIPTION_CHANGED": "crwdns1152:0{ACTORTAG}crwdnd1152:0{OLD_DESC}crwdnd1152:0{NEW_DESC}crwdne1152:0",
+                    "DMN_CHANGED": "crwdns1154:0{ACTORTAG}crwdnd1154:0{OLD_DMN}crwdnd1154:0{NEW_DMN}crwdne1154:0",
+                    "EXPLICIT_FILTER_CHANGED": "crwdns1156:0{ACTORTAG}crwdnd1156:0{OLD_FILTER}crwdnd1156:0{NEW_FILTER}crwdne1156:0",
+                    "VERIFICATION_LEVEL_CHANGED": "crwdns1158:0{ACTORTAG}crwdnd1158:0{OLD_LEVEL}crwdnd1158:0{NEW_LEVEL}crwdne1158:0",
+                    "BANNER_ADDED": "crwdns1160:0{ACTORTAG}crwdne1160:0",
+                    "BANNER_REMOVED": "crwdns1162:0{ACTORTAG}crwdne1162:0",
+                    "BANNER_CHANGED": "crwdns1164:0{ACTORTAG}crwdne1164:0",
+                    "ICON_ADDED": "crwdns1166:0{ACTORTAG}crwdne1166:0",
+                    "ICON_REMOVED": "crwdns1168:0{ACTORTAG}crwdne1168:0",
+                    "ICON_CHANGED": "crwdns1170:0{ACTORTAG}crwdne1170:0",
+                    "MFA_LEVEL_CHANGED": "crwdns1172:0{ACTORTAG}crwdnd1172:0{OLD_LEVEL}crwdnd1172:0{NEW_LEVEL}crwdne1172:0",
+                    "OWNER_CHANGED": "crwdns1174:0{OLD_OWNER}crwdnd1174:0{NEW_OWNER}crwdne1174:0",
+                    "AFKCHANNEL_ADDED": "crwdns1176:0{ACTORTAG}crwdnd1176:0#{NEW_CHANNEL}crwdne1176:0",
+                    "AFKCHANNEL_REMOVED": "crwdns1178:0{ACTORTAG}crwdnd1178:0#{OLD_CHANNEL}crwdne1178:0",
+                    "AFKCHANNEL_CHANGED": "crwdns1180:0{ACTORTAG}crwdnd1180:0#{OLD_CHANNEL}crwdnd1180:0#{NEW_CHANNEL}crwdne1180:0",
+                    "AFKTIMEOUT_CHANGED": "crwdns1182:0{ACTORTAG}crwdnd1182:0{OLD_TIMEOUT}crwdnd1182:0{NEW_TIMEOUT}crwdne1182:0",
+                    "PREFERRED_LOCALE_CHANGED": "crwdns1184:0{ACTORTAG}crwdnd1184:0{OLD_LOCALE}crwdnd1184:0{NEW_LOCALE}crwdne1184:0",
+                    "SPLASH_ADDED": "crwdns1186:0{ACTORTAG}crwdne1186:0",
+                    "SPLASH_REMOVED": "crwdns1188:0{ACTORTAG}crwdne1188:0",
+                    "SPLASH_CHANGED": "crwdns1190:0{ACTORTAG}crwdne1190:0",
+                    "SYSTEM_CHANNEL_ADDED": "crwdns1192:0{ACTORTAG}crwdnd1192:0#{NEW_CHANNEL}crwdne1192:0",
+                    "SYSTEM_CHANNEL_REMOVED": "crwdns1194:0{ACTORTAG}crwdnd1194:0#{OLD_CHANNEL}crwdne1194:0",
+                    "SYSTEM_CHANNEL_CHANGED": "crwdns1196:0{ACTORTAG}crwdnd1196:0#{OLD_CHANNEL}crwdnd1196:0#{NEW_CHANNEL}crwdne1196:0",
+                    "VANITY_URL_ADDED": "crwdns1198:0{ACTORTAG}crwdnd1198:0{NEW_VANITY}crwdne1198:0",
+                    "VANITY_URL_REMOVED": "crwdns1200:0{ACTORTAG}crwdnd1200:0{OLD_VANITY}crwdne1200:0",
+                    "VANITY_URL_CHANGED": "crwdns1202:0{ACTORTAG}crwdnd1202:0{OLD_VANITY}crwdnd1202:0{NEW_VANITY}crwdne1202:0",
+                    "WIDGET_CHANGED": "crwdns1204:0{ACTORTAG}crwdnd1204:0{OLD_WIDGET}crwdnd1204:0{NEW_WIDGET}crwdne1204:0",
+                    "WIDGET_CHANNEL_ADDED": "crwdns1206:0{ACTORTAG}crwdnd1206:0#{NEW_CHANNEL}crwdne1206:0",
+                    "WIDGET_CHANNEL_REMOVED": "crwdns1208:0{ACTORTAG}crwdnd1208:0#{OLD_CHANNEL}crwdne1208:0",
+                    "WIDGET_CHANNEL_CHANGED": "crwdns1210:0{ACTORTAG}crwdnd1210:0#{OLD_CHANNEL}crwdnd1210:0#{NEW_CHANNEL}crwdne1210:0"
+                },
+                "GUILD_ROLE_CREATE": {
+                    "NEW_ROLE": "crwdns1212:0{ACTORTAG}crwdnd1212:0{ROLE_MENTION}crwdnd1212:0*||`{ROLE_ID}`||*crwdne1212:0"
+                },
+                "GUILD_ROLE_UPDATE": {
+                    "NAME_CHANGED": "crwdns1214:0{ACTORTAG}crwdnd1214:0{ROLE_MENTION}crwdnd1214:0*||`{ROLE_ID}`||*crwdnd1214:0__Before__crwdnd1214:0{OLD_NAME}crwdnd1214:0__After__crwdnd1214:0{NEW_NAME}crwdne1214:0",
+                    "COLOR_CHANGED": "crwdns1216:0{ACTORTAG}crwdnd1216:0{ROLE_MENTION}crwdnd1216:0*||`{ROLE_ID}`||*crwdnd1216:0#{OLD_COLOR}crwdnd1216:0#{NEW_COLOR}crwdne1216:0",
+                    "HOIST_CHANGED": "crwdns1218:0{ACTORTAG}crwdnd1218:0{ROLE_MENTION}crwdnd1218:0*||`{ROLE_ID}`||*crwdnd1218:0{NEW_HOIST}crwdne1218:0",
+                    "MENTIONABLE_CHANGED": "crwdns1220:0{ACTORTAG}crwdnd1220:0{ROLE_MENTION}crwdnd1220:0*||`{ROLE_ID}`||*crwdnd1220:0{NEW_MENTIONABLE}crwdne1220:0",
+                    "POSITION_CHANGED": "crwdns1222:0{ACTORTAG}crwdnd1222:0{ROLE_MENTION}crwdnd1222:0*||`{ROLE_ID}`||*crwdnd1222:0{OLD_POSITION}crwdnd1222:0{NEW_POSITION}crwdne1222:0",
+                    "MANAGED_CHANGED": "crwdns1224:0{ACTORTAG}crwdnd1224:0{ROLE_MENTION}crwdnd1224:0*||`{ROLE_ID}`||*crwdnd1224:0{NEW_MANAGED}crwdne1224:0",
+                    "PERMS_ADDED": "crwdns1226:0{ACTORTAG}crwdnd1226:0{ROLE_MENTION}crwdnd1226:0*||`{ROLE_ID}`||*crwdnd1226:0{ADDED_PERMS}crwdne1226:0",
+                    "PERMS_REMOVED": "crwdns1228:0{ACTORTAG}crwdnd1228:0{ROLE_MENTION}crwdnd1228:0*||`{ROLE_ID}`||*crwdnd1228:0{REMOVED_PERMS}crwdne1228:0",
+                    "PERMS_CHANGED": "crwdns1230:0{ACTORTAG}crwdnd1230:0{ROLE_MENTION}crwdnd1230:0*||`{ROLE_ID}`||*crwdnd1230:0{CHANGED_PERMS}crwdne1230:0"
+                },
+                "GUILD_ROLE_DELETE": {
+                    "REMOVED_ROLE": "crwdns1232:0{ACTORTAG}crwdnd1232:0{ROLE_NAME}crwdnd1232:0*||`{ROLE_ID}`||*crwdne1232:0"
+                },
+                "MESSAGE_DELETE": {
+                    "MESSAGE_DELETED_GUILD": "crwdns1408:0{ACTORTAG}crwdnd1408:0{AUTHOR}crwdnd1408:0*||`{MESSAGE_ID}`||*crwdnd1408:0#{CHANNEL_ID}crwdnd1408:0{CONTENT}crwdne1408:0"
+                },
+                "MESSAGE_DELETE_BULK": {
+                    "MESSAGES_DELETED": "crwdns1236:0{ACTORTAG}crwdnd1236:0#{CHANNEL_ID}crwdne1236:0"
+                },
+                "VOICE_STATE_UPDATE": {
+                    "SERVER_DEAFENED": "crwdns1238:0{ACTORTAG}crwdnd1238:0{USERTAG}crwdnd1238:0{CHANNEL_MENTION}crwdnd1238:0*||`{CHANNEL_ID}`||*crwdne1238:0",
+                    "SERVER_UNDEAFENED": "crwdns1240:0{ACTORTAG}crwdnd1240:0{USERTAG}crwdnd1240:0{CHANNEL_MENTION}crwdnd1240:0*||`{CHANNEL_ID}`||*crwdne1240:0",
+                    "SERVER_MUTED": "crwdns1242:0{ACTORTAG}crwdnd1242:0{USERTAG}crwdnd1242:0{CHANNEL_MENTION}crwdnd1242:0*||`{CHANNEL_ID}`||*crwdne1242:0",
+                    "SERVER_UNMUTED": "crwdns1244:0{ACTORTAG}crwdnd1244:0{USERTAG}crwdnd1244:0{CHANNEL_MENTION}crwdnd1244:0*||`{CHANNEL_ID}`||*crwdne1244:0",
+                    "LEFT_CHANNEL": "crwdns1246:0{ACTORTAG}crwdnd1246:0{USERTAG}crwdnd1246:0{CHANNEL_MENTION}crwdnd1246:0*||`{CHANNEL_ID}`||*crwdne1246:0",
+                    "MOVED_CHANNEL": "crwdns1248:0{ACTORTAG}crwdnd1248:0{USERTAG}crwdnd1248:0{OLD_CHANNEL_MENTION}crwdnd1248:0*||`{OLD_CHANNEL_ID}`||*crwdnd1248:0{NEW_CHANNEL_MENTION}crwdnd1248:0*||`{NEW_CHANNEL_ID}`||*crwdne1248:0"
                 }
             }
         },
-        "utilities": {
-            "shared": {
-                "time_improper": "crwdns622:0crwdne622:0",
-                "reminders": {
-                    "remind_message": "crwdns624:0{USER_MENTION}crwdnd624:0{TIME_UTC}crwdnd624:0{TIME_AGO}crwdnd624:0{REMINDER_TEXT}crwdne624:0",
-                    "reminder_time_limit": "crwdns626:0crwdne626:0",
-                    "reminder_count_limit": "crwdns628:0crwdne628:0",
-                    "reminder_content_limit": "crwdns630:0crwdne630:0",
-                    "will_remind_in": "crwdns632:0{DURATION}crwdne632:0",
-                    "no_reminders": "crwdns634:0crwdne634:0",
-                    "cleared_reminders": "crwdns636:0{COUNT}crwdne636:0"
-                }
+        "tags": {
+            "footer": "crwdns638:0{USER_TAG}crwdnd638:0{USER_ID}crwdne638:0",
+            "tag": "crwdns640:0crwdne640:0",
+            "cant_edit_others": "crwdns642:0crwdne642:0",
+            "tag_not_found": "crwdns644:0crwdne644:0",
+            "show": {
+                "no_tag_found": "crwdns646:0crwdne646:0"
             },
-            "commands": {}
+            "set": {
+                "name_length": "crwdns648:0crwdne648:0",
+                "invalid_name": "crwdns650:0crwdne650:0",
+                "content_length": "crwdns652:0{MAX_LENGTH}crwdne652:0",
+                "edited_tag": "crwdns1250:0{TAG_NAME}crwdne1250:0",
+                "saved_tag": "crwdns1252:0{TAG_NAME}crwdne1252:0"
+            },
+            "delete": {
+                "deleted_tag": "crwdns658:0{TAG_NAME}crwdne658:0"
+            },
+            "info": {
+                "by": "crwdns660:0crwdne660:0",
+                "uses": "crwdns662:0crwdne662:0",
+                "created": "crwdns664:0crwdne664:0"
+            },
+            "clearall": {
+                "cleared_tags": "crwdns666:0{COUNT}crwdne666:0"
+            },
+            "list": {
+                "no_tags": "crwdns668:0crwdne668:0",
+                "tag_list": "crwdns670:0crwdne670:0"
+            }
+        },
+        "utilities": {
+            "time_improper": "crwdns672:0crwdne672:0",
+            "reminders": {
+                "remind_message": "crwdns674:0{USER_MENTION}crwdnd674:0{TIME_UTC}crwdnd674:0{TIME_AGO}crwdnd674:0{REMINDER_TEXT}crwdne674:0",
+                "reminder_time_limit": "crwdns676:0crwdne676:0",
+                "reminder_count_limit": "crwdns678:0crwdne678:0",
+                "reminder_content_limit": "crwdns680:0crwdne680:0",
+                "will_remind_in": "crwdns682:0{DURATION}crwdne682:0",
+                "no_reminders": "crwdns684:0crwdne684:0",
+                "cleared_reminders": "crwdns686:0{COUNT}crwdne686:0"
+            },
+            "curs": {
+                "not_enabled": "crwdns1254:0crwdne1254:0",
+                "dont_have_role": "crwdns688:0crwdne688:0",
+                "check_role": "crwdns690:0{ROLE_MENTION}crwdnd690:0{PREFIX}crwdnd690:0{PREFIX}crwdne690:0",
+                "check_role_slash": "crwdns692:0{ROLE_MENTION}crwdne692:0",
+                "character_limit": "crwdns694:0crwdne694:0",
+                "role_not_found": "crwdns696:0crwdne696:0",
+                "changed_role_name": "crwdns698:0{ROLE_NAME}crwdne698:0",
+                "changed_role_color": "crwdns700:0{COLOR}crwdne700:0",
+                "color_wrong_format": "crwdns702:0crwdne702:0",
+                "already_has_role": "crwdns704:0crwdne704:0",
+                "has_no_role": "crwdns1256:0crwdne1256:0",
+                "cleared_role": "crwdns1258:0{USER_MENTION}crwdne1258:0",
+                "deleted_role": "crwdns1260:0{USER_MENTION}crwdne1260:0",
+                "already_assigned_to": "crwdns706:0{USER_MENTION}crwdne706:0",
+                "set_role": "crwdns708:0{USER_MENTION}crwdnd708:0{ROLE_MENTION}crwdne708:0"
+            },
+            "snipe": {
+                "no_message": "crwdns1262:0crwdne1262:0",
+                "user_not_found": "crwdns1264:0crwdne1264:0",
+                "requested_by": "crwdns1266:0{USER_TAG}crwdne1266:0",
+                "said": "crwdns1268:0{USER_MENTION}crwdne1268:0"
+            },
+            "random": {
+                "coin": "crwdns1270:0{RESULT}crwdne1270:0",
+                "coin_tails": "crwdns1272:0crwdne1272:0",
+                "coin_heads": "crwdns1274:0crwdne1274:0",
+                "number_minimum_wrong": "crwdns1276:0crwdne1276:0",
+                "number": "crwdns1278:0{MINIMUM}crwdnd1278:0{MAXIMUM}crwdnd1278:0{RESULT}crwdne1278:0"
+            },
+            "snowflake": "crwdns1280:0{SNOWFLAKE}crwdnd1280:0{DATE}crwdne1280:0",
+            "avatar": {
+                "avatar_of": "crwdns1282:0{USER_TAG}crwdnd1282:0{AVATAR_URL}crwdne1282:0",
+                "requested_by": "crwdns1284:0{USER_TAG}crwdnd1284:0{USER_ID}crwdne1284:0"
+            },
+            "server": {
+                "guild_not_found": "crwdns1286:0crwdne1286:0",
+                "bot_user_not_found": "crwdns1288:0crwdne1288:0",
+                "preferred_locale": "crwdns1290:0crwdne1290:0",
+                "boosts": "crwdns1292:0crwdne1292:0",
+                "boost_tier": "crwdns1294:0crwdne1294:0",
+                "system_channel": "crwdns1296:0crwdne1296:0",
+                "vanity_url": "crwdns1298:0crwdne1298:0",
+                "description": "crwdns1300:0crwdne1300:0",
+                "widget_no_channel": "crwdns1302:0crwdne1302:0",
+                "widget": "crwdns1304:0crwdne1304:0",
+                "none": "crwdns1306:0crwdne1306:0",
+                "information": "crwdns1308:0crwdne1308:0",
+                "id": "crwdns1310:0crwdne1310:0",
+                "created": "crwdns1312:0{TIME}crwdne1312:0",
+                "owner": "crwdns1314:0crwdne1314:0",
+                "vc_region": "crwdns1316:0crwdne1316:0",
+                "features": "crwdns1318:0crwdne1318:0",
+                "channels": "crwdns1320:0crwdne1320:0",
+                "other_counts": "crwdns1322:0crwdne1322:0",
+                "roles": "crwdns1324:0crwdne1324:0",
+                "emojis": "crwdns1326:0crwdne1326:0",
+                "bans": "crwdns1328:0crwdne1328:0",
+                "invites": "crwdns1330:0crwdne1330:0",
+                "members": "crwdns1332:0crwdne1332:0"
+            },
+            "info": {
+                "user_not_found": "crwdns1334:0crwdne1334:0",
+                "user": "crwdns1336:0crwdne1336:0",
+                "bot": "crwdns1338:0crwdne1338:0",
+                "profile": "crwdns1340:0crwdne1340:0",
+                "custom_status": "crwdns1342:0crwdne1342:0",
+                "status": "crwdns1344:0crwdne1344:0",
+                "online": "crwdns1346:0crwdne1346:0",
+                "idle": "crwdns1348:0crwdne1348:0",
+                "busy": "crwdns1350:0crwdne1350:0",
+                "offline": "crwdns1352:0crwdne1352:0",
+                "discord_badges": "crwdns1354:0crwdne1354:0",
+                "discord_staff": "crwdns1356:0crwdne1356:0",
+                "discord_partner": "crwdns1358:0crwdne1358:0",
+                "hypesquad": "crwdns1360:0crwdne1360:0",
+                "bug_hunter": "crwdns1362:0crwdne1362:0",
+                "hs_bravery": "crwdns1364:0crwdne1364:0",
+                "hs_brilliance": "crwdns1366:0crwdne1366:0",
+                "hs_balance": "crwdns1368:0crwdne1368:0",
+                "early_supporter": "crwdns1370:0crwdne1370:0",
+                "team_user": "crwdns1372:0crwdne1372:0",
+                "system": "crwdns1374:0crwdne1374:0",
+                "golden_bug_hunter": "crwdns1376:0crwdne1376:0",
+                "verified_bot": "crwdns1378:0crwdne1378:0",
+                "early_bot_dev": "crwdns1380:0crwdne1380:0",
+                "pyboat_badges": "crwdns1382:0crwdne1382:0",
+                "member_info": "crwdns1384:0crwdne1384:0",
+                "joined": "crwdns1386:0{TIME}crwdne1386:0",
+                "nickname": "crwdns1388:0crwdne1388:0",
+                "boosting_since": "crwdns1390:0{TIME}crwdne1390:0",
+                "roles": "crwdns1392:0crwdne1392:0",
+                "key_roles": "crwdns1394:0crwdne1394:0",
+                "infractions": "crwdns1396:0crwdne1396:0",
+                "infractions_applied": "crwdns1398:0crwdne1398:0",
+                "infractions_received": "crwdns1400:0crwdne1400:0",
+                "permissions": "crwdns1402:0crwdne1402:0",
+                "staff": "crwdns1404:0crwdne1404:0",
+                "bot_level": "crwdns1406:0crwdne1406:0"
+            }
         }
     }
 }
