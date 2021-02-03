@@ -877,6 +877,7 @@ export interface IAdm_backup {
 }
 export interface IInfractions {
     targeting: ITargeting;
+    inf_terms: IInf_terms;
 }
 export interface ITargeting {
     bot_cant_kick: string;
@@ -889,5 +890,61 @@ export interface ITargeting {
     actor_cant_ban: string;
     actor_cant_roles: string;
     actor_cant_level: string;
+    actor_cant_hierarchy: string;
+    actor_cant_admin: string;
     cant_self_target: string;
+}
+export interface IInf_terms {
+    exceeds_duration: string;
+    mute_undefined: string;
+    unknown_mute_role: string;
+    already_muted: string;
+    not_muted: string;
+    already_banned: string;
+    not_banned: string;
+    failed_kick: string;
+    kicked_member: string;
+    failed_tempmute: string;
+    failed_mute: string;
+    muted_member: string;
+    temp_muted_member: string;
+    failed_unmute: string;
+    unmuted_member: string;
+    user_not_found: string;
+    failed_ban: string;
+    banned_user: string;
+    massban_ids: string;
+    massbanned: string;
+    failed_cleanban: string;
+    clean_banned_member: string;
+    failed_softban: string;
+    softbanned_user: string;
+    failed_tempban: string;
+    tempbanned_user: string;
+    failed_unban: string;
+    unbanned_user: string;
+    no_infractions: string;
+    inf_not_found: string;
+    inf_recent: string;
+    inf_active: string;
+    inf_info: string;
+    inf_not_active: string;
+    cannot_edit_inf: string;
+    inf_duration_updated: string;
+    inf_reason_updated: string;
+    cannot_assign_system: string;
+    inf_actor_updated: string;
+    inf_deleted: string;
+    cant_find_infractions: string;
+    infs_deleted: string;
+    no_infs_by_actor: string;
+    inf_search_actor: string;
+    no_infs_by_system: string;
+    inf_search_system: string;
+    no_infs_to_user: string;
+    inf_search_user: string;
+    no_infs_type: string;
+    infs_search_type: string;
+    more_infs: string;
+    with_reason: string;
 }

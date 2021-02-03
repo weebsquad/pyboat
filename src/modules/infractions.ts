@@ -207,37 +207,37 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   }
   // check bot can actually do it
   if (actionType === InfractionType.KICK && !me.can(discord.Permissions.KICK_MEMBERS)) {
-    return 'I can\'t kick members';
+    return i18n.modules.infractions.targeting.bot_cant_kick;
   }
   if ((actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN || actionType === InfractionType.BAN) && !me.can(discord.Permissions.BAN_MEMBERS)) {
-    return 'I can\'t ban members';
+    return i18n.modules.infractions.targeting.bot_cant_ban;
   }
 
   const highestRoleMe = await utils.getMemberHighestRole(me);
   const isGuildOwner = guild.ownerId === actor.user.id;
   if (!isOverride && !isGuildOwner && targetId === discord.getBotId()) {
-    return 'You may not target me';
+    return i18n.modules.infractions.targeting.cant_target_bot;
   }
   const amIOwner = guild.ownerId === me.user.id;
   if (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) {
     if (!me.can(discord.Permissions.MANAGE_ROLES) && !amIOwner) {
-      return 'I can\'t manage roles';
+      return i18n.modules.infractions.targeting.bot_cant_manage_roles;
     }
     const mtRole = await guild.getRole(config.modules.infractions.muteRole);
     if (!amIOwner && mtRole !== null && highestRoleMe.position <= mtRole.position) {
-      return 'I can\'t manage the mute role';
+      return i18n.modules.infractions.targeting.bot_cant_manage_mute_role;
     }
   }
   const highestRoleTarget = target instanceof discord.GuildMember ? await utils.getMemberHighestRole(target) : null;
   if (actionType === InfractionType.KICK || actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) {
     if (!amIOwner && target instanceof discord.GuildMember && target.user.id === guild.ownerId) {
-      return `I can't ${actionType.toLowerCase()} this member`;
+      return setPlaceholders(i18n.modules.infractions.targeting.bot_cant_perform_action, ['action', actionType.toLowerCase()]);
     }
     if (!amIOwner && highestRoleTarget instanceof discord.Role && highestRoleMe.position <= highestRoleTarget.position) {
-      return `I can't ${actionType.toLowerCase()} this member`;
+      return setPlaceholders(i18n.modules.infractions.targeting.bot_cant_perform_action, ['action', actionType.toLowerCase()]);
     }
     if (targetId === discord.getBotId()) {
-      return `I can't ${actionType.toLowerCase()} this member`;
+      return setPlaceholders(i18n.modules.infractions.targeting.bot_cant_perform_action, ['action', actionType.toLowerCase()]);
     }
   }
   // check levels and discord perms
@@ -248,16 +248,16 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
     const allowSelf = typeof config.modules.infractions.targeting.allowSelf === 'boolean' ? config.modules.infractions.targeting.allowSelf : false;
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
-        return 'You can\'t kick members';
+        return i18n.modules.infractions.targeting.actor_cant_kick;
       } if ((actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
-        return 'You can\'t ban members';
+        return i18n.modules.infractions.targeting.actor_cant_ban;
       } if ((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
-        return 'You can\'t manage roles';
+        return i18n.modules.infractions.targeting.actor_cant_roles;
       }
     }
     if (actor.user.id === targetId) {
       if (!allowSelf) {
-        return 'You can\'t target yourself';
+        return i18n.modules.infractions.targeting.cant_self_target;
       }
       return true;
     }
@@ -265,19 +265,19 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       const actorLevel = utils.getUserAuth(actor);
       const targetLevel = utils.getUserAuth(target);
       if (actorLevel <= targetLevel) {
-        return `You can't target this user (due to their level of ${targetLevel})`;
+        return setPlaceholders(i18n.modules.infractions.targeting.actor_cant_level, ['level', targetLevel.toString()]);
       }
     }
     if (checkRoles === true) {
       const highestActor = await utils.getMemberHighestRole(actor);
       if (highestRoleTarget instanceof discord.Role && highestActor.position <= highestRoleTarget.position) {
-        return 'You can\'t target this user (due to their role hierarchy)';
+        return i18n.modules.infractions.targeting.actor_cant_hierarchy;
       }
     }
   }
   if (isTargetAdmin === true && actor.user.id !== targetId) {
     if (!isGuildOwner) {
-      return 'You can\'t target this user as they are a global admin.\nIf you really believe this action is applicable to this user, please have the server owner perform it.';
+      return i18n.modules.infractions.targeting.actor_cant_admin;
     }
   }
   return true;
@@ -439,19 +439,19 @@ export function isMuted(member: discord.GuildMember) {
 export async function TempMute(member: discord.GuildMember, actor: discord.GuildMember | null, time: string, reason: string) {
   const dur = utils.timeArgumentToMs(time);
   if (dur === 0) {
-    return 'Tempmute duration malformed (try 1h30m format)';
+    return i18n.modules.admin.duration_malformed;
   }
   if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-    return 'Tempmute duration must be between a minute and a year';
+    return i18n.modules.infractions.inf_terms.exceeds_duration;
   }
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
-    return 'Mute role not defined';
+    return i18n.modules.infractions.inf_terms.mute_undefined;
   }
   const guild = await member.getGuild();
   const mtRole = await guild.getRole(muteRole);
   if (mtRole === null) {
-    return 'Couldn\'t find the mute role';
+    return i18n.modules.infractions.inf_terms.unknown_mute_role;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -460,18 +460,18 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
     reason = reason.substr(0, 100);
   }
   if (isMuted(member)) {
-    return `${member.user.toMention()} is already muted`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.already_muted, ['user_mention', member.user.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.TEMPMUTE);
   if (canT !== true) {
     return canT;
   }
   const expiresAt = utils.composeSnowflake(Date.now() + dur);
-  const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+  const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
   await member.addRole(muteRole);
 
   await addInfraction(member, actor, InfractionType.TEMPMUTE, expiresAt, reason);
-  await logAction('tempmute', actor, member.user, new Map([['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('tempmute', actor, member.user, new Map([['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -480,12 +480,12 @@ export async function TempMute(member: discord.GuildMember, actor: discord.Guild
 export async function Mute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
-    return 'Mute role not defined';
+    return i18n.modules.infractions.inf_terms.mute_undefined;
   }
   const guild = await member.getGuild();
   const mtRole = await guild.getRole(muteRole);
   if (mtRole === null) {
-    return 'Couldn\'t find the mute role';
+    return i18n.modules.infractions.inf_terms.unknown_mute_role;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -494,7 +494,7 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
     reason = reason.substr(0, 100);
   }
   if (isMuted(member)) {
-    return `${member.user.toMention()} is already muted`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.already_muted, ['user_mention', member.user.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.MUTE);
   if (canT !== true) {
@@ -503,7 +503,7 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
   await member.addRole(muteRole);
 
   await addInfraction(member, actor, InfractionType.MUTE, undefined, reason);
-  await logAction('mute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('mute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -512,12 +512,12 @@ export async function Mute(member: discord.GuildMember, actor: discord.GuildMemb
 export async function UnMute(member: discord.GuildMember, actor: discord.GuildMember | null, reason: string) {
   const { muteRole } = config.modules.infractions;
   if (typeof muteRole !== 'string' || muteRole === '') {
-    return 'Mute role not defined';
+    return i18n.modules.infractions.inf_terms.mute_undefined;
   }
   const guild = await member.getGuild();
   const mtRole = await guild.getRole(muteRole);
   if (mtRole === null) {
-    return 'Couldn\'t find the mute role';
+    return i18n.modules.infractions.inf_terms.unknown_mute_role;
   }
   if (typeof reason !== 'string') {
     reason = '';
@@ -526,7 +526,7 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
     reason = reason.substr(0, 100);
   }
   if (!member.roles.includes(mtRole.id)) {
-    return `${member.user.toMention()} is not muted`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.not_muted, ['user_mention', member.user.toMention()]);
   }
   // we can check against mute, it's the same thing.
   const canT = await canTarget(actor, member, InfractionType.MUTE);
@@ -534,7 +534,7 @@ export async function UnMute(member: discord.GuildMember, actor: discord.GuildMe
     return canT;
   }
   await member.removeRole(muteRole);
-  await logAction('unmute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('unmute', actor, member.user, new Map([['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -561,7 +561,7 @@ export async function Kick(member: discord.GuildMember, actor: discord.GuildMemb
     return 'Failed to kick the member (still in the guild?)';
   } */
   await addInfraction(member, actor, InfractionType.KICK, undefined, reason);
-  await logAction('kick', actor, member.user, new Map([['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('kick', actor, member.user, new Map([['REASON', reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -582,7 +582,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   }
   const ban = await guild.getBan(memberId);
   if (ban) {
-    return `${usr.toMention()} is already banned`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.already_banned, ['user_mention', usr.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.BAN);
   if (canT !== true) {
@@ -599,7 +599,7 @@ export async function Ban(member: discord.GuildMember | discord.User, actor: dis
   }
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason: `(${actor instanceof discord.GuildMember ? `${actor.user.getTag()}[${actor.user.id}]` : i18n.ranks.system}): ${reason}` });
   await addInfraction(member, actor, InfractionType.BAN, undefined, reason);
-  await logAction('ban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('ban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -650,7 +650,7 @@ export async function MassBan(members: Array<discord.GuildMember | discord.User>
     }
   });
   if (results.success.length > 0) {
-    await logAction('massban', actor, null, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''], ['BANNED_USER_COUNT', results.success.length.toString()], ['BANNED_USERS', results.success.join(', ')]]));
+    await logAction('massban', actor, null, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : ''], ['BANNED_USER_COUNT', results.success.length.toString()], ['BANNED_USERS', results.success.join(', ')]]));
   }
   return results;
 }
@@ -662,10 +662,10 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   const usr = member instanceof discord.GuildMember ? member.user : member;
   const dur = utils.timeArgumentToMs(time);
   if (dur === 0) {
-    return 'Tempban duration malformed (try 1h30m format)';
+    return i18n.modules.admin.duration_malformed;
   }
   if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-    return 'Tempban duration must be between a minute and a year';
+    return i18n.modules.infractions.inf_terms.exceeds_duration;
   }
 
   const guild = await discord.getGuild(guildId);
@@ -680,7 +680,7 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
   }
   const ban = await guild.getBan(memberId);
   if (ban !== null) {
-    return `${usr.toMention()} is already banned`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.already_banned, ['user_mention', usr.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.TEMPBAN);
   if (canT !== true) {
@@ -696,11 +696,11 @@ export async function TempBan(member: discord.GuildMember | discord.User, actor:
     deleteDays = 0;
   }
   const expiresAt = utils.composeSnowflake(Date.now() + dur);
-  const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+  const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
 
   await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
-  await logAction('tempban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('tempban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -721,7 +721,7 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   }
   const ban = await guild.getBan(memberId);
   if (ban !== null) {
-    return `${usr.toMention()} is already banned`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.already_banned, ['user_mention', usr.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.BAN);
   if (canT !== true) {
@@ -739,7 +739,7 @@ export async function SoftBan(member: discord.GuildMember | discord.User, actor:
   await guild.createBan(memberId, { deleteMessageDays: deleteDays, reason });
   await guild.deleteBan(memberId);
   await addInfraction(member, actor, InfractionType.SOFTBAN, undefined, reason);
-  await logAction('softban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('softban', actor, usr, new Map([['DELETE_DAYS', deleteDays.toString()], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 /*
@@ -760,7 +760,7 @@ export async function UnBan(member: discord.GuildMember | discord.User, actor: d
   }
   const ban = await guild.getBan(memberId);
   if (ban === null) {
-    return `${usr.toMention()} is not banned`;
+    return setPlaceholders(i18n.modules.infractions.inf_terms.not_banned, ['user_mention', usr.toMention()]);
   }
   const canT = await canTarget(actor, member, InfractionType.BAN);
   if (canT !== true) {
@@ -769,7 +769,7 @@ export async function UnBan(member: discord.GuildMember | discord.User, actor: d
   await guild.deleteBan(memberId);
 
   // await addInfraction(member, actor, InfractionType.TEMPBAN, expiresAt, reason);
-  await logAction('unban', actor, usr, new Map([['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]));
+  await logAction('unban', actor, usr, new Map([['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]));
   return true;
 }
 
@@ -795,7 +795,7 @@ export function InitializeCommands() {
       }
       const result = await Kick(member, msg.member, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to kick member.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_kick);
         return;
       }
       if (typeof result === 'string') {
@@ -803,7 +803,7 @@ export function InitializeCommands() {
         return;
       }
 
-      await confirmResult(undefined, msg, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.kicked_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -829,7 +829,7 @@ export function InitializeCommands() {
           const dur = utils.timeArgumentToMs(firstspace);
           if (dur > 1000 && dur < 365 * 24 * 60 * 60 * 1000 && dur !== 0) {
             temp = true;
-            durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+            durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
             reason = reason.split(' ').slice(1).join(' ');
             result = await TempMute(member, msg.member, firstspace, reason);
           }
@@ -839,7 +839,11 @@ export function InitializeCommands() {
         result = await Mute(member, msg.member, reason);
       }
       if (result === false) {
-        await confirmResult(undefined, msg, false, `Failed to ${temp === false ? 'mute' : 'tempmute'} member.`);
+        if (temp) {
+          await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_mute);
+        } else {
+          await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempmute);
+        }
         return;
       }
       if (typeof result === 'string') {
@@ -847,9 +851,9 @@ export function InitializeCommands() {
         return;
       }
       if (temp === false) {
-        await confirmResult(undefined, msg, true, `Muted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+        await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
       } else {
-        await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+        await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.temp_muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
       }
     },
     {
@@ -869,7 +873,7 @@ export function InitializeCommands() {
       }
       const result = await TempMute(member, msg.member, time, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to tempmute member.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempmute);
         return;
       }
       if (typeof result === 'string') {
@@ -877,8 +881,8 @@ export function InitializeCommands() {
         return;
       }
       const dur = utils.timeArgumentToMs(time);
-      const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-      await confirmResult(undefined, msg, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.temp_muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
     },
     {
       permissions: {
@@ -897,14 +901,14 @@ export function InitializeCommands() {
       }
       const result = await UnMute(member, msg.member, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to unmute member.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_unmute);
         return;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Unmuted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unmuted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -920,7 +924,7 @@ export function InitializeCommands() {
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
         return;
       }
 
@@ -934,14 +938,14 @@ export function InitializeCommands() {
       const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
       const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to ban user.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_ban);
         return;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -972,7 +976,7 @@ export function InitializeCommands() {
       ids = [...new Set(ids)]; // remove duplicates
       const reason = reas.join(' ');
       if (ids.length < 2) {
-        const res: any = await msg.inlineReply('Not enough ids specified!');
+        const res: any = await msg.inlineReply(i18n.modules.infractions.inf_terms.massban_ids);
         saveMessage(res);
         return;
       }
@@ -994,7 +998,7 @@ export function InitializeCommands() {
       }));
       const _del: any = deleteDays; // fuck off TS
       const result = await MassBan(objs, msg.member, _del, reason);
-      await confirmResult(undefined, msg, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}` : ''}${result.fail.length > 0 ? `\n${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}${failNotFound.length > 0 ? `\n${discord.decor.Emojis.QUESTION} failed to find (**${failNotFound.length}**) users: ${failNotFound.join(', ')}` : ''}`);
+      await confirmResult(undefined, msg, null, setPlaceholders(i18n.modules.infractions.inf_terms.massbanned, ['banned_success_count', result.success.length.toString(), 'banned_success', result.success.join(', '), 'banned_fail_count', result.fail.length.toString(), 'banned_fail', result.fail.join(', '), 'banned_unknown_count', failNotFound.length.toString(), 'banned_unknown', failNotFound.join(', ')]));
     },
     {
       permissions: {
@@ -1010,7 +1014,7 @@ export function InitializeCommands() {
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1023,14 +1027,14 @@ export function InitializeCommands() {
       const _del: any = deleteDays; // fuck off TS
       const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to cleanban user.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_cleanban);
         return;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Clean-banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1046,7 +1050,7 @@ export function InitializeCommands() {
     async (msg, { user, deleteDays, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1059,14 +1063,14 @@ export function InitializeCommands() {
       const _del: any = deleteDays; // fuck off TS
       const result = await SoftBan(member, msg.member, _del, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to softban user.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_softban);
         return;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Soft-banned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1082,7 +1086,7 @@ export function InitializeCommands() {
     async (msg, { user, time, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1095,7 +1099,7 @@ export function InitializeCommands() {
       const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
       const result = await TempBan(member, msg.member, _del, time, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to tempban user.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempban);
         return;
       }
       if (typeof result === 'string') {
@@ -1103,8 +1107,8 @@ export function InitializeCommands() {
         return;
       }
       const dur = utils.timeArgumentToMs(time);
-      const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-      await confirmResult(undefined, msg, true, `Temp-banned \`${utils.escapeString(usr.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.tempbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
     },
     {
       permissions: {
@@ -1120,7 +1124,7 @@ export function InitializeCommands() {
     async (msg, { user, reason }) => {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
-        await msg.inlineReply({ content: `${discord.decor.Emojis.X} User not found!`, allowedMentions: {} });
+        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
         return;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
@@ -1132,14 +1136,14 @@ export function InitializeCommands() {
       }
       const result = await UnBan(member, msg.member, reason);
       if (result === false) {
-        await confirmResult(undefined, msg, false, 'Failed to unban user.');
+        await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_unban);
         return;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, `Unbanned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1156,16 +1160,16 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll<Infraction>(null));
           if (infs.length === 0) {
-            return { content: 'There are no infractions' };
+            return { content: i18n.modules.infractions.inf_terms.no_infractions };
           }
           const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+          let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_recent, ['count', Math.min(last10.length, 10).toString()]);
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' ? i18n.ranks.system : `${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
+            txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
           }
           const emb = new discord.Embed();
           emb.setDescription(txt);
@@ -1188,16 +1192,16 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ active: true }));
           if (infs.length === 0) {
-            return { content: 'There are no active infractions' };
+            return { content: i18n.modules.infractions.inf_terms.cant_find_infractions };
           }
           const last10 = infs.slice(0, Math.min(infs.length, 10));
-          let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+          let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_active, ['count', Math.min(last10.length, 10).toString()]);
           last10.map((inf) => {
             txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
           });
           const remaining = infs.length - last10.length;
           if (remaining > 0) {
-            txt += `\n\n**...** and ${remaining} more infractions`;
+            txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
           }
           const emb = new discord.Embed();
           emb.setDescription(txt);
@@ -1229,10 +1233,10 @@ export function InitializeCommands() {
             infs = (await infsPool.getByQuery<Infraction>({ id }));
           }
           if (infs.length !== 1) {
-            return { content: `${discord.decor.Emojis.X}No infraction found` };
+            return { content: i18n.modules.infractions.inf_terms.inf_not_found };
           }
           const inf = infs[0];
-          const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+          const txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_info, ['inf_id', inf.id, 'actor_tag', inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`, 'actor_id', inf.actorId, 'target_mention', `<@!${inf.memberId}>`, 'target_id', inf.memberId, 'type', inf.type.toUpperCase(), 'active', inf.active, 'created_date', new Date(inf.ts).toISOString(), 'expires', inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp) : 'Never', 'reason', inf.reason]);
           const emb = new discord.Embed();
           emb.setDescription(txt);
           emb.setTimestamp(new Date().toISOString());
@@ -1255,10 +1259,10 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const dur = utils.timeArgumentToMs(duration);
           if (dur === 0) {
-            return `${discord.decor.Emojis.X} duration malformed (try 1h30m format)`;
+            return i18n.modules.admin.duration_malformed;
           }
           if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-            return `${discord.decor.Emojis.X} duration must be between a minute and a year`;
+            return i18n.modules.infractions.inf_terms.exceeds_duration;
           }
           let infs;
           if (id.toLowerCase() === 'ml') {
@@ -1270,14 +1274,14 @@ export function InitializeCommands() {
             infs = (await infsPool.getByQuery<Infraction>({ id }));
           }
           if (infs.length !== 1) {
-            return `${discord.decor.Emojis.X} No infraction found`;
+            return i18n.modules.infractions.inf_terms.inf_not_found;
           }
           const inf: Infraction = utils.makeFake(infs[0], Infraction);
           if (!inf.active) {
-            return `${discord.decor.Emojis.X} This infraction is not active.`;
+            return i18n.modules.infractions.inf_terms.inf_not_active;
           }
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
-            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+            return i18n.modules.infractions.inf_terms.cannot_edit_inf;
           }
           inf.expiresAt = utils.composeSnowflake(inf.ts + dur);
           await inf.updateStorage();
@@ -1290,7 +1294,7 @@ export function InitializeCommands() {
           extras.set('TYPE', 'duration');
           extras.set('NEW_VALUE', utils.escapeString(duration, true));
           logCustom('INFRACTIONS', 'EDITED', extras);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`;
+          return i18n.modules.infractions.inf_terms.inf_duration_updated;
         });
         saveMessage(res);
       },
@@ -1317,12 +1321,12 @@ export function InitializeCommands() {
             infs = (await infsPool.getByQuery<Infraction>({ id }));
           }
           if (infs.length !== 1) {
-            return `${discord.decor.Emojis.X} No infraction found`;
+            return i18n.modules.infractions.inf_terms.inf_not_found;
           }
           const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
-            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+            return i18n.modules.infractions.inf_terms.cannot_edit_inf;
           }
           inf.reason = reason;
           await inf.updateStorage();
@@ -1335,7 +1339,7 @@ export function InitializeCommands() {
           extras.set('TYPE', 'reason');
           extras.set('NEW_VALUE', utils.escapeString(reason, true));
           logCustom('INFRACTIONS', 'EDITED', extras);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`;
+          return i18n.modules.infractions.inf_terms.inf_reason_updated;
         });
         saveMessage(res);
       },
@@ -1362,15 +1366,15 @@ export function InitializeCommands() {
             infs = (await infsPool.getByQuery<Infraction>({ id }));
           }
           if (infs.length !== 1) {
-            return `${discord.decor.Emojis.X} No infraction found`;
+            return i18n.modules.infractions.inf_terms.inf_not_found;
           }
           const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
           if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
-            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+            return i18n.modules.infractions.inf_terms.cannot_edit_inf;
           }
           if (actor.id === discord.getBotId()) {
-            return `${discord.decor.Emojis.X} You cannot assign infractions to me.`;
+            return i18n.modules.infractions.inf_terms.cannot_assign_system;
           }
           inf.actorId = actor.id;
           await inf.updateStorage();
@@ -1384,7 +1388,7 @@ export function InitializeCommands() {
           extras.set('TYPE', 'actor');
           extras.set('NEW_VALUE', actor.toMention());
           logCustom('INFRACTIONS', 'EDITED', extras);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`;
+          return i18n.modules.infractions.inf_terms.inf_actor_updated;
         });
         saveMessage(res);
       },
@@ -1411,11 +1415,11 @@ export function InitializeCommands() {
             infs = (await infsPool.getByQuery<Infraction>({ id }));
           }
           if (infs.length !== 1) {
-            return `${discord.decor.Emojis.X} No infraction found`;
+            return i18n.modules.infractions.inf_terms.inf_not_found;
           }
           const inf: Infraction = infs[0];
           if (inf.actorId !== msg.author.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(msg.member) < config.modules.infractions.targeting.othersEditLevel) {
-            return `${discord.decor.Emojis.X} You cannot edit other people's infractions.`;
+            return i18n.modules.infractions.inf_terms.cannot_edit_inf;
           }
           await infsPool.delete(inf.id);
           const extras = new Map<string, any>();
@@ -1425,7 +1429,7 @@ export function InitializeCommands() {
           extras.set('USER_ID', msg.author.id);
           extras.set('INFRACTION_ID', inf.id);
           logCustom('INFRACTIONS', 'DELETED', extras);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`;
+          return i18n.modules.infractions.inf_terms.inf_deleted;
         });
         saveMessage(res);
       },
@@ -1444,10 +1448,10 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ memberId: user.id }));
           if (!infs || infs.length === 0) {
-            return `${discord.decor.Emojis.X} Could not find any infractions for the given user`;
+            return i18n.modules.infractions.inf_terms.cant_find_infractions;
           }
           await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`;
+          return setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]);
         });
         saveMessage(res);
       },
@@ -1466,10 +1470,10 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
           if (!infs || infs.length === 0) {
-            return `${discord.decor.Emojis.X} Could not find any infractions for the given actor`;
+            return i18n.modules.infractions.inf_terms.cant_find_infractions;
           }
           await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`;
+          return setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]);
         });
         saveMessage(res);
       },
@@ -1487,10 +1491,10 @@ export function InitializeCommands() {
         const res:any = await msg.inlineReply(async () => {
           const infs = (await infsPool.getAll(null));
           if (infs.length === 0) {
-            return `${discord.decor.Emojis.X} Could not find any infractions`;
+            return i18n.modules.infractions.inf_terms.cant_find_infractions;
           }
           await infsPool.clear();
-          return `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`;
+          return setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]);
         });
         saveMessage(res);
       },
@@ -1510,21 +1514,18 @@ export function InitializeCommands() {
           const res:any = await msg.inlineReply(async () => {
             const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? discord.getBotId() : actor.id }));
             if (infs.length === 0) {
-              return { content: 'There are no infractions by this actor' };
+              return { content: i18n.modules.infractions.inf_terms.no_infs_by_actor };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_actor, ['count', Math.min(last10.length, 10).toString(), 'actor_mention', actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()]);
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
-              txt += `\n\n**...** and ${remaining} more infractions`;
+              txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
             }
             const emb = new discord.Embed();
-            if (infs.length === 0) {
-              txt = `**No infractions found by **${actor.toMention()}`;
-            }
             emb.setDescription(txt);
             emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
             emb.setTimestamp(new Date().toISOString());
@@ -1547,21 +1548,18 @@ export function InitializeCommands() {
           const res:any = await msg.inlineReply(async () => {
             const infs = (await infsPool.getByQuery<Infraction>({ actorId: discord.getBotId() }));
             if (infs.length === 0) {
-              return { content: 'There are no infractions by system' };
+              return { content: i18n.modules.infractions.inf_terms.no_infs_by_system };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
+            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_system, ['count', Math.min(last10.length, 10).toString()]);
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
-              txt += `\n\n**...** and ${remaining} more infractions`;
+              txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
             }
             const emb = new discord.Embed();
-            if (infs.length === 0) {
-              txt = '**No infractions found by **SYSTEM';
-            }
             emb.setDescription(txt);
             emb.setAuthor({ name: i18n.ranks.system });
             emb.setTimestamp(new Date().toISOString());
@@ -1585,21 +1583,18 @@ export function InitializeCommands() {
           const res:any = await msg.inlineReply(async () => {
             const infs = await infsPool.getByQuery<Infraction>({ memberId: user.id });
             if (infs.length === 0) {
-              return { content: 'There are no infractions applied to this user' };
+              return { content: i18n.modules.infractions.inf_terms.no_infs_to_user };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
+            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_user, ['count', Math.min(last10.length, 10).toString(), 'user_mention', user.toMention()]);
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
-              txt += `\n\n**...** and ${remaining} more infractions`;
+              txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
             }
             const emb = new discord.Embed();
-            if (infs.length === 0) {
-              txt = `**No infractions found for **${user.toMention()}`;
-            }
             emb.setDescription(txt);
             emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
             emb.setTimestamp(new Date().toISOString());
@@ -1623,21 +1618,18 @@ export function InitializeCommands() {
           const res:any = await msg.inlineReply(async () => {
             const infs = await infsPool.getByQuery<Infraction>({ type: type.toUpperCase() });
             if (infs.length === 0) {
-              return { content: 'There are no infractions of this type' };
+              return { content: i18n.modules.infractions.inf_terms.no_infs_type };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
+            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.infs_search_type, ['count', Math.min(last10.length, 10).toString(), 'type', type.substr(0, 1).toUpperCase()]);
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
             const remaining = infs.length - last10.length;
             if (remaining > 0) {
-              txt += `\n\n**...** and ${remaining} more infractions`;
+              txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
             }
             const emb = new discord.Embed();
-            if (infs.length === 0) {
-              txt = `**No infractions found of type **${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}`;
-            }
             emb.setDescription(txt);
             emb.setTimestamp(new Date().toISOString());
 
@@ -1682,7 +1674,7 @@ export async function AL_OnGuildMemberUpdate(
         return;
       }
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-        await logAction('unmute', log.user, member.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+        await logAction('unmute', log.user, member.user, new Map([['REASON', log.reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(log.reason, true)]) : '']]), id);
       }
     } else if (member.roles.includes(config.modules.infractions.muteRole) && !oldMember.roles.includes(config.modules.infractions.muteRole)) {
       // mute role added
@@ -1692,7 +1684,7 @@ export async function AL_OnGuildMemberUpdate(
 
       await addInfraction(member, log.user, InfractionType.MUTE, undefined, log.reason);
       if (!isIgnoredActor(log.userId) && !isIgnoredUser(member.user)) {
-        await logAction('mute', log.user, member.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+        await logAction('mute', log.user, member.user, new Map([['REASON', log.reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(log.reason, true)]) : '']]), id);
       }
       return;
     }
@@ -1739,7 +1731,7 @@ export async function AL_OnGuildMemberRemove(
   if (isIgnoredActor(log.userId) || isIgnoredUser(memberRemove.user)) {
     return;
   }
-  await logAction('kick', log.user, memberRemove.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+  await logAction('kick', log.user, memberRemove.user, new Map([['REASON', log.reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(log.reason, true)]) : '']]), id);
 }
 
 export async function AL_OnGuildBanAdd(
@@ -1766,7 +1758,7 @@ export async function AL_OnGuildBanAdd(
         }
         await ban.delete();
         await addInfraction(ban.user, log.user, InfractionType.SOFTBAN, undefined, reason);
-        await logAction('softban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+        await logAction('softban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['REASON', reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]), id);
         return;
       }
       const dur = utils.timeArgumentToMs(lastc);
@@ -1776,9 +1768,9 @@ export async function AL_OnGuildBanAdd(
           reason = reason.slice(0, -1);
         }
         const expiresAt = utils.composeSnowflake(Date.now() + dur);
-        const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
+        const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
         await addInfraction(ban.user, log.user, InfractionType.TEMPBAN, expiresAt, reason);
-        await logAction('tempban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+        await logAction('tempban', log.user, ban.user, new Map([['DELETE_DAYS', 'unknown'], ['EXPIRES', ''], ['DURATION', durationText], ['REASON', typeof reason === 'string' && reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]), id);
         return;
       }
     }
@@ -1787,7 +1779,7 @@ export async function AL_OnGuildBanAdd(
   if (isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('ban', log.user, ban.user, new Map([['REASON', reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : '']]), id);
+  await logAction('ban', log.user, ban.user, new Map([['REASON', reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']]), id);
 }
 
 export async function AL_OnGuildBanRemove(
@@ -1812,7 +1804,7 @@ export async function AL_OnGuildBanRemove(
   if (!config.modules.infractions.checkLogs || !(log instanceof discord.AuditLogEntry) || log.userId === discord.getBotId() || isIgnoredActor(log.userId) || isIgnoredUser(ban.user)) {
     return;
   }
-  await logAction('unban', log.user, ban.user, new Map([['REASON', log.reason !== '' ? ` with reason \`${utils.escapeString(log.reason, true)}\`` : '']]), id);
+  await logAction('unban', log.user, ban.user, new Map([['REASON', log.reason !== '' ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(log.reason, true)]) : '']]), id);
 }
 
 registerSlash(
@@ -1826,7 +1818,7 @@ registerSlash(
     const result = await Kick(member, inter.member, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to kick member.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_kick);
       return false;
     }
     if (typeof result === 'string') {
@@ -1835,7 +1827,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Kicked \`${utils.escapeString(member.user.getTag(), true)}\` from the server${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.kicked_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -1852,13 +1844,12 @@ registerSlash(
       reason = '';
     }
     let result;
-    let durationText;
     if (typeof (result) === 'undefined') {
       result = await Mute(member, inter.member, reason);
     }
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to mute member.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_mute);
       return false;
     }
     if (typeof result === 'string') {
@@ -1867,7 +1858,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Muted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -1886,7 +1877,7 @@ registerSlash(
     const result = await TempMute(member, inter.member, time, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to tempmute member.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_tempmute);
       return false;
     }
     if (typeof result === 'string') {
@@ -1896,8 +1887,8 @@ registerSlash(
     }
     await inter.acknowledge(true);
     const dur = utils.timeArgumentToMs(time);
-    const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-    await confirmResultInteraction(undefined, inter, true, `Temp-muted \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.temp_muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
   }, {
     module: 'infractions',
     permissions: {
@@ -1916,7 +1907,7 @@ registerSlash(
     const result = await UnMute(member, inter.member, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to unmute member.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_unmute);
       return false;
     }
     if (typeof result === 'string') {
@@ -1925,7 +1916,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Unmuted \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.unmuted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -1945,7 +1936,7 @@ registerSlash(
     const result = await Ban(member, inter.member, _del, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to ban user.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_ban);
       return false;
     }
     if (typeof result === 'string') {
@@ -1954,7 +1945,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -1987,7 +1978,7 @@ registerSlash(
     ids = [...new Set(ids)]; // remove duplicates
     if (ids.length < 2) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral('Not enough ids specified!');
+      await inter.respondEphemeral(i18n.modules.infractions.inf_terms.massban_ids);
       return false;
     }
     await inter.acknowledge(true);
@@ -2010,7 +2001,7 @@ registerSlash(
 
     const _del: any = delete_days; // fuck off TS
     const result = await MassBan(objs, inter.member, _del, reason);
-    await confirmResultInteraction(undefined, inter, null, `${result.success.length > 0 ? `${discord.decor.Emojis.WHITE_CHECK_MARK} banned (**${result.success.length}**) users: ${result.success.join(', ')}` : ''}${result.fail.length > 0 ? `\n${discord.decor.Emojis.X} failed to ban (**${result.fail.length}**) users: ${result.fail.join(', ')}` : ''}${failNotFound.length > 0 ? `\n${discord.decor.Emojis.QUESTION} failed to find (**${failNotFound.length}**) users: ${failNotFound.join(', ')}` : ''}`);
+    await confirmResultInteraction(undefined, inter, null, setPlaceholders(i18n.modules.infractions.inf_terms.massbanned, ['banned_success_count', result.success.length.toString(), 'banned_success', result.success.join(', '), 'banned_fail_count', result.fail.length.toString(), 'banned_fail', result.fail.join(', '), 'banned_unknown_count', failNotFound.length.toString(), 'banned_unknown', failNotFound.join(', ')]));
   }, {
     module: 'infractions',
     permissions: {
@@ -2035,7 +2026,7 @@ registerSlash(
     const result = await Ban(member, inter.member, _del, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to cleanban user.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_cleanban);
       return false;
     }
     if (typeof result === 'string') {
@@ -2044,7 +2035,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Clean-banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -2069,7 +2060,7 @@ registerSlash(
     const result = await SoftBan(member, inter.member, _del, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to softban user.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_softban);
       return false;
     }
     if (typeof result === 'string') {
@@ -2078,7 +2069,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Soft-banned \`${utils.escapeString(member.user.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -2103,7 +2094,7 @@ registerSlash(
     const result = await TempBan(member, inter.member, _del, time, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to tempban user.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_tempban);
       return false;
     }
     if (typeof result === 'string') {
@@ -2113,8 +2104,8 @@ registerSlash(
     }
     await inter.acknowledge(true);
     const dur = utils.timeArgumentToMs(time);
-    const durationText = utils.getLongAgoFormat(dur, 2, false, 'second');
-    await confirmResultInteraction(undefined, inter, true, `Temp-banned \`${utils.escapeString(member.user.getTag(), true)}\` for ${durationText}${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.tempbanned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
   }, {
     module: 'infractions',
     permissions: {
@@ -2135,7 +2126,7 @@ registerSlash(
     const usr = await utils.getUser(user_id.replace(/\D/g, ''));
     if (!usr) {
       await inter.acknowledge(false);
-      await inter.respondEphemeral(`${discord.decor.Emojis.X} User not found!`);
+      await inter.respondEphemeral(i18n.modules.infractions.inf_terms.user_not_found);
       return false;
     }
     let member: discord.User | discord.GuildMember | null = await (await inter.getGuild()).getMember(usr.id);
@@ -2148,7 +2139,7 @@ registerSlash(
     const result = await UnBan(member, inter.member, reason);
     if (result === false) {
       await inter.acknowledge(false);
-      await confirmResultInteraction(undefined, inter, false, 'Failed to unban user.');
+      await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_unban);
       return false;
     }
     if (typeof result === 'string') {
@@ -2157,7 +2148,7 @@ registerSlash(
       return false;
     }
     await inter.acknowledge(true);
-    await confirmResultInteraction(undefined, inter, true, `Unbanned \`${utils.escapeString(usr.getTag(), true)}\`${reason !== '' ? ` with reason \`${utils.escapeString(reason, true)}\`` : ''}`);
+    await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
     permissions: {
@@ -2184,18 +2175,18 @@ if (infGroup) {
       const infs = (await infsPool.getAll<Infraction>(null));
       if (infs.length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral('There are no infractions');
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infractions);
         return false;
       }
       await inter.acknowledge(true);
       const last10 = infs.slice(0, Math.min(infs.length, 10));
-      let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+      let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_recent, ['count', Math.min(last10.length, 10).toString()]);
       last10.map((inf) => {
         txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`}`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
       });
       const remaining = infs.length - last10.length;
       if (remaining > 0) {
-        txt += `\n\n**...** and ${remaining} more infractions`;
+        txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
       }
       const emb = new discord.Embed();
       emb.setDescription(txt);
@@ -2227,13 +2218,13 @@ if (infGroup) {
       }
       await inter.acknowledge(true);
       const last10 = infs.slice(0, Math.min(infs.length, 10));
-      let txt = `**Displaying latest ${Math.min(last10.length, 10)} active infractions**\n\n**ID** | **Actor** | **User** | **Type** | **Reason**\n`;
+      let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_active, ['count', Math.min(last10.length, 10).toString()]);
       last10.map((inf) => {
         txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
       });
       const remaining = infs.length - last10.length;
       if (remaining > 0) {
-        txt += `\n\n**...** and ${remaining} more infractions`;
+        txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
       }
       const emb = new discord.Embed();
       emb.setDescription(txt);
@@ -2271,12 +2262,12 @@ if (infGroup) {
       }
       if (infs.length !== 1) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X}No infraction found`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       await inter.acknowledge(true);
       const inf = infs[0];
-      const txt = `**Displaying information for Infraction ID **#${inf.id}\n\n**Actor**: ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} (\`${inf.actorId}\`)\n**Target**: <@!${inf.memberId}> (\`${inf.memberId}\`)\n**Type**: __${inf.type}__\n**Active**: ${inf.active}\n**Created**: ${new Date(inf.ts).toISOString()}${inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? `\n**Expires**: ${new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp).toISOString()}` : ''}${typeof inf.reason === 'string' && inf.reason !== '' ? `\n**Reason**: \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
+      const txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_info, ['inf_id', inf.id, 'actor_tag', inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`, 'actor_id', inf.actorId, 'target_mention', `<@!${inf.memberId}>`, 'target_id', inf.memberId, 'type', inf.type.toUpperCase(), 'active', inf.active, 'created_date', new Date(inf.ts).toISOString(), 'expires', inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp) : 'Never', 'reason', inf.reason]);
       const emb = new discord.Embed();
       emb.setDescription(txt);
       emb.setTimestamp(new Date().toISOString());
@@ -2306,12 +2297,12 @@ if (infGroup) {
       const dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} duration malformed (try 1h30m format)`);
+        await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} duration must be between a minute and a year`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.exceeds_duration);
         return false;
       }
       let infs;
@@ -2325,18 +2316,18 @@ if (infGroup) {
       }
       if (infs.length !== 1) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
       if (!inf.active) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} This infraction is not active.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_active);
         return false;
       }
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
       await inter.acknowledge(true);
@@ -2351,7 +2342,7 @@ if (infGroup) {
       extras.set('TYPE', 'duration');
       extras.set('NEW_VALUE', utils.escapeString(duration, true));
       logCustom('INFRACTIONS', 'EDITED', extras);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's duration updated !`);
+      await interactionChannelRespond(inter, i18n.modules.infractions.inf_terms.inf_duration_updated);
     },
     {
       module: 'infractions',
@@ -2385,18 +2376,18 @@ if (infGroup) {
       }
       if (infs.length !== 1) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
       if (!inf.active) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} This infraction is not active.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_active);
         return false;
       }
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
       await inter.acknowledge(true);
@@ -2412,7 +2403,7 @@ if (infGroup) {
       extras.set('TYPE', 'reason');
       extras.set('NEW_VALUE', utils.escapeString(reason, true));
       logCustom('INFRACTIONS', 'EDITED', extras);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's reason updated !`);
+      await interactionChannelRespond(inter, i18n.modules.infractions.inf_terms.inf_reason_updated);
     },
     {
       module: 'infractions',
@@ -2446,19 +2437,19 @@ if (infGroup) {
       }
       if (infs.length !== 1) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
       if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
       if (new_actor.user.id === discord.getBotId()) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot assign infractions to me.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_assign_system);
         return false;
       }
       await inter.acknowledge(true);
@@ -2474,7 +2465,7 @@ if (infGroup) {
       extras.set('TYPE', 'actor');
       extras.set('NEW_VALUE', new_actor.user.toMention());
       logCustom('INFRACTIONS', 'EDITED', extras);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction's actor updated !`);
+      await interactionChannelRespond(inter, i18n.modules.infractions.inf_terms.inf_actor_updated);
     },
     {
       module: 'infractions',
@@ -2507,13 +2498,13 @@ if (infGroup) {
       }
       if (infs.length !== 1) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} No infraction found`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = infs[0];
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} You cannot edit other people's infractions.`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
       await inter.acknowledge(true);
@@ -2525,7 +2516,7 @@ if (infGroup) {
       extras.set('USER_ID', inter.member.user.id);
       extras.set('INFRACTION_ID', inf.id);
       logCustom('INFRACTIONS', 'DELETED', extras);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} infraction deleted !`);
+      await interactionChannelRespond(inter, i18n.modules.infractions.inf_terms.inf_deleted);
     },
     {
       module: 'infractions',
@@ -2551,12 +2542,12 @@ if (infGroup) {
       const infs = (await infsPool.getByQuery<Infraction>({ memberId: user.id }));
       if (!infs || infs.length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Could not find any infractions for the given user`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cant_find_infractions);
         return false;
       }
       await inter.acknowledge(true);
       await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
     },
     {
       module: 'infractions',
@@ -2582,12 +2573,12 @@ if (infGroup) {
       const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
       if (!infs || infs.length === 0) {
         await inter.acknowledge(false);
-        await inter.respondEphemeral(`${discord.decor.Emojis.X} Could not find any infractions for the given actor`);
+        await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cant_find_infractions);
         return false;
       }
       await inter.acknowledge(true);
       await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
-      await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+      await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
     },
     {
       module: 'infractions',
@@ -2617,7 +2608,7 @@ registerSlashSub(
     }
     await inter.acknowledge(true);
     await infsPool.clear();
-    await interactionChannelRespond(inter, `${discord.decor.Emojis.WHITE_CHECK_MARK} ${infs.length} infractions deleted !`);
+    await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
   },
   {
     module: 'infractions',
@@ -2656,23 +2647,20 @@ registerSlashSub(
         const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? discord.getBotId() : actor.id }));
         if (infs.length === 0) {
           await inter.acknowledge(false);
-          await inter.respondEphemeral('There are no infractions by this actor');
+          await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_by_actor);
           return false;
         }
         await inter.acknowledge(true);
         const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **${actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()}\n\n**ID** | **User** | **Type** | **Reason**\n`;
+        let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_actor, ['count', Math.min(last10.length, 10).toString(), 'actor_mention', actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()]);
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
+          txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
         }
         const emb = new discord.Embed();
-        if (infs.length === 0) {
-          txt = `**No infractions found by **${actor.toMention()}`;
-        }
         emb.setDescription(txt);
         emb.setAuthor({ name: actor.getTag(), iconUrl: actor.getAvatarUrl() });
         emb.setTimestamp(new Date().toISOString());
@@ -2699,23 +2687,20 @@ registerSlashSub(
         const infs = (await infsPool.getByQuery<Infraction>({ actorId: discord.getBotId() }));
         if (infs.length === 0) {
           await inter.acknowledge(false);
-          await inter.respondEphemeral('There are no infractions by system');
+          await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_by_system);
           return false;
         }
         await inter.acknowledge(true);
         const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions made by **SYSTEM\n\n**ID** | **User** | **Type** | **Reason**\n`;
+        let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_system, ['count', Math.min(last10.length, 10).toString()]);
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - <@!${inf.memberId}> - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
+          txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
         }
         const emb = new discord.Embed();
-        if (infs.length === 0) {
-          txt = '**No infractions found by **SYSTEM';
-        }
         emb.setDescription(txt);
         emb.setAuthor({ name: i18n.ranks.system });
         emb.setTimestamp(new Date().toISOString());
@@ -2745,23 +2730,20 @@ registerSlashSub(
         const infs = await infsPool.getByQuery<Infraction>({ memberId: user.id });
         if (infs.length === 0) {
           await inter.acknowledge(false);
-          await inter.respondEphemeral('There are no infractions applied to this user');
+          await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_to_user);
           return false;
         }
         await inter.acknowledge(true);
         const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} infractions applied to **${user.toMention()}\n\n**ID** | **Actor** | **Type** | **Reason**\n`;
+        let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_user, ['count', Math.min(last10.length, 10).toString(), 'user_mention', user.toMention()]);
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} - **${inf.type.substr(0, 1).toUpperCase()}${inf.type.substr(1).toLowerCase()}**${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
+          txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
         }
         const emb = new discord.Embed();
-        if (infs.length === 0) {
-          txt = `**No infractions found for **${user.toMention()}`;
-        }
         emb.setDescription(txt);
         emb.setAuthor({ name: user.getTag(), iconUrl: user.getAvatarUrl() });
         emb.setTimestamp(new Date().toISOString());
@@ -2790,23 +2772,20 @@ registerSlashSub(
         const infs = await infsPool.getByQuery<Infraction>({ type: type.toUpperCase() });
         if (infs.length === 0) {
           await inter.acknowledge(false);
-          await inter.respondEphemeral('There are no infractions of this type');
+          await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_type);
           return false;
         }
         await inter.acknowledge(true);
         const last10 = infs.slice(0, Math.min(infs.length, 10));
-        let txt = `**Displaying latest ${Math.min(last10.length, 10)} __${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}__ infractions**\n\n**ID** | **Actor** | **User** | **Reason**\n`;
+        let txt = setPlaceholders(i18n.modules.infractions.inf_terms.infs_search_type, ['count', Math.min(last10.length, 10).toString(), 'type', type.substr(0, 1).toUpperCase()]);
         last10.map((inf) => {
           txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
         });
         const remaining = infs.length - last10.length;
         if (remaining > 0) {
-          txt += `\n\n**...** and ${remaining} more infractions`;
+          txt += setPlaceholders(i18n.modules.infractions.inf_terms.more_infs, ['remaining', remaining.toString()]);
         }
         const emb = new discord.Embed();
-        if (infs.length === 0) {
-          txt = `**No infractions found of type **${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}`;
-        }
         emb.setDescription(txt);
         emb.setTimestamp(new Date().toISOString());
 
