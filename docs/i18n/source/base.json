@@ -99,7 +99,7 @@
                 "added": "Added",
                 "removed": "Removed",
                 "changed": "Changed",
-                "edited_emoji": "Edited emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** **changed**: `{OLD_VALUE}` ➡️ `{NEW_VALUE}",
+                "edited_emoji": "Edited emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** **changed**: `{OLD_VALUE}` ➡️ `{NEW_VALUE}`",
                 "edited_emoji_roles": "Edited emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** **changed**: roles: {NEW_VALUE}",
                 "removed_emoji": "Removed emoji {EMOJI_MENTION} **[**||`{EMOJI_ID}`||**]** from the server",
                 "changed_roles": "changed **roles**",
