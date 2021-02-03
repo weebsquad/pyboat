@@ -167,8 +167,8 @@
                   },
                   "|ANTISPAM": {
                     "ANTIRAID": "❕ Message Anti Raid triggered with `{FLAGS}` and action `{ACTION}` was automatically performed",
-                    "ANTIRAID_VIOLATION": "❕ Message Anti Raid triggered with `{FLAGS}` and there were **_DELETED_MESSAGES_** messages deleted.",
-                    "VIOLATION": "🧰 {USERTAG} violated anti-spam flags: `{FLAGS}` and had **_DELETED_MESSAGES_** messages deleted."
+                    "ANTIRAID_VIOLATION": "❕ Message Anti Raid triggered with `{FLAGS}` and there were **{DELETED_MESSAGES}** messages deleted.",
+                    "VIOLATION": "🧰 {USERTAG} violated anti-spam flags: `{FLAGS}` and had **{DELETED_MESSAGES}** messages deleted."
                   },
                   "|CENSOR": {
                     "CENSORED_MESSAGE": "💬 {USERTAG} had their message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}> censored: `{CENSOR_MESSAGE}`**[**:{CENSOR_TP}**]** => `{CENSOR_TARGET}`",
