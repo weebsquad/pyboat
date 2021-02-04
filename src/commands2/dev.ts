@@ -1233,11 +1233,41 @@ export function InitializeCommands() {
           c++;
           txt += `\n${c} => ${item.value.length}`;
           if (item.value.length === 1) {
-            console.log(item.value);
+            console.log(item.key, item.value);
           }
         });
         const res: any = await m.inlineReply(`Done - **${res1.length} key(s)** // **${poolsL.length} total items** - (Took ${Date.now() - now}ms)\n\n\`\`\`\n${txt}\n\`\`\``);
-      // admin.saveMessage(res);
+        admin.saveMessage(res);
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+
+    registerChatRaw(
+      sub,
+      'tracking_clr_ones',
+      async (m) => {
+        const now = Date.now();
+        const res1 = await admin.adminPool.getItems();
+        let txt = '';
+        let c = 0;
+        await Promise.all(res1.map(async (item: any) => {
+          if (item.value.length === 1) {
+            await new pylon.KVNamespace('admin').put(item.key, []);
+            console.log('EMPTIED', item.key, item.value);
+          } else {
+            c++;
+            txt += `\n${c} => ${item.value.length}`;
+          }
+        }));
+        const res2 = await admin.adminPool.getItems();
+        const poolsL = await admin.adminPool.getAll();
+        console.log(`(4) res length: ${res1.length}, pools length: ${poolsL.length}`);
+        const res: any = await m.inlineReply('done');
+        admin.saveMessage(res);
       },
       {
         permissions: {

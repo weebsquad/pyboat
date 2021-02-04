@@ -98,12 +98,14 @@ export class StoragePool {
               try {
                 await this.kv.delete(key, { prevValue: [] });
               } catch (e) {
+                utils.logError('StoragePools, error deleting empty key', e);
               }
             }
           } else if (item.value.length === 0) {
             try {
               await this.kv.delete(key, { prevValue: [] });
             } catch (e) {
+              utils.logError('StoragePools, error deleting empty key', e);
             }
           }
         }));
@@ -142,12 +144,14 @@ export class StoragePool {
             try {
               await this.kv.delete(key, { prevValue: [] });
             } catch (e) {
+              utils.logError('StoragePools, error deleting empty key', e);
             }
           }
         } else if (item.value.length === 0) {
           try {
             await this.kv.delete(key, { prevValue: [] });
           } catch (e) {
+            utils.logError('StoragePools, error deleting empty key', e);
           }
         }
       }));
