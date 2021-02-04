@@ -243,7 +243,7 @@ async function parseChannelsData(
       el.set('ACTOR', ev.auditLogEntry.user);
       if (reason !== '') {
         el.set('REASON_RAW', reason);
-        el.set('REASON', conf.config.modules.logging.reasonSuffix.replace('REASON_RAW', reason));
+        el.set('REASON', conf.config.modules.logging.reasonSuffix.replace('{REASON_RAW}', reason));
       } else {
         el.set('REASON', '');
         el.set('REASON_RAW', '');

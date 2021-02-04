@@ -962,7 +962,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1051,7 +1051,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1087,7 +1087,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
@@ -1125,7 +1125,7 @@ export function InitializeCommands() {
       }
       const dur = utils.timeArgumentToMs(time);
       const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
-      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.tempbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.tempbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
     },
     {
       permissions: {
@@ -1160,7 +1160,7 @@ export function InitializeCommands() {
         await confirmResult(undefined, msg, false, result);
         return;
       }
-      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
+      await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
     {
       permissions: {
