@@ -2907,11 +2907,41 @@
                             "type": "object",
                             "properties": {
                                 "reqDiscordPermissions": {
-                                    "type": "boolean",
+                                    "type": "object",
                                     "title": "Require Discord Permissions",
                                     "description": "Whether the actor will always need the respective discord permission in order to perform an action with the bot",
-                                    "default": true,
-                                    "format": "checkbox"
+                                    "properties": {
+                                        "KICK_MEMBERS": {
+                                            "type": "boolean",
+                                            "title": "Kick Members",
+                                            "format": "checkbox",
+                                            "default": true
+                                        },
+                                        "BAN_MEMBERS": {
+                                            "type": "boolean",
+                                            "title": "Ban Members",
+                                            "format": "checkbox",
+                                            "default": true
+                                        },
+                                        "MANAGE_ROLES": {
+                                            "type": "boolean",
+                                            "title": "Manage Roles",
+                                            "format": "checkbox",
+                                            "default": true
+                                        },
+                                        "MANAGE_MESSAGES": {
+                                            "type": "boolean",
+                                            "title": "Manage Messages",
+                                            "format": "checkbox",
+                                            "default": true
+                                        },
+                                        "MANAGE_NICKNAMES": {
+                                            "type": "boolean",
+                                            "title": "Manage Nicknames",
+                                            "format": "checkbox",
+                                            "default": true
+                                        }
+                                    }
                                 },
                                 "checkLevels": {
                                     "type": "boolean",

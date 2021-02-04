@@ -23,7 +23,7 @@ export function InitializeCommands() {
     async (msg) => {
       const newemb = new discord.Embed();
       newemb.setAuthor({ name: 'PyBoat' });
-      newemb.setDescription('PyBoat is a rowboat clone built on top of [Pylon](https://pylon.bot)\n\nIt features several utility, moderation and general automation features.\n\n[Documentation](https://docs.pyboat.i0.tf/)\n[Homepage](https://pyboat.i0.tf)\n[Support Server](https://discord.gg/ehtaU3d)');
+      newemb.setDescription(i18n.modules.commands.cmd_general.help);
       newemb.setColor(0xFF0000);
       newemb.setThumbnail({ url: conf.globalConfig.botUser.getAvatarUrl() });
       const res: any = await msg.inlineReply({ allowedMentions: {}, content: '', embed: newemb });

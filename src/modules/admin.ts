@@ -520,17 +520,28 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (config.modules.infractions && config.modules.infractions.targeting && !isOverride && !isGuildOwner) {
     const checkLevels = typeof config.modules.infractions.targeting.checkLevels === 'boolean' ? config.modules.infractions.targeting.checkLevels : true;
     const checkRoles = typeof config.modules.infractions.targeting.checkRoles === 'boolean' ? config.modules.infractions.targeting.checkRoles : true;
-    const requireExtraPerms = typeof config.modules.infractions.targeting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targeting.reqDiscordPermissions : true;
+    const requireExtraPerms: infractions.reqDiscordPerms = typeof config.modules.infractions.targeting.reqDiscordPermissions === 'boolean' || typeof config.modules.infractions.targeting.reqDiscordPermissions === 'object' ? config.modules.infractions.targeting.reqDiscordPermissions : true;
     const allowSelf = typeof config.modules.infractions.targeting.allowSelf === 'boolean' ? config.modules.infractions.targeting.allowSelf : true;
-
+    if (actionType === ActionType.CLEAN && (!channel.canMember(actor, discord.Permissions.READ_MESSAGES) || !channel.canMember(actor, discord.Permissions.SEND_MESSAGES))) {
+      return i18n.modules.admin.actor_cant_view_channel;
+    }
     if (requireExtraPerms === true) {
       if ((actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return i18n.modules.admin.actor_cant_manage_roles;
       } if (actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
         return i18n.modules.admin.actor_cant_manage_nicknames;
-      } if (actionType === ActionType.CLEAN && (!channel.canMember(actor, discord.Permissions.READ_MESSAGES) || !channel.canMember(actor, discord.Permissions.SEND_MESSAGES))) {
-        return i18n.modules.admin.actor_cant_view_channel;
-      } if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+      }
+      if (actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
+        return i18n.modules.admin.actor_cant_manage_messages;
+      }
+    } else if (typeof requireExtraPerms === 'object') {
+      if (requireExtraPerms.MANAGE_ROLES && (actionType === ActionType.ROLE || actionType === ActionType.TEMPROLE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+        return i18n.modules.admin.actor_cant_manage_roles;
+      }
+      if (requireExtraPerms.MANAGE_NICKNAMES && actionType === ActionType.NICKNAME && !actor.can(discord.Permissions.MANAGE_NICKNAMES)) {
+        return i18n.modules.admin.actor_cant_manage_nicknames;
+      }
+      if (requireExtraPerms.MANAGE_MESSAGES && actionType === ActionType.CLEAN && !channel.canMember(actor, discord.Permissions.MANAGE_MESSAGES)) {
         return i18n.modules.admin.actor_cant_manage_messages;
       }
     }

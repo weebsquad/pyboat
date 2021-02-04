@@ -185,6 +185,15 @@ export async function addInfraction(target: discord.GuildMember | discord.User |
   await infsPool.saveToPool(newInf);
   return newInf;
 }
+
+type extendedReqDiscordPerms = {
+  'KICK_MEMBERS': boolean;
+  'BAN_MEMBERS': boolean;
+  'MANAGE_ROLES': boolean;
+  'MANAGE_NICKNAMES': boolean;
+  'MANAGE_MESSAGES': boolean;
+}
+export type reqDiscordPerms = boolean | extendedReqDiscordPerms;
 export async function canTarget(actor: discord.GuildMember | null, target: discord.GuildMember | discord.User, actionType: InfractionType): Promise<boolean | string> {
   const targetId = target instanceof discord.GuildMember ? target.user.id : target.id;
   const isTargetAdmin = utils.isGlobalAdmin(targetId);
@@ -244,7 +253,7 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
   if (config.modules.infractions && config.modules.infractions.targeting && !isOverride && !isGuildOwner) {
     const checkLevels = typeof config.modules.infractions.targeting.checkLevels === 'boolean' ? config.modules.infractions.targeting.checkLevels : true;
     const checkRoles = typeof config.modules.infractions.targeting.checkRoles === 'boolean' ? config.modules.infractions.targeting.checkRoles : true;
-    const requireExtraPerms = typeof config.modules.infractions.targeting.reqDiscordPermissions === 'boolean' ? config.modules.infractions.targeting.reqDiscordPermissions : true;
+    const requireExtraPerms: reqDiscordPerms = typeof config.modules.infractions.targeting.reqDiscordPermissions === 'boolean' || typeof config.modules.infractions.targeting.reqDiscordPermissions === 'object' ? config.modules.infractions.targeting.reqDiscordPermissions : true;
     const allowSelf = typeof config.modules.infractions.targeting.allowSelf === 'boolean' ? config.modules.infractions.targeting.allowSelf : false;
     if (requireExtraPerms === true) {
       if (actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
@@ -252,6 +261,14 @@ export async function canTarget(actor: discord.GuildMember | null, target: disco
       } if ((actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
         return i18n.modules.infractions.targeting.actor_cant_ban;
       } if ((actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
+        return i18n.modules.infractions.targeting.actor_cant_roles;
+      }
+    } else if (typeof requireExtraPerms === 'object') {
+      if (requireExtraPerms.KICK_MEMBERS === true && actionType === InfractionType.KICK && !actor.can(discord.Permissions.KICK_MEMBERS)) {
+        return i18n.modules.infractions.targeting.actor_cant_kick;
+      } if (requireExtraPerms.BAN_MEMBERS === true && (actionType === InfractionType.BAN || actionType === InfractionType.SOFTBAN || actionType === InfractionType.TEMPBAN) && !actor.can(discord.Permissions.BAN_MEMBERS)) {
+        return i18n.modules.infractions.targeting.actor_cant_ban;
+      } if (requireExtraPerms.MANAGE_ROLES === true && (actionType === InfractionType.MUTE || actionType === InfractionType.TEMPMUTE) && !actor.can(discord.Permissions.MANAGE_ROLES)) {
         return i18n.modules.infractions.targeting.actor_cant_roles;
       }
     }
