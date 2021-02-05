@@ -824,7 +824,7 @@ export function InitializeCommands() {
         const emb = new discord.Embed();
         emb.setAuthor({ iconUrl: user.getAvatarUrl(), name: user.getTag() });
         emb.setDescription(setPlaceholders(i18n.modules.utilities.avatar.avatar_of, ['user_tag', user.getTag(), 'avatar_url', `<${user.getAvatarUrl()}>`]));
-        emb.setFooter({ text: setPlaceholders(i18n.modules.utilities.avatar.requested_by, ['user_tag', user.getTag(), 'user_id', user.id]) });
+        emb.setFooter({ text: setPlaceholders(i18n.modules.utilities.avatar.requested_by, ['user_tag', msg.author.getTag(), 'user_id', msg.author.id]) });
         emb.setTimestamp(new Date().toISOString());
         emb.setImage({ url: user.getAvatarUrl() });
         return { embed: emb };
@@ -1862,7 +1862,7 @@ registerSlash(
     const emb = new discord.Embed();
     emb.setAuthor({ iconUrl: user.getAvatarUrl(), name: user.getTag() });
     emb.setDescription(setPlaceholders(i18n.modules.utilities.avatar.avatar_of, ['user_tag', user.getTag(), 'avatar_url', `<${user.getAvatarUrl()}>`]));
-    emb.setFooter({ text: setPlaceholders(i18n.modules.utilities.avatar.requested_by, ['user_tag', user.getTag(), 'user_id', user.id]) });
+    emb.setFooter({ text: setPlaceholders(i18n.modules.utilities.avatar.requested_by, ['user_tag', inter.member.user.getTag(), 'user_id', inter.member.user.id]) });
     emb.setTimestamp(new Date().toISOString());
     emb.setImage({ url: user.getAvatarUrl() });
     await interactionChannelRespond(inter, { embed: emb });
