@@ -196,8 +196,8 @@ export const messages = {
     return new Map([
       ['CHANNEL_ID', chan.id],
       ['CHANNEL_MENTION', mention],
-      ['NEW_BITRATE', chan.userLimit.toString()],
-      ['OLD_BITRATE', oldChan.userLimit.toString()],
+      ['NEW_LIMIT', chan.userLimit.toString()],
+      ['OLD_LIMIT', oldChan.userLimit.toString()],
       ['TYPE', 'USERLIMIT_CHANGED'],
     ]);
   },
