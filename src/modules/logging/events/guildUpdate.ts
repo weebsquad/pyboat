@@ -242,6 +242,9 @@ export const messages = {
     if (type === '') {
       return null;
     }
+    console.log(`icon.${newIcon.split('.').slice(-1)[0].split('?')[0]}`);
+    console.log('data: ', newData);
+    console.log('url', newIcon);
     return new Map<string, any>([
       ['TYPE', type],
       ['OLD_ICON', oldIcon],

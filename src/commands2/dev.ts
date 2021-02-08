@@ -806,6 +806,7 @@ export function InitializeCommands() {
         }
         embed.setFooter({ text: txt });
         embed.setTimestamp(new Date().toISOString());
+        embed.setThumbnail({url: 'https://cdn.discordapp.com/icons/307927177154789386/d9d9f4d5ebdc213a770f31c3860041e3.webp'});
         await utils.executeWebhook(whUrl, '', [embed], ' ឵឵ ', guild.getIconUrl(), false, {});
       },
       {
