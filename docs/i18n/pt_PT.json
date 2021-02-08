@@ -334,7 +334,7 @@
                     "SERVER_UNDEAFENED": "🔊 {USERTAG} foi desensurdecido de servidor em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "SERVER_MUTED": "🎤 {USERTAG} foi silenciado de servidor em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "SERVER_UNMUTED": "🎤 {USERTAG} foi desmutado de servidor em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
-                    "SELF_DEAFENED": "🔇 {USERTAG} ensurdeceu-se em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]",
+                    "SELF_DEAFENED": "🔇 {USERTAG} ensurdeceu-se em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "SELF_UNDEAFENED": "🔇 {USERTAG} desensurdeceu-se em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]",
                     "SELF_MUTED": "🎤 {USERTAG} silenciou a si mesmo em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "SELF_UNMUTED": "🎤 {USERTAG} desmutou-se em {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
