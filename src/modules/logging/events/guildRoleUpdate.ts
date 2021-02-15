@@ -24,9 +24,11 @@ export function getKeys(
     keys.push('managed');
   } // why not
   if (role.position !== oldRole.position) {
+    console.log('position update');
     keys.push('position');
   }
   if (role.permissions !== oldRole.permissions) {
+    console.log('perms diff', role.permissions, oldRole.permissions, typeof role.permissions, typeof oldRole.permissions);
     keys.push('permissions');
   }
   return keys;

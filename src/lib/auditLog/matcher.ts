@@ -1,6 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-expressions */
+/* eslint-disable eqeqeq */
 import { auditLogDefinitions } from './dataCollector';
 import { QueuedEvent } from '../eventHandler/queue';
 import * as utils from '../utils';
@@ -43,21 +44,24 @@ const objectRemaps = <any>{
   },
   30: {
     // ROLE_CREATE
-    permissionsNew: null,
+    permissionsNew: 'permissions',
+    permissions: null,
   },
   31: {
     // ROLE_UPDATE
-    permissionsNew: null,
+    permissionsNew: 'permissions',
+    permissions: null,
   },
   32: {
     // ROLE_DELETE
-    permissionsNew: null,
+    permissionsNew: 'permissions',
+    permissions: null,
   },
 
 };
 
 // dont check objects with these values... lol
-const disableAliases = [null, 0, '0', false];
+const disableAliases = [null, 0, '0', false, 'permissions', 'permissionsNew'];
 const blacklistedTypingsCheck = ['function', 'undefined', 'object'];
 /*
 export async function clean() {
@@ -222,12 +226,13 @@ export async function validateAuditEvent(
       if (typeof rm === 'object') {
         if (typeof rm[key] === 'string') {
           cck = cc[rm[key]];
+          // console.log(`using remapped ${key} => ${rm[key]} = `, cck, 'al', al)
         } else if (rm[key] === null) {
           continue;
         }
       }
 
-      if (typeof cck !== typeof al && key !== 'permissionOverwrites') {
+      if (typeof cck !== typeof al && !['permissionOverwrites', 'permissions', 'permissionsNew'].includes(key)) {
         // check disabled
         if (
           disableAliases.indexOf(cck) > -1
@@ -255,6 +260,7 @@ export async function validateAuditEvent(
           cck,
           artificialMatches[cc[key]],
           auditLogEntry,
+          al,
         );
         return false;
       }
@@ -266,17 +272,17 @@ export async function validateAuditEvent(
               if (!_f || _f === undefined) {
                 return true;
               }
-              if (_f.allow !== obj.allow || _f.deny !== obj.deny || _f.type !== obj.type) {
+              if (_f.allow != obj.allow || _f.deny != obj.deny || _f.type != obj.type) {
                 return true;
               }
               return false;
             });
             const adiff2 = al.filter((obj: discord.Channel.IPermissionOverwrite) => {
-              const _f: discord.Channel.IPermissionOverwrite | undefined = cck.find((obj2) => obj2.id === obj.id);
+              const _f: discord.Channel.IPermissionOverwrite | undefined = cck.find((obj2) => obj2.id == obj.id);
               if (!_f || _f === undefined) {
                 return true;
               }
-              if (_f.allow !== obj.allow || _f.deny !== obj.deny || _f.type !== obj.type) {
+              if (_f.allow != obj.allow || _f.deny != obj.deny || _f.type != obj.type) {
                 return true;
               }
               return false;
@@ -289,7 +295,7 @@ export async function validateAuditEvent(
           utils.logError('validate failed obj Compare', key, auditLogEntry);
           return false;
         }
-      } else if (cck !== al) {
+      } else if (cck != al) {
         utils.logError('validate failed key Compare', key, auditLogEntry);
         return false;
       }
