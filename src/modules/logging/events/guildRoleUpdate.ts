@@ -28,6 +28,7 @@ export function getKeys(
     keys.push('position');
   }
   if (role.permissions !== oldRole.permissions) {
+    console.log('rl 1', role.id, 'rl2', oldRole.id);
     console.log('perms diff', role.permissions, oldRole.permissions, typeof role.permissions, typeof oldRole.permissions);
     keys.push('permissions');
   }
@@ -188,7 +189,7 @@ export const messages = {
           permsRemoved.map((e: string) => `- ${prettifyPerms(e)}`),
         )
         .join('\n');
-      cc = `\`\`\`diff\n${cc}\n\`\`\``;
+      cc = `\`\`\`diff\n${cc.length === 0 ? '\nCan\'t resolve perms' : cc}\n\`\`\``;
       mp.set('CHANGED_PERMS', cc);
     }
     if (type === '') {
