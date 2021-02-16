@@ -1638,7 +1638,7 @@ export function InitializeCommands() {
               return { content: i18n.modules.infractions.inf_terms.no_infs_type };
             }
             const last10 = infs.slice(0, Math.min(infs.length, 10));
-            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.infs_search_type, ['count', Math.min(last10.length, 10).toString(), 'type', type.substr(0, 1).toUpperCase()]);
+            let txt = setPlaceholders(i18n.modules.infractions.inf_terms.infs_search_type, ['count', Math.min(last10.length, 10).toString(), 'type', `${type.substr(0, 1).toUpperCase()}${type.substr(1).toLowerCase()}`]);
             last10.map((inf) => {
               txt += `\n**[**||\`${inf.id}\`||**]** - ${inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`} **>** <@!${inf.memberId}>${typeof inf.reason === 'string' && inf.reason.length > 0 ? ` - \`${utils.escapeString(inf.reason, true)}\`` : ''}`;
             });
