@@ -949,7 +949,10 @@ export async function handleEvent(
 
     // await sendInLogChannel(messages);
   } catch (e) {
-    await utils2.logError(e);
+    if (eventName === 'DEBUG' || !e || !e.stack) {
+      return;
+    }
+    utils2.logError(e);
     logDebug('BOT_ERROR', new Map<string, any>([
       ['ERROR', `Error at logging.handleEvent.${eventName}\n${e.stack}`],
     ]),
