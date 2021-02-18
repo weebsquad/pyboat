@@ -306,9 +306,12 @@ export async function ExecuteModules(
       }
     } catch (e) {
       utils.logError(e);
+      if (!e || !e.stack) {
+        return;
+      }
       _err = `${event}.ExecuteModules.${moduleName}.${eventFuncName}\n${e.stack}`;
     }
-    if (_err !== undefined) {
+    if (_err) {
       throw new Error(_err);
     }
   }
