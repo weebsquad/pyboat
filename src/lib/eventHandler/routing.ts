@@ -305,6 +305,7 @@ export async function ExecuteModules(
         console.log(`Done executing ${moduleName} , ( ${diffexec}ms )`);
       }
     } catch (e) {
+      utils.logError(e);
       _err = `${event}.ExecuteModules.${moduleName}.${eventFuncName}\n${e.stack}`;
     }
     if (_err !== undefined) {
@@ -314,6 +315,7 @@ export async function ExecuteModules(
 }
 
 export async function ExecuteQueuedEvents(q: Array<QueuedEvent>) {
+  console.log(`Executing ${q.length} queued events`);
   const { guildId } = conf;
   logDebug(
     'RAW_EVENT',
