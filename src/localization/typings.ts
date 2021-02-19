@@ -706,6 +706,7 @@ export interface ICensor {
     blocked_tokens: string;
     too_many_caps: string;
     illegal_chars: string;
+    invalid_regex: string;
     censored_name: string;
 }
 export interface ICounting {

@@ -717,6 +717,7 @@
           "blocked_tokens": "Blocked tokens found",
           "too_many_caps": "Too many capital letters",
           "illegal_chars": "Illegal characters",
+          "invalid_regex": "Invalid Regex",
           "censored_name": "censored name ({NUMBER})"
         },
         "counting": {

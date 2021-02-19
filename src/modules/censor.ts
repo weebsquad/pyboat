@@ -31,7 +31,8 @@ enum CensorType {
     'WORD' = 'word',
     'TOKEN' = 'token',
     'CAPS' = 'caps',
-    'CHAR' = 'char'
+    'CHAR' = 'char',
+    'REGEX' = 'regex'
 }
 class CensorCheck {
     target: string | undefined;
@@ -201,12 +202,13 @@ export async function getCensorshipData(txt: string, checkInvites = false, check
 
   return toret;
 }
-export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = false, checkTokens = false, checkCaps = false, checkChars = false) {
+export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = false, checkTokens = false, checkCaps = false, checkChars = false, checkRegex = false) {
   const toRet: any = {
     words: checkWords === true ? [] : undefined,
     tokens: checkTokens === true ? [] : undefined,
     caps: checkCaps === true ? [] : undefined,
     chars: checkChars === true ? [] : undefined,
+    regex: checkRegex === true ? [] : undefined,
   };
   if (checkWords === true) {
     const blocks = thisCfg.words.filter((w: any) => typeof w === 'string' && w.length > 0);
@@ -293,6 +295,15 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
       }
     }
   }
+  if (checkRegex) {
+    thisCfg.regex.forEach((rgx: string) => {
+      console.log('checking regex', rgx);
+      const rgxMatch = txt.match(new RegExp(rgx, 'gm'));
+      if (Array.isArray(rgxMatch)) {
+        toRet.regex.push(...rgxMatch);
+      }
+    });
+  }
   return toRet;
 }
 export function checkCensors(data: any, thisCfg: any): CensorCheck {
@@ -304,6 +315,7 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   const { tokens } = data;
   const { caps } = data;
   const { chars } = data;
+  const { regex } = data;
   if (typeof thisCfg.invites === 'object' && Array.isArray(invites) && invites.length > 0) {
     const invCfg = thisCfg.invites;
     const allowVanities = typeof invCfg.vanityUrl === 'boolean' ? invCfg.vanityUrl : false;
@@ -384,6 +396,9 @@ export function checkCensors(data: any, thisCfg: any): CensorCheck {
   }
   if (typeof thisCfg.chars === 'object' && Array.isArray(chars) && chars.length > 0) {
     return new CensorCheck(true, CensorType.CHAR, i18n.modules.censor.illegal_chars, chars.join(', '), _stop);
+  }
+  if (typeof thisCfg.regex === 'object' && Array.isArray(regex) && regex.length > 0) {
+    return new CensorCheck(true, CensorType.REGEX, i18n.modules.censor.invalid_regex, regex.join(', '), _stop);
   }
   return new CensorCheck(false, undefined, undefined, undefined, _stop);
 }
@@ -491,6 +506,7 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   let grabTokens = false;
   let grabCaps = false;
   let grabChars = false;
+  let grabRegex = false;
   for (let i = 0; i < appConfigs.length; i += 1) {
     const val = appConfigs[i];
     if (typeof val.invites === 'object') {
@@ -514,6 +530,9 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
     if (typeof val.chars === 'object') {
       grabChars = true;
     }
+    if (typeof val.regex === 'object') {
+      grabRegex = true;
+    }
     if (typeof val.stop === 'boolean' && val.stop === true) {
       break;
     }
@@ -531,12 +550,12 @@ export async function checkMessage(message: discord.Message.AnyMessage) {
   }
 
   for (let i = 0; i < appConfigs.length; i += 1) {
-    const extraDataContent = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+    const extraDataContent = await getDataFromConfig(message.content, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars, grabRegex);
     // attachments
     if (Object.keys(dataAttach).length > 0) {
       for (const key in dataAttach) {
         const val = dataAttach[key];
-        const extraDataAttach = await getDataFromConfig(key, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+        const extraDataAttach = await getDataFromConfig(key, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars, grabRegex);
         const _newd = { ...val, ...extraDataAttach };
         const check = checkCensors(_newd, appConfigs[i]);
         if (check instanceof CensorCheck) {
@@ -629,6 +648,7 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
   let grabTokens = false;
   let grabCaps = false;
   let grabChars = false;
+  let grabRegex = false;
   for (let i = 0; i < appConfigs.length; i += 1) {
     const val = appConfigs[i];
     if (typeof val.invites === 'object') {
@@ -652,13 +672,16 @@ export async function checkName(eventId: string, member: discord.GuildMember) {
     if (typeof val.chars === 'object') {
       grabChars = true;
     }
+    if (typeof val.regex === 'object') {
+      grabRegex = true;
+    }
     if (typeof val.stop === 'boolean' && val.stop === true) {
       break;
     }
   }
   const data = await getCensorshipData(visibleName, grabInvites, grabUrls, grabZalgo);
   for (let i = 0; i < appConfigs.length; i += 1) {
-    const extraData = await getDataFromConfig(visibleName, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars);
+    const extraData = await getDataFromConfig(visibleName, appConfigs[i], grabWords, grabTokens, grabCaps, grabChars, grabRegex);
     const _newd = { ...data, ...extraData };
     const check = checkCensors(_newd, appConfigs[i]);
     if (check instanceof CensorCheck) {

@@ -1593,6 +1593,19 @@
                                         "options": {
                                             "collapsed": true
                                         }
+                                    },
+                                    "regex": {
+                                        "type": "array",
+                                        "title": "Regex Matches",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "regex string",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
                                     }
                                 }
                             },
@@ -1616,9 +1629,10 @@
                                     "__key": {
                                         "title": "Channel",
                                         "description": "The channel ID of the channel which this filter will apply to.",
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 999
+                                        "type": "string",
+                                        "minLength": 16,
+                                        "maxLength": 20,
+                                        "pattern": "^[0-9]+$"
                                     },
                                     "stop": {
                                         "title": "Stop Processing Rules",
@@ -1907,6 +1921,19 @@
                                                 "type": "boolean",
                                                 "format": "checkbox"
                                             }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "regex": {
+                                        "type": "array",
+                                        "title": "Regex Matches",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "regex string",
+                                            "minLength": 1
                                         },
                                         "options": {
                                             "collapsed": true
@@ -2229,6 +2256,19 @@
                                         "options": {
                                             "collapsed": true
                                         }
+                                    },
+                                    "regex": {
+                                        "type": "array",
+                                        "title": "Regex Matches",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "regex string",
+                                            "minLength": 1
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
                                     }
                                 }
                             },
@@ -2543,6 +2583,19 @@
                                                 "type": "boolean",
                                                 "format": "checkbox"
                                             }
+                                        },
+                                        "options": {
+                                            "collapsed": true
+                                        }
+                                    },
+                                    "regex": {
+                                        "type": "array",
+                                        "title": "Regex Matches",
+                                        "format": "table",
+                                        "items": {
+                                            "type": "string",
+                                            "title": "regex string",
+                                            "minLength": 1
                                         },
                                         "options": {
                                             "collapsed": true
