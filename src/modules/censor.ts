@@ -297,7 +297,6 @@ export async function getDataFromConfig(txt: string, thisCfg: any, checkWords = 
   }
   if (checkRegex) {
     thisCfg.regex.forEach((rgx: string) => {
-      console.log('checking regex', rgx);
       const rgxMatch = txt.match(new RegExp(rgx, 'gm'));
       if (Array.isArray(rgxMatch)) {
         toRet.regex.push(...rgxMatch);
