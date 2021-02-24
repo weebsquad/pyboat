@@ -613,7 +613,7 @@ export async function SlowmodeChannel(actor: discord.GuildMember | null, channel
   }
   logCustom('ADMIN', 'SLOWMODE', placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `${setPlaceholders(seconds > 0 ? i18n.modules.admin.adm_slowmode.slowmode_enabled : i18n.modules.admin.adm_slowmode.slowmode_disabled, ['seconds', seconds.toString(), 'actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)])}${reason.length > 0 ?? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)])}`;
+    const txt = `${setPlaceholders(seconds > 0 ? i18n.modules.admin.adm_slowmode.slowmode_enabled : i18n.modules.admin.adm_slowmode.slowmode_disabled, ['seconds', seconds.toString(), 'actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}${reason.length > 0 ? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]) : ''}`;
     const res: any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -681,7 +681,7 @@ export async function LockChannel(actor: discord.GuildMember | null, channel: di
   }
   logCustom('ADMIN', type, placeholders);
   if (channel.canMember(me, discord.Permissions.SEND_MESSAGES)) {
-    const txt = `${setPlaceholders(state === true ? i18n.modules.admin.adm_lock_channel.locked : i18n.modules.admin.adm_lock_channel.unlocked, ['actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)])}${reason.length > 0 ?? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)])}`;
+    const txt = `${setPlaceholders(state === true ? i18n.modules.admin.adm_lock_channel.locked : i18n.modules.admin.adm_lock_channel.unlocked, ['actor_tag', placeholders.get('ACTORTAG')])}${duration > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(duration, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}${reason.length > 0 ? setPlaceholders(i18n.modules.admin.reason, ['reason', utils.escapeString(reason, true)]) : ''}`;
     const res:any = await channel.sendMessage({ allowedMentions: {}, content: txt });
     saveMessage(res);
   }
@@ -2182,7 +2182,7 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
+        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_channel.locked_fail);
       }
@@ -2249,7 +2249,7 @@ export function InitializeCommands() {
       }
       if (res === true) {
         const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
-        await infractions.confirmResult(undefined, msg, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ?? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur])}`);
+        await infractions.confirmResult(undefined, msg, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
       }
@@ -2286,7 +2286,7 @@ export function InitializeCommands() {
         return;
       }
       if (res === true) {
-        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
+        await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_guild.failed_lock);
       }
@@ -3233,7 +3233,7 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
     } else {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_channel.locked_fail);
@@ -3325,7 +3325,7 @@ registerSlash(
     if (res === true) {
       const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ?? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur])}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur]) : ''}`);
     } else {
       await inter.acknowledge(true);
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
@@ -3372,7 +3372,7 @@ registerSlash(
     }
     if (res === true) {
       await inter.acknowledge(true);
-      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ?? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)])}`);
+      await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
     } else {
       await inter.acknowledge(false);
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_guild.failed_lock);
