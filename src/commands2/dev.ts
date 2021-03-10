@@ -1395,15 +1395,19 @@ export function InitializeCommands() {
       sub,
       'perms',
       async (m) => {
-        let permsVal: number | BigInt = BigInt('17179869186');
-        permsVal = m.member.permissions;
+        // let permsVal: number | BigInt = BigInt('17179869186');
+        const bot = await (await discord.getGuild()).getMember(discord.getBotId());
+        const permsVal = bot.permissions;
+        console.log(permsVal, typeof permsVal);
+        console.log(m.member.permissions, typeof m.member.permissions);
         const p = new utils.Permissions(permsVal);
+        console.log(p);
         const mp = p.serialize(false);
-        for (const k in mp) {
+        /* for (const k in mp) {
           if (mp[k] === false) {
             delete mp[k];
           }
-        }
+        } */
         const res: any = await m.inlineReply(
           `Test: \`${permsVal}n\`\n\`\`\`json\n${JSON.stringify(mp)}\n\`\`\``,
         );

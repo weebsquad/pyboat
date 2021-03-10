@@ -208,7 +208,7 @@ async function checkCustomRoleProperties() {
   const matchedRoles = guildRoles.filter((role) => roles.find((v) => v.roleId === role.id) !== undefined);
   if (matchedRoles.length > 0) {
     await Promise.all(matchedRoles.map(async (role) => {
-      if (role.mentionable === true || role.hoist === true || role.permissions !== 0) {
+      if (role.mentionable === true || role.hoist === true || new utils.Permissions(role.permissions).bitfield !== BigInt(0)) {
         await role.edit({ mentionable: false, hoist: false, permissions: 0 });
       }
     }));
