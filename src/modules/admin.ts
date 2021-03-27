@@ -1949,7 +1949,7 @@ export function InitializeCommands() {
         await roleAllKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_nuke_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_role_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
         saveMessage(res);
       },
       {
@@ -1999,7 +1999,7 @@ export function InitializeCommands() {
         await roleNukeKv.put(utils.composeSnowflake(), thisRole.id);
 
         checkRoleAll();
-        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_role_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
+        const res: any = await msg.inlineReply({ content: setPlaceholders(i18n.modules.admin.adm_nuke_all, ['role_mention', thisRole.toMention()]), allowedMentions: {} });
         saveMessage(res);
       },
       {
