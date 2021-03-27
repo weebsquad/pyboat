@@ -11,7 +11,7 @@ import { language as i18n, setPlaceholders } from '../localization/interface';
 const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
 const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = '';
-const SLASH_COMMANDS_LIMIT = 50;
+const SLASH_COMMANDS_LIMIT = 10;
 
 type SlashCommandRegistry = {
   config: discord.interactions.commands.ICommandConfig<any>;
