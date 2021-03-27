@@ -2572,7 +2572,7 @@ if (cleanGroup) {
       const chan = await inter.getChannel();
       let acked = false;
       const tmAck = setTimeout(async () => {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         acked = true;
       }, 1500);
       const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, user, inter.member, chan, count, inter.channelId);
@@ -2582,7 +2582,7 @@ if (cleanGroup) {
 
       if (typeof res !== 'number') {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         if (res === false) {
           await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2592,12 +2592,12 @@ if (cleanGroup) {
         return false;
       } if (res > 0) {
         if (!acked) {
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
         }
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_user, ['count', res.toString(), 'user_mention', user.user.toMention()]));
       } else {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
@@ -2630,7 +2630,7 @@ if (cleanGroup) {
       }
       let acked = false;
       const tmAck = setTimeout(async () => {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         acked = true;
       }, 1500);
       const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
@@ -2640,7 +2640,7 @@ if (cleanGroup) {
 
       if (typeof res !== 'number') {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         if (res === false) {
           await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2650,12 +2650,12 @@ if (cleanGroup) {
         return false;
       } if (res > 0) {
         if (!acked) {
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
         }
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', channel.toMention()]));
       } else {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
@@ -2688,7 +2688,7 @@ if (cleanGroup) {
       const channel = await inter.getChannel();
       let acked = false;
       const tmAck = setTimeout(async () => {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         acked = true;
       }, 1500);
       const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, channel, count, channel.id);
@@ -2698,7 +2698,7 @@ if (cleanGroup) {
 
       if (typeof res !== 'number') {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         if (res === false) {
           await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2708,12 +2708,12 @@ if (cleanGroup) {
         return false;
       } if (res > 0) {
         if (!acked) {
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
         }
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_channel, ['count', res.toString(), 'channel_mention', channel.toMention()]));
       } else {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
@@ -2746,7 +2746,7 @@ if (cleanGroup) {
       const chan = await inter.getChannel();
       let acked = false;
       const tmAck = setTimeout(async () => {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         acked = true;
       }, 1500);
       const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, {}, inter.member, chan, count);
@@ -2756,7 +2756,7 @@ if (cleanGroup) {
 
       if (typeof res !== 'number') {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         if (res === false) {
           await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2766,12 +2766,12 @@ if (cleanGroup) {
         return false;
       } if (res > 0) {
         if (!acked) {
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
         }
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_all, ['count', res.toString()]));
       } else {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
@@ -2804,7 +2804,7 @@ if (cleanGroup) {
       const chan = await inter.getChannel();
       let acked = false;
       const tmAck = setTimeout(async () => {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         acked = true;
       }, 1500);
       const res = await Clean(utils.decomposeSnowflake(inter.id).timestamp, { bot: true }, inter.member, chan, count, inter.channelId);
@@ -2814,7 +2814,7 @@ if (cleanGroup) {
 
       if (typeof res !== 'number') {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         if (res === false) {
           await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2824,12 +2824,12 @@ if (cleanGroup) {
         return false;
       } if (res > 0) {
         if (!acked) {
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
         }
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_bots, ['count', res.toString()]));
       } else {
         if (!acked) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
         }
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
         return false;
@@ -2876,11 +2876,11 @@ if (invitesGroup) {
         }
       }));
       if (cleared === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_inv_prune.no_invites);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_inv_prune.pruned, ['count', cleared.toString()]));
       return true;
     },
@@ -2916,22 +2916,22 @@ if (groupRole) {
     },
     async (inter, { role }) => {
       if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.no_locked_roles);
         return false;
       }
       if (!config.modules.admin.lockedRoles.includes(role.id)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.not_locked);
         return false;
       }
       const kvc = await roleLockKv.get(role.id);
       if (typeof kvc === 'boolean') {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
       await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_role_unlock.unlocked);
     },
@@ -2958,16 +2958,16 @@ if (groupRole) {
     async (inter, { member, role }) => {
       const res = await Role(inter.member, member, role, true);
       if (typeof res === 'string') {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, res);
         return false;
       }
       if (res === true) {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', role.toMention(), 'user_mention', member.user.toMention()]));
         return true;
       }
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_add.failed_add);
       return false;
     },
@@ -2994,16 +2994,16 @@ if (groupRole) {
     async (inter, { member, role }) => {
       const res = await Role(inter.member, member, role, false);
       if (typeof res === 'string') {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, res);
         return false;
       }
       if (res === true) {
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', role.toMention(), 'user_mention', member.user.toMention()]));
         return true;
       }
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_remove.failed_remove);
       return false;
     },
@@ -3028,18 +3028,18 @@ if (groupRole) {
     },
     async (inter, { role }) => {
       if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.group_roles_disabled);
         return false;
       }
       const thisRole = config.modules.admin.groupRoles[role.id];
       if (typeof thisRole !== 'string' || thisRole.length < 5) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.role_incorrectly_configured);
         return false;
       }
       if (inter.member.roles.includes(role.id)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.group_already_has_role);
         return false;
       }
@@ -3053,11 +3053,11 @@ if (groupRole) {
       const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
       const noStaff = perms.every((p) => !staffPerms.includes(p));
       if (!noStaff) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.group_has_staff_perms);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await inter.member.addRole(role.id);
 
       await interactionChannelRespond(inter, { content: setPlaceholders(i18n.modules.admin.group_joined, ['role_mention', role.toMention()]), allowedMentions: {} });
@@ -3083,22 +3083,22 @@ if (groupRole) {
     },
     async (inter, { role }) => {
       if (typeof config.modules.admin.groupRoles !== 'object' || Object.keys(config.modules.admin.groupRoles).length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.group_roles_disabled);
         return false;
       }
       const thisRole = config.modules.admin.groupRoles[role.id];
       if (typeof thisRole !== 'string' || thisRole.length < 5) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.role_incorrectly_configured);
         return false;
       }
       if (!inter.member.roles.includes(role.id)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.group_doesnt_have_role);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await inter.member.removeRole(role.id);
 
       await interactionChannelRespond(inter, { content: setPlaceholders(i18n.modules.admin.group_left, ['role_mention', role.toMention()]), allowedMentions: {} });
@@ -3129,16 +3129,16 @@ registerSlash(
     }
     const res = await Nick(inter.member, member, nickname);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return false;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.set_nickname, ['user_mention', member.user.getTag(), 'new_nick', nickname === null ? i18n.modules.admin.adm_backup.none : utils.escapeString(nickname, true)]));
       return true;
     }
-    await inter.acknowledge(false);
+    await inter.acknowledge({ ephemeral: true });
     await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.failed_nickname);
     return false;
   },
@@ -3164,27 +3164,27 @@ registerSlash(
   async (inter, { member, role, duration }) => {
     const dur = utils.timeArgumentToMs(duration);
     if (dur === 0) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
       return false;
     }
     if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
       return false;
     }
 
     const res = await TempRole(inter.member, member, role, dur);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return false;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.admin.temprole_added, ['role_mention', role.toMention(), 'user_mention', member.toMention(), 'duration', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]));
     } else {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_add.failed_add);
       return false;
     }
@@ -3215,27 +3215,27 @@ registerSlash(
     if (duration) {
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return false;
       }
     }
     const res = await LockChannel(inter.member, channel, true, dur);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return false;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
     } else {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_channel.locked_fail);
       return false;
     }
@@ -3263,15 +3263,15 @@ registerSlash(
     }
     const res = await LockChannel(inter.member, channel, false, 0);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return false;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_lock_channel.unlocked_cmd);
     } else {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_channel.unlocked_fail);
       return false;
     }
@@ -3306,28 +3306,28 @@ registerSlash(
     if (duration) {
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return false;
       }
     }
     const res = await SlowmodeChannel(inter.member, channel, seconds, dur);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return false;
     }
     if (res === true) {
       const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur]) : ''}`);
     } else {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
       return false;
     }
@@ -3354,27 +3354,27 @@ registerSlash(
     if (duration) {
       dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.exceeds_duration);
         return;
       }
     }
     const res = await LockGuild(inter.member, true, dur);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
     } else {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_guild.failed_lock);
     }
   },
@@ -3395,15 +3395,15 @@ registerSlash(
   async (inter) => {
     const res = await LockGuild(inter.member, false, 0);
     if (typeof res === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, res);
       return;
     }
     if (res === true) {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_lock_guild.unlocked_cmd);
     } else {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_lock_guild.failed_unlock);
     }
   },
@@ -3436,11 +3436,11 @@ registerSlash(
     }
     roles = roles.filter((role) => role.id !== guild.id);
     if (roles.length === 0) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.admin.adm_roles_list.no_roles);
       return;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const dt = [];
     let currKey = 0;
     roles.forEach((role) => {

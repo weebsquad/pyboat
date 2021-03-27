@@ -1590,30 +1590,30 @@ if (curGroup) {
     { name: 'name', description: 'Changes the name of your custom role', options: (ctx) => ({ name: ctx.string({ required: true, description: 'New name of the role' }) }) },
     async (inter, { name }) => {
       if (!isCurEnabled()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.not_enabled);
         return false;
       }
       const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
       if (!checkrole) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.dont_have_role);
         return false;
       }
       if (name.length < 2 || name.length > 32) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.character_limit);
         return false;
       }
       const guild = await inter.getGuild();
       const role = await guild.getRole(checkrole.roleId);
       if (!role) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.role_not_found);
         return false;
       }
       await role.edit({ name });
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: setPlaceholders(i18n.modules.utilities.curs.changed_role_name, ['role_name', utils.escapeString(name, true)]) });
     },
     {
@@ -1628,13 +1628,13 @@ if (curGroup) {
     { name: 'color', description: 'Changes the color of your custom role', options: (ctx) => ({ color: ctx.string({ required: false, description: 'New color of the role (#ffffff format) -- Not passing this argument removes the color of your role' }) }) },
     async (inter, { color }) => {
       if (!isCurEnabled()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.not_enabled);
         return false;
       }
       const checkrole = await customUserRoles.getById<UserRole>(inter.member.user.id);
       if (!checkrole) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.dont_have_role);
         return false;
       }
@@ -1642,7 +1642,7 @@ if (curGroup) {
         color = color.split('#').join('');
       }
       if (typeof color === 'string' && color.length !== 6) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.color_wrong_format);
         return false;
       }
@@ -1650,11 +1650,11 @@ if (curGroup) {
       const guild = await inter.getGuild();
       const role = await guild.getRole(checkrole.roleId);
       if (!role) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.role_not_found);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await role.edit({ color: typeof color === 'string' ? parseInt(color, 16) : 0 });
       await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: setPlaceholders(i18n.modules.utilities.curs.changed_role_color, ['color', typeof color === 'string' ? `#${color}` : 'None']) });
     },
@@ -1675,28 +1675,28 @@ if (curGroup) {
       }) },
     async (inter, { target, role }) => {
       if (!isCurEnabled()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.not_enabled);
         return false;
       }
       if (!role || !(role instanceof discord.Role)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.role_not_found);
         return false;
       }
       const kvc = await customUserRoles.exists(target.user.id);
       if (kvc) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.already_has_role);
         return false;
       }
       const kvcrole = await customUserRoles.getByQuery<UserRole>({ roleId: role.id });
       if (Array.isArray(kvcrole) && kvcrole.length > 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(setPlaceholders(i18n.modules.utilities.curs.already_assigned_to, ['user_mention', `<@!${kvcrole[0].memberId}>`]));
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await setUserRole(target.user.id, role.id);
       await checkCustomRoleProperties();
       if (!target.roles.includes(role.id)) {
@@ -1720,17 +1720,17 @@ if (curGroup) {
       }) },
     async (inter, { target }) => {
       if (!isCurEnabled()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.not_enabled);
         return false;
       }
       const kvc = await customUserRoles.getById<UserRole>(target.user.id);
       if (!kvc) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.has_no_role);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const rlid = kvc.roleId;
       const guild = await inter.getGuild();
       const role = await guild.getRole(rlid);
@@ -1756,13 +1756,13 @@ if (curGroup) {
       }) },
     async (inter, { target }) => {
       if (!isCurEnabled()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.not_enabled);
         return false;
       }
       const kvc = await customUserRoles.getById<UserRole>(target.user.id);
       if (!kvc) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.has_no_role);
         return false;
       }
@@ -1771,11 +1771,11 @@ if (curGroup) {
       const guild = await inter.getGuild();
       const role = await guild.getRole(rlid);
       if (!(role instanceof discord.Role)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.utilities.curs.role_not_found);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await deleteCustomRoleOf(target.user.id);
       await interactionChannelRespond(inter, { allowedMentions: { users: [inter.member.user.id] }, content: setPlaceholders(i18n.modules.utilities.curs.deleted_role, ['user_mention', target.user.toMention()]) });
     },
@@ -1799,7 +1799,7 @@ registerSlash(
 || typeof _sn.author !== 'object'
 || typeof _sn.id !== 'string'
     ) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.utilities.snipe.no_message);
       return false;
     }
@@ -1807,18 +1807,18 @@ registerSlash(
       _sn.author.id === inter.member.user.id
 && !inter.member.can(discord.Permissions.ADMINISTRATOR)
     ) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.utilities.snipe.no_message);
       return;
     }
     const emb = new discord.Embed();
     const _usr = await utils.getUser(_sn.author.id);
     if (!_usr) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.utilities.snipe.user_not_found);
       return;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     emb.setAuthor({ name: _usr.getTag(), iconUrl: _usr.getAvatarUrl() });
     emb.setTimestamp(
       new Date(utils.decomposeSnowflake(_sn.id).timestamp).toISOString(),
@@ -1935,7 +1935,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'cat', description: 'Gets a random cat image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('http://aws.random.cat/meow')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.file });
@@ -1948,7 +1948,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'dog', description: 'Gets a random dog image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://random.dog/woof.json')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.url });
@@ -1961,7 +1961,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'doge', description: 'Gets a random shiba inu image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://dog.ceo/api/breed/shiba/images/random')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.message });
@@ -1974,7 +1974,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'fox', description: 'Gets a random fox image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://randomfox.ca/floof/')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.image });
@@ -1987,7 +1987,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'pikachu', description: 'Gets a random pikachu image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://some-random-api.ml/img/pikachu')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.link });
@@ -2000,7 +2000,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'koala', description: 'Gets a random koala image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://some-random-api.ml/img/koala')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.link });
@@ -2013,7 +2013,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'birb', description: 'Gets a random birb image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://some-random-api.ml/img/birb')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.link });
@@ -2026,7 +2026,7 @@ if (randomGroup) {
     randomGroup,
     { name: 'panda', description: 'Gets a random panda image' },
     async (inter) => {
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const file = await (await fetch('https://some-random-api.ml/img/panda')).json();
       const emb = new discord.Embed();
       emb.setImage({ url: file.link });
@@ -2039,7 +2039,7 @@ if (randomGroup) {
 registerSlash(
   { name: 'pat', description: 'Gets a random anime patting gif' },
   async (inter) => {
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const file = await (await fetch('https://some-random-api.ml/animu/pat')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
@@ -2051,7 +2051,7 @@ registerSlash(
 registerSlash(
   { name: 'hug', description: 'Gets a random anime hugging gif' },
   async (inter) => {
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const file = await (await fetch('https://some-random-api.ml/animu/hug')).json();
     const emb = new discord.Embed();
     emb.setImage({ url: file.link });
@@ -2373,7 +2373,7 @@ registerSlash(
     }
 
     if (!usr) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.utilities.info.user_not_found);
       return false;
     }

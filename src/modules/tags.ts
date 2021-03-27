@@ -242,11 +242,11 @@ if (tagGroup) {
       const nm = tag_name.toLowerCase();
       const obj = await pool.getById<Tag>(nm);
       if (!obj) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await pool.editTransact<Tag>(obj.id, (vl: Tag) => {
         vl.uses += 1;
         return vl;
@@ -280,17 +280,17 @@ if (tagGroup) {
       const testalph = tag_name.toLowerCase().replace(/[a-zA-Z0-9_]+/g, '');
       const nm = tag_name.toLowerCase();
       if (testalph.length !== 0 || nm.length < 2 || nm.length > 20) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.set.name_length);
         return false;
       }
       if (blacklist.includes(nm)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.set.invalid_name);
         return false;
       }
       if (typeof config.modules.tags.maxLength === 'number' && value.length > config.modules.tags.maxLength) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(setPlaceholders(i18n.modules.tags.set.content_length, ['max_length', config.modules.tags.maxLength]));
         return false;
       }
@@ -299,18 +299,18 @@ if (tagGroup) {
         if (ex.authorId !== inter.member.user.id) {
           const lvl = utils.getUserAuth(inter.member);
           if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-            await inter.acknowledge(false);
+            await inter.acknowledge({ ephemeral: true });
             await inter.respondEphemeral(i18n.modules.tags.cant_edit_others);
             return false;
           }
-          await inter.acknowledge(true);
+          await inter.acknowledge({ ephemeral: false });
           ex.content = value;
           await pool.editPool(nm, ex);
           await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.set.edited_tag, ['tag_name', nm]));
           return;
         }
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const newObj = new Tag(nm, inter.member.user.id, value);
       await pool.saveToPool(newObj);
       await interactionChannelRespond(inter, setPlaceholders(i18n.modules.tags.set.saved_tag, ['tag_name', nm]));
@@ -331,19 +331,19 @@ if (tagGroup) {
       const nm = tag_name.toLowerCase();
       const ex = await pool.getById<Tag>(nm);
       if (!ex) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return;
       }
       if (ex.authorId !== inter.member.user.id) {
         const lvl = utils.getUserAuth(inter.member);
         if (typeof config.modules.tags.levelEditOthers === 'number' && lvl < config.modules.tags.levelEditOthers) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(i18n.modules.tags.cant_edit_others);
           return false;
         }
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await pool.editPool(nm, null);
       await interactionChannelRespond(inter, i18n.modules.tags.delete.deleted_tag);
     }, {
@@ -363,7 +363,7 @@ if (tagGroup) {
       const nm = tag_name.toLowerCase();
       const obj = await pool.getById<Tag>(nm);
       if (!obj) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.tag_not_found);
         return false;
       }
@@ -409,11 +409,11 @@ if (tagGroup) {
     async (inter) => {
       const ex = await pool.getAll<Tag>();
       if (ex.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.tags.list.no_tags);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const emb = new discord.Embed();
       const sorted = ex.sort((a, b) => b.uses - a.uses).map((tag) => tag.id);
       emb.setDescription(sorted.join(', '));

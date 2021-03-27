@@ -426,19 +426,24 @@ export async function confirmResultInteraction(me: discord.GuildMember | undefin
           // emj = discord.decor.Emojis.X;
           await interaction.respondEphemeral(`${emj !== '' ? `${emj} ` : ''}${txt}`);
         } else {
-          replyMsg = await interactionChannelRespond(interaction, { content: `${emj !== '' ? `${emj} ` : ''}${txt}`,
-            allowedMentions: {} });
+          // replyMsg = await interactionChannelRespond(interaction, { content: `${emj !== '' ? `${emj} ` : ''}${txt}`,allowedMentions: {} });
+          replyMsg = await interaction.respond({ content: `${emj !== '' ? `${emj} ` : ''}${txt}`, allowedMentions: {} });
         }
       } catch (_) {
       }
     }
-    if ((/* react === true || */ msg === true) && expiry > 0 && replyMsg instanceof discord.interactions.commands.SlashCommandResponse) {
+    if ((/* react === true || */ msg === true) && expiry > 0 && replyMsg instanceof discord.interactions.commands.SlashCommandResponse && result === true) {
       const _theMsg = replyMsg;
       setTimeout(async () => {
         try {
           await _theMsg.delete();
         } catch (_) {}
-      }, expiry * 1000);
+        try {
+          if (del) {
+            await interaction.deleteOriginal();
+          }
+        } catch (_) {}
+      }, 5 * 1000);
     }
   }
 }
@@ -1834,16 +1839,16 @@ registerSlash(
     }
     const result = await Kick(member, inter.member, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_kick);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.kicked_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -1865,16 +1870,16 @@ registerSlash(
       result = await Mute(member, inter.member, reason);
     }
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_mute);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -1893,16 +1898,16 @@ registerSlash(
     }
     const result = await TempMute(member, inter.member, time, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_tempmute);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const dur = utils.timeArgumentToMs(time);
     const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.temp_muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
@@ -1923,16 +1928,16 @@ registerSlash(
     }
     const result = await UnMute(member, inter.member, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_unmute);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.unmuted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -1952,16 +1957,16 @@ registerSlash(
     const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
     const result = await Ban(member, inter.member, _del, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_ban);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -1994,11 +1999,11 @@ registerSlash(
     });
     ids = [...new Set(ids)]; // remove duplicates
     if (ids.length < 2) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.infractions.inf_terms.massban_ids);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const objs: any[] = [];
     const failNotFound: string[] = [];
     const guild = await inter.getGuild();
@@ -2042,16 +2047,16 @@ registerSlash(
     const _del: any = delete_days; // fuck off TS
     const result = await Ban(member, inter.member, _del, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_cleanban);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -2076,16 +2081,16 @@ registerSlash(
     const _del: any = delete_days; // fuck off TS
     const result = await SoftBan(member, inter.member, _del, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_softban);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -2110,16 +2115,16 @@ registerSlash(
     const _del: any = typeof config.modules.infractions.defaultDeleteDays === 'number' ? config.modules.infractions.defaultDeleteDays : 0; // fuck off TS
     const result = await TempBan(member, inter.member, _del, time, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_tempban);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     const dur = utils.timeArgumentToMs(time);
     const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.tempbanned_user, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '', 'duration', durationText]));
@@ -2142,7 +2147,7 @@ registerSlash(
   async (inter, { user_id, reason }) => {
     const usr = await utils.getUser(user_id.replace(/\D/g, ''));
     if (!usr) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await inter.respondEphemeral(i18n.modules.infractions.inf_terms.user_not_found);
       return false;
     }
@@ -2155,16 +2160,16 @@ registerSlash(
     }
     const result = await UnBan(member, inter.member, reason);
     if (result === false) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, i18n.modules.infractions.inf_terms.failed_unban);
       return false;
     }
     if (typeof result === 'string') {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ ephemeral: true });
       await confirmResultInteraction(undefined, inter, false, result);
       return false;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ ephemeral: false });
     await confirmResultInteraction(undefined, inter, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
   }, {
     module: 'infractions',
@@ -2191,11 +2196,11 @@ if (infGroup) {
     async (inter) => {
       const infs = (await infsPool.getAll<Infraction>(null));
       if (infs.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infractions);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const last10 = infs.slice(0, Math.min(infs.length, 10));
       let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_recent, ['count', Math.min(last10.length, 10).toString()]);
       last10.map((inf) => {
@@ -2229,11 +2234,11 @@ if (infGroup) {
     async (inter) => {
       const infs = (await infsPool.getByQuery<Infraction>({ active: true }));
       if (infs.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral('There are no active infractions');
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const last10 = infs.slice(0, Math.min(infs.length, 10));
       let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_active, ['count', Math.min(last10.length, 10).toString()]);
       last10.map((inf) => {
@@ -2278,11 +2283,11 @@ if (infGroup) {
         infs = (await infsPool.getByQuery<Infraction>({ id: inf_id }));
       }
       if (infs.length !== 1) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       const inf = infs[0];
       const txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_info, ['inf_id', inf.id, 'actor_tag', inf.actorId === null || inf.actorId === 'SYSTEM' || inf.actorId === discord.getBotId() ? i18n.ranks.system : `<@!${inf.actorId}>`, 'actor_id', inf.actorId, 'target_mention', `<@!${inf.memberId}>`, 'target_id', inf.memberId, 'type', inf.type.toUpperCase(), 'active', inf.active, 'created_date', new Date(inf.ts).toISOString(), 'expires', inf.expiresAt !== inf.id && typeof inf.expiresAt === 'string' ? new Date(utils.decomposeSnowflake(inf.expiresAt).timestamp) : 'Never', 'reason', inf.reason]);
       const emb = new discord.Embed();
@@ -2313,12 +2318,12 @@ if (infGroup) {
     async (inter, { inf_id, duration }) => {
       const dur = utils.timeArgumentToMs(duration);
       if (dur === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.admin.duration_malformed);
         return false;
       }
       if (dur < 1000 || dur > 365 * 24 * 60 * 60 * 1000) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.exceeds_duration);
         return false;
       }
@@ -2332,22 +2337,22 @@ if (infGroup) {
         infs = (await infsPool.getByQuery<Infraction>({ id: inf_id }));
       }
       if (infs.length !== 1) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
       if (!inf.active) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_active);
         return false;
       }
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       inf.expiresAt = utils.composeSnowflake(inf.ts + dur);
       await inf.updateStorage();
 
@@ -2392,22 +2397,22 @@ if (infGroup) {
         infs = (await infsPool.getByQuery<Infraction>({ id: inf_id }));
       }
       if (infs.length !== 1) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
       if (!inf.active) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_active);
         return false;
       }
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
 
       inf.reason = reason;
       await inf.updateStorage();
@@ -2453,23 +2458,23 @@ if (infGroup) {
         infs = (await infsPool.getByQuery<Infraction>({ id: inf_id }));
       }
       if (infs.length !== 1) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = utils.makeFake(infs[0], Infraction);
 
       if (typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
       if (new_actor.user.id === discord.getBotId()) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_assign_system);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       inf.actorId = new_actor.user.id;
       await inf.updateStorage();
 
@@ -2514,17 +2519,17 @@ if (infGroup) {
         infs = (await infsPool.getByQuery<Infraction>({ id: inf_id }));
       }
       if (infs.length !== 1) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.inf_not_found);
         return false;
       }
       const inf: Infraction = infs[0];
       if (inf.actorId !== inter.member.user.id && typeof config.modules.infractions.targeting.othersEditLevel === 'number' && getUserAuth(inter.member) < config.modules.infractions.targeting.othersEditLevel) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cannot_edit_inf);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infsPool.delete(inf.id);
       const extras = new Map<string, any>();
       extras.set('ACTORTAG', logUtils.getActorTag(inter.member.user));
@@ -2558,11 +2563,11 @@ if (infGroup) {
       user = user.id;
       const infs = (await infsPool.getByQuery<Infraction>({ memberId: user.id }));
       if (!infs || infs.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cant_find_infractions);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
       await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
     },
@@ -2589,11 +2594,11 @@ if (infGroup) {
       actor = actor.user;
       const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id }));
       if (!infs || infs.length === 0) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.infractions.inf_terms.cant_find_infractions);
         return false;
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       await infsPool.editPools<Infraction>(infs.map((v) => v.id), () => null);
       await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
     },
@@ -2619,11 +2624,11 @@ registerSlashSub(
   async (inter) => {
     const infs = (await infsPool.getAll(null));
     if (infs.length === 0) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ephemeral: true});
       await inter.respondEphemeral(`${discord.decor.Emojis.X} Could not find any infractions`);
       return;
     }
-    await inter.acknowledge(true);
+    await inter.acknowledge({ephemeral: false});
     await infsPool.clear();
     await interactionChannelRespond(inter, setPlaceholders(i18n.modules.infractions.inf_terms.infs_deleted, ['count', infs.length.toString()]));
   },
@@ -2663,11 +2668,11 @@ registerSlashSub(
         actor = actor.user;
         const infs = (await infsPool.getByQuery<Infraction>({ actorId: actor.id === discord.getBotId() ? discord.getBotId() : actor.id }));
         if (infs.length === 0) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_by_actor);
           return false;
         }
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_actor, ['count', Math.min(last10.length, 10).toString(), 'actor_mention', actor.id === discord.getBotId() ? i18n.ranks.system : actor.toMention()]);
         last10.map((inf) => {
@@ -2703,11 +2708,11 @@ registerSlashSub(
       async (inter) => {
         const infs = (await infsPool.getByQuery<Infraction>({ actorId: discord.getBotId() }));
         if (infs.length === 0) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_by_system);
           return false;
         }
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_system, ['count', Math.min(last10.length, 10).toString()]);
         last10.map((inf) => {
@@ -2746,11 +2751,11 @@ registerSlashSub(
         user = user.user;
         const infs = await infsPool.getByQuery<Infraction>({ memberId: user.id });
         if (infs.length === 0) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_to_user);
           return false;
         }
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = setPlaceholders(i18n.modules.infractions.inf_terms.inf_search_user, ['count', Math.min(last10.length, 10).toString(), 'user_mention', user.toMention()]);
         last10.map((inf) => {
@@ -2788,11 +2793,11 @@ registerSlashSub(
       async (inter, { type }) => {
         const infs = await infsPool.getByQuery<Infraction>({ type: type.toUpperCase() });
         if (infs.length === 0) {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(i18n.modules.infractions.inf_terms.no_infs_type);
           return false;
         }
-        await inter.acknowledge(true);
+        await inter.acknowledge({ ephemeral: false });
         const last10 = infs.slice(0, Math.min(infs.length, 10));
         let txt = setPlaceholders(i18n.modules.infractions.inf_terms.infs_search_type, ['count', Math.min(last10.length, 10).toString(), 'type', type.substr(0, 1).toUpperCase()]);
         last10.map((inf) => {
