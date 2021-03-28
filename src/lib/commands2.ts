@@ -150,6 +150,8 @@ export function checkOverrides(level: number, ovtext: string) {
     }
     if (typeof obj.bypassLevel === 'number') {
       retVal.bypassLevel = obj.bypassLevel;
+    } else {
+      delete retVal.bypassLevel;
     }
   }
 
