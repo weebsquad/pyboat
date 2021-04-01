@@ -80,6 +80,19 @@ export function getKeys(
     keys.push('stopStream');
   }
 
+  if (
+    voiceState.selfVideo !== oldVoiceState.selfVideo
+    && voiceState.selfVideo === true
+  ) {
+    keys.push('startVideo');
+  }
+  if (
+    voiceState.selfVideo !== oldVoiceState.selfVideo
+    && voiceState.selfVideo === false
+  ) {
+    keys.push('stopVideo');
+  }
+
   return keys;
 }
 
@@ -334,6 +347,52 @@ export const messages = {
     ]);
     return mp;
   },
+  async startVideo(
+    log: discord.AuditLogEntry,
+    voiceState: discord.VoiceState,
+  ) {
+    const _chan = await voiceState.getChannel();
+    if (_chan === null) {
+      return;
+    }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const mp = new Map([
+      ['USERTAG', getMemberTag(voiceState.member)],
+      ['USER_ID', voiceState.userId],
+      ['USER', voiceState.member.user],
+      ['TYPE', 'START_VIDEO'],
+      ['CHANNEL_ID', voiceState.channelId],
+      [
+        'CHANNEL_NAME',
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
+      ],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
+    ]);
+    return mp;
+  },
+  async stopVideo(
+    log: discord.AuditLogEntry,
+    voiceState: discord.VoiceState,
+  ) {
+    const _chan = await voiceState.getChannel();
+    if (_chan === null) {
+      return;
+    }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const mp = new Map([
+      ['USERTAG', getMemberTag(voiceState.member)],
+      ['USER_ID', voiceState.userId],
+      ['USER', voiceState.member.user],
+      ['TYPE', 'STOP_VIDEO'],
+      ['CHANNEL_ID', voiceState.channelId],
+      [
+        'CHANNEL_NAME',
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
+      ],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
+    ]);
+    return mp;
+  },
   async channelJoined(
     log: discord.AuditLogEntry,
     voiceState: discord.VoiceState,
@@ -422,6 +481,7 @@ export async function AL_OnVoiceStateUpdate(
   voiceState: discord.VoiceState,
   oldVoiceState: discord.VoiceState,
 ) {
+  console.log('onvoicestateupdate logging', voiceState, oldVoiceState);
   await handleEvent(
     id,
     guildId,

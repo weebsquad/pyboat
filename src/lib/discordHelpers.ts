@@ -151,6 +151,9 @@ export async function parseMentionables(txt: string): Promise<string> {
       if (ch.type === discord.Channel.Type.GUILD_VOICE) {
         ico = '🔊';
       }
+      if (ch.type === discord.Channel.Type.GUILD_STAGE_VOICE) {
+        ico = '🎙️';
+      }
       if (ch.type === discord.Channel.Type.GUILD_CATEGORY) {
         ico = '‣';
       }

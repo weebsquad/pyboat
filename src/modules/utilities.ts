@@ -1049,6 +1049,7 @@ export function InitializeCommands() {
           text: 0,
           category: 0,
           voice: 0,
+          stage: 0,
           news: 0,
           store: 0,
         };
@@ -1059,6 +1060,9 @@ export function InitializeCommands() {
           }
           if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
             counts.voice += 1;
+          }
+          if (ch.type === discord.GuildChannel.Type.GUILD_STAGE_VOICE) {
+            counts.stage += 1;
           }
           if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
             counts.store += 1;
@@ -2128,6 +2132,7 @@ registerSlash(
       text: 0,
       category: 0,
       voice: 0,
+      stage: 0,
       news: 0,
       store: 0,
     };
@@ -2138,6 +2143,9 @@ registerSlash(
       }
       if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
         counts.voice += 1;
+      }
+      if (ch.type === discord.GuildChannel.Type.GUILD_STAGE_VOICE) {
+        counts.stage += 1;
       }
       if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
         counts.store += 1;

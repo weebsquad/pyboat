@@ -408,6 +408,8 @@ export interface IVOICE_STATE_UPDATE {
     SELF_UNMUTED?: string;
     START_STREAM?: string;
     STOP_STREAM?: string;
+    START_VIDEO?: string;
+    STOP_VIDEO?: string;
     ENTERED_CHANNEL?: string;
     LEFT_CHANNEL: string;
     MOVED_CHANNEL: string;
