@@ -49,6 +49,13 @@ export const auditLogDefinitions: {[key: string]: any} = {
   CHANNEL_CREATE: {
     targetId: (dt: any) => dt[0].id,
     getCompareData: (dt: any) => dt[0],
+    // CHANNEL_OVERWRITE_CREATE
+    10(dt: any[], log: discord.AuditLogEntry.ChannelCreate) {
+      if (dt[0].id === log.targetId) {
+        return true;
+      }
+      return false;
+    },
     auditLogEntries: discord.AuditLogEntry.ActionType.CHANNEL_CREATE,
     store: {
       ignoreFound: true,
