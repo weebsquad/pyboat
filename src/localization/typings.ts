@@ -413,6 +413,9 @@ export interface IVOICE_STATE_UPDATE {
     ENTERED_CHANNEL?: string;
     LEFT_CHANNEL: string;
     MOVED_CHANNEL: string;
+    REQUESTED_SPEAK?: string;
+    STAGE_SPEAKING?: string;
+    STAGE_AUDIENCE?: string;
 }
 export interface IVOICE_SERVER_UPDATE {
     CONNECTED: string;

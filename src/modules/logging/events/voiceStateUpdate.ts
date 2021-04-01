@@ -93,6 +93,18 @@ export function getKeys(
     keys.push('stopVideo');
   }
 
+  if (voiceState.requestToSpeakTimestamp !== oldVoiceState.requestToSpeakTimestamp && typeof voiceState.requestToSpeakTimestamp === 'string') {
+    keys.push('requestedSpeak');
+  }
+
+  if (voiceState.suppress !== oldVoiceState.suppress) {
+    if (voiceState.suppress === false) {
+      keys.push('stageSpeaking');
+    } else if (voiceState.suppress === true) {
+      keys.push('stageAudience');
+    }
+  }
+
   return keys;
 }
 
@@ -469,6 +481,75 @@ export const messages = {
       ],
       ['OLD_CHANNEL_MENTION', `${oldParent !== null ? `${getChannelEmoji(oldParent)}\`${utils.escapeString(oldParent.name, true)}\`**>**` : ''}${getChannelEmoji(oldChan)}\`${utils.escapeString(oldChan.name, true)}\``],
       ['NEW_CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
+    ]);
+    return mp;
+  },
+  async requestedSpeak(
+    log: discord.AuditLogEntry,
+    voiceState: discord.VoiceState,
+  ) {
+    const _chan = await voiceState.getChannel();
+    if (_chan === null) {
+      return;
+    }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const mp = new Map([
+      ['USERTAG', getMemberTag(voiceState.member)],
+      ['USER_ID', voiceState.userId],
+      ['USER', voiceState.member.user],
+      ['TYPE', 'REQUESTED_SPEAK'],
+      ['CHANNEL_ID', voiceState.channelId],
+      [
+        'CHANNEL_NAME',
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
+      ],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
+    ]);
+    return mp;
+  },
+  async stageSpeaking(
+    log: discord.AuditLogEntry,
+    voiceState: discord.VoiceState,
+  ) {
+    const _chan = await voiceState.getChannel();
+    if (_chan === null) {
+      return;
+    }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const mp = new Map([
+      ['USERTAG', getMemberTag(voiceState.member)],
+      ['USER_ID', voiceState.userId],
+      ['USER', voiceState.member.user],
+      ['TYPE', 'STAGE_SPEAKING'],
+      ['CHANNEL_ID', voiceState.channelId],
+      [
+        'CHANNEL_NAME',
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
+      ],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
+    ]);
+    return mp;
+  },
+  async stageAudience(
+    log: discord.AuditLogEntry,
+    voiceState: discord.VoiceState,
+  ) {
+    const _chan = await voiceState.getChannel();
+    if (_chan === null) {
+      return;
+    }
+    const parent = typeof _chan.parentId === 'string' ? await discord.getGuildCategory(_chan.parentId) : null;
+    const mp = new Map([
+      ['USERTAG', getMemberTag(voiceState.member)],
+      ['USER_ID', voiceState.userId],
+      ['USER', voiceState.member.user],
+      ['TYPE', 'STAGE_AUDIENCE'],
+      ['CHANNEL_ID', voiceState.channelId],
+      [
+        'CHANNEL_NAME',
+        `${discord.decor.Emojis.SPEAKER}${utils.escapeString(_chan.name, true)}`,
+      ],
+      ['CHANNEL_MENTION', `${parent !== null ? `${getChannelEmoji(parent)}\`${utils.escapeString(parent.name, true)}\`**>**` : ''}${getChannelEmoji(_chan)}\`${utils.escapeString(_chan.name, true)}\``],
     ]);
     return mp;
   },

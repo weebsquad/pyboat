@@ -345,7 +345,10 @@
                     "STOP_VIDEO": "📸 {USERTAG} stopped video in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "ENTERED_CHANNEL": "☎️ {USERTAG} joined {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
                     "LEFT_CHANNEL": "☎️ {USERTAG} left {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
-                    "MOVED_CHANNEL": "➡️ {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**"
+                    "MOVED_CHANNEL": "➡️ {USERTAG} moved from {OLD_CHANNEL_MENTION} **[**||`{OLD_CHANNEL_ID}`||**]** to {NEW_CHANNEL_MENTION} **[**||`{NEW_CHANNEL_ID}`||**]**",
+                    "REQUESTED_SPEAK": "🎤 {USERTAG} requested to speak in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "STAGE_SPEAKING": "🎤 {USERTAG} is now speaking in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**",
+                    "STAGE_AUDIENCE": "🔇 {USERTAG} is no longer speaking in {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
                   },
                   "VOICE_SERVER_UPDATE": {
                     "CONNECTED": "connected to voice @`{ENDPOINT}` with token ||`{TOKEN}`||"
