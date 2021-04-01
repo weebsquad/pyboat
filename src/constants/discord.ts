@@ -166,6 +166,7 @@ export const PermissionFlags: {[key: string]: any} = {
   MANAGE_WEBHOOKS: 1 << 29,
   MANAGE_EMOJIS: 1 << 30,
   USE_SLASH_COMMANDS: BigInt(BigInt(1) << BigInt(31)),
+  REQUEST_TO_SPEAK: BigInt(BigInt(1) << BigInt(32)),
   /* test31: BigInt(BigInt(1) << BigInt(31)),
       test32: BigInt(BigInt(1) << BigInt(32)),
       test33: BigInt(BigInt(1) << BigInt(33)),
