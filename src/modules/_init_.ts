@@ -13,6 +13,7 @@ import * as admin from './admin';
 import * as tags from './tags';
 import * as internal from './internal';
 import * as reddit from './reddit';
+import * as customCode from './customCode';
 
 export const moduleDefinitions: {[key: string]: unknown} = {
   internal,
@@ -30,5 +31,6 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   translation,
   reddit,
   commands,
+  customCode
 };
 export const asyncModules = ['logging'];
