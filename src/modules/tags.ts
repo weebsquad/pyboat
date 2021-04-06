@@ -52,7 +52,7 @@ export function subTags(subCmdGroup: discord.command.CommandGroup) {
     (ctx) => ({ tagName: ctx.text() }),
     async (...args) => {
       await executeChatCommand(
-        'remind',
+        'tags',
         { permissions: { level: Ranks.Guest, overrideableInfo: 'tags.tag.show' } },
         async (msg, { tagName }) => {
           await showTag(msg, tagName);

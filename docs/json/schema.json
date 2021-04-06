@@ -2894,6 +2894,32 @@
                         "collapsed": true
                     }
                 },
+                "customCode": {
+                    "title": "Custom Code",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "title": "Enabled",
+                            "type": "boolean",
+                            "default": false,
+                            "format": "checkbox"
+                        },
+                        "url": {
+                            "title": "HTTP Url",
+                            "description": "The URL to load the raw JavaScript from",
+                            "type": "string",
+                            "minLength": 3,
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                }
+                            }
+                        }
+                    },
+                    "options": {
+                        "collapsed": true
+                    }
+                },
                 "infractions": {
                     "title": "Infractions",
                     "type": "object",

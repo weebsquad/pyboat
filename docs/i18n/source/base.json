@@ -942,6 +942,10 @@
             "more_infs": "\n\n**...** and {REMAINING} more infractions",
             "with_reason": " with reason `{REASON}`"
           }
+        },
+        "customcode": {
+          "reloaded": "✅ Successfully reloaded the server's custom code",
+          "not_enabled": "❌ Custom code is not enabled or functional on the server"
         }
     }
 }
