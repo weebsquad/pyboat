@@ -31,6 +31,6 @@ export const moduleDefinitions: {[key: string]: unknown} = {
   translation,
   reddit,
   commands,
-  customCode
+  customCode,
 };
 export const asyncModules = ['logging'];

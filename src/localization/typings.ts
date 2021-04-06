@@ -116,6 +116,7 @@ export interface IModules {
     antiping: IAntiping;
     admin: IAdmin;
     infractions: IInfractions;
+    customcode: ICustomcode;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -945,4 +946,8 @@ export interface IInf_terms {
     infs_search_type: string;
     more_infs: string;
     with_reason: string;
+}
+export interface ICustomcode {
+    reloaded: string;
+    not_enabled: string;
 }
