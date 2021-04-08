@@ -227,6 +227,7 @@ export function registerSlashGroup(sconf: discord.interactions.commands.ICommand
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
     return null;
   }
+  sconf.ackBehavior = discord.interactions.commands.AckBehavior.MANUAL;
   registeredSlashCommandGroups.push({ config: sconf, extras });
   if (parentGroup) {
     return parentGroup.registerGroup(sconf);
