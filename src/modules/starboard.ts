@@ -1019,7 +1019,7 @@ if (starsGroup) {
         user = user.user;
         const stats = await statsKv.getById<StarStats>(user.id);
         if (typeof stats === 'undefined') {
-          await inter.acknowledge(false);
+          await inter.acknowledge({ ephemeral: true });
           await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_stats.no_stats, ['user_mention', user.toMention()]));
           return false;
         }
@@ -1027,7 +1027,7 @@ if (starsGroup) {
         emb.setColor(0xe1eb34);
         emb.setDescription(`⭐ **${i18n.modules.starboard.s_terms.received}** - **${stats.received}**\n⭐ **${i18n.modules.starboard.s_terms.given}** - **${stats.given}**\n⭐ **${i18n.modules.starboard.s_terms.starred_posts}** - **${stats.posts}**`);
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
 
       await interactionChannelRespond(inter, { content: '', allowedMentions: {}, embed: emb });
     },
@@ -1048,7 +1048,7 @@ if (starsGroup) {
       user = user.user;
       const isb = await isBlocked(user.id);
       if (isb === true) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_block.already_blocked, ['user_mention', user.toMention()]));
         return false;
       }
@@ -1056,7 +1056,7 @@ if (starsGroup) {
       if (!Array.isArray(blocks)) {
         blocks = [];
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       blocks.push(user.id);
       await kv.put('blocks', blocks);
       await interactionChannelRespond(inter, setPlaceholders(i18n.modules.starboard.stars_block.blocked, ['user_mention', user.toMention()]));
@@ -1078,7 +1078,7 @@ if (starsGroup) {
       user = user.user;
       const isb = await isBlocked(user.id);
       if (isb === false) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(setPlaceholders(i18n.modules.starboard.stars_unblock.not_blocked, ['user_mention', user.toMention()]));
         return false;
       }
@@ -1086,7 +1086,7 @@ if (starsGroup) {
       if (!Array.isArray(blocks)) {
         blocks = [];
       }
-      await inter.acknowledge(true);
+      await inter.acknowledge({ ephemeral: false });
       blocks.splice(blocks.indexOf(user.id), 1);
       await kv.put('blocks', blocks);
       await interactionChannelRespond(inter, setPlaceholders(i18n.modules.starboard.stars_unblock.unblocked, ['user_mention', user.toMention()]));
@@ -1107,7 +1107,7 @@ if (starsGroup) {
     async (inter) => {
       const lock: any = await kv.get('lock');
       if (lock === true) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.starboard.stars_lock.already_locked);
         return false;
       }
@@ -1130,7 +1130,7 @@ if (starsGroup) {
     async (inter) => {
       const lock: any = await kv.get('lock');
       if (typeof lock === 'undefined' || (typeof lock === 'boolean' && lock === false)) {
-        await inter.acknowledge(false);
+        await inter.acknowledge({ ephemeral: true });
         await inter.respondEphemeral(i18n.modules.starboard.stars_unlock.not_locked);
         return false;
       }

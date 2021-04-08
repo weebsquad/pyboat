@@ -87,6 +87,9 @@ export function getChannelEmoji(ch: discord.GuildChannel) {
   if (ch.type === discord.GuildChannel.Type.GUILD_VOICE) {
     return '<:voice:735780703928844319>';
   }
+  if (ch.type === discord.GuildChannel.Type.GUILD_STAGE_VOICE) {
+    return '🎙️';
+  }
   if (ch.type === discord.GuildChannel.Type.GUILD_STORE) {
     return '<:store:735780704130170880>';
   }

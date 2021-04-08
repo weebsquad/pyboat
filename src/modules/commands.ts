@@ -71,7 +71,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
   if (extras.module) {
     if (!isModuleEnabled(extras.module)) {
       try {
-        await interaction.acknowledge(false);
+        await interaction.acknowledge({ ephemeral: true });
       } catch (_) {}
       await interaction.respondEphemeral(i18n.modules.commands.command_disabled);
       return;
@@ -88,7 +88,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     return;
   }
   if (!utils.isCommandsAuthorized(interaction.member)) {
-    await interaction.acknowledge(false);
+    await interaction.acknowledge({ ephemeral: true });
     await utils.reportBlockedAction(interaction.member, `slash command execution: \`${fullCmdName}\``);
     return;
   }
@@ -97,7 +97,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     const perms = await commands2.checkPerms(interaction.member, guild, interaction.channelId, extras.permissions.overrideableInfo, extras.permissions.level, extras.permissions.owner, extras.permissions.globalAdmin);
     if (!perms.access) {
       try {
-        await interaction.acknowledge(false);
+        await interaction.acknowledge({ ephemeral: true });
       } catch (_) {}
       if (perms.errors.length > 0) {
         if (perms.errors.includes(i18n.modules.commands.command_disabled)) {
@@ -115,19 +115,19 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
     if (typeof retV === 'boolean') {
       if (retV === false) {
         try {
-          await interaction.acknowledge(false);
+          await interaction.acknowledge({ ephemeral: true });
         } catch (_) {}
         return;
       }
     }
     if (typeof extras.staticAck === 'boolean') {
       try {
-        await interaction.acknowledge(extras.staticAck);
+        await interaction.acknowledge(extras.staticAck === true ? { ephemeral: false } : { ephemeral: true });
       } catch (_) {}
     }
   } catch (_e) {
     try {
-      await interaction.acknowledge(false);
+      await interaction.acknowledge({ ephemeral: true });
     } catch (_) {}
     utils.logError(_e);
 
@@ -213,6 +213,7 @@ export function registerSlash(sconf: discord.interactions.commands.ICommandConfi
   // add module name to the comamnd's description
   /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
   sconf.description = `[${prettyModule}] ${sconf.description}`; */
+  sconf.ackBehavior = discord.interactions.commands.AckBehavior.MANUAL;
   discord.interactions.commands.register(sconf, async (interaction, ...args: any) => {
     await executeSlash(sconf, extras, callback, interaction, ...args);
   });
@@ -226,6 +227,7 @@ export function registerSlashGroup(sconf: discord.interactions.commands.ICommand
   if (getTopLevelSlashCommands().length >= SLASH_COMMANDS_LIMIT) {
     return null;
   }
+  sconf.ackBehavior = discord.interactions.commands.AckBehavior.MANUAL;
   registeredSlashCommandGroups.push({ config: sconf, extras });
   if (parentGroup) {
     return parentGroup.registerGroup(sconf);
@@ -243,6 +245,7 @@ export function registerSlashSub(parent: discord.interactions.commands.SlashComm
   // add module name to the comamnd's description
   /* const prettyModule = `${extras.module.substr(0,1).toUpperCase()}${extras.module.substr(1).toLowerCase()}`;
   sconf.description = `[${prettyModule}] ${sconf.description}`; */
+  sconf.ackBehavior = discord.interactions.commands.AckBehavior.MANUAL;
   parent.register(sconf, async (interaction, ...args: any) => {
     await executeSlash(sconf, extras, callback, interaction, ...args);
   });

@@ -267,19 +267,19 @@ registerSlash(
     const guild = await inter.getGuild();
     const me = await guild.getMember(discord.getBotId());
     if (!me.can(discord.Permissions.CHANGE_NICKNAME)) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ephemeral: true});
       await inter.respondEphemeral('I don\'t have permissions to change my nickname!');
       return;
     }
     if (nick === me.nick) {
-      await inter.acknowledge(false);
+      await inter.acknowledge({ephemeral: true});
       await inter.respondEphemeral('I already have that nickname!');
       return;
     }
     if (nick === 'invisible') {
       nick = ' ឵឵ ';
     } // invis chars
-    await inter.acknowledge(true);
+    await inter.acknowledge({ephemeral: false});
     await me.edit({ nick });
     await interactionChannelRespond(inter, 'Done!');
   }, {

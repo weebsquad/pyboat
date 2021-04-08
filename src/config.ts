@@ -302,6 +302,10 @@ const defaultConfig = { // for non-defined configs!
         channels: {},
       },
     },
+    customCode: {
+      enabled: false,
+      url: '',
+    },
   },
 };
 export const guildConfigs = <any>{};
@@ -362,8 +366,16 @@ const configKv = new pylon.KVNamespace('config');
 let loadingConf = false;
 let lastTry = Date.now();
 export async function InitializeConfig(bypass = false): Promise<boolean> {
-  const resC = await beginLoad(bypass);
-  return resC;
+  let result: any;
+  try {
+    result = await pylon.requestCpuBurst(async () => {
+      const resC = await beginLoad(bypass);
+      return resC;
+    });
+  } catch (_) {
+    result = await beginLoad(bypass);
+  }
+  return result;
 }
 async function beginLoad(bypass: boolean): Promise<boolean> {
   if (loadingConf) {
@@ -492,6 +504,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
   console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
+  // startup our custom code engine
   return true;
 }
 

@@ -80,7 +80,7 @@ export async function getKeys(log: discord.AuditLogEntry, chan: discord.Channel.
     keys.push('rateLimitPerUser');
   }
 
-  if (chan.type === discord.Channel.Type.GUILD_VOICE && oldChan.type === discord.Channel.Type.GUILD_VOICE) {
+  if ((chan.type === discord.Channel.Type.GUILD_VOICE && oldChan.type === discord.Channel.Type.GUILD_VOICE) || (chan.type === discord.Channel.Type.GUILD_STAGE_VOICE && oldChan.type === discord.Channel.Type.GUILD_STAGE_VOICE)) {
     if (chan.bitrate !== oldChan.bitrate) {
       keys.push('bitrate');
     }

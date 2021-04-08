@@ -116,6 +116,7 @@ export interface IModules {
     antiping: IAntiping;
     admin: IAdmin;
     infractions: IInfractions;
+    customcode: ICustomcode;
 }
 export interface ILogging {
     l_terms: IL_terms;
@@ -408,9 +409,14 @@ export interface IVOICE_STATE_UPDATE {
     SELF_UNMUTED?: string;
     START_STREAM?: string;
     STOP_STREAM?: string;
+    START_VIDEO?: string;
+    STOP_VIDEO?: string;
     ENTERED_CHANNEL?: string;
     LEFT_CHANNEL: string;
     MOVED_CHANNEL: string;
+    REQUESTED_SPEAK?: string;
+    STAGE_SPEAKING?: string;
+    STAGE_AUDIENCE?: string;
 }
 export interface IVOICE_SERVER_UPDATE {
     CONNECTED: string;
@@ -940,4 +946,8 @@ export interface IInf_terms {
     infs_search_type: string;
     more_infs: string;
     with_reason: string;
+}
+export interface ICustomcode {
+    reloaded: string;
+    not_enabled: string;
 }
