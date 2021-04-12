@@ -366,7 +366,9 @@ const configKv = new pylon.KVNamespace('config');
 let loadingConf = false;
 let lastTry = Date.now();
 export async function InitializeConfig(bypass = false): Promise<boolean> {
-  let result: any;
+  const result = await beginLoad(bypass);
+  return result;
+  /* let result: any;
   try {
     result = await pylon.requestCpuBurst(async () => {
       const resC = await beginLoad(bypass);
@@ -375,7 +377,7 @@ export async function InitializeConfig(bypass = false): Promise<boolean> {
   } catch (_) {
     result = await beginLoad(bypass);
   }
-  return result;
+  return result; */
 }
 async function beginLoad(bypass: boolean): Promise<boolean> {
   if (loadingConf) {
