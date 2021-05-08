@@ -141,15 +141,22 @@ export async function resolveQueue() {
       await routing.ExecuteQueuedEvents(queue);
     }
   } catch (_e) {
-    logDebug(
-      'BOT_ERROR',
-      new Map<string, any>([
-        [
-          'ERROR',
-          `Error while executing event queue': \n${_e.stack}`,
-        ],
-      ]),
-    );
+    if (_e.messageExtended && typeof _e.messageExtended === 'string') {
+      try {
+        const emsg: any = JSON.parse(_e.messageExtended).message;
+        if (emsg && emsg.toLowerCase() !== 'missing permissions') {
+          logDebug(
+            'BOT_ERROR',
+            new Map<string, any>([
+              [
+                'ERROR',
+                `Error while executing event queue': \n${_e.stack}`,
+              ],
+            ]),
+          );
+        }
+      } catch (_) {}
+    }
   }
   console.log('Done executing queue!');
   procQueue.map((e) => {
