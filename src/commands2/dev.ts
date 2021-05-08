@@ -1381,7 +1381,7 @@ export function InitializeCommands() {
         if (!(ch instanceof discord.GuildVoiceChannel)) {
           return;
         }
-        await ch.voiceConnect();
+        // await ch.voiceConnect();
         const res: any = await m.inlineReply('done');
         admin.saveMessage(res);
       },
