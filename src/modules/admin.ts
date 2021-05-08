@@ -1413,7 +1413,7 @@ async function checkPrunes() {
       continue;
     }
     const channel = await discord.getChannel(chId);
-    if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildTextChannel)) {
+    if (!(channel instanceof discord.GuildTextChannel) && !(channel instanceof discord.GuildNewsChannel)) {
       continue;
     }
     const tsDiff = now - duration;
