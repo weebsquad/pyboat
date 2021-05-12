@@ -481,9 +481,12 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     // check bot versioning
 
   }
-  //console.log('version:', vers, 'globalvers:', globalConfig.version);
-  if (version !== globalConfig.version) {
+  // console.log('version:', vers, 'globalvers:', globalConfig.version);
+  const oldVers = (await pylon.kv.get('__botVersion')) ?? version;
+  if (oldVers !== globalConfig.version && version === globalConfig.version) {
+    // run updates only when old version was different, and we are currently up to date
     await updates.runUpdates(typeof version === 'string' ? version : '', globalConfig.version);
+    await pylon.kv.put('__botVersion', version);
   }
   const items = await configKv.items();
   let cfg: any;

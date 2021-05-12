@@ -6,9 +6,6 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
   console.log('Running update!');
 
   await pylon.requestCpuBurst(async () => {
-    if (newVersion === '1.6.4') {
-      await pylon.kv.delete('__botVersion',);
-    }
     if (newVersion === '1.6.3') {
       await new pylon.KVNamespace('channelPersists').clear();
     }
