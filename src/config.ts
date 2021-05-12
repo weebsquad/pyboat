@@ -480,7 +480,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     // check bot versioning
     if (version !== globalConfig.version) {
       console.error('Version mismatch! Bot needs update. Disabling bot in 72h');
-      // xd
+      // pls
     }
   }
   // console.log('version:', vers, 'globalvers:', globalConfig.version);
