@@ -501,7 +501,9 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     await pylon.kv.put('__botVersion', version);
   } else if (oldVers !== globalConfig.version && +(version.split('.').join('')) >= +(globalConfig.version.split('.').join(''))) {
     // run updates only when old version was different, and we are currently up to date
-    await pylon.kv.delete('__botVersionLastCheck');
+    try {
+      await pylon.kv.delete('__botVersionLastCheck');
+    } catch (_) {}
     await updates.runUpdates(typeof oldVers === 'string' ? oldVers : '', version);
   }
   const items = await configKv.items();
