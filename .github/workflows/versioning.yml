@@ -24,6 +24,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Update global
+      run: npm run updateglobalversion
     - name:  'Automated Version Bump'
       uses:  'phips28/gh-action-bump-version@master'
       env:
