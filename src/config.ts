@@ -24,6 +24,8 @@ export enum Ranks {
     'Administrator' = 100,
     'Owner' = 200,
 }
+export const version = '__VERSION__'; // @ts-ignore
+
 export const globalConfig = <any>{
   masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
   botUsersWebhook: 'https://discord.com/api/webhooks/774300244249935913/SXWej5vZP9IYUN47IQo-m08js8hVb4Cw3g0KS9Fg9khfbyKoJGKYvaNbbXS2hnvaX3OO',
@@ -49,7 +51,6 @@ export const globalConfig = <any>{
   },
   ranks: Ranks,
   Ranks, // lol
-  version: '1.6.3',
 };
 
 // @ts-ignore
@@ -442,14 +443,19 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     loadingConf = false;
     return false;
   }
-  // check metal is in server
+
   const guild = await discord.getGuild();
   if (guild === null) {
     console.warn('Couldnt fetch guild');
     loadingConf = false;
     return false;
   }
+  if (!globalConfig.version) {
+    globalConfig.version = version;
+  }
   if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
+
+    /*
     let gaCheck: discord.GuildMember | false = false;
     for (const key in globalConfig.admins) {
       const checkThis = await guild.getMember(globalConfig.admins[key]);
@@ -470,11 +476,14 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       loadingConf = false;
       return false;
     }
+    */
+
+    // check bot versioning
+
   }
-  const vers = await pylon.kv.get('__botVersion');
-  if (!vers || vers !== globalConfig.version) {
-    await updates.runUpdates(typeof vers === 'string' ? vers : '', globalConfig.version);
-    await pylon.kv.put('__botVersion', globalConfig.version);
+  //console.log('version:', vers, 'globalvers:', globalConfig.version);
+  if (version !== globalConfig.version) {
+    await updates.runUpdates(typeof version === 'string' ? version : '', globalConfig.version);
   }
   const items = await configKv.items();
   let cfg: any;

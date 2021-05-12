@@ -1,6 +1,6 @@
 {
   "name": "pyboat",
-  "version": "1.0.0",
+  "version": "1.6.4",
   "description": "yes",
   "scripts": {
     "typings": "typings install",
@@ -8,9 +8,10 @@
     "publish": "node cd/publish.js",
     "lint": "eslint cd/publish.js --config .eslintrc.js && eslint src/ --ext .ts --max-warnings 99999 --config .eslintrc.ts",
     "lintfix": "eslint cd/publish.js --config .eslintrc.js --quiet --fix && eslint src/ --ext .ts --fix --config .eslintrc.ts --quiet",
-    "test": "npm run-script i18ntypings && rollup -c rollup_test.config.js && npm run-script publish",
-    "testlint": "npm run-script i18ntypings && npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish",
-    "i18ntypings": "node cd/i18n_typings.js"
+    "test": "npm run-script i18ntypings && npm run-script updateglobalversion && rollup -c rollup_test.config.js && npm run-script publish",
+    "testlint": "npm run-script i18ntypings && npm run-script updateglobalversion && npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish",
+    "i18ntypings": "node cd/i18n_typings.js",
+    "updateglobalversion": "node cd/globalversion.js"
   },
   "author": "weebsquad",
   "license": "MIT",

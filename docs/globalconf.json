@@ -1,59 +1,104 @@
 {
-	"botId": "270148059269300224",
-	"admins": [
-		"344837487526412300",
-		"545581357812678656"
-	],
-	"badges": {
-		"beta": " <:mmderpy:703993668507533402> **Beta Tester**",
-		"pylondev": " <:pylon:648961590527524874> **Pylon Developer**",
-		"botdev": " <:minemanJoy:497735379529498624> **Developer**",
-		"globaladmin": " <:staff:735780704146685983> **Global Administrator**",
-		"b1nzy": " <:TomStare:723236689299898409> **B4NZY**",
-		"cutie": " <:flush_cowboy:595691314511872001> **Cutie**"
-	},
-	"userBadges": {
-		"344837487526412300": ["botdev"],
-		"499802781235019777": ["beta"],
-		"128425121969864704": ["beta"],
-		"61189081970774016": ["pylondev", "cutie"],
-		"708680386980479036": ["beta"],
-		"510078946604220417": ["beta"],
-		"187026807919345664": ["beta"],
-		"80351110224678912": ["b1nzy"],
-		"279776753881317378": ["cutie"],
-		"545581357812678656": ["cutie", "botdev", "beta"],
-		"562415519454461962": ["cutie"],
-		"504698587221852172": ["beta"],
-		"798254690286174218": ["beta", "botdev", "cutie"],
-		"199672848057499648": ["beta"]
-	},
-	"whitelistedGuilds": ["752873506508767242", "565323632751149103", "307927177154789386", "263354961805443072", "691376170926604389", "448588045516800001", "496279654483886100", "551833293213925421", "695056213779415101", "831198964183072828"],
-	"masterGuild": "752873506508767242",
-	"showErrors": true,
-	"masterChannel": {
-		"752882218531160106": {
-			"description": "",
-			"embed": false,
-			"embedColor": 2263842,
-			"footerAvatar": "",
-			"webhookUrl": "",
-			"showEventName": false,
-			"showTimestamps": true,
-			"scopes": {
-				"include": [
-					"DEBUG"
-				],
-				"exclude": [
-					"DEBUG.CRON_RAN",
-					"DEBUG.RAW_EVENT",
-					"DEBUG.BOT_STARTED"
-				]
-			}
-		}
-	},
-	"blacklist": [],
-	"botsCommands": [],
-	"devPrefix": "p/",
-	"disabled": false
+  "version": "1.6.4",
+  "botId": "270148059269300224",
+  "admins": [
+    "344837487526412300",
+    "545581357812678656"
+  ],
+  "badges": {
+    "beta": " <:mmderpy:703993668507533402> **Beta Tester**",
+    "pylondev": " <:pylon:648961590527524874> **Pylon Developer**",
+    "botdev": " <:minemanJoy:497735379529498624> **Developer**",
+    "globaladmin": " <:staff:735780704146685983> **Global Administrator**",
+    "b1nzy": " <:TomStare:723236689299898409> **B4NZY**",
+    "cutie": " <:flush_cowboy:595691314511872001> **Cutie**"
+  },
+  "userBadges": {
+    "344837487526412300": [
+      "botdev"
+    ],
+    "499802781235019777": [
+      "beta"
+    ],
+    "128425121969864704": [
+      "beta"
+    ],
+    "61189081970774016": [
+      "pylondev",
+      "cutie"
+    ],
+    "708680386980479036": [
+      "beta"
+    ],
+    "510078946604220417": [
+      "beta"
+    ],
+    "187026807919345664": [
+      "beta"
+    ],
+    "80351110224678912": [
+      "b1nzy"
+    ],
+    "279776753881317378": [
+      "cutie"
+    ],
+    "545581357812678656": [
+      "cutie",
+      "botdev",
+      "beta"
+    ],
+    "562415519454461962": [
+      "cutie"
+    ],
+    "504698587221852172": [
+      "beta"
+    ],
+    "798254690286174218": [
+      "beta",
+      "botdev",
+      "cutie"
+    ],
+    "199672848057499648": [
+      "beta"
+    ]
+  },
+  "whitelistedGuilds": [
+    "752873506508767242",
+    "565323632751149103",
+    "307927177154789386",
+    "263354961805443072",
+    "691376170926604389",
+    "448588045516800001",
+    "496279654483886100",
+    "551833293213925421",
+    "695056213779415101",
+    "831198964183072828"
+  ],
+  "masterGuild": "752873506508767242",
+  "showErrors": true,
+  "masterChannel": {
+    "752882218531160106": {
+      "description": "",
+      "embed": false,
+      "embedColor": 2263842,
+      "footerAvatar": "",
+      "webhookUrl": "",
+      "showEventName": false,
+      "showTimestamps": true,
+      "scopes": {
+        "include": [
+          "DEBUG"
+        ],
+        "exclude": [
+          "DEBUG.CRON_RAN",
+          "DEBUG.RAW_EVENT",
+          "DEBUG.BOT_STARTED"
+        ]
+      }
+    }
+  },
+  "blacklist": [],
+  "botsCommands": [],
+  "devPrefix": "p/",
+  "disabled": false
 }

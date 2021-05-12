@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { globalConfig, InitializeConfig, config, deployDate } from '../config';
+import { version, globalConfig, InitializeConfig, config, deployDate } from '../config';
 import * as utils from '../lib/utils';
 import * as infractions from '../modules/infractions';
 import * as starboard from '../modules/starboard';
@@ -1060,8 +1060,7 @@ export function InitializeCommands() {
           day: 'numeric',
         })}`;
         const tdiff = utils.getLongAgoFormat(deployDate.getTime(), 2, true, 'second');
-        const vers = await pylon.kv.get('__botVersion');
-        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${vers}**`);
+        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${version}**`);
         admin.saveMessage(res);
       },
       {
