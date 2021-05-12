@@ -454,7 +454,6 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     globalConfig.version = version;
   }
   if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
-
     /*
     let gaCheck: discord.GuildMember | false = false;
     for (const key in globalConfig.admins) {
@@ -479,8 +478,8 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     */
 
     // check bot versioning
-    if(version !== globalConfig.version) {
-      console.error('Version mismatch! Bot needs update. Disabling bot in 72h');
+    if (version !== globalConfig.version) {
+      console.error('Version mismatch! Bot needs update. Disabling bot in 24h');
     }
   }
   // console.log('version:', vers, 'globalvers:', globalConfig.version);
