@@ -495,8 +495,6 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       }
     }
   }
-
-  // console.log('version:', vers, 'globalvers:', globalConfig.version);
   const oldVers = (await pylon.kv.get('__botVersion'));
   if ((!oldVers || oldVers !== globalConfig.version) && +(version.split('.').join('')) >= +(globalConfig.version.split('.').join(''))) {
     // run updates only when old version was different, and we are currently up to date
