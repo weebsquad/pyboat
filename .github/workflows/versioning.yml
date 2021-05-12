@@ -11,8 +11,7 @@ on:
 jobs:
   testdeploy:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
-    if: "!contains(github.event.head_commit.author.name, 'Version Bump')"
+    if: "!contains(github.event.head_commit.message, 'ci skip') && !contains(github.event.head_commit.author.name, 'Version Bump')"
 #    needs: build
     strategy:
       matrix:
