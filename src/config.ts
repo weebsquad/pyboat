@@ -479,7 +479,9 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     */
 
     // check bot versioning
-
+    if(version !== globalConfig.version) {
+      console.error('Version mismatch! Bot needs update. Disabling bot in 72h');
+    }
   }
   // console.log('version:', vers, 'globalvers:', globalConfig.version);
   const oldVers = (await pylon.kv.get('__botVersion')) ?? version;
