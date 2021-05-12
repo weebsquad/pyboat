@@ -3,12 +3,11 @@
 
 name: Integration (Test Deploy)
 on: 
-  push: []
-#    paths:
-#      - '**.ts'
-#      - 'package.json'
-#      - 'publish.js'
-#      - 'rollup.config.js'
+  push: 
+    paths:
+      - '**.ts'
+      - 'package.json'
+      - '**.js'
 
 jobs:
   testdeploy:

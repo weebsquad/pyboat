@@ -4,12 +4,11 @@ on:
     paths:
       - '**.ts'
       - 'package.json'
-      - 'publish.js'
-      - 'rollup.config.js'
+      - '**js'
 
 
 jobs:
-  testdeploy:
+  check_version:
     runs-on: ubuntu-latest
     if: ${{!contains(github.event.head_commit.message, 'ci skip') && !contains(github.event.head_commit.author.name, 'Version Bump')}}
 #    needs: build
