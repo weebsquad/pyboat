@@ -9,7 +9,7 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
     if (newVersion === '1.6.3') {
       await new pylon.KVNamespace('channelPersists').clear();
     }
-    /*if (newVersion === '1.5.3') {
+    /* if (newVersion === '1.5.3') {
       await new pylon.KVNamespace('starboardStats').clear();
     }
     if (newVersion === '1.5.2') {
@@ -78,8 +78,7 @@ export async function runUpdates(oldVersion: string, newVersion: string) {
       for (let i = 0; i < parts.length; i += 1) {
         await configKv.put(i.toString(), parts[i]);
       }
-    }*/
-
+    } */
 
     await pylon.kv.put('__botVersion', newVersion);
   });

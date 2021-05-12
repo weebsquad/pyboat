@@ -33,11 +33,21 @@ jobs:
   update_global:
     needs: check_version
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
     steps:
-    - uses: actions/checkout@v2
+    - name: "Checkout source code"
+      uses: "actions/checkout@v2"
       with:
-        persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
-        fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+        ref: ${{ github.ref }}
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Pull
+      run: |
+        git pull
     - name: Update global
       run: npm run updateglobalversion
     - name: Commit files
