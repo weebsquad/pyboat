@@ -11,6 +11,7 @@ const fs = require('fs');
 const WebSocket = require('ws');
 const { sleep } = require('sleep');
 const Permissions = require('./permissions');
+const { version } = require('../package.json');
 
 const defaultMainText = '/*\n\tHi, the code running on this server\'s pylon instance is private.\n\tPublishing code on this editor will get rid of the current running code.\n\n\tIf there\'s something you need to ask regarding the current running code,\n\tplease contact metal#0666 on discord.\n\tGitHub Org: https://github.com/weebsquad\n\n*/';
 const lengthShorten = 5;
@@ -245,7 +246,7 @@ getDeploymentIds().then(async (objDeps) => {
       txt += `\n📥 Added **${added.length}** guilds: \`${added.join(', ')}\``;
     }
     if (ids.length > 0) {
-      txt += `\n✅ Publishing PyBoat to **${ids.length}** guilds..`;
+      txt += `\n✅ Publishing PyBoat to **${ids.length}** guilds.. (V.**${version}**)`;
     }
     if (skipped.length > 0) {
       txt += `\n🟡 Skipping **${skipped.length}** guild${skipped.length > 1 ? 's' : ''} ${skipped.map((e) => `\`${e}\``).join(', ')}`;
