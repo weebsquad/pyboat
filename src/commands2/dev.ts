@@ -1060,7 +1060,8 @@ export function InitializeCommands() {
           day: 'numeric',
         })}`;
         const tdiff = utils.getLongAgoFormat(deployDate.getTime(), 2, true, 'second');
-        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]**`);
+        const vers = await pylon.kv.get('__botVersion');
+        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${vers}**`);
         admin.saveMessage(res);
       },
       {
