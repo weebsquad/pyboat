@@ -500,7 +500,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     // run updates only when old version was different, and we are currently up to date
     await pylon.kv.delete('__botVersionLastCheck');
     await updates.runUpdates(typeof oldVers === 'string' ? oldVers : '', version);
-    await pylon.kv.put('__botVersion', version);
+    
   }
   const items = await configKv.items();
   let cfg: any;
