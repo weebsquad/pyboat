@@ -495,8 +495,11 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       }
     }
   }
+
   const oldVers = (await pylon.kv.get('__botVersion'));
-  if ((!oldVers || oldVers !== globalConfig.version) && +(version.split('.').join('')) >= +(globalConfig.version.split('.').join(''))) {
+  if (!oldVers) {
+    await pylon.kv.put('__botVersion', version);
+  } else if (oldVers !== globalConfig.version && +(version.split('.').join('')) >= +(globalConfig.version.split('.').join(''))) {
     // run updates only when old version was different, and we are currently up to date
     await pylon.kv.delete('__botVersionLastCheck');
     await updates.runUpdates(typeof oldVers === 'string' ? oldVers : '', version);
