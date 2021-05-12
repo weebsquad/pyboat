@@ -5,6 +5,8 @@ on:
       - '**.ts'
       - 'package.json'
       - '**js'
+    branches:
+      - master
 
 
 jobs:
