@@ -203,8 +203,8 @@
                     "CHANNEL_DELETED": "🔧 canal excluído: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
                 },
                 "CHANNEL_PINS_UPDATE": {
-                    "MESSAGE_PINNED": "📌 fixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}> <>[→ Pular para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
-                    "MESSAGE_UNPINNED": "📌 desafixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}> <>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "MESSAGE_PINNED": "📌 fixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}>\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 desafixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}>\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                 },
                 "GUILD_MEMBER_ADD": {
                     "BOT_ADDED": "<:bot:735780703945490542> {USERTAG} foi adicionado ao servidor",
@@ -318,10 +318,10 @@
                     "MESSAGES_DELETED": "🗑️ {COUNT} mensagens foram excluídas em <#{CHANNEL_ID}>"
                 },
                 "MESSAGE_REACTION_ADD": {
-                    "ADD_REACTION": "🙂 {USERTAG} adicionou reação à mensagem **[**||`{MESSAGE_ID}`||**]** em <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "ADD_REACTION": "🙂 {USERTAG} adicionou reação à mensagem **[**||`{MESSAGE_ID}`||**]** em <#{CHANNEL_ID}>: {EMOJI_MENTION}\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                 },
                 "MESSAGE_REACTION_REMOVE": {
-                    "REMOVED_REACTION": "🙂 {USERTAG} removeu uma reação da mensagem **[**||`{MESSAGE_ID}`||**]** em <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "REMOVED_REACTION": "🙂 {USERTAG} removeu uma reação da mensagem **[**||`{MESSAGE_ID}`||**]** em <#{CHANNEL_ID}>: {EMOJI_MENTION}\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                 },
                 "MESSAGE_REACTION_REMOVE_ALL": {
                     "REMOVED_ALL_REACTIONS": "🙂 todas as reações removidas da mensagem **[**||`{MESSAGE_ID}`||**]** em <#{CHANNEL_ID}> <>[→ Pule para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
@@ -375,8 +375,8 @@
                     "CHANNEL_DELETED": "🔧 {ACTORTAG} canal excluído: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
                 },
                 "CHANNEL_PINS_UPDATE": {
-                    "MESSAGE_PINNED": "📌 {ACTORTAG} fixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}> <>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
-                    "MESSAGE_UNPINNED": "📌 {ACTORTAG} desafixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}> <>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "MESSAGE_PINNED": "📌 {ACTORTAG} fixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}>\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 {ACTORTAG} desafixou uma mensagem **[**||`{MESSAGE_ID}`||**]** por {USERTAG} em <#{CHANNEL_ID}>\n<>[→ Ir para a mensagem](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                 },
                 "GUILD_MEMBER_ADD": {
                     "BOT_ADDED": "<:bot:735780703945490542> {ACTORTAG} adicionou {USERTAG} ao servidor"
