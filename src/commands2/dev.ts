@@ -1060,7 +1060,7 @@ export function InitializeCommands() {
           day: 'numeric',
         })}`;
         const tdiff = utils.getLongAgoFormat(deployDate.getTime(), 2, true, 'second');
-        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${version}**`);
+        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${version}**${globalConfig.version !== version ? ` - **OUTDATED** (newest: ${globalConfig.version})` : ''}`);
         admin.saveMessage(res);
       },
       {
