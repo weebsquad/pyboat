@@ -316,11 +316,9 @@ getDeploymentIds().then(async (objDeps) => {
       }
     } catch (e) {
       console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
-      if (!isGh) {
-        console.error(`Publish error: ${r}`);
-        const txt = await r.text();
-        console.error(txt);
-      }
+      console.error(r);
+      const txt = await r.text();
+      console.error(txt);
       process.exit(1);
     }
 
