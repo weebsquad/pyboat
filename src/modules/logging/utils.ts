@@ -185,7 +185,7 @@ export async function parseMessageContent(
     if ((cont.includes('\n') || (!cont.includes('\n') && cont.length >= MAXLENSINGLELINE)) || cont.length >= LEN_CODEBLOCKS) {
       cont = `\`\`\`\n${utils.escapeString(cont, false, true)}\n\`\`\``;
     } else {
-      cont = utils.escapeString(cont, true, false)
+      cont = utils.escapeString(cont, true, false);
       if (!cutVertical && cont.length > MAXLENSINGLELINE) {
         cont = `${cont.substring(0, Math.min(cont.length, MAXLENSINGLELINE))} [...]`;
       }
