@@ -204,8 +204,8 @@
                     "CHANNEL_DELETED": "🔧 channel deleted: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
                   },
                   "CHANNEL_PINS_UPDATE": {
-                    "MESSAGE_PINNED": "📌 pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
-                    "MESSAGE_UNPINNED": "📌 unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "MESSAGE_PINNED": "📌 pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> \n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}>\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                   },
                   "GUILD_MEMBER_ADD": {
                     "BOT_ADDED": "<:bot:735780703945490542> {USERTAG} was added to the server",
@@ -305,7 +305,7 @@
                     "REMOVED_ROLE": "⚙️ role `{ROLE_NAME}` **[**||`{ROLE_ID}`||**]** was deleted"
                   },
                   "MESSAGE_UPDATE": {
-                    "MESSAGE_CONTENT_UPDATED_GUILD": "✏️ {USERTAG} edited their message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: \n**•** __Before__: {CONTENT_BEFORE}\n**•** __After__:   {CONTENT_AFTER}  <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_CONTENT_UPDATED_GUILD": "✏️ {USERTAG} edited their message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: \n**•** __Before__: {CONTENT_BEFORE}\n**•** __After__:   {CONTENT_AFTER}\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
                     "MESSAGE_CONTENT_UPDATED_DM": "✏️ {USERTAG} edited their message **[**||`{MESSAGE_ID}`||**]** in the bot's dms: \n**•** __Before__: {CONTENT_BEFORE}\n**•** __After__:   {CONTENT_AFTER}"
                   },
                   "MESSAGE_DELETE": {
@@ -319,13 +319,13 @@
                     "MESSAGES_DELETED": "🗑️ {COUNT} messages were deleted in <#{CHANNEL_ID}>"
                   },
                   "MESSAGE_REACTION_ADD": {
-                    "ADD_REACTION": "🙂 {USERTAG} added reaction to message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "ADD_REACTION": "🙂 {USERTAG} added reaction to message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION}\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                   },
                   "MESSAGE_REACTION_REMOVE": {
-                    "REMOVED_REACTION": "🙂 {USERTAG} removed reaction from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION} <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "REMOVED_REACTION": "🙂 {USERTAG} removed reaction from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>: {EMOJI_MENTION}\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                   },
                   "MESSAGE_REACTION_REMOVE_ALL": {
-                    "REMOVED_ALL_REACTIONS": "🙂 all reactions removed from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "REMOVED_ALL_REACTIONS": "🙂 all reactions removed from message **[**||`{MESSAGE_ID}`||**]** in <#{CHANNEL_ID}>\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                   },
                   "USER_UPDATE": {
                     "USER_UPDATED": "⚙️ bot user was updated {USERTAG}"
@@ -381,8 +381,8 @@
                     "CHANNEL_DELETED": "🔧 {ACTORTAG} deleted channel: {CHANNEL_MENTION} **[**||`{CHANNEL_ID}`||**]**"
                   },
                   "CHANNEL_PINS_UPDATE": {
-                    "MESSAGE_PINNED": "📌 {ACTORTAG} pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
-                    "MESSAGE_UNPINNED": "📌 {ACTORTAG} unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}> <>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
+                    "MESSAGE_PINNED": "📌 {ACTORTAG} pinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}>\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})",
+                    "MESSAGE_UNPINNED": "📌 {ACTORTAG} unpinned a message **[**||`{MESSAGE_ID}`||**]** by {USERTAG} in <#{CHANNEL_ID}>\n<>[→ Jump to message](https://discord.com/channels/{GUILD_ID}/{CHANNEL_ID}/{MESSAGE_ID})"
                   },
                   "GUILD_MEMBER_ADD": {
                     "BOT_ADDED": "<:bot:735780703945490542> {ACTORTAG} added {USERTAG} to the server"
