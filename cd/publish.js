@@ -37,6 +37,13 @@ async function getActivePylonGuilds() {
       'content-type': 'application/json',
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
+  const txt = await res.text();
+  if (txt === 'unauthorized') {
+    console.log('unauthorized at /user/guilds/');
+    throw new Error('Pylon Token Unauthorized');
+  } else {
+    console.log('/user/guilds/ response: ', txt);
+  }
   const json = await res.json();
   return json;
 }
@@ -55,6 +62,8 @@ async function getNonActivePylonGuilds() {
   if (txt === 'unauthorized') {
     console.log('unauthorized at /available/');
     throw new Error('Pylon Token Unauthorized');
+  } else {
+    console.log('/available/ response: ', txt);
   }
   //  console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
@@ -91,6 +100,12 @@ async function getValidGuilds() {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
+  if (txt === 'unauthorized') {
+    console.log('unauthorized at /available/');
+    throw new Error('Pylon Token Unauthorized');
+  } else {
+    console.log('/available/ response: ', txt);
+  }
   // console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
   const json = JSON.parse(txt);
