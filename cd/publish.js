@@ -84,6 +84,8 @@ async function getDeployment(gid) {
       'content-type': 'application/json',
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
+  const txt = await res.text();
+  console.log(`/${pylonApiBase}guilds/${gid} : `, txt);
   const json = await res.json();
   deploymentCache[gid] = json.deployments;
   return json.deployments;
@@ -147,6 +149,8 @@ async function getDeploymentIds() {
           'content-type': 'application/json',
           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
         } });
+      const txt = await res.txt();
+      console.log('/guilds/add : ', txt);
       const json = await res.json();
       if (json.requiresGuildAuth === true) {
         failToAdd.push(val);
