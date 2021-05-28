@@ -44,7 +44,7 @@ async function getActivePylonGuilds() {
   } else {
     console.log('/user/guilds/ response: ', txt);
   }
-  const json = await res.json();
+  const json = JSON.parse(txt);
   return json;
 }
 
@@ -86,7 +86,7 @@ async function getDeployment(gid) {
     } });
   const txt = await res.text();
   console.log(`/${pylonApiBase}guilds/${gid} : `, txt);
-  const json = await res.json();
+  const json = JSON.parse(txt);
   deploymentCache[gid] = json.deployments;
   return json.deployments;
 }
@@ -151,7 +151,7 @@ async function getDeploymentIds() {
         } });
       const txt = await res.txt();
       console.log('/guilds/add : ', txt);
-      const json = await res.json();
+      const json = JSON.parse(txt);
       if (json.requiresGuildAuth === true) {
         failToAdd.push(val);
       }
