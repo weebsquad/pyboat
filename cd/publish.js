@@ -77,7 +77,9 @@ async function getDeployment(gid) {
   if (typeof deploymentCache[gid] === 'object' && deploymentCache[gid] !== null) {
     return deploymentCache[gid];
   }
-  if(!gid || (typeof gid === 'string' && gid.length < 2)) return null;
+  if (!gid || (typeof gid === 'string' && gid.length < 2)) {
+    return null;
+  }
   const res = await fetch(`${pylonApiBase}guilds/${gid}`, {
     method: 'GET',
     headers: {
@@ -120,7 +122,7 @@ async function getDeploymentIds() {
   const toRet = { deployments: [], skipped: [], added: [], failed: [] };
   if (isDebug === true) {
     const dept = await getDeployment(process.env.TEST_GUILD);
-    if(dept) {
+    if (dept) {
       const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
       if (correctDep !== undefined) {
         toRet.deployments.push(correctDep.id);
