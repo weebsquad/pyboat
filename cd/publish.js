@@ -77,6 +77,7 @@ async function getDeployment(gid) {
   if (typeof deploymentCache[gid] === 'object' && deploymentCache[gid] !== null) {
     return deploymentCache[gid];
   }
+  if(!gid || (typeof gid === 'string' && gid.length < 2)) return null;
   const res = await fetch(`${pylonApiBase}guilds/${gid}`, {
     method: 'GET',
     headers: {
@@ -85,7 +86,7 @@ async function getDeployment(gid) {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
-  console.log(`/${pylonApiBase}guilds/${gid} : `, txt);
+  console.log(`${pylonApiBase}guilds/${gid} : `, txt);
   const json = JSON.parse(txt);
   deploymentCache[gid] = json.deployments;
   return json.deployments;
@@ -119,12 +120,15 @@ async function getDeploymentIds() {
   const toRet = { deployments: [], skipped: [], added: [], failed: [] };
   if (isDebug === true) {
     const dept = await getDeployment(process.env.TEST_GUILD);
-    const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
-    if (correctDep !== undefined) {
-      toRet.deployments.push(correctDep.id);
-      return toRet;
+    if(dept) {
+      const correctDep = dept.find((vall) => vall.disabled === false && vall.bot_id === '270148059269300224');
+      if (correctDep !== undefined) {
+        toRet.deployments.push(correctDep.id);
+        return toRet;
+      }
     }
     console.error('Failed to grab deployment, data: ', dept);
+    return null;
   }
   const gconf = await getPyBoatGlobalConf();
   const whitelist = gconf.whitelistedGuilds;
