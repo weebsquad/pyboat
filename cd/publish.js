@@ -22,10 +22,6 @@ const pylonToken = process.env.API_TOKEN;
 
 const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
-if (process.env.TEST_GUILD) {
-  console.log('test guild: ', process.env.TEST_GUILD.length);
-}
-
 async function getPyBoatGlobalConf() {
   const res = await fetch('https://pyboat.i0.tf/globalconf.json');
   const json = await res.json();
@@ -91,7 +87,7 @@ async function getDeployment(gid) {
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36', // lol
     } });
   const txt = await res.text();
-  console.log(`${pylonApiBase}guilds/${gid} : `, txt);
+  // console.log(`${pylonApiBase}guilds/${gid} : `, txt);
   const json = JSON.parse(txt);
   deploymentCache[gid] = json.deployments;
   return json.deployments;
