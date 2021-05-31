@@ -22,6 +22,9 @@ const pylonToken = process.env.API_TOKEN;
 
 const isDebug = typeof process.env.TEST_GUILD === 'string';
 const toPost = [];
+if (process.env.TEST_GUILD) {
+  console.log('test guild: ', process.env.TEST_GUILD.length);
+}
 
 async function getPyBoatGlobalConf() {
   const res = await fetch('https://pyboat.i0.tf/globalconf.json');
