@@ -499,6 +499,7 @@ export interface IInfo {
     golden_bug_hunter?: string;
     verified_bot?: string;
     early_bot_dev?: string;
+    certified_moderator?: string;
     pyboat_badges?: string;
     member_info?: string;
     joined?: string;

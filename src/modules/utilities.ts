@@ -1436,6 +1436,8 @@ export function InitializeCommands() {
                     return `<:verified:735780703874318417> ${i18n.modules.utilities.info.verified_bot}`;
                   case 'VERIFIED_BOT_DEVELOPER':
                     return `<:botdev:751154656679559259> ${i18n.modules.utilities.info.early_bot_dev}`;
+                  case 'CERTIFIED_MODERATOR':
+                    return `${discord.decor.Emojis.SHIELD} ${i18n.modules.utilities.info.certified_moderator}`;
                   default:
                     return val;
                 }
@@ -2506,6 +2508,8 @@ registerSlash(
                 return `<:verified:735780703874318417> ${i18n.modules.utilities.info.verified_bot}`;
               case 'VERIFIED_BOT_DEVELOPER':
                 return `<:botdev:751154656679559259> ${i18n.modules.utilities.info.early_bot_dev}`;
+              case 'CERTIFIED_MODERATOR':
+                return `${discord.decor.Emojis.SHIELD} ${i18n.modules.utilities.info.certified_moderator}`;
               default:
                 return val;
             }

@@ -190,4 +190,5 @@ export const UserFlags: {[key: string]: number} = {
   BUG_HUNTER_GOLDEN: 1 << 14,
   VERIFIED_BOT: 1 << 16,
   VERIFIED_BOT_DEVELOPER: 1 << 17,
+  CERTIFIED_MODERATOR: 1 << 18,
 };
