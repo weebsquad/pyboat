@@ -61,6 +61,16 @@ export async function buildLanguage(defaultLang: string, langCode: string): Prom
   }
   return transformJson(recursiveDefault(defaultLanguage, initial));
   */
-  const lang = await fetchLanguageDefault(langCode);
-  return transformJson(lang);
+  if (defaultLang === langCode) {
+    const lang = await fetchLanguage(defaultLang);
+    return lang;
+  }
+  try {
+    const lang = await fetchLanguageDefault(langCode);
+    console.log('lang', lang);
+    return lang;
+  } catch (_) {
+    const lang = await fetchLanguage(defaultLang);
+    return lang;
+  }
 }
