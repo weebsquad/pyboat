@@ -453,6 +453,8 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   if (!globalConfig.version) {
     globalConfig.version = version;
   }
+  const globalVersionNumerals = +(globalConfig.version.split('.').join(''));
+  const currentVersionNumerals = +(version.split('.').join(''));
   if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
     /*
     let gaCheck: discord.GuildMember | false = false;
@@ -478,7 +480,8 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     */
 
     // check bot versioning
-    if (+(version.split('.').join('')) < +(globalConfig.version.split('.').join(''))) {
+
+    if (currentVersionNumerals < globalVersionNumerals) {
       const checkVersionDRM: number = await pylon.kv.get('__botVersionLastCheck');
       if (!checkVersionDRM) {
         console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update. Disabling bot in 72h`);
@@ -499,7 +502,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   const oldVers = (await pylon.kv.get('__botVersion'));
   if (!oldVers) {
     await pylon.kv.put('__botVersion', version);
-  } else if (oldVers !== globalConfig.version && +(version.split('.').join('')) >= +(globalConfig.version.split('.').join(''))) {
+  } else if (oldVers !== globalConfig.version && currentVersionNumerals >= globalVersionNumerals) {
     // run updates only when old version was different, and we are currently up to date
     try {
       await pylon.kv.delete('__botVersionLastCheck');

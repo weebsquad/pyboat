@@ -52,6 +52,8 @@ jobs:
         git pull
     - name: Update global
       run: npm run updateglobalversion
+    - name: Generate default i18n file
+      run: npm run generatei18ndefault
     - name: Commit files
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

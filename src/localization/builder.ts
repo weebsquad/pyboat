@@ -8,7 +8,6 @@ function transformJson(json: any): IRootObject {
 }
 
 async function fetchLanguage(langCode: string): Promise<IRootObject> {
-  // console.log('url', `${globalConfig.localization.cdnUrl}${langCode}.json`);
   if (langCode.length < 1) {
     throw new Error('invalid language code!');
   }
@@ -16,6 +15,16 @@ async function fetchLanguage(langCode: string): Promise<IRootObject> {
   const json = await req.json();
   return transformJson(json);
 }
+
+async function fetchLanguageDefault(langCode: string): Promise<IRootObject> {
+  if (langCode.length < 1) {
+    throw new Error('invalid language code!');
+  }
+  const req = await fetch(`${globalConfig.localization.cdnUrl}/defaults/${langCode}.json`);
+  const json = await req.json();
+  return transformJson(json);
+}
+
 function recursiveDefault(source: any, dest: any) {
   for (const key in source) {
     const obj = source[key];
@@ -41,7 +50,7 @@ function recursiveDefault(source: any, dest: any) {
 
 export async function buildLanguage(defaultLang: string, langCode: string): Promise<IRootObject> {
   // console.log('building language', langCode);
-  if (!defaultLanguage) {
+  /* if (!defaultLanguage) {
     defaultLanguage = await fetchLanguage(defaultLang);
   }
   let initial;
@@ -51,4 +60,7 @@ export async function buildLanguage(defaultLang: string, langCode: string): Prom
     return defaultLanguage;
   }
   return transformJson(recursiveDefault(defaultLanguage, initial));
+  */
+  const lang = await fetchLanguageDefault(langCode);
+  return transformJson(lang);
 }

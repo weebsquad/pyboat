@@ -11,7 +11,8 @@
     "test": "npm run-script i18ntypings && rollup -c rollup_test.config.js && npm run-script publish",
     "testlint": "npm run-script i18ntypings && npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish",
     "i18ntypings": "node cd/i18n_typings.js",
-    "updateglobalversion": "node cd/globalversion.js"
+    "updateglobalversion": "node cd/globalversion.js",
+    "generatei18ndefault": "node cd/defaulti18n.js"
   },
   "author": "weebsquad",
   "license": "MIT",
@@ -29,7 +30,7 @@
     "json-ts": "^1.6.4",
     "mocha": "^9.0.0",
     "node-fetch": "^2.6.0",
-    "rollup": "2.52.0",
+    "rollup": "^2.52.0",
     "rollup-plugin-ignore": "^1.0.6",
     "rollup-plugin-terser": "^7.0.0",
     "typescript": "^4.0.5",
@@ -40,6 +41,7 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^4.0.0",
     "@typescript-eslint/parser": "^3.8.0",
+    "cloc": "^2.8.0",
     "imagescript": "^1.0.7",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
