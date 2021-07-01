@@ -76,7 +76,7 @@ export async function checkReminders() {
         }
       } catch (_) {}
       const newContent = await utils.parseMentionables(remi.content);
-      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: setPlaceholders(i18n.modules.utilities.reminders.remind_message, ['user_mention', member.toMention(), 'time_utc', timestamptext, 'time_ago', utils.getDiscordTimestamp(ts, 'R'), 'reminder_text', newContent]) });
+      await chan.sendMessage({ reply: msgExists === true ? remi.id : null, allowedMentions: { users: [remi.authorId] }, content: setPlaceholders(i18n.modules.utilities.reminders.remind_message, ['user_mention', member.toMention(), 'time_ago', utils.getDiscordTimestamp(ts, 'R'), 'reminder_text', newContent]) });
       await reminders.editPool(remi.id, null);
     }
   }));
@@ -1035,7 +1035,7 @@ export function InitializeCommands() {
 
         desc += `  **❯ **${i18n.modules.utilities.server.information}
 <:rich_presence:735781410509684786>**${i18n.modules.utilities.server.id}**: \`${guild.id}\`
-  󠇰${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${formattedDtCreation}**]**
+  󠇰${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])}
 <:owner:735780703903547443>**${i18n.modules.utilities.server.owner}**: <@!${guild.ownerId}>
 <:voice:735780703928844319>**${i18n.modules.utilities.server.vc_region}**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
   󠇰**${i18n.modules.utilities.server.features}**: \`${features}\`${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
@@ -1321,7 +1321,7 @@ export function InitializeCommands() {
         ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}${usr.avatar ? ` - [${i18n.modules.utilities.info.avatar}](${usr.getAvatarUrl()})` : ''}`;
         const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
         const tdiff = utils.getDiscordTimestamp(dtCreation, 'R');
-        desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${utils.getDiscordTimestamp(dtCreation.getTime(), 'D')}**]**`;
+        desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])}`;
         const guild = await msg.getGuild();
         const member = await guild.getMember(usr.id);
         if (member !== null) {
@@ -1459,7 +1459,7 @@ export function InitializeCommands() {
           const dtJoin = new Date(member.joinedAt);
           const tdiffjoin = utils.getDiscordTimestamp(dtJoin, 'R');
           const formattedDtJoin = utils.getDiscordTimestamp(dtJoin.getTime(), 'D');
-          desc += `\n ${discord.decor.Emojis.INBOX_TRAY} ${setPlaceholders(i18n.modules.utilities.info.joined, ['time', tdiffjoin])} **[**${formattedDtJoin}**]**`;
+          desc += `\n ${discord.decor.Emojis.INBOX_TRAY} ${setPlaceholders(i18n.modules.utilities.info.joined, ['time', tdiffjoin])}`;
           if (member.nick && member.nick !== null && member.nick.length > 0) {
             desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**${i18n.modules.utilities.info.nickname}**: \`${utils.escapeString(member.nick, true)}\``;
           }
@@ -1467,7 +1467,7 @@ export function InitializeCommands() {
             const boostDt = new Date(member.premiumSince);
             const tdiffboost = utils.getDiscordTimestamp(boostDt, 'R');
             const formattedDtBoost = utils.getDiscordTimestamp(boostDt.getTime(), 'D');
-            desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])} **[**${formattedDtBoost}**]**`;
+            desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])}`;
           }
           const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK', 'USE_PUBLIC_THREADS', 'USE_PRIVATE_THREADS'];
           if (member.roles.length > 0) {
@@ -2103,7 +2103,7 @@ registerSlash(
 
     desc += `  **❯ **${i18n.modules.utilities.server.information}
 <:rich_presence:735781410509684786>**${i18n.modules.utilities.server.id}**: \`${guild.id}\`
-  󠇰󠇰${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${formattedDtCreation}**]**
+  󠇰󠇰${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])}
 <:owner:735780703903547443>**${i18n.modules.utilities.server.owner}**: <@!${guild.ownerId}>
 <:voice:735780703928844319>**${i18n.modules.utilities.server.vc_region}**: \`${guild.region.split(' ').map((v) => `${v.substr(0, 1).toUpperCase()}${v.substr(1).toLowerCase()}`).join(' ')}\`
   󠇰**${i18n.modules.utilities.server.features}**: \`${features}\`${boosts}${boostTier}${widget}${description}${preferredLocale}${vanityUrl}${systemChannel}`;
@@ -2376,7 +2376,7 @@ registerSlash(
         ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}${usr.avatar ? ` - [${i18n.modules.utilities.info.avatar}](${usr.getAvatarUrl()})` : ''}`;
     const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
     const tdiff = utils.getDiscordTimestamp(dtCreation, 'R');
-    desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${utils.getDiscordTimestamp(dtCreation.getTime(), 'D')}**]**`;
+    desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])}`;
     const guild = await inter.getGuild();
     const member = await guild.getMember(usr.id);
     if (member !== null) {
@@ -2514,7 +2514,7 @@ registerSlash(
       const dtJoin = new Date(member.joinedAt);
       const tdiffjoin = utils.getDiscordTimestamp(dtJoin, 'R');
       const formattedDtJoin = utils.getDiscordTimestamp(dtJoin.getTime(), 'D');
-      desc += `\n ${discord.decor.Emojis.INBOX_TRAY}${setPlaceholders(i18n.modules.utilities.info.joined, ['time', tdiffjoin])} **[**${formattedDtJoin}**]**`;
+      desc += `\n ${discord.decor.Emojis.INBOX_TRAY}${setPlaceholders(i18n.modules.utilities.info.joined, ['time', tdiffjoin])}`;
       if (member.nick && member.nick !== null && member.nick.length > 0) {
         desc += `\n ${discord.decor.Emojis.NOTEPAD_SPIRAL} 󠇰**${i18n.modules.utilities.info.nickname}**: \`${utils.escapeString(member.nick, true)}\``;
       }
@@ -2522,7 +2522,7 @@ registerSlash(
         const boostDt = new Date(member.premiumSince);
         const tdiffboost = utils.getDiscordTimestamp(boostDt, 'R');
         const formattedDtBoost = utils.getDiscordTimestamp(boostDt.getTime(), 'D');
-        desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])} **[**${formattedDtBoost}**]**`;
+        desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])}`;
       }
       const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK', 'USE_PUBLIC_THREADS', 'USE_PRIVATE_THREADS'];
       if (member.roles.length > 0) {
