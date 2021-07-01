@@ -34,7 +34,7 @@ export const messages = {
     const mp = new Map();
     mp.set('TYPE', 'MEMBER_JOIN');
     mp.set('USER_ID', member.user.id);
-    mp.set('ACCOUNT_AGE', utils.getLongAgoFormat(utils.decomposeSnowflake(member.user.id).timestamp, 2, true, i18n.time_units.ti_full.singular.second));
+    mp.set('ACCOUNT_AGE', utils.getDiscordTimestamp(utils.decomposeSnowflake(member.user.id).timestamp, 'R'));
     mp.set('USERTAG', getMemberTag(member));
     mp.set('USER', member.user);
     return mp;

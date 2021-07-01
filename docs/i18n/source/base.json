@@ -209,7 +209,7 @@
                   },
                   "GUILD_MEMBER_ADD": {
                     "BOT_ADDED": "<:bot:735780703945490542> {USERTAG} was added to the server",
-                    "MEMBER_JOIN": "📥 {USERTAG} joined the server (account created {ACCOUNT_AGE} ago)"
+                    "MEMBER_JOIN": "📥 {USERTAG} joined the server (account created {ACCOUNT_AGE})"
                   },
                   "GUILD_MEMBER_REMOVE": {
                     "MEMBER_LEFT": "📤 {USERTAG} left the server, they were here for {RESIDENCE_DURATION}"
@@ -511,11 +511,11 @@
         "utilities": {
             "time_improper": "❌ Time improperly formatted! Please use `1h30m` formatting",
             "reminders": {
-                "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC} UTC` ({TIME_AGO} ago) to remind you about:\n`{REMINDER_TEXT}`",
+                "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC}` ({TIME_AGO}) to remind you about:\n`{REMINDER_TEXT}`",
                 "reminder_time_limit": "❌ Time must be between 2 minutes and a month",
                 "reminder_count_limit": "❌ You already have 10 active reminders, you may not define any more!",
                 "reminder_content_limit": "❌ Reminder content is too large!",
-                "will_remind_in": "✅ I will remind you in {DURATION}",
+                "will_remind_in": "✅ I will remind you in {DURATION} **[**{TIME}**]**",
                 "no_reminders": "❌ You don't have any active reminders!",
                 "cleared_reminders": "✅ cleared {COUNT} reminders!"
             },
@@ -569,7 +569,7 @@
                 "none": "None",
                 "information": "Information",
                 "id": "ID",
-                "created": "**Created**: {TIME} ago",
+                "created": "**Created**: {TIME}",
                 "owner": "Owner",
                 "vc_region": "Voice Region",
                 "features": "Features",
@@ -610,9 +610,9 @@
                 "certified_moderator": "Certified Moderator",
                 "pyboat_badges": "PyBoat Badges",
                 "member_info": "Member Information",
-                "joined": "**Joined**: {TIME} ago",
+                "joined": "**Joined**: {TIME}",
                 "nickname": "Nickname",
-                "boosting_since": "**Boosting since**: {TIME} ago",
+                "boosting_since": "**Boosting since**: {TIME}",
                 "roles": "Roles",
                 "key_roles": "Key Roles",
                 "infractions": "Infractions** (This Server)",

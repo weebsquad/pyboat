@@ -184,7 +184,7 @@ export function InitializeCommands() {
         }
         const tmleft = hasActiveOv === true ? await utils.getOverrideTimeLeft(msg.author.id) : 0;
         const parsedTimeLeft = utils.getLongAgoFormat(tmleft, 2, false, 'second');
-        let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires in ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
+        let txtR = hasActiveOv === true ? `${discord.decor.Emojis.WHITE_CHECK_MARK} You currently have an override active which expires ${parsedTimeLeft}` : `${discord.decor.Emojis.X} You do not have any overrides active in this guild.`;
         txtR += hasActiveOv === true ? `\nTo revoke this override, please run the command \`${globalConfig.devPrefix}override disable\`` : `\nTo active an override, please run the command \`${globalConfig.devPrefix}override <time>\``;
         return txtR;
       });
@@ -1054,13 +1054,9 @@ export function InitializeCommands() {
       sub,
       'deployed',
       async (m) => {
-        const formattedDtCreation = `${deployDate.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}`;
-        const tdiff = utils.getLongAgoFormat(deployDate.getTime(), 2, true, 'second');
-        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} ago **[**\`${formattedDtCreation}\`**]** - version **${version}**${globalConfig.version !== version ? ` - **OUTDATED** (newest: ${globalConfig.version})` : ''}`);
+        const formattedDtCreation = utils.getDiscordTimestamp(deployDate, 'D')
+        const tdiff = utils.getDiscordTimestamp(deployDate, 'R')
+        const res: any = await m.inlineReply(`The bot was deployed ${tdiff} **[**${formattedDtCreation}**]** - version **${version}**${globalConfig.version !== version ? ` - **OUTDATED** (newest: ${globalConfig.version})` : ''}`);
         admin.saveMessage(res);
       },
       {

@@ -1,5 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
-import { getLongAgoFormat, decomposeSnowflake } from '../../../lib/utils';
+import {  decomposeSnowflake, getDiscordTimestamp } from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,
@@ -44,7 +44,7 @@ export const messages = {
     mp.set('USER', member.user);
     mp.set('RESIDENCE_DURATION', '?');
     if (oldMember instanceof discord.GuildMember) {
-      mp.set('RESIDENCE_DURATION', getLongAgoFormat(new Date(oldMember.joinedAt).getTime(), 2, true));
+      mp.set('RESIDENCE_DURATION', getDiscordTimestamp(new Date(oldMember.joinedAt).getTime(), 'R'));
     }
     return mp;
   },
