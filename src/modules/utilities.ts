@@ -1486,7 +1486,7 @@ export function InitializeCommands() {
             })}`;
             desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])} **[**\`${formattedDtBoost}\`**]**`;
           }
-          const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK'];
+          const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK', 'USE_PUBLIC_THREADS', 'USE_PRIVATE_THREADS'];
           if (member.roles.length > 0) {
             if (member.roles.length < 20) {
               desc += `\n ${discord.decor.Emojis.SHIELD} **${i18n.modules.utilities.info.roles}** (${member.roles.length}): ${roles}`;
@@ -2558,7 +2558,7 @@ registerSlash(
         })}`;
         desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])} **[**\`${formattedDtBoost}\`**]**`;
       }
-      const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK'];
+      const irrelevantPerms = ['CREATE_INSTANT_INVITE', 'ADD_REACTIONS', 'STREAM', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'USE_EXTERNAL_EMOJIS', 'CONNECT', 'SPEAK', 'USE_VOICE_ACTIVITY', 'CHANGE_NICKNAME', 'VIEW_GUILD_INSIGHTS', 'VIEW_AUDIT_LOG', 'PRIORITY_SPEAKER', 'USE_SLASH_COMMANDS', 'REQUEST_TO_SPEAK', 'USE_PUBLIC_THREADS', 'USE_PRIVATE_THREADS'];
       if (member.roles.length > 0) {
         if (member.roles.length < 20) {
           desc += `\n ${discord.decor.Emojis.SHIELD} **Roles** (${member.roles.length}): ${roles}`;
