@@ -587,6 +587,7 @@
                 "bot": "Bot",
                 "profile": "Profile",
                 "custom_status": "Custom Status",
+                "avatar": "Avatar",
                 "status": "Status",
                 "online": "Online",
                 "idle": "Idle",

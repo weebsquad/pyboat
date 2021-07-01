@@ -480,6 +480,7 @@ export interface IInfo {
     bot?: string;
     profile?: string;
     custom_status?: string;
+    avatar?: string;
     status?: string;
     online?: string;
     idle?: string;

@@ -1322,7 +1322,7 @@ export function InitializeCommands() {
         }
         let desc = `**❯ ${!usr.bot ? i18n.modules.utilities.info.user : i18n.modules.utilities.info.bot} ${i18n.modules.utilities.server.information}**
         <:rich_presence:735781410509684786> 󠇰**${i18n.modules.utilities.server.id}**: \`${usr.id}\`
-        ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}`;
+        ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}${usr.avatar ? ` <[${i18n.modules.utilities.info.avatar}](${usr.getAvatarUrl()})>` : ''}`;
         const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
         const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, i18n.time_units.ti_full.singular.second);
         const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
@@ -2394,7 +2394,7 @@ registerSlash(
     }
     let desc = `**❯ ${!usr.bot ? i18n.modules.utilities.info.user : i18n.modules.utilities.info.bot} ${i18n.modules.utilities.server.information}**
     <:rich_presence:735781410509684786> 󠇰**${i18n.modules.utilities.server.id}**: \`${usr.id}\`
-    ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}`;
+    ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}${usr.avatar ? ` <[${i18n.modules.utilities.info.avatar}](${usr.getAvatarUrl()})>` : ''}`;
     const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
     const tdiff = utils.getLongAgoFormat(dtCreation.getTime(), 2, true, i18n.time_units.ti_full.singular.second);
     const formattedDtCreation = `${dtCreation.toLocaleDateString('en-US', {
