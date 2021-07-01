@@ -1,5 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
-import {  decomposeSnowflake, getDiscordTimestamp } from '../../../lib/utils';
+import { decomposeSnowflake, getDiscordTimestamp } from '../../../lib/utils';
 
 export function getKeys(
   log: discord.AuditLogEntry,

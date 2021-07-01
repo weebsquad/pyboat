@@ -1054,8 +1054,8 @@ export function InitializeCommands() {
       sub,
       'deployed',
       async (m) => {
-        const formattedDtCreation = utils.getDiscordTimestamp(deployDate, 'D')
-        const tdiff = utils.getDiscordTimestamp(deployDate, 'R')
+        const formattedDtCreation = utils.getDiscordTimestamp(deployDate, 'D');
+        const tdiff = utils.getDiscordTimestamp(deployDate, 'R');
         const res: any = await m.inlineReply(`The bot was deployed ${tdiff} **[**${formattedDtCreation}**]** - version **${version}**${globalConfig.version !== version ? ` - **OUTDATED** (newest: ${globalConfig.version})` : ''}`);
         admin.saveMessage(res);
       },

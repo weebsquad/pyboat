@@ -998,7 +998,7 @@ export function InitializeCommands() {
           embed.setThumbnail({ url: icon });
         }
         let desc = '';
-        const formattedDtCreation = utils.getDiscordTimestamp(dtCreation.getTime(), 'D') /* @ ${dtCreation.toLocaleTimeString('en-US', {
+        const formattedDtCreation = utils.getDiscordTimestamp(dtCreation.getTime(), 'D'); /* @ ${dtCreation.toLocaleTimeString('en-US', {
     hour12: false,
     timeZone: 'UTC',
     timeZoneName: 'short'
@@ -2065,12 +2065,12 @@ registerSlash(
       iconUrl: guild.getIconUrl() ?? undefined,
     });
     const dtCreation = new Date(utils.decomposeSnowflake(guild.id).timestamp);
-    const tdiff = utils.getDiscordTimestamp(dtCreation,'R');
+    const tdiff = utils.getDiscordTimestamp(dtCreation, 'R');
     if (icon !== null) {
       embed.setThumbnail({ url: icon });
     }
     let desc = '';
-    const formattedDtCreation = utils.getDiscordTimestamp(dtCreation.getTime(), 'D')
+    const formattedDtCreation = utils.getDiscordTimestamp(dtCreation.getTime(), 'D');
 
     const preferredLocale = typeof guild.preferredLocale === 'string'
   && guild.features.includes(discord.Guild.Feature.DISCOVERABLE)
@@ -2374,9 +2374,9 @@ registerSlash(
     let desc = `**❯ ${!usr.bot ? i18n.modules.utilities.info.user : i18n.modules.utilities.info.bot} ${i18n.modules.utilities.server.information}**
         <:rich_presence:735781410509684786> 󠇰**${i18n.modules.utilities.server.id}**: \`${usr.id}\`
         ${discord.decor.Emojis.LINK} **${i18n.modules.utilities.info.profile}**: ${usr.toMention()}${usr.avatar ? ` - [${i18n.modules.utilities.info.avatar}](${usr.getAvatarUrl()})` : ''}`;
-        const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
-        const tdiff = utils.getDiscordTimestamp(dtCreation, 'R')
-        desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${utils.getDiscordTimestamp(dtCreation.getTime(), 'D')}**]**`;
+    const dtCreation = new Date(utils.decomposeSnowflake(usr.id).timestamp);
+    const tdiff = utils.getDiscordTimestamp(dtCreation, 'R');
+    desc += `\n ${discord.decor.Emojis.CALENDAR_SPIRAL} ${setPlaceholders(i18n.modules.utilities.server.created, ['time', tdiff])} **[**${utils.getDiscordTimestamp(dtCreation.getTime(), 'D')}**]**`;
     const guild = await inter.getGuild();
     const member = await guild.getMember(usr.id);
     if (member !== null) {
@@ -2520,7 +2520,7 @@ registerSlash(
       }
       if (member.premiumSince !== null) {
         const boostDt = new Date(member.premiumSince);
-        const tdiffboost = utils.getDiscordTimestamp(boostDt, 'R')
+        const tdiffboost = utils.getDiscordTimestamp(boostDt, 'R');
         const formattedDtBoost = utils.getDiscordTimestamp(boostDt.getTime(), 'D');
         desc += `\n <:booster:735780703912067160> ${setPlaceholders(i18n.modules.utilities.info.boosting_since, ['time', tdiffboost])} **[**${formattedDtBoost}**]**`;
       }
