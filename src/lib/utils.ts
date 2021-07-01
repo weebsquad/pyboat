@@ -89,7 +89,7 @@ export function changeTimezone(date: Date, ianatz: string) {
     if(ts instanceof Date) ts = ts.getTime();
     if(ts > 1000000000000) ts = ts/1000;
     ts = Math.floor(ts);
-    return `<t:${ts}:${flags}>`
+    return `<t:${ts}${flags ? `:${flags}` : '' }>`
   }
 
   export function getLongAgoFormat(ts: number, limiter: number, diffSinceNow: boolean = true, lowestUnit: string | undefined = undefined) {

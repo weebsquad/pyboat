@@ -511,7 +511,7 @@
         "utilities": {
             "time_improper": "❌ Time improperly formatted! Please use `1h30m` formatting",
             "reminders": {
-                "remind_message": "Hey {USER_MENTION}! You asked me at `{TIME_UTC}` ({TIME_AGO}) to remind you about:\n`{REMINDER_TEXT}`",
+                "remind_message": "Hey {USER_MENTION}! You asked me at **[**{TIME_UTC}**]** ({TIME_AGO}) to remind you about:\n`{REMINDER_TEXT}`",
                 "reminder_time_limit": "❌ Time must be between 2 minutes and a month",
                 "reminder_count_limit": "❌ You already have 10 active reminders, you may not define any more!",
                 "reminder_content_limit": "❌ Reminder content is too large!",
