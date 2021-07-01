@@ -142,8 +142,8 @@ export const messages = {
   ) {
     return new Map([
       ['TYPE', 'DESCRIPTION_CHANGED'],
-      ['OLD_DESC', utils.escapeString(oldGuild.description, true)],
-      ['NEW_DESC', utils.escapeString(guild.description, true)],
+      ['OLD_DESC', typeof oldGuild.description === 'string' ? i18n.modules.logging.l_terms.none : utils.escapeString(oldGuild.description, true)],
+      ['NEW_DESC', typeof guild.description === 'string' ? i18n.modules.logging.l_terms.none : utils.escapeString(guild.description, true)],
     ]);
   },
   defaultMessageNotifications(
