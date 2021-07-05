@@ -12,7 +12,7 @@
     "testlint": "npm run-script i18ntypings && npm run-script lintfix && rollup -c rollup_test.config.js && npm run-script publish",
     "i18ntypings": "node cd/i18n_typings.js",
     "updateglobalversion": "node cd/globalversion.js",
-    "generatei18ndefault": "node cd/defaulti18n.js"
+    "generatei18ndefault": "npm run-script i18ntypings && node cd/defaulti18n.js"
   },
   "author": "weebsquad",
   "license": "MIT",
