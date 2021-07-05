@@ -67,7 +67,6 @@ export async function buildLanguage(defaultLang: string, langCode: string): Prom
   }
   try {
     const lang = await fetchLanguageDefault(langCode);
-    console.log('lang', lang);
     return lang;
   } catch (_) {
     const lang = await fetchLanguage(defaultLang);
