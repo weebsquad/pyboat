@@ -951,15 +951,19 @@ export function InitializeCommands() {
     );
     registerChatOn(
       sub,
-      'testupd',
+      'upd',
       (ctx) => ({ updnum: ctx.string() }),
       async (m, { updnum }) => {
         const res: any = await m.inlineReply(async () => {
           if (!updates.updates[updnum]) {
             return 'Update not found';
           }
+          //@ts-ignore
+          const startms = Math.floor(await pylon.getCpuTime());
           await updates.updates[updnum]();
-          return 'Done!';
+          //@ts-ignore
+          const mstook = Math.floor(await pylon.getCpuTime()) - startms;
+          return `Done! (Took **${mstook}**ms)`;
         });
         admin.saveMessage(res);
       },
