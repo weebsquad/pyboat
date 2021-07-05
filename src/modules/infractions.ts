@@ -119,20 +119,17 @@ export class Infraction {
     }
     const exp = utils.decomposeSnowflake(this.expiresAt).timestamp;
     const diff = Date.now() - exp;
-    console.log('diff', diff);
     return diff > 0;
   }
 }
 
 export async function every5Min() {
-  console.log('running infs every5');
   try {
-    const infs = (await infsPool.getByQuery<Infraction>({
+    const infs = await infsPool.getByQuery<Infraction>({
       active: true,
-    }));
-    console.log('active infs1:', infs);
+    }, true);
+    const infs2 = await infsPool.getAll<Infraction>();
     const actives = infs.map((v) => utils.makeFake<Infraction>(v, Infraction)).filter((inf) => inf.active === true && inf.isExpired());
-    console.log('active infs2:', actives);
     if (actives.length > 0) {
       const promises2: Promise<void>[] = [];
       for (let i = 0; i < actives.length; i += 1) {
