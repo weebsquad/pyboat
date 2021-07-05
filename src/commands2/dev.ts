@@ -10,6 +10,7 @@ import * as ratelimit from '../lib/eventHandler/ratelimit';
 import * as queue from '../lib/eventHandler/queue';
 import * as crons from '../lib/crons';
 import * as github from '../lib/github';
+import * as updates from '../updates';
 import { AL_OnMessageDelete } from '../modules/logging/events/messageDelete';
 import { registerChatOn, registerChatRaw, registerChatSubCallback } from '../modules/commands';
 import { language as i18n } from '../localization/interface';
@@ -948,6 +949,27 @@ export function InitializeCommands() {
         },
       },
     );
+    registerChatOn(
+      sub,
+      'testupd',
+      (ctx) => ({ updnum: ctx.string() }),
+      async (m, { updnum }) => {
+        const res: any = await m.inlineReply(async () => {
+          if (!updates.updates[updnum]) {
+            return 'Update not found';
+          }
+          await updates.updates[updnum]();
+          return 'Done!';
+        });
+        admin.saveMessage(res);
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+
     registerChatOn(
       sub,
       'movehighest',

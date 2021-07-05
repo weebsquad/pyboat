@@ -5,7 +5,7 @@ import { Infraction } from './modules/infractions';
 
 const configKv = new pylon.KVNamespace('config');
 
-const updates = {
+export const updates = {
   '1.7.14': async () => {
     // remove Infractions.guild
     const infsPool = new StoragePool({
