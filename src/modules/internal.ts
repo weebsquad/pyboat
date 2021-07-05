@@ -40,7 +40,12 @@ async function getEntries() {
 ) {
   // const resp = await getEntries();
 } */
-const namespaceUsers = new utils.StoragePool('botUsers', undefined, 'guild', undefined);
+
+const namespaceUsers = new utils.StoragePool({
+  name: 'botUsers',
+  idProperty: 'guild',
+  local: false,
+});
 type guildBotUsers = {
   guild: string;
   adminUsers: Array<string>;

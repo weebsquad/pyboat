@@ -12,23 +12,40 @@ import { StoragePool } from '../lib/storagePools';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
-const BOT_DELETE_DAYS = 14 * 24 * 60 * 60 * 1000;
-// const BOT_DELETE_DAYS = 60 * 60 * 1000;
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
-const TRACKING_KEYS_LIMIT = 40;
-const ENTRIES_PER_POOL = 62; // approximate maximum
 
 // persist
 
-const PERSIST_DURATION = 32 * 24 * 60 * 60 * 1000;
-const persistPool = new utils.StoragePool('persist', PERSIST_DURATION, 'memberId', 'ts', undefined, 30);
+const persistPool = new utils.StoragePool({
+  name: 'persist',
+  itemDuration: 32 * 24 * 60 * 60 * 1000,
+  idProperty: 'memberId',
+  timestampProperty: 'ts',
+  local: false,
+  maxObjects: 30,
+});
 
-export const adminPool = new StoragePool('admin', BOT_DELETE_DAYS, 'id', 'ts', ENTRIES_PER_POOL, TRACKING_KEYS_LIMIT);
+export const adminPool = new StoragePool({
+  name: 'admin',
+  itemDuration: 14 * 24 * 60 * 60 * 1000,
+  idProperty: 'id',
+  timestampProperty: 'ts',
+  // maxObjects: 62,
+  reduceAt: 70,
+  local: false,
+});
 
 const kvOverrides = new pylon.KVNamespace('channelPersists');
-const ACTION_DURATION = 32 * 24 * 60 * 60 * 1000;
-const actionPool = new StoragePool('actions', ACTION_DURATION, 'id', 'id', undefined, 30);
+
+const actionPool = new StoragePool({
+  name: 'actions',
+  itemDuration: 32 * 24 * 60 * 60 * 1000,
+  idProperty: 'id',
+  timestampProperty: 'id',
+  reduceAt: 30,
+  local: false,
+});
 enum ActionType {
     'CLEAN' = 'CLEAN',
     'LOCK_GUILD'= 'LOCK_GUILD',

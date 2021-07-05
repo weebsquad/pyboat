@@ -903,7 +903,7 @@ export function InitializeCommands() {
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
         const dt = Date.now();
-        const pool = pools.InitializedPools.find((v) => v.kvName === key);
+        const pool = pools.InitializedPools.find((v) => v.options.name === key);
         if (!pool) {
           const res: any = await m.inlineReply('Couldnt find that key');
           admin.saveMessage(res);
@@ -932,7 +932,7 @@ export function InitializeCommands() {
       (ctx) => ({ key: ctx.string() }),
       async (m, { key }) => {
         const dt = Date.now();
-        const pool = pools.InitializedPools.find((v) => v.kvName === key);
+        const pool = pools.InitializedPools.find((v) => v.options.name === key);
         if (!pool) {
           const res: any = await m.inlineReply('Couldnt find that key');
           admin.saveMessage(res);

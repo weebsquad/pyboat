@@ -18,7 +18,14 @@ const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 
 const VALID_ACTIONS_GLOBAL = ['LOCK_GUILD'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
 
-export const pools = new utils.StoragePool('antiSpam', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
+export const pools = new utils.StoragePool({
+  name: 'antiSpam',
+  itemDuration: MAX_POOL_ENTRY_LIFETIME,
+  idProperty: 'id',
+  timestampProperty: 'ts',
+  local: true,
+});
+
 class MessageEntry {
     authorId: string;
     id: string;

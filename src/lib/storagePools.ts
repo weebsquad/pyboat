@@ -6,30 +6,34 @@ import * as constants from '../constants/constants';
 
 export const InitializedPools: Array<StoragePool> = [];
 const ASSUMED_MAX_KEYS = 256;
-
+type PoolOptions = {
+  name: string;
+  itemDuration?: number; // duration for each entry
+  idProperty: string; // unique id prop on the objects
+  timestampProperty?: string; // timestamp prop on the objects for calcs
+  maxObjects?: number; // max objects per array instead of byte calcs
+  reduceAt?: number; // what key count to start reducing duration at
+  local: Boolean; // whether this should be kv or local
+}
 export class StoragePool {
-    kvName: string;
     kv: pylon.KVNamespace;
-    local: Boolean; // whether this should be kv or local
-    localStore: Array<any> = [];
-    duration: number; // duration for each entry
-    uniqueId: string; // unique id prop on the objects
-    timestampProperty: string | undefined = undefined; // timestamp prop on the objects for calcs
-    maxObjects: number | undefined = undefined; // max objects per array instead of byte calcs
-    reduceAt: number | undefined = undefined; // what key count to start reducing duration at
-    constructor(name: string, itemDuration = 0, uniqueIdProperty: string, timestampProperty: string | undefined = undefined, maxObjects: number | undefined = undefined, reduceAt: number | undefined = undefined, local = false) {
-      this.kvName = name;
-      this.kv = new pylon.KVNamespace(name);
-      this.duration = itemDuration;
-      this.uniqueId = uniqueIdProperty;
-      this.timestampProperty = timestampProperty;
-      this.maxObjects = maxObjects;
-      this.reduceAt = reduceAt;
-      const _ex = InitializedPools.find((e) => e.kvName === this.kvName);
+    options: PoolOptions;
+    localStore?: Array<any> = [];
+    constructor(opts: PoolOptions) {
+    // constructor(
+    // name: string,
+    // itemDuration = 0,
+    // uniqueIdProperty: string,
+    // timestampProperty: string | undefined = undefined,
+    // maxObjects: number | undefined = undefined,
+    // reduceAt: number | undefined = undefined,
+    // local = false) {
+      this.kv = new pylon.KVNamespace(opts.name);
+      this.options = opts;
+      const _ex = InitializedPools.find((e) => e.options.name === this.options.name);
       if (!_ex) {
         InitializedPools.push(this);
       }
-      this.local = local;
       return this;
     }
     async getItems() {
@@ -52,36 +56,43 @@ export class StoragePool {
       return items;
     }
     private async err(txt: string) {
-      throw new TypeError(`[Storage Pool]: ${this.kvName}: ${txt}`);
+      throw new TypeError(`[Storage Pool]: ${this.options.name}: ${txt}`);
     }
     async exists(id: string) {
-      const ex = (await this.getAll(undefined, false)).find((item) => item[this.uniqueId] === id);
+      const ex = (await this.getAll(undefined, false)).find((item) => item[this.options.idProperty] === id);
       return ex !== undefined;
     }
     async delete(id: string) {
       await this.editPool(id, null);
     }
     private getTimestamp(obj: any) {
-      if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'number') {
-        return obj[this.timestampProperty];
-      } if (typeof this.timestampProperty === 'string' && typeof obj[this.timestampProperty] === 'string') {
-        return utils.decomposeSnowflake(obj[this.timestampProperty]).timestamp;
+      if (typeof this.options.timestampProperty === 'string' && typeof obj[this.options.timestampProperty] === 'number') {
+        return obj[this.options.timestampProperty];
+      } if (typeof this.options.timestampProperty === 'string' && typeof obj[this.options.timestampProperty] === 'string') {
+        return utils.decomposeSnowflake(obj[this.options.timestampProperty]).timestamp;
       }
-      if (typeof obj[this.uniqueId] !== 'string') {
+      if (typeof obj[this.options.idProperty] !== 'string') {
         this.err('Can\'t parse timestamps on a non-string unique identifier');
         return false;
       }
-      const id = obj[this.uniqueId];
+      const id = obj[this.options.idProperty];
       return utils.decomposeSnowflake(id).timestamp;
     }
     async clear() {
       await this.kv.clear();
     }
     async clean() {
-      if (typeof this.duration !== 'number' || this.duration === 0) {
-        if (this.local === true) {
+      // clear blank keys
+      if (this.options.local === true) {
+        if (typeof this.options.itemDuration !== 'number' || this.options.itemDuration === 0) {
           return;
         }
+        const diff = Date.now() - this.options.itemDuration;
+        const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.options.idProperty]));
+        if (toRemove.length > 0) {
+          this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.options.idProperty]));
+        }
+      } else {
         const items = await this.getItems();
         await Promise.all(items.map(async (item: any) => {
           const vl: Array<any> = item.value;
@@ -109,62 +120,33 @@ export class StoragePool {
             }
           }
         }));
-        return;
-      }
-      let diff = Date.now() - this.duration;
-      if (this.local === true) {
-        const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
-        if (toRemove.length > 0) {
-          this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.uniqueId]));
+        if (typeof this.options.itemDuration !== 'number' || this.options.itemDuration === 0) {
+          return;
         }
-        return;
-      }
-      const items = await this.getItems();
-      if (typeof this.reduceAt === 'number' && this.reduceAt > 0) {
-        const count = items.length;
-        if (count > this.reduceAt) {
-          const leftToMax = ASSUMED_MAX_KEYS - this.reduceAt;
-          const toInc = this.duration / Math.max(1, leftToMax);
-          const extra = Math.floor(toInc * (count - this.reduceAt));
-          diff += extra;
-        }
-      }
-      await Promise.all(items.map(async (item: any) => {
-        const vl: Array<any> = item.value;
-        const { key } = item;
-        const toRemove = vl.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.uniqueId]));
-        if (toRemove.length > 0) {
-          let vlCheckEmpty: undefined | Array<any>;
-          await this.kv.transact(key, (prev: any) => {
-            const newDt = prev.filter((e: any) => e !== null && !toRemove.includes(e[this.uniqueId]));
-            vlCheckEmpty = newDt;
-            return newDt;
-          });
-          if (Array.isArray(vlCheckEmpty) && vlCheckEmpty.length === 0) {
-            try {
-              await this.kv.delete(key, { prevValue: [] });
-            } catch (e) {
-              utils.logError('StoragePools, error deleting empty key', e);
-            }
-          }
-        } else if (item.value.length === 0) {
-          try {
-            await this.kv.delete(key, { prevValue: [] });
-          } catch (e) {
-            utils.logError('StoragePools, error deleting empty key', e);
+        if (typeof this.options.reduceAt === 'number' && this.options.reduceAt > 0) {
+          let diff = Date.now() - this.options.itemDuration;
+          const count = items.length;
+          if (count > this.options.reduceAt) {
+            const leftToMax = ASSUMED_MAX_KEYS - this.options.reduceAt;
+            const toInc = this.options.itemDuration / Math.max(1, leftToMax);
+            const extra = Math.floor(toInc * (count - this.options.reduceAt));
+            diff += extra;
           }
         }
-      }));
+      }
     }
 
     async saveToPool<T>(newObj: T, retries = 0) {
       if (newObj === null || newObj === undefined) {
         return;
       }
-      if (this.local === true) {
-        const ex = this.localStore.find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
+      if (!newObj[this.options.idProperty]) {
+        newObj[this.options.idProperty] = utils.composeSnowflake();
+      }
+      if (this.options.local === true) {
+        const ex = this.localStore.find((item) => item !== null && typeof item === 'object' && item[this.options.idProperty] === newObj[this.options.idProperty]);
         if (typeof ex !== 'undefined') {
-          const _res = await this.editPool(newObj[this.uniqueId], newObj);
+          const _res = await this.editPool(newObj[this.options.idProperty], newObj);
           return _res;
         }
         this.localStore.push(newObj);
@@ -173,9 +155,9 @@ export class StoragePool {
       // check same len
       let _thisLen;
       const items = await this.getItems();
-      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && typeof item === 'object' && item[this.uniqueId] === newObj[this.uniqueId]);
+      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && typeof item === 'object' && item[this.options.idProperty] === newObj[this.options.idProperty]);
       if (typeof ex !== 'undefined') {
-        const _res = await this.editPool(newObj[this.uniqueId], newObj);
+        const _res = await this.editPool(newObj[this.options.idProperty], newObj);
         return _res;
       }
       // @ts-ignore
@@ -187,8 +169,8 @@ export class StoragePool {
           return true;
         }
         const _entries: Array<any> = item.value;
-        if (typeof this.maxObjects === 'number' && this.maxObjects > 0) {
-          if (_entries.length < this.maxObjects) {
+        if (typeof this.options.maxObjects === 'number' && this.options.maxObjects > 0) {
+          if (_entries.length < this.options.maxObjects) {
             saveTo = item.key;
             saveLen = _entries.length;
             return false;
@@ -235,7 +217,7 @@ export class StoragePool {
         // @ts-ignore
         const cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
         if (cputnow >= 5) {
-          console.warn(`Saved item to [${this.kvName}] : Took ${cputnow}ms`);
+          console.warn(`Saved item to [${this.options.name}] : Took ${cputnow}ms`);
         }
         return true;
       } catch (e) {
@@ -248,8 +230,8 @@ export class StoragePool {
       }
     }
     async editTransact<T>(id: string, callback: (val: T) => T | null | undefined) {
-      if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
+      if (this.options.local === true) {
+        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.options.idProperty] === id);
         if (_f !== -1) {
           const vl = callback({ ...this.localStore[_f] });
           if (vl === null || typeof vl === 'undefined') {
@@ -262,12 +244,12 @@ export class StoragePool {
         return false;
       }
       const items = await this.getItems();
-      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
+      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id) !== undefined);
       if (res) {
         try {
           await this.kv.transact(res.key, (prev: any) => {
             const newData = [...prev];
-            const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
+            const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id);
             if (_ind !== -1) {
               let newDataVal = callback({ ...newData[_ind] });
               if (newDataVal === null) {
@@ -288,8 +270,8 @@ export class StoragePool {
       return false;
     }
     async editTransactWithResult<T>(id: string, callback: (val: T) => { next: T | undefined | null; result: boolean }) {
-      if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
+      if (this.options.local === true) {
+        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.options.idProperty] === id);
         if (_f !== -1) {
           const { next: vl, result } = callback({ ...this.localStore[_f] });
           if (vl === null || typeof vl === 'undefined') {
@@ -302,12 +284,12 @@ export class StoragePool {
         return false;
       }
       const items = await this.getItems();
-      const res = items.find((item: any) => item.value.find((e: T) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
+      const res = items.find((item: any) => item.value.find((e: T) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id) !== undefined);
       if (res) {
         try {
           const { result } = await this.kv.transactWithResult(res.key, (prev: any) => {
             const newData = [...prev];
-            const _ind = newData.findIndex((e: T) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
+            const _ind = newData.findIndex((e: T) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id);
             let rest = false;
             if (_ind !== -1) {
               let { next: newDataVal, result: resultT } = callback({ ...newData[_ind] });
@@ -329,8 +311,8 @@ export class StoragePool {
       return false;
     }
     async editPool(id: string, newObj: any) {
-      if (this.local === true) {
-        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.uniqueId] === id);
+      if (this.options.local === true) {
+        const _f = this.localStore.findIndex((v) => v !== null && typeof v === 'object' && v[this.options.idProperty] === id);
         if (_f !== -1) {
           if (newObj === null || typeof newObj === 'undefined') {
             delete this.localStore[_f];
@@ -342,13 +324,13 @@ export class StoragePool {
         return false;
       }
       const items = await this.getItems();
-      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id) !== undefined);
+      const res = items.find((item: any) => item.value.find((e: any) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id) !== undefined);
       if (res) {
         for (let i = 0; i < 2; i += 1) {
           try {
             await this.kv.transact(res.key, (prev: any) => {
               const newData = [...prev];
-              const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
+              const _ind = newData.findIndex((e: any) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id);
               if (_ind !== -1) {
                 if (typeof newObj === 'object' && newObj !== null) {
                   newData[_ind] = newObj;
@@ -368,12 +350,12 @@ export class StoragePool {
       return false;
     }
     async editPools<T>(ids: Array<string>, callback: (val: T) => T | null | undefined) {
-      if (this.local === true) {
+      if (this.options.local === true) {
         this.localStore = this.localStore.map((v) => {
           if (v === null) {
             return v;
           }
-          if (!ids.includes(v[this.uniqueId])) {
+          if (!ids.includes(v[this.options.idProperty])) {
             return v;
           }
           return callback(v);
@@ -384,7 +366,7 @@ export class StoragePool {
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
           const _val: Array<T> = item.value;
-          const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.uniqueId]));
+          const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.options.idProperty]));
           if (!hasAny) {
             return false;
           }
@@ -397,7 +379,7 @@ export class StoragePool {
         await this.kv.transactMulti<Array<T>>(transactPools.map((v) => v.key), (prev) => {
           let prevt: T[][] = prev.filter(() => true);
           prevt = prevt.map((val) => {
-            val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(v[this.uniqueId]) ? v : callback(v))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
+            val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => (!ids.includes(v[this.options.idProperty]) ? v : callback(v))).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
             return val;
           });
           return prevt;
@@ -409,18 +391,18 @@ export class StoragePool {
     async editTransactMultiWithResult<T>(ids: Array<string>, modifier: (val: T) => { next: T | undefined | null; result: boolean } | null | undefined): Promise<Map<string, boolean>> {
       const retVal = new Map<string, boolean>();
       ids.forEach((v) => retVal.set(v, false));
-      if (this.local === true) {
+      if (this.options.local === true) {
         this.localStore = this.localStore.map((v) => {
           if (v === null) {
             return v;
           }
-          if (!ids.includes(v[this.uniqueId])) {
+          if (!ids.includes(v[this.options.idProperty])) {
             return v;
           }
 
           const replacer: { next: T | undefined; result: boolean } = modifier({ ...v });
           if (replacer.result === true) {
-            retVal.set(v[this.uniqueId], true);
+            retVal.set(v[this.options.idProperty], true);
           }
           return replacer.next;
         }).filter((v) => v !== null && typeof v === 'object' && typeof v !== 'undefined');
@@ -430,7 +412,7 @@ export class StoragePool {
       const transactPools = items.filter((item: any) => {
         if (Array.isArray(item.value)) {
           const _val: Array<T> = item.value;
-          const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.uniqueId]));
+          const hasAny = _val.find((entry) => entry !== null && typeof entry === 'object' && ids.includes(entry[this.options.idProperty]));
           if (!hasAny) {
             return false;
           }
@@ -444,12 +426,12 @@ export class StoragePool {
           let prevt: T[][] = prev.filter(() => true);
           prevt = prevt.map((val) => {
             val = val.filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object').map((v) => {
-              if (!ids.includes(v[this.uniqueId])) {
+              if (!ids.includes(v[this.options.idProperty])) {
                 return v;
               }
               const replacer: { next: T | undefined; result: boolean } = modifier({ ...v });
               if (replacer.result === true) {
-                retVal.set(v[this.uniqueId], true);
+                retVal.set(v[this.options.idProperty], true);
               }
               return replacer.next;
             }).filter((v) => v !== null && typeof v !== 'undefined' && typeof v === 'object');
@@ -461,44 +443,40 @@ export class StoragePool {
       }
       return retVal;
     }
-    async getAll<T>(it: any = undefined, sort = true): Promise<Array<T>> {
-      const diff = Date.now() - this.duration;
-      const tdiffc = Date.now();
-      // console.log(`${Date.now() - tdiffc}ms > getting all for ${this.kvName}`);
+    /**
+     *
+     * @param it Array of the items, for using this to sort
+     * @param sort Wether to sort or not
+     */
+    async getAll<T>(it: Array<any> = undefined, sort = true): Promise<Array<T>> {
+      const diff = Date.now() - this.options.itemDuration;
       let items: Array<any>;
-      if (this.local === true) {
+      if (this.options.local === true) {
         items = this.localStore;
       } else {
         items = (Array.isArray(it) ? it : await this.getItems());
       }
-      // console.log(`${Date.now() - tdiffc}ms > got all items from kv`);
       if (items.length === 0) {
         return [] as Array<T>;
       }
-      if (!Array.isArray(it) && !this.local) {
+      if (!Array.isArray(it) && !this.options.local) {
         items = items.map((v) => v.value).flat(1);
       }
-      // console.log(`${Date.now() - tdiffc}ms > mapped to values and flattened`);
       items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
-      // console.log(`${Date.now() - tdiffc}ms > filtered garbage`);
-      if (typeof this.timestampProperty === 'string' || typeof this.uniqueId === 'string') {
+      if (typeof this.options.timestampProperty === 'string' || typeof this.options.idProperty === 'string') {
         items = items.filter((item) => {
           const ts = this.getTimestamp(item);
-          return this.duration === 0 || (typeof ts === 'number' && ts >= diff);
+          return this.options.itemDuration === 0 || (typeof ts === 'number' && ts >= diff);
         });
-        // console.log(`${Date.now() - tdiffc}ms > filtered by timestamp`);
         if (sort === true) {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
-        // console.log(`${Date.now() - tdiffc}ms > sorted`);
       }
-
-      // console.log(`${Date.now() - tdiffc}ms > done`);
       const _new: any = items;
       return _new as Array<T>;
     }
     async getById<T>(id: string): Promise<T | undefined> {
-      const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && typeof e === 'object' && e[this.uniqueId] === id);
+      const _f: any = (await this.getAll(undefined, false)).find((e) => e !== null && typeof e === 'object' && e[this.options.idProperty] === id);
       if (typeof _f === 'undefined') {
         return;
       }

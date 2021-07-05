@@ -4,13 +4,18 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
-import { getUserAuth, StoragePool } from '../lib/utils';
+import { getUserAuth } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, registerChatSubCallback } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
-export const infsPool = new utils.StoragePool('infractions', 0, 'id', 'ts');
+export const infsPool = new utils.StoragePool({
+  name: 'infractions',
+  idProperty: 'id',
+  local: false,
+  timestampProperty: 'ts',
+});
 
 export enum InfractionType {
   MUTE = 'MUTE',
@@ -22,7 +27,6 @@ export enum InfractionType {
 }
 
 export class Infraction {
-  guild: discord.Guild | undefined;
   active: boolean;
   expiresAt: string | undefined;
   id: string;
@@ -54,10 +58,7 @@ export class Infraction {
     if (!this.active) {
       return false;
     }
-    const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
-    if (!(this.guild instanceof discord.Guild)) {
-      this.guild = guild!;
-    }
+    const guild = await discord.getGuild(guildId);
 
     if (this.type === InfractionType.TEMPMUTE) {
       const member = await guild!.getMember(this.memberId);
@@ -96,10 +97,7 @@ export class Infraction {
     if (!checkActive) {
       return;
     }
-    const guild = this.guild instanceof discord.Guild ? this.guild : await discord.getGuild(guildId);
-    if (!(this.guild instanceof discord.Guild)) {
-      this.guild = guild!;
-    }
+    const guild = await discord.getGuild(guildId);
     if (this.type === InfractionType.TEMPMUTE) {
       const member = await guild!.getMember(this.memberId);
       if (!member) {

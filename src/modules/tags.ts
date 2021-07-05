@@ -5,7 +5,11 @@ import { saveMessage } from './admin';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
-const pool = new utils.StoragePool('tags', 0, 'id', 'ts');
+const pool = new utils.StoragePool({
+  name: 'tags',
+  idProperty: 'id',
+  local: false,
+});
 class Tag {
     id: string;
     uses = 0;

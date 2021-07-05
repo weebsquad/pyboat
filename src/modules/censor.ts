@@ -11,7 +11,15 @@ const EXTRA_ASCII_WHITELIST = ['€', '£', '»', '«', '´', '¨', 'º', 'ª', 
 const VALID_ACTIONS_INDIVIDUAL = ['KICK', 'SOFTBAN', 'BAN', 'MUTE', 'TEMPMUTE', 'TEMPBAN'];
 const VALID_ACTIONS_GLOBAL = ['SLOWMODE', 'MASSBAN', 'LOCK_GUILD', 'LOCK_CHANNEL'];
 const MAX_POOL_ENTRY_LIFETIME = 120 * 1000;
-const kvPool = new utils.StoragePool('censor', MAX_POOL_ENTRY_LIFETIME, 'id', 'ts', undefined, undefined, true);
+
+export const kvPool = new utils.StoragePool({
+  name: 'censor',
+  itemDuration: MAX_POOL_ENTRY_LIFETIME,
+  idProperty: 'id',
+  timestampProperty: 'ts',
+  local: true,
+});
+
 class PoolEntry {
   ts: number;
   key: string;

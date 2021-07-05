@@ -22,7 +22,11 @@ class UserRole {
     return this;
   }
 }
-const customUserRoles = new StoragePool('customUserRoles', 0, 'memberId');
+const customUserRoles = new StoragePool({
+  name: 'customUserRoles',
+  idProperty: 'memberId',
+  local: false,
+});
 class Reminder {
   id: string;
   expires: number;
@@ -39,7 +43,11 @@ class Reminder {
   }
 }
 
-const reminders = new StoragePool('reminders', 0, 'id');
+const reminders = new StoragePool({
+  name: 'reminders',
+  idProperty: 'id',
+  local: false,
+});
 
 export async function checkReminders() {
   const rem = await reminders.getAll<Reminder>();

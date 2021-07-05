@@ -13,8 +13,17 @@ const processing: string[] = [];
 const allowedFileExtensions = ['png', 'jpg', 'jpeg'];
 const kv = new pylon.KVNamespace('starboard');
 
-export const messagesKv = new StoragePool('starboardMessages', 0, 'id');
-export const statsKv = new StoragePool('starboardStats', 0, 'id');
+export const messagesKv = new StoragePool({
+  name: 'starboardMessages',
+  idProperty: 'id',
+  local: false,
+});
+
+export const statsKv = new StoragePool({
+  name: 'starboardStats',
+  idProperty: 'id',
+  local: false,
+});
 export class StarStats {
   id: string;
   given = 0;
