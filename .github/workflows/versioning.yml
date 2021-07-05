@@ -26,8 +26,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install node_modules
-      run: npm i
     - name:  'Automated Version Bump'
       uses:  'phips28/gh-action-bump-version@master'
       env:
@@ -49,6 +47,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Install node_modules
+      run: npm i
     - name: Pull
       run: |
         git pull
