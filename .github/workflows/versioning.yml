@@ -10,10 +10,31 @@ on:
 
 
 jobs:
-  update_version:
+  check_version:
     runs-on: ubuntu-latest
     if: ${{!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'ci skip') && !contains(github.event.head_commit.author.name, 'Version Bump') && !contains(github.event.head_commit.message, 'version skip') && !contains(github.event.head_commit.author.name, 'dependabot')}}
 #    needs: build
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - name: "Checkout source code"
+      uses: "actions/checkout@v2"
+      with:
+        ref: ${{ github.ref }}
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name:  'Automated Version Bump'
+      uses:  'phips28/gh-action-bump-version@master'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        commit-message: 'CI: bumps version to {{version}} [skip ci]'
+  update_global:
+    needs: check_version
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [14.x]
@@ -32,13 +53,7 @@ jobs:
       run: npm run updateglobalversion
     - name: Generate default i18n file
       run: npm run generatei18ndefault
-    - name:  'Automated Version Bump'
-      uses:  'phips28/gh-action-bump-version@master'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        commit-message: 'CI: bumps version to {{version}} [skip ci]'
-    - name: Commit Others
+    - name: Commit files
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "Automated Version Bump"
