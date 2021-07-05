@@ -956,7 +956,7 @@ export function InitializeCommands() {
       async (m, { updnum }) => {
         const res: any = await m.inlineReply(async () => {
           if (!updates.updates[updnum]) {
-            return 'Update not found';
+            return 'Update not found!';
           }
           // @ts-ignore
           const startms = Math.floor(await pylon.getCpuTime());
