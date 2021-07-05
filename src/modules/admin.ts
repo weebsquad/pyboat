@@ -1851,22 +1851,22 @@ export function InitializeCommands() {
       async (msg, { roleText }) => {
         if (!Array.isArray(config.modules.admin.lockedRoles) || config.modules.admin.lockedRoles.length === 0) {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.no_locked_roles);
-          return;
+          return false;
         }
         const roleId = await getRoleIdByText(roleText);
         const guildRole = await (await msg.getGuild()).getRole(roleId);
         if (guildRole === null) {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.could_not_find_role);
-          return;
+          return false;
         }
         if (!config.modules.admin.lockedRoles.includes(guildRole.id)) {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.not_locked);
-          return;
+          return false;
         }
         const kvc = await roleLockKv.get(guildRole.id);
         if (typeof kvc === 'boolean') {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
-          return;
+          return false;
         }
         await roleLockKv.put(guildRole.id, true, { ttl: 1000 * 60 * 5 });
         await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_role_unlock.unlocked);
@@ -1886,13 +1886,14 @@ export function InitializeCommands() {
         const res = await Role(msg.member, member, roleText, true);
         if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
-          return;
+          return false;
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
           await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_add.added_role, ['role_mention', `<@&${rlid}>`, 'user_mention', member.user.toMention()]));
         } else {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_add.failed_add);
+          return false;
         }
       },
       {
@@ -1911,13 +1912,14 @@ export function InitializeCommands() {
         const res = await Role(msg.member, member, roleText, false);
         if (typeof res === 'string') {
           await infractions.confirmResult(undefined, msg, false, res);
-          return;
+          return false;
         }
         if (res === true) {
           const rlid = await getRoleIdByText(roleText);
           await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_role_remove.removed_role, ['role_mention', `<@&${rlid}>`, 'user_mention', member.user.toMention()]));
         } else {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_remove.failed_remove);
+          return false;
         }
       },
       {
@@ -1936,32 +1938,32 @@ export function InitializeCommands() {
         if (rlid === null) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
-          return;
+          return false;
         }
         const guild = await msg.getGuild();
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          return;
+          return false;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
-          return;
+          return false;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
           const res: any = await msg.inlineReply(i18n.modules.admin.bot_cant_manage_role);
           saveMessage(res);
-          return;
+          return false;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_spread_in_progress);
           saveMessage(res);
-          return;
+          return false;
         }
         await roleAllKv.put(utils.composeSnowflake(), thisRole.id);
 
@@ -1986,32 +1988,32 @@ export function InitializeCommands() {
         if (rlid === null) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
-          return;
+          return false;
         }
         const guild = await msg.getGuild();
         const roles = await guild.getRoles();
         const me = await guild.getMember(discord.getBotId());
         if (me === null) {
-          return;
+          return false;
         }
         const thisRole = roles.find((val) => val.id === rlid);
         if (!thisRole) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_inexistent);
           saveMessage(res);
-          return;
+          return false;
         }
         const myHighest = await utils.getMemberHighestRole(me);
         if (myHighest.position <= thisRole.position || !me.can(discord.Permissions.MANAGE_ROLES)) {
           const res: any = await msg.inlineReply(i18n.modules.admin.bot_cant_manage_role);
           saveMessage(res);
-          return;
+          return false;
         }
         const itemsAll = await roleAllKv.items();
         const itemsNuke = await roleNukeKv.items();
         if (itemsAll.length > 0 || itemsNuke.length > 0) {
           const res: any = await msg.inlineReply(i18n.modules.admin.role_spread_in_progress);
           saveMessage(res);
-          return;
+          return false;
         }
         await roleNukeKv.put(utils.composeSnowflake(), thisRole.id);
 
@@ -2118,7 +2120,7 @@ export function InitializeCommands() {
       const res = await Nick(msg.member, member, nickname);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.set_nickname, ['user_mention', member.user.getTag(), 'new_nick', nickname === null ? i18n.modules.admin.adm_backup.none : utils.escapeString(nickname, true)]));
@@ -2143,24 +2145,25 @@ export function InitializeCommands() {
       if (dur === 0) {
         const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
         saveMessage(res);
-        return;
+        return false;
       }
       if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
         const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
         saveMessage(res);
-        return;
+        return false;
       }
 
       const res = await TempRole(msg.member, member, roleText, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         const rlid = await getRoleIdByText(roleText);
         await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.temprole_added, ['role_mention', `<@&${rlid}>`, 'user_mention', member.toMention(), 'duration', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]));
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_add.failed_add);
+        return false;
       }
     },
     {
@@ -2185,23 +2188,24 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
-          return;
+          return false;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
-          return;
+          return false;
         }
       }
       const res = await LockChannel(msg.member, channel, true, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_channel.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_channel.locked_fail);
+        return false;
       }
     },
     {
@@ -2222,12 +2226,13 @@ export function InitializeCommands() {
       const res = await LockChannel(msg.member, channel, false, 0);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_lock_channel.unlocked_cmd);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_channel.unlocked_fail);
+        return false;
       }
     },
     {
@@ -2248,12 +2253,12 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
-          return;
+          return false;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
-          return;
+          return false;
         }
       }
       if (channel === null) {
@@ -2262,13 +2267,14 @@ export function InitializeCommands() {
       const res = await SlowmodeChannel(msg.member, channel, seconds, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         const txtDur = dur > 0 ? utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second) : '';
         await infractions.confirmResult(undefined, msg, true, `${setPlaceholders(i18n.modules.admin.adm_slowmode.slowmode_cmd, ['channel_mention', channel.toMention(), 'seconds', seconds.toString()])}${txtDur !== '' ? setPlaceholders(i18n.modules.admin.for_time, ['time', txtDur]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_slowmode.slowmode_failed);
+        return false;
       }
     },
     {
@@ -2289,23 +2295,24 @@ export function InitializeCommands() {
         if (dur === 0) {
           const res: any = await msg.inlineReply(i18n.modules.admin.duration_malformed);
           saveMessage(res);
-          return;
+          return false;
         }
         if (dur < 1000 || dur > 31 * 24 * 60 * 60 * 1000) {
           const res: any = await msg.inlineReply(i18n.modules.admin.exceeds_duration);
           saveMessage(res);
-          return;
+          return false;
         }
       }
       const res = await LockGuild(msg.member, true, dur);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         await infractions.confirmResult(undefined, msg, true, `${i18n.modules.admin.adm_lock_guild.locked_cmd}${dur > 0 ? setPlaceholders(i18n.modules.admin.for_time, ['time', utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second)]) : ''}`);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_guild.failed_lock);
+        return false;
       }
     },
     {
@@ -2322,12 +2329,13 @@ export function InitializeCommands() {
       const res = await LockGuild(msg.member, false, 0);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
-        return;
+        return false;
       }
       if (res === true) {
         await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_lock_guild.unlocked_cmd);
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_lock_guild.failed_unlock);
+        return false;
       }
     },
     {
@@ -2356,7 +2364,7 @@ export function InitializeCommands() {
       if (roles.length === 0) {
         const res: any = await msg.inlineReply({ content: i18n.modules.admin.adm_roles_list.no_roles });
         saveMessage(res);
-        return;
+        return false;
       }
       const dt = [];
       let currKey = 0;

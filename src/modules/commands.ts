@@ -304,11 +304,15 @@ export async function executeChatCommand(opts: string | discord.command.ICommand
     }
   }
   // @ts-ignore
-  await callback(msg, ...args);
+  const retVal: any = await callback(msg, ...args);
 
   const checkDebounce = cmdErrorDebounces.findIndex((v) => v === msg.id);
   if (checkDebounce > -1) {
     cmdErrorDebounces.splice(checkDebounce, 1);
+  }
+
+  if (typeof retVal === 'boolean' && retVal === false) {
+    cmdErrorDebounces.push(msg.id);
   }
 }
 

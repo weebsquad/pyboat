@@ -58,7 +58,7 @@ export class Infraction {
     if (!this.active) {
       return false;
     }
-    const guild = await discord.getGuild(guildId);
+    const guild = await discord.getGuild();
 
     if (this.type === InfractionType.TEMPMUTE) {
       const member = await guild!.getMember(this.memberId);
@@ -119,16 +119,20 @@ export class Infraction {
     }
     const exp = utils.decomposeSnowflake(this.expiresAt).timestamp;
     const diff = Date.now() - exp;
+    console.log('diff', diff);
     return diff > 0;
   }
 }
 
 export async function every5Min() {
+  console.log('running infs every5');
   try {
     const infs = (await infsPool.getByQuery<Infraction>({
       active: true,
     }));
+    console.log('active infs1:', infs);
     const actives = infs.map((v) => utils.makeFake<Infraction>(v, Infraction)).filter((inf) => inf.active === true && inf.isExpired());
+    console.log('active infs2:', actives);
     if (actives.length > 0) {
       const promises2: Promise<void>[] = [];
       for (let i = 0; i < actives.length; i += 1) {
@@ -816,11 +820,11 @@ export function InitializeCommands() {
       const result = await Kick(member, msg.member, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_kick);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
 
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.kicked_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
@@ -864,11 +868,11 @@ export function InitializeCommands() {
         } else {
           await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempmute);
         }
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       if (temp === false) {
         await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.muted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
@@ -894,11 +898,11 @@ export function InitializeCommands() {
       const result = await TempMute(member, msg.member, time, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempmute);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       const dur = utils.timeArgumentToMs(time);
       const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
@@ -922,11 +926,11 @@ export function InitializeCommands() {
       const result = await UnMute(member, msg.member, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_unmute);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unmuted_member, ['user_tag', utils.escapeString(member.user.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
@@ -945,7 +949,7 @@ export function InitializeCommands() {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
         await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return;
+        return false;
       }
 
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(usr.id);
@@ -959,11 +963,11 @@ export function InitializeCommands() {
       const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_ban);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.banned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
@@ -998,7 +1002,7 @@ export function InitializeCommands() {
       if (ids.length < 2) {
         const res: any = await msg.inlineReply(i18n.modules.infractions.inf_terms.massban_ids);
         saveMessage(res);
-        return;
+        return false;
       }
       const objs: any[] = [];
       const failNotFound: string[] = [];
@@ -1035,7 +1039,7 @@ export function InitializeCommands() {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
         await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return;
+        return false;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
@@ -1048,11 +1052,11 @@ export function InitializeCommands() {
       const result = await Ban(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_cleanban);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.clean_banned_member, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
@@ -1071,7 +1075,7 @@ export function InitializeCommands() {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
         await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return;
+        return false;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
@@ -1084,11 +1088,11 @@ export function InitializeCommands() {
       const result = await SoftBan(member, msg.member, _del, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_softban);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.softbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
@@ -1107,7 +1111,7 @@ export function InitializeCommands() {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
         await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return;
+        return false;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
@@ -1120,11 +1124,11 @@ export function InitializeCommands() {
       const result = await TempBan(member, msg.member, _del, time, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_tempban);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       const dur = utils.timeArgumentToMs(time);
       const durationText = utils.getLongAgoFormat(dur, 2, false, i18n.time_units.ti_full.singular.second);
@@ -1145,7 +1149,7 @@ export function InitializeCommands() {
       const usr = await utils.getUser(user.replace(/\D/g, ''));
       if (!usr) {
         await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return;
+        return false;
       }
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (!member) {
@@ -1157,11 +1161,11 @@ export function InitializeCommands() {
       const result = await UnBan(member, msg.member, reason);
       if (result === false) {
         await confirmResult(undefined, msg, false, i18n.modules.infractions.inf_terms.failed_unban);
-        return;
+        return false;
       }
       if (typeof result === 'string') {
         await confirmResult(undefined, msg, false, result);
-        return;
+        return false;
       }
       await confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.infractions.inf_terms.unbanned_user, ['user_tag', utils.escapeString(usr.getTag(), true), 'reason', reason ? setPlaceholders(i18n.modules.infractions.inf_terms.with_reason, ['reason', utils.escapeString(reason, true)]) : '']));
     },
