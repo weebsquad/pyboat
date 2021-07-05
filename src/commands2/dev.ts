@@ -958,10 +958,10 @@ export function InitializeCommands() {
           if (!updates.updates[updnum]) {
             return 'Update not found';
           }
-          //@ts-ignore
+          // @ts-ignore
           const startms = Math.floor(await pylon.getCpuTime());
           await updates.updates[updnum]();
-          //@ts-ignore
+          // @ts-ignore
           const mstook = Math.floor(await pylon.getCpuTime()) - startms;
           return `Done! (Took **${mstook}**ms)`;
         });

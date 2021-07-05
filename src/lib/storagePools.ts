@@ -51,7 +51,6 @@ export class StoragePool {
           }
         }
       } else {
-        
         items = await this.kv.items();
       }
       return items;
@@ -454,15 +453,12 @@ export class StoragePool {
       let items: Array<any> = [];
       if (this.options.local === true) {
         items = this.localStore;
+      } else if (!Array.isArray(it)) {
+        items = await this.getItems();
       } else {
-        if(!Array.isArray(it)) {
-          items = await this.getItems();
-        } else {
-          items = it;
-        }
+        items = it;
       }
       if (items.length === 0) {
-        
         return [] as Array<T>;
       }
       if (!Array.isArray(it) && !this.options.local) {
@@ -470,13 +466,13 @@ export class StoragePool {
       }
       items = items.filter((item) => typeof item === 'object' && item !== null && typeof item !== 'undefined');
       if (typeof this.options.timestampProperty === 'string' || typeof this.options.idProperty === 'string') {
-        if(this.options.itemDuration && this.options.itemDuration>0) {
+        if (this.options.itemDuration && this.options.itemDuration > 0) {
           const diff = now - this.options.itemDuration;
-        items = items.filter((item) => {
-          const ts = this.getTimestamp(item);
-          return typeof ts === 'number' && ts >= diff;
-        });
-      }
+          items = items.filter((item) => {
+            const ts = this.getTimestamp(item);
+            return typeof ts === 'number' && ts >= diff;
+          });
+        }
         if (sort === true) {
           items = items.sort((a, b) => this.getTimestamp(b) - this.getTimestamp(a));
         }
