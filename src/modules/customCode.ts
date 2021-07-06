@@ -12,6 +12,8 @@ let init = false;
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
 let eventHandlers: {[key: string]: Function[]} = {};
 
+const _realConsole = console;
+
 export async function fetchCode(bypass = false) {
   if (init && !bypass) {
     return false;
@@ -71,7 +73,7 @@ function getBoxedObjects(full = false): any[] {
   if (!full) {
     return [['discord', 'pylon'], [customDiscordObj, customPylon]];
   }
-  return [['console', 'discord', 'pylon', 'fetch', 'sleep'], [console, customDiscordObj, customPylon, fetch, sleep]];
+  return [['console', 'discord', 'pylon', 'fetch', 'sleep'], [_realConsole, customDiscordObj, customPylon, fetch, sleep]];
 }
 
 async function loadCodeEvents(code: string) {
@@ -81,7 +83,7 @@ async function loadCodeEvents(code: string) {
     eventHandlers = {};
     func(...boxedObjs[1]);
   } catch (e) {
-    console.log('customCode: error whilst loading: ', e);
+    _realConsole.log('customCode: error whilst loading: ', e);
   }
 }
 
@@ -95,7 +97,6 @@ async function handlePylonEvent(event, ...args) {
 
   const handlers = eventHandlers[event];
   if (handlers && handlers.length > 0) {
-    // console.log('customCode: executing user handler for ', event);
     const boxedObjs = getBoxedObjects(true);
     await Promise.all(handlers.map(async (fn) => {
       // call the user-defined handler for this event
@@ -104,7 +105,7 @@ async function handlePylonEvent(event, ...args) {
                 try {
                     await fn(...eventArgs);
                 } catch(_e) {
-                    console.error('Error whilst executing custom event handler(${event})>', _e.message);
+                  _realConsole.error('Error whilst executing custom event handler(${event})>', _e.message);
                 }
             `);
       await boxedFunc(...boxedObjs[1], eventArgs, fn);
@@ -118,7 +119,6 @@ export async function OnAnyEvent(
   guildId: string,
   ...args: any
 ) {
-  // console.log('customCode: OnAnyEvent: ', event, id);
   await handlePylonEvent(event, ...args);
 }
 
