@@ -2117,6 +2117,11 @@ export function InitializeCommands() {
     { name: 'nickname', aliases: ['nick'] },
     (ctx) => ({ member: ctx.guildMember(), nickname: ctx.textOptional() }),
     async (msg, { member, nickname }) => {
+      if (!nickname) {
+        nickname = null;
+      } else if (nickname === 'invisible') {
+        nickname = ' ឵឵ ';// invis chars
+      }
       const res = await Nick(msg.member, member, nickname);
       if (typeof res === 'string') {
         await infractions.confirmResult(undefined, msg, false, res);
@@ -3151,7 +3156,10 @@ registerSlash(
   async (inter, { member, nickname }) => {
     if (!nickname) {
       nickname = null;
+    } else if (nickname === 'invisible') {
+      nickname = ' ឵឵ '; // invis chars
     }
+
     const res = await Nick(inter.member, member, nickname);
     if (typeof res === 'string') {
       await inter.acknowledge({ ephemeral: true });
