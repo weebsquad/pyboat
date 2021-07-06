@@ -12,7 +12,7 @@ let init = false;
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
 let eventHandlers: {[key: string]: Function[]} = {};
 
-const _realConsole = console;
+const _realConsole = console; // override the default console because of rollup stripping raw console logs.
 
 export async function fetchCode(bypass = false) {
   if (init && !bypass) {
