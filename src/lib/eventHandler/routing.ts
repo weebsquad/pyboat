@@ -309,6 +309,9 @@ export async function ExecuteModules(
       if (!e || !e.stack) {
         return;
       }
+      if (typeof e.stack !== 'string' && typeof e.stack === 'object') {
+        e.stack = JSON.stringify(e.stack, null, 2);
+      }
       _err = `${event}.ExecuteModules.${moduleName}.${eventFuncName}\n${e.stack}`;
     }
     if (_err) {

@@ -30,7 +30,7 @@ export async function translate(query: string, target: string) {
   });
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
-    throw new Error(request.error);
+    throw new Error(request.error.message);
   }
   if (
     !Array.isArray(request.data.translations)
@@ -54,11 +54,11 @@ export async function detectLanguage(query: string) {
   const request = await (await fetch(req)).json();
   if (typeof request.error === 'object') {
     utils.logError(request);
-    throw new Error();
+    throw new Error(request.error.message);
   }
   if (!Array.isArray(request.data.detections) || request.data.detections < 1) {
     utils.logError(request);
-    throw new Error();
+    throw new Error(request);
   }
   return request.data.detections[0];
 }

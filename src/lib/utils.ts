@@ -233,7 +233,7 @@ escapeList.forEach((char) => {
 }
 
 export function logError(...args: any) {
-  if(!globalConfig.showErrors) return;
+  //if(!globalConfig.showErrors) return;
   console.error(...args);
 }
 
