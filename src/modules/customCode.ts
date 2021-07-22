@@ -73,7 +73,7 @@ function getBoxedObjects(full = false): any[] {
   if (!full) {
     return [['discord', 'pylon'], [customDiscordObj, customPylon]];
   }
-  return [['console', 'discord', 'pylon', 'fetch', 'sleep'], [_realConsole, customDiscordObj, customPylon, fetch, sleep]];
+  return [['console', '_realConsole', 'discord', 'pylon', 'fetch', 'sleep'], [_realConsole, _realConsole, customDiscordObj, customPylon, fetch, sleep]];
 }
 
 async function loadCodeEvents(code: string) {
@@ -81,7 +81,7 @@ async function loadCodeEvents(code: string) {
     const boxedObjs = getBoxedObjects();
     const func = new Function(...boxedObjs[0], code);
     eventHandlers = {};
-    func(...boxedObjs[1]);
+    func.call({}, ...boxedObjs[1]);
   } catch (e) {
     _realConsole.log('customCode: error whilst loading: ', e);
   }
@@ -108,7 +108,7 @@ async function handlePylonEvent(event, ...args) {
                   _realConsole.error('Error whilst executing custom event handler(${event})>', _e.message);
                 }
             `);
-      await boxedFunc(...boxedObjs[1], eventArgs, fn);
+      await boxedFunc.call({}, ...boxedObjs[1], eventArgs, fn);
     }));
   }
 }
