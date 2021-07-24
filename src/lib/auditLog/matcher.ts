@@ -329,10 +329,10 @@ export function isAuditLogEnabled(eventName: string) {
 // Raw/final function to get the data
 export async function getAuditLogData(
   eventName: string,
-  ts: number, 
+  ts: number,
   eventPayload: any,
-  attempts: number = 3,
-  attemptsDelay: number = 2000
+  attempts = 3,
+  attemptsDelay = 2000,
 ) {
   if (!isAuditLogEnabled(eventName)) {
     return getAuditLogErrorJson('Audit logs not setup for this event');
@@ -425,9 +425,9 @@ export async function getAuditLogData(
     }
     return item;
   }
-  if(attempts > 0) {
+  if (attempts > 0) {
     await sleep(attemptsDelay);
-    const rv = await getAuditLogData(eventName, ts, eventPayload, attempts-1, attemptsDelay);
+    const rv = await getAuditLogData(eventName, ts, eventPayload, attempts - 1, attemptsDelay);
     return rv;
   }
   return getAuditLogErrorJson('No entry found');
