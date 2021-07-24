@@ -212,7 +212,7 @@
                     "MEMBER_JOIN": "📥 {USERTAG} joined the server (account created {ACCOUNT_AGE})"
                   },
                   "GUILD_MEMBER_REMOVE": {
-                    "MEMBER_LEFT": "📤 {USERTAG} left the server, they were here for {RESIDENCE_DURATION}"
+                    "MEMBER_LEFT": "📤 {USERTAG} left the server, they were here since {RESIDENCE_DURATION}"
                   },
                   "GUILD_BAN_ADD": {
                     "MEMBER_BANNED": "🔨 {USERTAG} was banned from the server"
