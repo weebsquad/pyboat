@@ -301,8 +301,8 @@ export async function ExecuteModules(
         }
       }
       const diffexec = Date.now() - tdiff;
-      if (diffexec > 4) {
-        console.log(`Done executing ${moduleName} , ( ${diffexec}ms )`);
+      if (diffexec > 10) {
+        // console.log(`Done executing ${moduleName} , ( ${diffexec}ms )`);
       }
     } catch (e) {
       utils.logError(e);

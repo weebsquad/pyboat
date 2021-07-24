@@ -158,7 +158,7 @@ export async function resolveQueue() {
       } catch (_) {}
     }
   }
-  console.log('Done executing queue!');
+  // console.log('Done executing queue!');
   procQueue.map((e) => {
     const _f = queue.findIndex((e2) => e.id === e2.id);
     if (_f === -1) {
