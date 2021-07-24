@@ -287,6 +287,7 @@ const defaultConfig = { // for non-defined configs!
         },
         saveOnBan: true,
       },
+      voiceLink: {},
       groupRoles: {},
       lockedRoles: [],
       autoroles: {

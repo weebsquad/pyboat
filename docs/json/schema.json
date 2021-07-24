@@ -470,6 +470,50 @@
                                     "enabled": true
                                 }
                             }
+                        },
+                        "voiceLink": {
+                            "title": "Voice Link",
+                            "type": "object",
+                            "properties": {
+                                "global": {
+                                    "title": "Global link channel",
+                                    "type": "string",
+                                    "minLength": 16,
+                                    "maxLength": 20,
+                                    "pattern": "^[0-9]+$"
+                                },
+                                "channels": {
+                                    "type": "array",
+                                    "title": "Channels",
+                                    "format": "table",
+                                    "items": {
+                                        "type": "object",
+                                        "title": "Channels",
+                                        "properties": {
+                                            "__key": {
+                                                "type": "string",
+                                                "title": "Voice Channel ID",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            },
+                                            "text_channel": {
+                                                "type": "string",
+                                                "title": "Text Channel ID",
+                                                "minLength": 16,
+                                                "maxLength": 20,
+                                                "pattern": "^[0-9]+$"
+                                            } 
+                                        }
+                                    }
+                                }
+                            },
+                            "options": {
+                                "dependencies": {
+                                    "enabled": true
+                                },
+                                "collapsed": true
+                            }
                         }
                     },
                     "options": {

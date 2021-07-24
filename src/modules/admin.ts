@@ -337,6 +337,7 @@ export async function checkRoleAll() {
 export async function every5Min() {
   await checkPrunes();
   checkRoleAll();
+  await checkGlobalChannelAccess();
   try {
     const acts = (await actionPool.getByQuery<Action>({
       active: true,
@@ -1111,6 +1112,227 @@ export async function AL_OnGuildRoleUpdate(
       });
     }
   }
+}
+
+/* VOICE LINKED CHANNELS */
+
+function isVoiceLinkEnabled(): boolean {
+  const cfgmod = config.modules.admin.voiceLink;
+  if (!cfgmod) {
+    return false;
+  }
+  if (!cfgmod.global && !cfgmod.channels) {
+    return false;
+  }
+  if (cfgmod.global && typeof cfgmod.global === 'string' && cfgmod.global.length > 3) {
+    return true;
+  }
+  if (cfgmod.channels && typeof cfgmod.channels === 'object' && !Array.isArray(cfgmod.channels) && Object.keys(cfgmod.channels).length > 0) {
+    return true;
+  }
+  return false;
+}
+
+function memberHasOverride(memberId: discord.GuildMember | string, chan: discord.Channel.AnyGuildChannel): boolean {
+  if (memberId instanceof discord.GuildMember) {
+    memberId = memberId.user.id;
+  }
+  const overwrites = chan.permissionOverwrites;
+  const hasOw = overwrites.find((ow) => {
+    if (ow.id === memberId && ow.allow === discord.Permissions.READ_MESSAGES) {
+      return ow;
+    }
+  });
+  return !!hasOw;
+}
+
+async function checkMemberChannelAccess(member: discord.GuildMember, currChannel: string | null, prevChannel: string | null) {
+  if (!isVoiceLinkEnabled()) {
+    return;
+  }
+  const guild = await discord.getGuild();
+  let channels = await guild.getChannels();
+  const currVc: any = channels.find((ch) => ch.id === currChannel);
+  const prevVc: any = channels.find((ch) => ch.id === prevChannel);
+  const cfgmod = config.modules.admin.voiceLink;
+
+  // check "global"
+  if (cfgmod.global && typeof cfgmod.global === 'string' && cfgmod.global.length > 3) {
+    const thisChan = channels.find((ch) => ch.id === cfgmod.global);
+    if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+      if (currVc && !thisChan.canMember(member, discord.Permissions.READ_MESSAGES) && !memberHasOverride(member, thisChan)) {
+        await thisChan.edit({ permissionOverwrites: [...thisChan.permissionOverwrites, { allow: discord.Permissions.READ_MESSAGES, deny: 0, id: member.user.id, type: 1 }] });
+      } else if (prevVc && !currVc && memberHasOverride(member, thisChan)) {
+        const ows = thisChan.permissionOverwrites;
+        ows.splice(ows.findIndex((ow) => ow.id === member.user.id), 1);
+        await thisChan.edit({ permissionOverwrites: ows });
+      }
+    }
+  }
+
+  channels = await guild.getChannels();
+  if (cfgmod.channels && typeof cfgmod.channels === 'object' && !Array.isArray(cfgmod.channels) && Object.keys(cfgmod.channels).length > 0) {
+    let currEditedCategory = false;
+    // current: category
+    if (currVc && currVc.parentId) {
+      for (const key in cfgmod.channels) {
+        const textChanId = cfgmod.channels[key];
+        if (currVc.parentId === key) {
+          const thisChan = channels.find((ch) => ch.id === textChanId);
+          if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+            if (!thisChan.canMember(member, discord.Permissions.READ_MESSAGES) && !memberHasOverride(member, thisChan)) {
+              await thisChan.edit({ permissionOverwrites: [...thisChan.permissionOverwrites, { allow: discord.Permissions.READ_MESSAGES, deny: 0, id: member.user.id, type: 1 }] });
+              currEditedCategory = true;
+            }
+          }
+          break;
+        }
+      }
+    }
+    // current: individual channels
+    if (currVc && !currEditedCategory) {
+      for (const key in cfgmod.channels) {
+        const textChanId = cfgmod.channels[key];
+        if (currVc.id === key) {
+          const thisChan = channels.find((ch) => ch.id === textChanId);
+          if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+            if (!thisChan.canMember(member, discord.Permissions.READ_MESSAGES) && !memberHasOverride(member, thisChan)) {
+              await thisChan.edit({ permissionOverwrites: [...thisChan.permissionOverwrites, { allow: discord.Permissions.READ_MESSAGES, deny: 0, id: member.user.id, type: 1 }] });
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    // prev
+    if (prevVc) {
+      for (const key in cfgmod.channels) {
+        const textChanId = cfgmod.channels[key];
+        if (prevVc.parentId === key || prevVc.id === key) {
+          const thisChan = channels.find((ch) => ch.id === textChanId);
+          if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+            if (memberHasOverride(member, thisChan)) {
+              const ows = thisChan.permissionOverwrites;
+              ows.splice(ows.findIndex((ow) => ow.id === member.user.id), 1);
+              await thisChan.edit({ permissionOverwrites: ows });
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+async function checkGlobalChannelAccess() {
+  if (!isVoiceLinkEnabled()) {
+    return;
+  }
+  const cfgmod = config.modules.admin.voiceLink;
+  const guild = await discord.getGuild();
+  const states: discord.VoiceState[] = [];
+  const newOws: {[key: string]: discord.Channel.IPermissionOverwrite[]} = {};
+  for await (const state of guild.iterVoiceStates()) {
+    states.push(state);
+  }
+  const channels = await guild.getChannels();
+  // check global
+  if (cfgmod.global && typeof cfgmod.global === 'string' && cfgmod.global.length > 3) {
+    const thisChan = channels.find((ch) => ch.id === cfgmod.global);
+    if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+      // check in channel
+      states.forEach((st) => {
+        if (!thisChan.canMember(st.member, discord.Permissions.READ_MESSAGES) && !memberHasOverride(st.member, thisChan)) {
+          if (!newOws[thisChan.id]) {
+            newOws[thisChan.id] = thisChan.permissionOverwrites;
+          }
+          newOws[thisChan.id] = [...newOws[thisChan.id], { allow: discord.Permissions.READ_MESSAGES, deny: 0, id: st.member.user.id, type: 1 }];
+        }
+      });
+
+      // check not in channel
+      thisChan.permissionOverwrites.forEach((ow) => {
+        if (ow.allow === discord.Permissions.READ_MESSAGES && ow.type === 1 && ow.deny === 0) {
+          const in_state = states.find((st) => st.member.user.id === ow.id);
+          if (!in_state) {
+            if (!newOws[thisChan.id]) {
+              newOws[thisChan.id] = thisChan.permissionOverwrites;
+            }
+            const thisInd = newOws[thisChan.id].findIndex((ow2) => ow.allow === ow2.allow && ow.deny === ow2.deny && ow.id === ow2.id);
+            if (thisInd > -1) {
+              newOws[thisChan.id].splice(thisInd, 1);
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // check channels
+  if (cfgmod.channels && typeof cfgmod.channels === 'object' && !Array.isArray(cfgmod.channels) && Object.keys(cfgmod.channels).length > 0) {
+    for (const key in cfgmod.channels) {
+      const thisChan = channels.find((ch) => ch.id === cfgmod.channels[key]);
+      if (thisChan && ((thisChan instanceof discord.GuildTextChannel) || (thisChan instanceof discord.GuildNewsChannel))) {
+        // check in channel
+        states.forEach((st) => {
+          const vc = channels.find((ch) => ch.id === st.channelId);
+          if (vc.id === key || (vc.parentId && vc.parentId === key)) {
+            if (!thisChan.canMember(st.member, discord.Permissions.READ_MESSAGES) && !memberHasOverride(st.member, thisChan)) {
+              if (!newOws[thisChan.id]) {
+                newOws[thisChan.id] = thisChan.permissionOverwrites;
+              }
+              newOws[thisChan.id] = [...newOws[thisChan.id], { allow: discord.Permissions.READ_MESSAGES, deny: 0, id: st.member.user.id, type: 1 }];
+            }
+          }
+        });
+
+        // check not in channel
+        thisChan.permissionOverwrites.forEach((ow) => {
+          if (ow.allow === discord.Permissions.READ_MESSAGES && ow.type === 1 && ow.deny === 0) {
+            const in_state = states.find((st) => {
+              const vc = channels.find((ch) => ch.id === st.channelId);
+              if (vc.id !== key || (vc.parentId && vc.parentId !== key)) {
+                return false;
+              }
+              return st.member.user.id === ow.id;
+            });
+            if (!in_state) {
+              if (!newOws[thisChan.id]) {
+                newOws[thisChan.id] = thisChan.permissionOverwrites;
+              }
+              const thisInd = newOws[thisChan.id].findIndex((ow2) => ow.allow === ow2.allow && ow.deny === ow2.deny && ow.id === ow2.id);
+              if (thisInd > -1) {
+                newOws[thisChan.id].splice(thisInd, 1);
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  // update channel overwrites
+  if (Object.keys(newOws).length > 0) {
+    for (const key in newOws) {
+      const chan = channels.find((ch) => ch.id === key);
+      await chan.edit({ permissionOverwrites: newOws[key] });
+    }
+  }
+}
+
+export async function OnVoiceStateUpdate(
+  id: string,
+  gid: string,
+  voiceState: discord.VoiceState,
+  oldVoiceState: discord.VoiceState,
+) {
+  if (!isVoiceLinkEnabled()) {
+    return;
+  }
+  if (voiceState.channelId === oldVoiceState.channelId) {
+    return;
+  }
+  await checkMemberChannelAccess(voiceState.member, voiceState.channelId, oldVoiceState.channelId);
 }
 
 /* ROLE PERSIST */
