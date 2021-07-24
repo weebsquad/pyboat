@@ -6,6 +6,9 @@ import { Infraction } from './modules/infractions';
 const configKv = new pylon.KVNamespace('config');
 
 export const updates = {
+  '1.8.1': async () => {
+    await new pylon.KVNamespace('roleLock').clear();
+  },
   '1.7.15': async () => {
     // remove Infractions.guild
     const infsPool = new StoragePool({

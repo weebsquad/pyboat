@@ -338,6 +338,7 @@ export async function every5Min() {
   await checkPrunes();
   checkRoleAll();
   await checkGlobalChannelAccess();
+  await InitRoleLocks();
   try {
     const acts = (await actionPool.getByQuery<Action>({
       active: true,
@@ -1075,7 +1076,80 @@ export async function OnMessageDeleteBulk(
   });
 }
 
+type RoleLockDataOptions = {
+  color?: number;
+  hoist?: boolean;
+  mentionable?: boolean;
+  name?: string;
+  permissions?: any;
+}
+
+type RoleLockData = {
+  locked: boolean;
+  role_data: RoleLockDataOptions;
+  unlocked_until?: number;
+}
+function isRoleLockEnabled() {
+  if (Array.isArray(config.modules.admin.lockedRoles) && config.modules.admin.lockedRoles.length > 0) {
+    return true;
+  }
+  return false;
+}
 const roleLockKv = new pylon.KVNamespace('roleLock');
+export async function InitRoleLocks() {
+  if (!isRoleLockEnabled()) {
+    const items = await roleLockKv.list();
+    if (items.length > 0) {
+      await roleLockKv.clear();
+    }
+    return;
+  }
+  const guild = await discord.getGuild();
+  const roles = await guild.getRoles();
+  const thisRoles = roles.filter((rl) => config.modules.admin.lockedRoles.includes(rl.id));
+  if (thisRoles.length < 1) {
+    return;
+  }
+  const keys = thisRoles.map((rl) => rl.id);
+  // @ts-ignore
+  const { result } = await roleLockKv.transactMultiWithResult(keys, (prv: [RoleLockData | undefined]) => {
+    let added = false;
+    const next = [];
+    for (const kr in keys) {
+      const id = keys[kr];
+      const role = thisRoles.find((rl) => rl.id === id);
+      const prev = prv[kr];
+      if (prev) {
+        if (prev.locked && prev.unlocked_until) {
+          prev.unlocked_until = null;
+        } else if (!prev.locked && prev.unlocked_until) {
+          if (Date.now() > prev.unlocked_until) {
+            prev.unlocked_until = null;
+            prev.locked = true;
+          }
+        }
+        next.push(prev);
+        continue;
+      }
+      const newD: RoleLockData = {
+        locked: true,
+        role_data: {
+          color: role.color,
+          hoist: role.hoist,
+          mentionable: role.mentionable,
+          name: role.name,
+          permissions: role.permissions,
+        },
+      };
+      next.push(newD);
+      added = true;
+    }
+    return { next, result: added };
+  });
+  if (result) {
+    console.log('Added role tracking for lockedRoles!');
+  }
+}
 export async function AL_OnGuildRoleUpdate(
   id: string,
   gid: string,
@@ -1092,23 +1166,40 @@ export async function AL_OnGuildRoleUpdate(
   if (log instanceof discord.AuditLogEntry && log.userId === discord.getBotId()) {
     return;
   }
-  if (!(log instanceof discord.AuditLogEntry)) {
-    return;
-  } // yikes
   if (role.guildId === undefined) {
     const nr = JSON.parse(JSON.stringify(role));
     nr.guildId = guildId;
     role = utils.makeFake(nr, discord.Role);
   }
+  await InitRoleLocks();
   if (role.name !== oldRole.name || role.permissions !== oldRole.permissions || role.hoist !== oldRole.hoist || role.color !== oldRole.color || role.mentionable !== oldRole.mentionable) {
-    const kvc = await roleLockKv.get(role.id);
-    if (typeof kvc !== 'boolean') {
+    const kvc = await roleLockKv.get<RoleLockData>(role.id);
+    let isLocked = false;
+    if (kvc && kvc.locked) {
+      isLocked = true;
+    } else if (kvc && !kvc.locked && kvc.unlocked_until) { // probably don't need this since we're calling InitRoleLocks above, which "SHOULD" always set it to locked = true, but lets be safe, why not.
+      const now = Date.now();
+      if (now > kvc.unlocked_until) {
+        isLocked = true;
+      }
+    }
+    if (isLocked) {
       await role.edit({
-        permissions: role.permissions !== oldRole.permissions ? oldRole.permissions : undefined,
-        hoist: role.hoist !== oldRole.hoist ? oldRole.hoist : undefined,
-        color: role.color !== oldRole.color ? oldRole.color : undefined,
-        name: role.name !== oldRole.name ? oldRole.name : undefined,
-        mentionable: role.mentionable !== oldRole.mentionable ? oldRole.mentionable : undefined,
+        permissions: kvc.role_data.permissions,
+        hoist: kvc.role_data.hoist,
+        color: kvc.role_data.color,
+        name: kvc.role_data.name,
+        mentionable: kvc.role_data.mentionable,
+      });
+    } else if (kvc && !isLocked) {
+      await roleLockKv.transact<RoleLockData>(role.id, (prev) => {
+        const nx = prev;
+        prev.role_data.color = role.color;
+        prev.role_data.permissions = role.permissions;
+        prev.role_data.hoist = role.hoist;
+        prev.role_data.name = role.name;
+        prev.role_data.mentionable = role.mentionable;
+        return nx;
       });
     }
   }
@@ -2085,12 +2176,19 @@ export function InitializeCommands() {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.not_locked);
           return false;
         }
-        const kvc = await roleLockKv.get(guildRole.id);
-        if (typeof kvc === 'boolean') {
+        const { result } = await roleLockKv.transactWithResult<RoleLockData, boolean>(guildRole.id, (prev) => {
+          if (prev && prev.locked === false) {
+            return { result: false, next: prev };
+          }
+          const nx = prev;
+          nx.locked = false;
+          nx.unlocked_until = Date.now() + (1000 * 60 * 5);
+          return { result: true, next: nx };
+        });
+        if (!result) {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
           return false;
         }
-        await roleLockKv.put(guildRole.id, true, { ttl: 1000 * 60 * 5 });
         await infractions.confirmResult(undefined, msg, true, i18n.modules.admin.adm_role_unlock.unlocked);
       },
       {
@@ -3177,14 +3275,21 @@ if (groupRole) {
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.not_locked);
         return false;
       }
-      const kvc = await roleLockKv.get(role.id);
-      if (typeof kvc === 'boolean') {
+      const { result } = await roleLockKv.transactWithResult<RoleLockData, boolean>(role.id, (prev) => {
+        if (prev && prev.locked === false) {
+          return { result: false, next: prev };
+        }
+        const nx = prev;
+        nx.locked = false;
+        nx.unlocked_until = Date.now() + (1000 * 60 * 5);
+        return { result: true, next: nx };
+      });
+      if (!result) {
         await inter.acknowledge({ ephemeral: true });
         await infractions.confirmResultInteraction(undefined, inter, false, i18n.modules.admin.adm_role_unlock.already_unlocked);
         return false;
       }
       await inter.acknowledge({ ephemeral: false });
-      await roleLockKv.put(role.id, true, { ttl: 1000 * 60 * 5 });
       await infractions.confirmResultInteraction(undefined, inter, true, i18n.modules.admin.adm_role_unlock.unlocked);
     },
     {
