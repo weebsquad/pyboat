@@ -246,7 +246,10 @@ export const messages = {
       } else {
         _type = 'role';
       }
-      const _id = newV !== undefined ? newV.id : oldV.id;
+      let _id = newV !== undefined ? newV.id : oldV.id;
+      if (oldV && !newV) {
+        _id = oldV.id;
+      }
       let objectPing = `${_type === 'role' ? `<@&${_id}>` : `<@!${_id}>`}`;
       if (_type === 'role' && _id === guild.id) {
         // everyone role
@@ -259,7 +262,7 @@ export const messages = {
       if (!oldV && newV) { // Added!
         txt += `\n${i18n.modules.logging.l_terms.added} ${_type} ${objectPing}`;
       } else if (oldV && !newV) {
-        txt += `\n${i18n.modules.logging.l_terms.removed} ${_type} ${_type === 'role' ? `<@&${oldV.id}>` : `<@!${oldV.id}>`}`;
+        txt += `\n${i18n.modules.logging.l_terms.removed} ${_type} ${objectPing}`;
       } else if (oldV && newV) {
         txt += `\n${i18n.modules.logging.l_terms.changed} ${_type} ${objectPing}`;
       }
