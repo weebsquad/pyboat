@@ -11,15 +11,15 @@ const kv = new pylon.KVNamespace('auditLogMatcher');
 /* const entryPool = 'pool'; // Array */
 const kvlogEntryTimeout = 11 * 60 * 1000; // for non-stateless stuff like message deletes that we need to save in kv, how long to save it for.
 // audit log entry grouping is only done within 10mins of the first in the group, so we only need to store it for that long.
-const logEntryLimiter = 15 * 1000; // how long ago a audit log entry can be since the event reception date
+const logEntryLimiter = 15 * 1000; // how old a audit log entry can be since the event reception date
 const waits: {[key: string]: number} = {
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD
   22: 400,
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_REMOVE
   23: 400,
 };
-const minwait = 170;
-const logsPerSecond = 15; // used to determine how many entries to show
+const minwait = 200;
+const logsPerSecond = 17; // used to determine how many entries to show
 const groupingActions = [
   discord.AuditLogEntry.ActionType.MESSAGE_DELETE,
   discord.AuditLogEntry.ActionType.MESSAGE_BULK_DELETE,
@@ -353,7 +353,7 @@ export async function getAuditLogData(
   }
   let limit = new Date(ts - logEntryLimiter).getTime(); // Limit on how long ago audit log entries can be
   const diffSince = new Date().getTime() - ts;
-  const limitQuant = Math.max(8, Math.ceil(logsPerSecond * (diffSince / 1000)));
+  const limitQuant = Math.min(500, Math.max(8, Math.ceil(logsPerSecond * (diffSince / 1000))));
   const opts: discord.Guild.IIterAuditLogsOptions = { limit: limitQuant };
   let actionsForThis = def.auditLogEntries;
   if (!Array.isArray(actionsForThis)) {
