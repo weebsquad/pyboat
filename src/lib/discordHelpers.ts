@@ -259,6 +259,13 @@ export async function guildMemberHasPermission(
   return false;
 }
 */
+export function getDiscordTimestamp(ts: number | Date, flags?: string): string {
+  if(ts instanceof Date) ts = ts.getTime();
+  if(ts > 1000000000000) ts = ts/1000;
+  ts = Math.floor(ts);
+  return `<t:${ts}${flags ? `:${flags}` : '' }>`
+}
+
 export function getSnowflakeDate(snowflake: string) {
   const snowflakeData = decomposeSnowflake(snowflake);
   return snowflakeData.timestamp;
@@ -274,6 +281,8 @@ function parseBigInt(str: string, base: any = 10) {
   }
   return bigint;
 }
+
+
 
 let INCREMENT = 0;
 export function composeSnowflake(timestamp: any = Date.now()) {
