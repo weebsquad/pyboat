@@ -41,6 +41,7 @@ const objectRemaps = <any>{
     iconHash: 'icon',
     rulesChannelId: null,
     publicUpdatesChannelId: null,
+    splashHash: 'splash',
   },
   30: {
     // ROLE_CREATE
