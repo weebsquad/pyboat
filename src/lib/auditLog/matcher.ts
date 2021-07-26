@@ -11,7 +11,7 @@ const kv = new pylon.KVNamespace('auditLogMatcher');
 /* const entryPool = 'pool'; // Array */
 const kvlogEntryTimeout = 11 * 60 * 1000; // for non-stateless stuff like message deletes that we need to save in kv, how long to save it for.
 // audit log entry grouping is only done within 10mins of the first in the group, so we only need to store it for that long.
-const logEntryLimiter = 10 * 1000; // how long ago a audit log entry can be since the event reception date
+const logEntryLimiter = 15 * 1000; // how long ago a audit log entry can be since the event reception date
 const waits: {[key: string]: number} = {
   // discord.AuditLogEntry.ActionType.MEMBER_BAN_ADD
   22: 400,
@@ -370,17 +370,17 @@ export async function getAuditLogData(
     }
   });
   if (isGrouped) {
-    limit = new Date(new Date().getTime() - 10 * 60 * 1000).getTime();
+    limit = new Date(new Date().getTime() - 11 * 60 * 1000).getTime();
   }
 
   // specific stuff
   const diffn = new Date().getTime() - ts;
   if (maxWait > 0 && diffn < maxWait) {
-    await sleep(Math.max(50, maxWait - diffn));
+    await sleep(Math.max(100, maxWait - diffn));
   }
   const diffw = new Date().getTime() - ts;
   if (minwait > 0 && diffw < minwait) {
-    await sleep(Math.max(50, minwait - diffw));
+    await sleep(Math.max(100, minwait - diffw));
   }
   if (actionsForThis.length === 1) {
     // eslint-disable-next-line
