@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as ratelimit from './eventHandler/ratelimit';
 import * as queue from './eventHandler/queue';
 import * as conf from '../config';
@@ -12,9 +13,15 @@ import { InitializedPools } from './storagePools';
 import * as routing from './eventHandler/routing';
 import * as reddit from '../modules/reddit';
 import * as internal from '../modules/internal';
+import { executeCrons } from '../modules/customCode';
 import { logError } from './utils';
 
-const _cr: {[key: string]: any} = {
+type CronJob = {
+  name: string
+  function: Function;
+  started: boolean;
+}
+export const crons: {[key: string]: CronJob} = {
   '0 0 * * * * *': {
     name: 'every_hour',
     async function() {
@@ -46,13 +53,13 @@ const _cr: {[key: string]: any} = {
           await utilities.checkAllCustomRoles();
 
           // @ts-ignore
-          const redditmeas = await pylon.getCpuTime();
+          // const redditmeas = await pylon.getCpuTime();
           await reddit.updateSubs();
           // @ts-ignore
           // console.log(`Started Reddit update @${Math.floor(redditmeas)}ms and took ${Math.floor(await pylon.getCpuTime() - redditmeas)}ms to complete.`);
 
           // @ts-ignore
-          const poolmeas = await pylon.getCpuTime();
+          // const poolmeas = await pylon.getCpuTime();
           // @ts-ignore
           // console.log('Cron about to clean pools, at ', Math.floor(await pylon.getCpuTime()), 'ms');
           if (InitializedPools.length > 0) {
@@ -81,21 +88,31 @@ export async function onCron(name: string) {
       return;
     }
   }
-  for (const key in _cr) {
-    if (_cr[key].name !== name) {
+  for (const key in crons) {
+    if (crons[key].name !== name) {
       continue;
     }
-    /* logDebug(
-      'CRON_RAN',
-      new Map<string, any>([['CRON_NAME', name]]),
-    ); */
-    await _cr[key].function();
+    await crons[key].function();
+    // generic global customCode execution
+    if (routing.isModuleEnabled('customCode')) {
+      await executeCrons(name);
+    }
   }
 }
 
+export function cronExists(name: string): boolean {
+  name = name.toLowerCase();
+  for (const key in crons) {
+    if (crons[key].name.toLowerCase() === name) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function InitializeCrons() {
-  for (const key in _cr) {
-    const obj = _cr[key];
+  for (const key in crons) {
+    const obj = crons[key];
     const nm = obj.name;
     if (obj.started === true) {
       continue;

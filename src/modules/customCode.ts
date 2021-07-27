@@ -7,12 +7,14 @@ import * as c2 from '../lib/commands2';
 import { registerChatRaw, registerChatSubCallback } from './commands';
 import { language as i18n } from '../localization/interface';
 import { saveMessage } from './admin';
+import * as crons from '../lib/crons';
 
 let init = false;
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
 let eventHandlers: {[key: string]: Function[]} = {};
+let cronHandlers: {[key: string]: Function} = {};
 
-const _realConsole = console; // override the default console because of rollup stripping raw console logs
+const _realConsole = Object.freeze(console); // override the default console because of rollup stripping raw console logs
 
 export async function fetchCode(bypass = false) {
   if (init && !bypass) {
@@ -26,7 +28,7 @@ export async function fetchCode(bypass = false) {
       await loadCodeEvents(code);
       return true;
     } catch (e) {
-      console.error('customCode: error fetching http: ', e);
+      _realConsole.error('customCode: error fetching http: ', e);
     }
   }
   return false;
@@ -40,6 +42,9 @@ function getBoxedObjects(full = false): any[] {
       continue;
     }
     if (key === 'on' || key === 'registerEventHandler') {
+      if (full) {
+        continue;
+      }
       customDiscordObj[key] = function (event, handler) {
         if (!eventHandlers[event]) {
           eventHandlers[event] = [];
@@ -48,10 +53,20 @@ function getBoxedObjects(full = false): any[] {
       };
       continue;
     }
+
     customDiscordObj[key] = discord[key];
   }
   for (const key in pylon) {
     if (key === 'tasks') {
+      if (full) {
+        continue;
+      }
+      customPylon[key] = {};
+      customPylon[key].cron = function (name, _, handler) {
+        if (!cronHandlers[name] && crons.cronExists(name)) {
+          cronHandlers[name] = handler;
+        }
+      };
       continue;
       /* const customTasks = {};
       for (const tkey in pylon[key]) {
@@ -62,7 +77,7 @@ function getBoxedObjects(full = false): any[] {
         }
       }
       customPylon[key] = customTasks; */
-    } else if (key === 'requestCpuBurst') {
+    } else if (['requestCpuBurst', 'getCpuTime', 'getHeapStatistics', 'CpuBurstRequestError', 'CpuBurstTimeoutError'].includes(key)) {
       continue;
       /* customPylon[key] = function (_) {
       }; */
@@ -70,20 +85,43 @@ function getBoxedObjects(full = false): any[] {
       customPylon[key] = pylon[key];
     }
   }
+  Object.freeze(customDiscordObj);
+  Object.freeze(customPylon);
   if (!full) {
     return [['discord', 'pylon'], [customDiscordObj, customPylon]];
   }
   return [['console', '_realConsole', 'discord', 'pylon', 'fetch', 'sleep'], [_realConsole, _realConsole, customDiscordObj, customPylon, fetch, sleep]];
 }
 
+/*
+function compileCode (src) {
+  src = 'with (sandbox) {' + src + '}'
+  const code = new Function('sandbox', src)
+
+  return function (sandbox) {
+    const sandboxProxy = new Proxy(sandbox, {has, get})
+    return code(sandboxProxy)
+  }
+}
+function has (target, key) {
+  return true
+}
+
+function get (target, key) {
+  if (key === Symbol.unscopables) return undefined
+  return target[key]
+} */
+
 async function loadCodeEvents(code: string) {
   try {
     const boxedObjs = getBoxedObjects();
     const func = new Function(...boxedObjs[0], code);
     eventHandlers = {};
+    cronHandlers = {};
     func.call({}, ...boxedObjs[1]);
+    _realConsole.info(`customCode: Successfully loaded ${code.split('\n').length} lines of code`);
   } catch (e) {
-    _realConsole.log('customCode: error whilst loading: ', e);
+    _realConsole.error('customCode: error whilst loading: ', e);
   }
 }
 
@@ -113,13 +151,32 @@ async function handlePylonEvent(event, ...args) {
   }
 }
 
+export async function executeCrons(name: string) {
+  if (!init) {
+    await fetchCode();
+  }
+  if (Object.keys(cronHandlers).length > 0) {
+    if (cronHandlers[name]) {
+      const boxedObjs = getBoxedObjects(true);
+      const boxedFunc = new AsyncFunction([...boxedObjs[0], 'fn'], `
+                try {
+                    await fn();
+                } catch(_e) {
+                  _realConsole.error('Error whilst executing custom cron handler(${name})>', _e.message);
+                }
+            `);
+      await boxedFunc.call({}, ...boxedObjs[1], cronHandlers[name]);
+    }
+  }
+}
+
 export async function OnAnyEvent(
   event: string,
   id: string,
   guildId: string,
   ...args: any
 ) {
-  await handlePylonEvent(event, ...args);
+  await handlePylonEvent.call({}, event, ...args);
 }
 
 export function subCode(subCmdGroup: discord.command.CommandGroup) {
