@@ -1,6 +1,5 @@
 // todo
 import * as conf from '../../config';
-import { getTimestamp } from './messages';
 import * as utils from './utils';
 import * as utils2 from '../../lib/utils';
 import { QueuedEvent } from '../../lib/eventHandler/queue';
@@ -306,7 +305,7 @@ async function getMessages(
 
     if (!cfg.embed) {
       let txt = '';
-      const ts = getTimestamp(utils.changeLoggingTimezone(date));
+      const ts = utils.getTimestamp(date);
       if (typeof ts !== 'string' || ts === '') {
         throw new Error('logging timestamps improperly formatted!');
       }

@@ -5,6 +5,10 @@ export function isDebug(bypassMaster = false) {
   return (bypassMaster || conf.guildId === conf.globalConfig.masterGuild) && typeof (conf.config.modules.logging.debug) === 'boolean' && conf.config.modules.logging.debug === true;
 }
 
+export function getTimestamp(dt: Date) {
+  return `\`[\`${utils.getDiscordTimestamp(dt, 'T')}\`]\``;
+}
+
 export function changeLoggingTimezone(dt: Date) {
   if (!conf.config.modules.logging.timezone) {
     return dt;
