@@ -353,6 +353,30 @@ export function InitializeCommands() {
     // http://i0.tf/q261q.zip
     registerChatRaw(
       sub,
+      'threadlogs',
+      async (m) => {
+        const guild = await m.getGuild();
+        let count = 0;
+        const entries = [];
+        for await (const k of guild.iterAuditLogs()) {
+          count++;
+          if (count > 3) {
+            break;
+          }
+          console.log(typeof k, k instanceof discord.AuditLogEntry, k);
+          entries.push(k);
+        }
+        await m.inlineReply({ content: `Result:\n\`\`\`json\n${JSON.stringify(entries, null, 2)}\n\`\`\`` });
+      },
+      {
+        permissions: {
+          globalAdmin: true,
+        },
+      },
+    );
+
+    registerChatRaw(
+      sub,
       'cpu',
       async (m) => {
       // @ts-ignore

@@ -389,6 +389,9 @@ export async function getAuditLogData(
   }
   let tmpstore;
   for await (const item of guild.iterAuditLogs(opts)) {
+    if (!item) {
+      continue;
+    }
     // check too long ago
     const dateSn = new Date(
       utils.decomposeSnowflake(item.id).timestamp,
@@ -512,6 +515,9 @@ export async function getMultiAuditLogData(q: Array<QueuedEvent>) {
   events = events.reverse(); // because they're ordered from oldest to newest and audit logs are newest -> oldest
   const usedLogs = new Array<string>();
   for await (const item of guild.iterAuditLogs(opts)) {
+    if (!item) {
+      continue;
+    }
     const dateSn = new Date(
       utils.decomposeSnowflake(item.id).timestamp,
     ).getTime();
