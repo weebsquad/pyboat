@@ -1096,6 +1096,9 @@ export function InitializeCommands() {
           if (k === 'category') {
             emj = '<:category:754241739258069043>';
           }
+          if (k === 'stage') {
+            emj = '<:stage:870236745072009236>';
+          }
 
           /* if (obj > 0) {
             chanStats.push(
@@ -2163,6 +2166,9 @@ registerSlash(
       }
       if (k === 'category') {
         emj = '<:category:754241739258069043>';
+      }
+      if (k === 'stage') {
+        emj = '<:stage:870236745072009236>';
       }
 
       /* if (obj > 0) {
