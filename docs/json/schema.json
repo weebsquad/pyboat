@@ -475,12 +475,23 @@
                             "title": "Voice Link",
                             "type": "object",
                             "properties": {
+                                "enabled": {
+                                    "title": "Enabled",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "format": "checkbox"
+                                },
                                 "global": {
                                     "title": "Global link channel",
                                     "type": "string",
                                     "minLength": 16,
                                     "maxLength": 20,
-                                    "pattern": "^[0-9]+$"
+                                    "pattern": "^[0-9]+$",
+                                    "options": {
+                                        "dependencies": {
+                                            "enabled": true
+                                        }
+                                    }
                                 },
                                 "channels": {
                                     "type": "array",
@@ -504,6 +515,12 @@
                                                 "maxLength": 20,
                                                 "pattern": "^[0-9]+$"
                                             } 
+                                        }
+                                    },
+                                    "options": {
+                                        "collapsed": true,
+                                        "dependencies": {
+                                            "enabled": true
                                         }
                                     }
                                 }
