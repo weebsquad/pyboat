@@ -287,7 +287,11 @@ const defaultConfig = { // for non-defined configs!
         },
         saveOnBan: true,
       },
-      voiceLink: {},
+      voiceLink: {
+        enabled: false,
+        global: '',
+        channels: {},
+      },
       groupRoles: {},
       lockedRoles: [],
       autoroles: {
