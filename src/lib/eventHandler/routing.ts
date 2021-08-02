@@ -25,6 +25,7 @@ import {
 } from './queue';
 import * as utils from '../utils';
 import { logDebug } from '../../modules/logging/events/custom';
+import { errorsDisplay } from '../../modules/commands';
 import { InitializeCommands2 } from '../commands2';
 
 let rl = false;
@@ -109,6 +110,13 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     const err: Error = e;
 
     utils.logError(e);
+    if (err.message) {
+      for (const key in errorsDisplay) {
+        if (err.message.toLowerCase().includes(errorsDisplay[key].toLowerCase())) {
+          return;
+        }
+      }
+    }
 
     logDebug(
       'BOT_ERROR',

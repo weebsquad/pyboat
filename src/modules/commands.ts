@@ -8,7 +8,7 @@ import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
-const errorsDisplay = ['missing permissions'];
+export const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
 const TEMPORARY_SLASH_COMMANDS_MODULE_LIMITER = '';
 const SLASH_COMMANDS_LIMIT = 10;
