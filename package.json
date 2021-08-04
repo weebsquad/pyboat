@@ -1,6 +1,6 @@
 {
   "name": "pyboat",
-  "version": "1.8.6",
+  "version": "1.8.7",
   "description": "yes",
   "scripts": {
     "typings": "typings install",
