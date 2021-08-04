@@ -2379,7 +2379,7 @@ export function InitializeCommands() {
             }
           }
           perms = Object.keys(perms);
-          const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
+          const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS_AND_STICKERS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS', 'MANAGE_THREADS'];
           const noStaff = perms.every((p) => !staffPerms.includes(p));
           if (!noStaff) {
             return { content: i18n.modules.admin.group_has_staff_perms };
@@ -3407,7 +3407,7 @@ if (groupRole) {
         }
       }
       perms = Object.keys(perms);
-      const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS'];
+      const staffPerms = ['ADMINISTRATOR', 'KICK_MEMBERS', 'BAN_MEMBERS', 'MANAGE_CHANNELS', 'MANAGE_GUILD', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'MUTE_MEMBERS', 'DEAFEN_MEMBERS', 'MANAGE_NICKNAMES', 'MANAGE_ROLES', 'MANAGE_EMOJIS_AND_STICKERS', 'MANAGE_WEBHOOKS', 'MOVE_MEMBERS', 'MANAGE_THREADS'];
       const noStaff = perms.every((p) => !staffPerms.includes(p));
       if (!noStaff) {
         await inter.acknowledge({ ephemeral: true });

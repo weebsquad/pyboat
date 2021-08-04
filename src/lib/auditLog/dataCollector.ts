@@ -75,11 +75,15 @@ export const auditLogDefinitions: {[key: string]: any} = {
     // CHANNEL_OVERWRITE_CREATE
     13(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwriteCreate) {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
+      // @ts-ignore
+      const denyNew = log.changes.deny && typeof (log.changes.deny.newValue) !== 'undefined' ? new utils.Permissions(log.changes.denyNew ? log.changes.denyNew.newValue : log.changes.deny.newValue).bitfield : null;
+      // @ts-ignore
+      const allowNew = log.changes.allow && typeof (log.changes.allow.newValue) !== 'undefined' ? new utils.Permissions(log.changes.allowNew ? log.changes.allowNew.newValue : log.changes.allow.newValue).bitfield : null;
       if (perms.added.length === 1) {
         const thisp = perms.added[0];
         // @ts-ignore
         if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
-          if (log.changes.allow.newValue === thisp.allow && log.changes.deny.newValue === thisp.deny) {
+          if (allowNew === thisp.allow && denyNew === thisp.deny) {
             return true;
           }
         }
@@ -89,21 +93,35 @@ export const auditLogDefinitions: {[key: string]: any} = {
     // CHANNEL_OVERWRITE_UPDATE
     14(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwritesUpdate) {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
+      // @ts-ignore
+      const denyOld = log.changes.deny && typeof (log.changes.deny.oldValue) !== 'undefined' ? new utils.Permissions(log.changes.denyNew ? log.changes.denyNew.oldValue : log.changes.deny.oldValue).bitfield : null;
+      // @ts-ignore
+      const denyNew = log.changes.deny && typeof (log.changes.deny.newValue) !== 'undefined' ? new utils.Permissions(log.changes.denyNew ? log.changes.denyNew.newValue : log.changes.deny.newValue).bitfield : null;
+      // @ts-ignore
+      const allowOld = log.changes.allow && typeof (log.changes.allow.oldValue) !== 'undefined' ? new utils.Permissions(log.changes.allowNew ? log.changes.allowNew.oldValue : log.changes.allow.oldValue).bitfield : null;
+      // @ts-ignore
+      const allowNew = log.changes.allow && typeof (log.changes.allow.newValue) !== 'undefined' ? new utils.Permissions(log.changes.allowNew ? log.changes.allowNew.newValue : log.changes.allow.newValue).bitfield : null;
+
       if (perms.changed.length === 1) {
         const thisp = perms.changed[0];
+
         // @ts-ignore
         if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
           const oldpe = dt[1].permissionOverwrites.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === thisp.id);
           if (!oldpe) {
             return false;
           }
+          oldpe.allow = new utils.Permissions(oldpe.allow).bitfield;
+          oldpe.deny = new utils.Permissions(oldpe.deny).bitfield;
+
           if (log.changes.allow) {
-            if ((log.changes.allow.newValue && log.changes.allow.newValue !== thisp.allow) || (log.changes.allow.oldValue && log.changes.allow.oldValue !== oldpe.allow)) {
+            if ((allowNew && allowNew !== thisp.allow) || (allowOld && allowOld !== oldpe.allow)) {
               return false;
             }
           }
           if (log.changes.deny) {
-            if ((log.changes.deny.newValue && log.changes.deny.newValue !== thisp.deny) || (log.changes.deny.oldValue && log.changes.deny.oldValue !== oldpe.deny)) {
+            // @ts-ignore
+            if ((denyNew && denyNew !== thisp.deny) || (denyOld && denyOld !== oldpe.deny)) {
               return false;
             }
           }
@@ -115,11 +133,17 @@ export const auditLogDefinitions: {[key: string]: any} = {
     // CHANNEL_OVERWRITE_DELETE
     15(dt: any[], log: discord.AuditLogEntry.ChannelPermissionOverwriteDelete) {
       const perms = utils.getPermDiffs(dt[0], dt[1]);
+      // @ts-ignore
+      const denyOld = log.changes.deny && typeof (log.changes.deny.oldValue) !== 'undefined' ? new utils.Permissions(log.changes.denyNew ? log.changes.denyNew.oldValue : log.changes.deny.oldValue).bitfield : null;
+      // @ts-ignore
+      const allowOld = log.changes.allow && typeof (log.changes.allow.oldValue) !== 'undefined' ? new utils.Permissions(log.changes.allowNew ? log.changes.allowNew.oldValue : log.changes.allow.oldValue).bitfield : null;
       if (perms.removed.length === 1) {
         const thisp = perms.removed[0];
+
         // @ts-ignore
         if (thisp.id === log.options.id && (thisp.type === log.options.type || (thisp.type == 0 && log.options.type === 'role') || (thisp.type == 1 && log.options.type === 'member'))) {
-          if (log.changes.allow.oldValue === thisp.allow && log.changes.deny.oldValue === thisp.deny) {
+          // @ts-ignore
+          if (allowOld === thisp.allow && denyOld === thisp.deny) {
             return true;
           }
         }

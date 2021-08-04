@@ -3,6 +3,7 @@
 import * as conf from '../config';
 import { pad, swapKV, logError, makeFake, escapeString } from './utils';
 import { EntitlementTypeEnum, Epoch } from '../constants/constants';
+import { Permissions } from './bitField';
 
 const { config } = conf;
 
@@ -314,8 +315,15 @@ export function decomposeSnowflake(snowflake: string) {
   return res;
 }
 
+export type BigPermOverwrites = {
+  allow: BigInt;
+  deny: BigInt;
+  type: string | number;
+  id: string;
+}
+
 export function getPermDiffs(chan: discord.GuildChannel, oldChan: discord.GuildChannel) {
-  const ret: {[key: string]: Array<discord.Channel.IPermissionOverwrite>} = {
+  const ret: {[key: string]: Array<BigPermOverwrites>} = {
     added: [],
     removed: [],
     changed: [],
@@ -325,27 +333,34 @@ export function getPermDiffs(chan: discord.GuildChannel, oldChan: discord.GuildC
   newOv.map((e) => {
     const _f = oldOv.find((obj) => obj.id === e.id);
     if (!_f) {
-      if (!ret.added.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.added.push(e);
+      if (!ret.added.find((obj: BigPermOverwrites) => obj.id === e.id)) {
+        ret.added.push({ ...e, allow: BigInt(e.allow), deny: BigInt(e.deny) });
       }
     } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
-      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.changed.push(e);
+      if (!ret.changed.find((obj: BigPermOverwrites) => obj.id === e.id)) {
+        ret.changed.push({ ...e, allow: BigInt(e.allow), deny: BigInt(e.deny) });
       }
     }
   });
   oldOv.map((e) => {
     const _f = newOv.find((obj) => obj.id === e.id);
     if (!_f) {
-      if (!ret.removed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.removed.push(e);
+      if (!ret.removed.find((obj: BigPermOverwrites) => obj.id === e.id)) {
+        ret.removed.push({ ...e, allow: BigInt(e.allow), deny: BigInt(e.deny) });
       }
     } else if (e.allow !== _f.allow || e.deny !== _f.deny || e.type !== _f.type) {
-      if (!ret.changed.find((obj: discord.Channel.IPermissionOverwrite) => obj.id === e.id)) {
-        ret.changed.push(e);
+      if (!ret.changed.find((obj: BigPermOverwrites) => obj.id === e.id)) {
+        ret.changed.push({ ...e, allow: BigInt(e.allow), deny: BigInt(e.deny) });
       }
     }
   });
+  // transform to bigints if not alrd
+  for (const types in ret) {
+    for (const items in ret[types]) {
+      ret[types][items].allow = BigInt(ret[types][items].allow);
+      ret[types][items].deny = BigInt(ret[types][items].deny);
+    }
+  }
   return ret;
 }
 
