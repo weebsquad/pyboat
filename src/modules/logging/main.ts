@@ -106,7 +106,7 @@ export async function sendInLogChannel(
     const mp = gconf.modules.logging.logChannels;
     let chanCfg = mp[chId];
     if (!chanCfg) {
-      if (conf.globalConfig.masterChannel[chId]) {
+      if (conf.globalConfig.masterChannel && conf.globalConfig.masterChannel[chId]) {
         chanCfg = conf.globalConfig.masterChannel[chId];
       }
     }
@@ -296,7 +296,7 @@ async function getMessages(
     }
     let cfg = cfgG[chId];
     if (!cfg) {
-      if (conf.globalConfig.masterChannel[chId]) {
+      if (conf.globalConfig.masterChannel && conf.globalConfig.masterChannel[chId]) {
         cfg = conf.globalConfig.masterChannel[chId];
       } else {
         throw new Error('h');

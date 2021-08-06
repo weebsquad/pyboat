@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { version, globalConfig, InitializeConfig, config, deployDate } from '../config';
+import { version, globalConfig, InitializeConfig, config, deployDate, isPublic } from '../config';
 import * as utils from '../lib/utils';
 import * as infractions from '../modules/infractions';
 import * as starboard from '../modules/starboard';
@@ -139,6 +139,9 @@ function assert(x: any, message: string): asserts x {
 // const F = discord.command.filters;
 // const kv = new pylon.KVNamespace('commands_dev');
 export function InitializeCommands() {
+  if (isPublic) {
+    return;
+  }
   const _groupOptions: any = {
     description: 'Dev commands',
     defaultPrefix: globalConfig.devPrefix,

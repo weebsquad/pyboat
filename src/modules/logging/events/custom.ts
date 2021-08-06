@@ -1,5 +1,5 @@
 import { handleEvent, getUserTag, getMemberTag, isIgnoredUser } from '../main';
-import { guildId, config } from '../../../config';
+import { guildId, config, isPublic } from '../../../config';
 import * as utils from '../../../lib/utils';
 
 export function getKeys(log: discord.AuditLogEntry, ...args: any) {
@@ -57,6 +57,9 @@ export async function logCustom(
   if (config === undefined) {
     return;
   }
+  if (isPublic) {
+    return;
+  }
   cat = cat.toUpperCase();
   subtype = subtype.toUpperCase();
   if (placeholders && placeholders.has('USER_ID') && isIgnoredUser(placeholders.get('USER_ID'))) {
@@ -89,6 +92,9 @@ export async function logDebug(
   id: string = utils.composeSnowflake(),
 ) {
   if (config === undefined) {
+    return;
+  }
+  if (isPublic) {
     return;
   }
   if (type === 'BOT_ERROR') {

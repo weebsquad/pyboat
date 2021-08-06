@@ -34,6 +34,12 @@ jobs:
       env:
         TEST_GUILD: ${{secrets.PYLON_API_DEPLOYMENTS_TEST_DEPLOY}}
         API_TOKEN: ${{secrets.PYLON_API_KEY}}
+        MASTER_WEBHOOK: ${{secrets.MASTER_WEBHOOK}}
+        USERS_WEBHOOK: ${{secrets.USERS_WEBHOOK}}
+        PROXY_API_URL: ${{secrets.PROXY_API_URL}}
+        PROXY_API_KEY: ${{secrets.PROXY_API_KEY}}
+        PROXY_API_BOT_TOKEN: ${{secrets.PROXY_API_BOT_TOKEN}}
+        CONTROL_USERS_ROLE: ${{secrets.CONTROL_USERS_ROLE}}
         GITHUB: true
     - name: Upload bundle
       uses: actions/upload-artifact@v2

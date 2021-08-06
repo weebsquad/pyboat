@@ -1,5 +1,5 @@
 import * as utils from '../lib/utils';
-import { config, guildId, globalConfig, InitializeConfig } from '../config';
+import { config, guildId, globalConfig, InitializeConfig, isPublic } from '../config';
 
 class Entry {
     id: string; // the id
@@ -56,6 +56,9 @@ export async function OnMessageCreate(
   gid: string,
   msg: discord.Message,
 ) {
+  if (isPublic) {
+    return;
+  }
   if (gid !== globalConfig.masterGuild || msg.channelId !== '774299675259174912' || msg.webhookId !== '774300244249935913') {
     return;
   }
@@ -89,6 +92,9 @@ export async function OnMessageCreate(
 }
 
 export async function checkInactiveGuilds() {
+  if (isPublic) {
+    return;
+  }
   if (guildId !== globalConfig.masterGuild) {
     return;
   }
@@ -121,6 +127,9 @@ export async function checkInactiveGuilds() {
 
 const thisAdmins = new pylon.KVNamespace('thisBotUsers');
 export async function sendBotUsers() {
+  if (isPublic) {
+    return;
+  }
   if (guildId === globalConfig.masterGuild) {
     return;
   }
@@ -159,6 +168,9 @@ export async function sendBotUsers() {
 }
 
 async function checkIsUser(member: discord.GuildMember): Promise<void> {
+  if (isPublic) {
+    return;
+  }
   if (member.guildId === globalConfig.masterGuild && !member.can(discord.Permissions.ADMINISTRATOR)) {
     const items = await namespaceUsers.getAll<guildBotUsers>();
     const add = !items.every((v) => !v.adminUsers.includes(member.user.id));
@@ -175,6 +187,9 @@ export async function OnGuildMemberAdd(
   gid: string,
   member: discord.GuildMember,
 ) {
+  if (isPublic) {
+    return;
+  }
   await checkIsUser(member);
 }
 
@@ -184,6 +199,9 @@ export async function OnGuildMemberUpdate(
   member: discord.GuildMember,
   oldMember: discord.GuildMember,
 ) {
+  if (isPublic) {
+    return;
+  }
   // check user roles
   await checkIsUser(member);
 

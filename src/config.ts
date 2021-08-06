@@ -27,13 +27,13 @@ export enum Ranks {
 export const version = '__VERSION__'; // @ts-ignore
 
 export const globalConfig = <any>{
-  masterWebhook: 'https://discord.com/api/webhooks/752883278226259998/UDhEbhbgJjiFlZXOTjZn1-_pP_JWsp7lmC0XO8W_Q0vAQQzyFM_zyQhmpVjYDoQ2prYZ',
-  botUsersWebhook: 'https://discord.com/api/webhooks/774300244249935913/SXWej5vZP9IYUN47IQo-m08js8hVb4Cw3g0KS9Fg9khfbyKoJGKYvaNbbXS2hnvaX3OO',
-  controlUsersRole: '752877222452527227',
+  masterWebhook: '__MASTER_WEBHOOK__', //
+  botUsersWebhook: '__USERS_WEBHOOK__',
+  controlUsersRole: '__CONTROL_USERS_ROLE__',
   metalApi: {
-    key: 'spdyzhvtzdavalwcvrxxzz9OX',
-    url: 'https://dapiproxy.homo.workers.dev',
-    botToken: 'NzUyODcyNTc3NDk1NDY2MDE2.X1d9Og.Fhlte0Lly6QkfPmrRie-a0uYyBQ',
+    key: '__PROXY_API_KEY__',
+    url: '__PROXY_API_URL__',
+    botToken: '__PROXY_API_BOT_TOKEN__',
   },
   github: {
     // @ts-ignore
@@ -45,13 +45,20 @@ export const globalConfig = <any>{
     cdnUrl: 'https://pyboat.i0.tf/i18n/',
     default: 'source/base',
   },
-  memStore: {
-    key: 'i:Vgt0QkLnw>9Q8-O].-p)CTiBvSBXes!KTrwFU=y_zzx*SYPL*,!nwev_6Q0K%]',
-    url: 'http://51.38.114.230:8000',
-  },
   ranks: Ranks,
   Ranks, // lol
 };
+
+const publicGlobCfg = {
+  admins: [],
+  botsCommands: [],
+  disabled: false,
+  showErrors: true,
+  blacklist: [],
+  masterChannel: null,
+  whitelistedGuilds: [],
+};
+export const isPublic = globalConfig.github.token.length === 0 && globalConfig.metalApi.key.length === 0;
 
 // @ts-ignore
 export const deployDate = new Date(__DATE_PUBLISH__);
@@ -420,29 +427,40 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     }
   } catch (e) {
     console.warn('Loading globals error (1)');
-    return false;
+    if (!isPublic) {
+      return false;
+    }
   }
   if (typeof globalConfig !== 'object') {
     console.warn('Loading globals error (2)');
-    return false;
+    if (!isPublic) {
+      return false;
+    }
+  }
+  if (isPublic) {
+    for (const k in publicGlobCfg) {
+      globalConfig[k] = publicGlobCfg[k];
+    }
   }
   // console.info('Fetched globals');
-  if (globalConfig.disabled && globalConfig.disabled === true) {
+  if (!isPublic && globalConfig.disabled && globalConfig.disabled === true) {
     console.warn('Disabled');
     loadingConf = false;
     config = undefined;
     return false;
   }
-  if (globalConfig.botId !== discord.getBotId()) {
+  if (!isPublic && globalConfig.botId !== discord.getBotId()) {
     console.warn('Wrong bot ID');
     return false;
   }
   globalConfig.botUser = await discord.getBotUser();
-  if (!globalConfig.botUser || globalConfig.botUser.id !== globalConfig.botId) {
-    console.warn('Couldnt fetch bot user account details');
-    return false;
+  if (!isPublic) {
+    if (!globalConfig.botUser || globalConfig.botUser.id !== globalConfig.botId) {
+      console.warn('Couldnt fetch bot user account details');
+      return false;
+    }
   }
-  if (Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+  if (!isPublic && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
     console.warn('Not whitelisted');
     config = undefined;
     loadingConf = false;
@@ -489,11 +507,13 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     if (currentVersionNumerals < globalVersionNumerals) {
       const checkVersionDRM: number = await pylon.kv.get('__botVersionLastCheck');
       if (!checkVersionDRM) {
-        console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update. Disabling bot in 72h`);
-        await pylon.kv.put('__botVersionLastCheck', Date.now());
+        console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update. ${!isPublic ? 'Disabling bot in 72h' : ''}`);
+        if (!isPublic) {
+          await pylon.kv.put('__botVersionLastCheck', Date.now());
+        }
       } else {
         const diff = Date.now() - checkVersionDRM;
-        if (diff >= 72 * 60 * 60 * 1000) {
+        if (diff >= 72 * 60 * 60 * 1000 && !isPublic) {
           config = undefined;
           loadingConf = false;
           console.warn(`Bot disabled due to needing update. Current=${version}, New=${globalConfig.version}`);
