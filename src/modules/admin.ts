@@ -32,7 +32,7 @@ export const adminPool = new StoragePool({
   idProperty: 'id',
   timestampProperty: 'ts',
   // maxObjects: 62,
-  reduceAt: 70,
+  reduceAt: 100,
   local: false,
 });
 
@@ -957,6 +957,7 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
     const ts = typeof item['ts'] === 'number' ? item['ts'] : utils.decomposeSnowflake(item.id).timestamp;
     return ts < diff;
   });
+  console.log('msgs', msgs.length, msgs);
   if (msgs.length === 0) {
     return 0;
   }

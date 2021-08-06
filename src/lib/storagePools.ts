@@ -38,6 +38,7 @@ export class StoragePool {
     }
     async getItems() {
       const list = await this.kv.list();
+      // console.log(this.kv.namespace, 'list', list.length);
       let items: pylon.KVNamespace.Item[];
       if (list.length > 100) {
         items = [];
@@ -488,6 +489,8 @@ export class StoragePool {
       return _f as T;
     }
     async getByQuery<T>(query: any, OR = false): Promise<Array<T>> {
+      const k = await this.getAll();
+      // console.log(this.kv.namespace, 'k', k.length);
       const toRet = (await this.getAll()).filter((item) => {
         for (const key in query) {
           if (typeof query[key] === 'undefined') {
