@@ -217,7 +217,7 @@ export class StoragePool {
         // @ts-ignore
         const cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
         if (cputnow >= 5) {
-          console.warn(`Saved item to [${this.options.name}] : Took ${cputnow}ms`);
+          // console.warn(`Saved item to [${this.options.name}] : Took ${cputnow}ms`);
         }
         return true;
       } catch (e) {
