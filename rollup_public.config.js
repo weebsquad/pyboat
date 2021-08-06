@@ -27,7 +27,7 @@ module.exports = () => ({
   input: './src/index.ts',
   output: [
     {
-      file: './dist/public.js',
+      file: './dist_public/bundle.js',
       format: 'umd',
     },
   ],
