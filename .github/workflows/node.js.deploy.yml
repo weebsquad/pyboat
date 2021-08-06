@@ -42,17 +42,6 @@ jobs:
         destination_folder: ''
         user_email: 'metal@i0.tf'
         user_name: 'metal0'
-    - name: Push directory to another repository
-      uses: cpina/github-action-push-to-another-repository@v1.3
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-      with:
-        source-directory: 'dist_public'
-        destination-github-username: 'weebsquad'
-        destination-repository-name: 'pyboat-deploy'
-        commit-message: Update from $GITHUB_REF
-        user-email: metal@i0.tf
-        target-branch: main
     - name: Publish to all guilds
       run: npm run publish --if-present
       env:
