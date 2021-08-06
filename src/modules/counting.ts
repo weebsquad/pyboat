@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config, isPublic } from '../config';
 import * as utils from '../lib/utils';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
@@ -160,11 +160,14 @@ export async function OnMessageCreate(
   await kv.put(`counting_current${message.channelId}`, num + 1);
   await kv.put(`counting_lastuser${message.channelId}`, message.author.id);
   updateTopic(message.channelId);
-  if (isPinnable(+message.content) && !config.modules.counting.useWebhook) {
+  if (isPinnable(+message.content) && (isPublic || !config.modules.counting.useWebhook)) {
     await message.setPinned(true);
   }
   if (config.modules.counting.useWebhook) {
     delet(message);
+    if (isPublic) {
+      return;
+    }
     await utils.executeWebhook(config.modules.counting.webhook, cont, undefined, message.author.getTag(), message.author.getAvatarUrl(), false, {});
   }
   return false;

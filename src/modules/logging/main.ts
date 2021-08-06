@@ -115,10 +115,10 @@ export async function sendInLogChannel(
     }
     let isWh = false;
     let whUrl = chanCfg.webhookUrl;
-    if (typeof chanCfg.webhookUrl === 'string') {
+    if (typeof chanCfg.webhookUrl === 'string' && !conf.isPublic) {
       isWh = true;
     }
-    if (alwaysWh && typeof (whUrlAlt) === 'string') {
+    if (alwaysWh && typeof (whUrlAlt) === 'string' && !conf.isPublic) {
       isWh = true;
       whUrl = whUrlAlt;
     }
@@ -145,7 +145,9 @@ export async function sendInLogChannel(
           if (alwaysWh) {
             _cont = `__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
           }
-          if (webhookSends % 3 === 0 && webhookSends > 0) {
+          if (conf.isPublic) {
+            await channel.sendMessage(opt);
+          } else if (webhookSends % 3 === 0 && webhookSends > 0) {
             await channel.sendMessage(opt);
             webhookSends = 1;
           } else {

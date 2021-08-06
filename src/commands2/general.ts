@@ -92,7 +92,7 @@ export function InitializeCommands() {
     async (m) => {
       const formattedDtCreation = utils.getDiscordTimestamp(conf.deployDate, 'D');
       const tdiff = utils.getDiscordTimestamp(conf.deployDate, 'R');
-      const res: any = await m.inlineReply(`This version is from *[**${formattedDtCreation}**]** - version **${conf.version}**${conf.globalConfig.version !== conf.version ? ` - **OUTDATED** (newest: ${conf.globalConfig.version})` : ''}`);
+      const res: any = await m.inlineReply(`This version is from **[**${formattedDtCreation}**]** - version **${conf.version}**${conf.globalConfig.version !== conf.version ? ` - **OUTDATED** (newest: ${conf.globalConfig.version})` : ''}`);
       admin.saveMessage(res);
     },
     {
