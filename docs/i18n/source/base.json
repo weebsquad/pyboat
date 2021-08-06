@@ -689,6 +689,7 @@
           "must_meet_criteria": "__You must meet all of following criteria:__\n\n{EXECUTION_CRITERIA}",
           "error_executing_command": "**There has been an error executing this command**\n\n__{ERROR}__",
           "error_logged": "**There has been an error executing this command**\n\nThis has been logged and the bot developer will look into it shortly.",
+          "error_not_logged": "**There has been an error executing this command**\n\nPlease inform the developer of this error.",
           "arguments_string": " with arguments {ARGS}",
           "argument_error": "⚠️ Argument Error (`{ARG_NAME}`: __{ERROR}__)\n```\n{USAGE}\n```",
           "other_error": "❌ **There was an error running that command**\n[{ERROR_NAME}] - __{ERROR_MESSAGE}__",

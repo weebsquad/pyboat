@@ -678,6 +678,7 @@ export interface ICommands {
     must_meet_criteria: string;
     error_executing_command: string;
     error_logged: string;
+    error_not_logged: string;
     arguments_string: string;
     argument_error: string;
     other_error: string;

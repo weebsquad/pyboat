@@ -138,15 +138,17 @@ export async function sendInLogChannel(
         if (opt.embed instanceof discord.Embed) {
           if (alwaysWh) {
             opt.embed.setDescription(`__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${opt.embed.description}`);
+            await utils2.executeWebhook(whUrl, '', [opt.embed], botAvatar.username, botAvatar.getAvatarUrl(), false, {});
+            webhookSends += 1;
+          } else {
+            embeds.push(opt.embed);
           }
-          embeds.push(opt.embed);
         } else {
           let _cont = opt.content;
           if (alwaysWh) {
             _cont = `__Crosslog from__: \`${thisGuild.name}\` **[**||\`${thisGuild.id}\`||**]**:\n ${_cont}`;
-          }
-          if (conf.isPublic) {
-            await channel.sendMessage(opt);
+            await utils2.executeWebhook(whUrl, _cont, undefined, botAvatar.username, botAvatar.getAvatarUrl(), false, {});
+            webhookSends += 1;
           } else if (webhookSends % 3 === 0 && webhookSends > 0) {
             await channel.sendMessage(opt);
             webhookSends = 1;

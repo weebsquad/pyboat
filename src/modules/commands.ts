@@ -140,7 +140,7 @@ async function executeSlash(sconf: discord.interactions.commands.ICommandConfig<
         }
       } catch (e) {}
     }
-    await interaction.respondEphemeral(i18n.modules.commands.error_logged);
+    await interaction.respondEphemeral(conf.isPublic ? i18n.modules.commands.error_not_logged : i18n.modules.commands.error_logged);
     logDebug(
       'BOT_ERROR',
       new Map<string, any>([
@@ -389,7 +389,7 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
       msgReply = setPlaceholders(i18n.modules.commands.other_error, ['error_name', error.name, 'error_message', error.message]);
     } else {
       utils.logError(error);
-      msgReply = i18n.modules.commands.error_logged;
+      msgReply = conf.isPublic ? i18n.modules.commands.error_not_logged : i18n.modules.commands.error_logged;
       logDebug(
         'BOT_ERROR',
         new Map<string, any>([
@@ -402,15 +402,14 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
     }
 
     if (msgReply.length > 0) {
-      let sentMsg;
+      let sentMsg: any;
       try {
         sentMsg = await message.inlineReply({ allowedMentions: {}, content: msgReply });
       } catch (_) {
         sentMsg = await message.reply({ allowedMentions: {}, content: msgReply });
       }
-      if (sentMsg) {
-        await admin.saveMessage(sentMsg);
-      }
+
+      await admin.saveMessage(sentMsg);
     }
   } catch (e) {
     utils.logError(e);
