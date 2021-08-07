@@ -6,7 +6,7 @@ Rowboat-like bot in Pylon
 ## Testing:
 Copy `.env.example` to `.env`
 
-Fill in the values
+Fill in the values (Only `TEST_GUILD` and `API_TOKEN`)
 
 `npm i`
 
