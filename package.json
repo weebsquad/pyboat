@@ -3,7 +3,7 @@
   "version": "1.8.9",
   "description": "yes",
   "scripts": {
-    "typings": "typings install",
+    "typings": "typings install && npm run i18ntypings",
     "build": "npm run-script typings && npm run-script updateglobalversion && rollup -c rollup.config.js",
     "publish": "node cd/publish.js",
     "lint": "eslint cd/publish.js --config .eslintrc.js && eslint src/ --ext .ts --max-warnings 99999 --config .eslintrc.ts",
