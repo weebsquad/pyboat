@@ -443,16 +443,21 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     }
   }
   // console.info('Fetched globals');
+  /*
   if (!isPublic && globalConfig.disabled && globalConfig.disabled === true) {
     console.warn('Disabled');
     loadingConf = false;
     config = undefined;
     return false;
   }
+  /*
+
+  /*
   if (!isPublic && globalConfig.botId !== discord.getBotId()) {
     console.warn('Wrong bot ID');
     return false;
-  }
+  } */
+
   globalConfig.botUser = await discord.getBotUser();
   if (!isPublic) {
     if (!globalConfig.botUser || globalConfig.botUser.id !== globalConfig.botId) {
@@ -460,12 +465,12 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       return false;
     }
   }
-  if (!isPublic && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+  /* if (!isPublic && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
     console.warn('Not whitelisted');
     config = undefined;
     loadingConf = false;
     return false;
-  }
+  } */
 
   const guild = await discord.getGuild();
   if (guild === null) {
@@ -478,8 +483,8 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   }
   const globalVersionNumerals = +(globalConfig.version.split('.').join(''));
   const currentVersionNumerals = +(version.split('.').join(''));
-  if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
-    /*
+  /* if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
+
     let gaCheck: discord.GuildMember | false = false;
     for (const key in globalConfig.admins) {
       const checkThis = await guild.getMember(globalConfig.admins[key]);
@@ -502,8 +507,11 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     }
     */
 
-    // check bot versioning
-
+  // check bot versioning
+  if (currentVersionNumerals < globalVersionNumerals) {
+    console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update.`);
+  }
+  /*
     if (currentVersionNumerals < globalVersionNumerals) {
       const checkVersionDRM: number = await pylon.kv.get('__botVersionLastCheck');
       if (!checkVersionDRM) {
@@ -522,7 +530,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
         console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update.`);
       }
     }
-  }
+  } */
 
   const oldVers = (await pylon.kv.get('__botVersion'));
   if (!oldVers) {

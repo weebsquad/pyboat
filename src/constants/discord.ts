@@ -171,13 +171,6 @@ export const PermissionFlags: {[key: string]: any} = {
   USE_PUBLIC_THREADS: BigInt(BigInt(1) << BigInt(35)),
   USE_PRIVATE_THREADS: BigInt(BigInt(1) << BigInt(36)),
   USE_EXTERNAL_STICKERS: BigInt(BigInt(1) << BigInt(37)),
-  /* test31: BigInt(BigInt(1) << BigInt(31)),
-      test32: BigInt(BigInt(1) << BigInt(32)),
-      test33: BigInt(BigInt(1) << BigInt(33)),
-      test34: BigInt(BigInt(1) << BigInt(34)),
-      test35: BigInt(BigInt(1) << BigInt(35)),
-      test36: BigInt(BigInt(1) << BigInt(36)),
-      test37: BigInt(BigInt(1) << BigInt(37)) */
 };
 
 export const UserFlags: {[key: string]: number} = {
