@@ -552,7 +552,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
     cfg = guildConfigs[guildId];
   }
   if (typeof cfg !== 'object') {
-    console.warn('No config');
+    console.warn('No user config - using default config');
     cfg = JSON.parse(JSON.stringify(defaultConfig));
   }
 
@@ -571,8 +571,7 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   config = loadConfigDefaults(cfg);
   // @ts-ignore
   const cput = Math.floor(await pylon.getCpuTime());
-  console.info(`Initialized on VM (config loaded) Cpu time so far: ${cput}ms`);
-  // startup our custom code engine
+  console.info(`Initialized on VM Cpu time so far: ${cput}ms`);
   return true;
 }
 
@@ -585,13 +584,10 @@ function str2ab(str: string) {
   return buf;
 }
 
-export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage) {
-  if (typeof globalConfig === 'object' && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
+export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.GuildMemberMessage): false | string {
+  if (msg.content !== '.config.' && msg.content !== '.config. delete') {
     return false;
   }
-  if (!(msg instanceof discord.GuildMemberMessage)) {
-    return false;
-  } // todo : allow dms
   if (!(msg.author instanceof discord.User)) {
     return false;
   }
@@ -601,26 +597,23 @@ export function isMessageConfigUpdate(msg: discord.Message.AnyMessage | discord.
   if (msg.webhookId !== null) {
     return false;
   }
+  if (!(msg instanceof discord.GuildMemberMessage) || !(msg.member instanceof discord.GuildMember)) {
+    return 'Msg is not a guild message';
+  } // todo : allow dms
   if (msg.type !== discord.Message.Type.DEFAULT) {
-    return false;
+    return 'Not a normal message';
   }
   if (msg.mentions.length > 0) {
-    return false;
+    return 'Mentioning someone in the message';
   }
   if (msg.flags !== 0) {
-    return false;
-  }
-  if (msg.content !== '.config.' && msg.content !== '.config. delete') {
-    return false;
+    return 'Message contains flags';
   }
   if (msg.attachments.length > 1) {
-    return false;
-  }
-  if (!(msg.member instanceof discord.GuildMember)) {
-    return false;
+    return 'Contains too many attachments';
   }
   if (!msg.member.can(discord.Permissions.ADMINISTRATOR) && (typeof globalConfig !== 'object' || !Array.isArray(globalConfig.admins) || !globalConfig.admins.includes(msg.author.id))) {
-    return false;
+    return 'Author not sufficient permissions to change config (needs Administrator permission)';
   }
   if (msg.attachments.length === 1 && msg.attachments[0].filename === 'config.json') {
     return 'update';
@@ -636,6 +629,12 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     await InitializeConfig();
   }
   const isCfg = isMessageConfigUpdate(message);
+  if (!isCfg) {
+    return;
+  } if (!['update', 'check', 'delete'].includes(isCfg)) {
+    console.warn(`${message.author ? message.author.getTag() : ''} tried to run a config command: ${isCfg}`);
+    return;
+  }
   if (isCfg === 'update') {
     try {
       // let dat = JSON.parse(ab2str(await (await fetch()).arrayBuffer()));
@@ -742,6 +741,7 @@ discord.on(discord.Event.MESSAGE_CREATE, async (message: discord.Message.AnyMess
     } catch (e) {
     }
     await configKv.clear();
+    await InitializeConfig(true);
     await message.reply(i18n.setPlaceholders(i18n.language.config.deleted_config, ['user_mention', message.author.toMention()]));
   }
 });
