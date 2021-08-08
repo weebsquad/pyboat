@@ -103,8 +103,6 @@ async function getValidGuilds() {
   if (txt === 'unauthorized') {
     console.log('unauthorized at /available/');
     throw new Error('Pylon Token Unauthorized');
-  } else {
-    console.log('/available/ response: ', txt);
   }
   // console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
