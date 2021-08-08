@@ -40,8 +40,6 @@ async function getActivePylonGuilds() {
   if (txt === 'unauthorized') {
     console.log('unauthorized at /user/guilds/');
     throw new Error('Pylon Token Unauthorized');
-  } else {
-    console.log('/user/guilds/ response: ', txt);
   }
   const json = JSON.parse(txt);
   return json;
@@ -61,8 +59,6 @@ async function getNonActivePylonGuilds() {
   if (txt === 'unauthorized') {
     console.log('unauthorized at /available/');
     throw new Error('Pylon Token Unauthorized');
-  } else {
-    console.log('/available/ response: ', txt);
   }
   //  console.log(res.status, res.statusText);
   // console.log('available raw: ', [txt]);
@@ -341,8 +337,8 @@ getDeploymentIds().then(async (objDeps) => {
     } catch (e) {
       console.error(`Publish error: ${r.url} > ${r.status} - ${r.statusText}`);
       console.error(r);
-      const txt = await r.text();
-      console.error(txt);
+      // const txt = await r.text();
+      // console.error(txt);
       process.exit(1);
     }
 
