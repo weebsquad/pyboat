@@ -442,22 +442,6 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       globalConfig[k] = publicGlobCfg[k];
     }
   }
-  // console.info('Fetched globals');
-  /*
-  if (!isPublic && globalConfig.disabled && globalConfig.disabled === true) {
-    console.warn('Disabled');
-    loadingConf = false;
-    config = undefined;
-    return false;
-  }
-  /*
-
-  /*
-  if (!isPublic && globalConfig.botId !== discord.getBotId()) {
-    console.warn('Wrong bot ID');
-    return false;
-  } */
-
   globalConfig.botUser = await discord.getBotUser();
   if (!isPublic) {
     if (!globalConfig.botUser || globalConfig.botUser.id !== globalConfig.botId) {
@@ -465,12 +449,6 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
       return false;
     }
   }
-  /* if (!isPublic && Array.isArray(globalConfig.whitelistedGuilds) && !globalConfig.whitelistedGuilds.includes(guildId)) {
-    console.warn('Not whitelisted');
-    config = undefined;
-    loadingConf = false;
-    return false;
-  } */
 
   const guild = await discord.getGuild();
   if (guild === null) {
@@ -483,54 +461,11 @@ async function beginLoad(bypass: boolean): Promise<boolean> {
   }
   const globalVersionNumerals = +(globalConfig.version.split('.').join(''));
   const currentVersionNumerals = +(version.split('.').join(''));
-  /* if (guild.id !== globalConfig.masterGuild && discord.getBotId() === globalConfig.botId) {
-
-    let gaCheck: discord.GuildMember | false = false;
-    for (const key in globalConfig.admins) {
-      const checkThis = await guild.getMember(globalConfig.admins[key]);
-      if (checkThis) {
-        gaCheck = checkThis;
-        break;
-      }
-    }
-    if (!gaCheck) {
-      console.warn('Guild not authorized to run PyBoat');
-      config = undefined;
-      loadingConf = false;
-      return false;
-    }
-    if (!gaCheck.can(discord.Permissions.MANAGE_GUILD)) {
-      console.warn('Not enough permissions to redeploy PyBoat');
-      config = undefined;
-      loadingConf = false;
-      return false;
-    }
-    */
 
   // check bot versioning
   if (currentVersionNumerals < globalVersionNumerals) {
     console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update.`);
   }
-  /*
-    if (currentVersionNumerals < globalVersionNumerals) {
-      const checkVersionDRM: number = await pylon.kv.get('__botVersionLastCheck');
-      if (!checkVersionDRM) {
-        console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update. ${!isPublic ? 'Disabling bot in 72h' : ''}`);
-        if (!isPublic) {
-          await pylon.kv.put('__botVersionLastCheck', Date.now());
-        }
-      } else {
-        const diff = Date.now() - checkVersionDRM;
-        if (diff >= 72 * 60 * 60 * 1000 && !isPublic) {
-          config = undefined;
-          loadingConf = false;
-          console.warn(`Bot disabled due to needing update. Current=${version}, New=${globalConfig.version}`);
-          return false;
-        }
-        console.warn(`Version mismatch! Current=${version}, New=${globalConfig.version} | Bot needs update.`);
-      }
-    }
-  } */
 
   const oldVers = (await pylon.kv.get('__botVersion'));
   if (!oldVers) {
