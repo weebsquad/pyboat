@@ -519,13 +519,12 @@ export async function OnMessageCreate(
     cooldowns[msg.author.id] = Date.now();
     const cmdExec = await commands2.handleCommand(msg);
     // @ts-ignore
-    const trySave = await admin.saveMessage(msg, true);
-    if (!trySave) {
-      await admin.adminPool.editTransact<admin.TrackedMessage>(msg.id, (prev) => {
-        prev.bot = true;
-        return prev;
-      });
+    const cpu = await pylon.getCpuTime();
+    if (cpu < 75) {
+    // @ts-ignore
+      await admin.saveMessage(msg, true);
     }
+
     if (typeof cmdExec === 'boolean' && cmdExec === true) {
       const checkDebounce = cmdErrorDebounces.findIndex((v) => v === msg.id);
       if (checkDebounce > -1) {

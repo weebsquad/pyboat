@@ -14,11 +14,14 @@ type PoolOptions = {
   maxObjects?: number; // max objects per array instead of byte calcs
   reduceAt?: number; // what key count to start reducing duration at
   local: Boolean; // whether this should be kv or local
+  disableCache?: Boolean;
 }
+
 export class StoragePool {
     kv: pylon.KVNamespace;
     options: PoolOptions;
     localStore?: Array<any> = [];
+    cache: pylon.KVNamespace.Item[] = [];
     constructor(opts: PoolOptions) {
     // constructor(
     // name: string,
@@ -36,7 +39,17 @@ export class StoragePool {
       }
       return this;
     }
-    async getItems() {
+    private isCacheInitialized() {
+      return this.cache.length > 0;
+    }
+    private isCacheEnabled() {
+      return false;
+      // return !this.options.disableCache;
+    }
+    async getItems(bypassCache = false): Promise<pylon.KVNamespace.Item[]> {
+      if (this.isCacheInitialized() && !bypassCache) {
+        return this.cache;
+      }
       const list = await this.kv.list();
       // console.log(this.kv.namespace, 'list', list.length);
       let items: pylon.KVNamespace.Item[];
@@ -46,13 +59,17 @@ export class StoragePool {
         for (let i = 0; i < runs; i += 1) {
           if (i !== 0) {
             const these = await this.kv.items({ from: items.slice(-1)[0].key });
-            items.concat(...these);
+            items = items.concat(these);
           } else {
             items = await this.kv.items();
           }
         }
       } else {
         items = await this.kv.items();
+      }
+      if (this.isCacheEnabled()) {
+        // console.log(`[Storage Pool]: Initializing cache for ${this.kv.namespace}`);
+        this.cache = [...items];
       }
       return items;
     }
@@ -81,19 +98,13 @@ export class StoragePool {
     }
     async clear() {
       await this.kv.clear();
+      this.cache = [];
     }
     async clean() {
-      // clear blank keys
-      if (this.options.local === true) {
-        if (typeof this.options.itemDuration !== 'number' || this.options.itemDuration === 0) {
+      if (typeof this.options.itemDuration !== 'number' || this.options.itemDuration === 0) {
+        if (this.options.local === true) {
           return;
         }
-        const diff = Date.now() - this.options.itemDuration;
-        const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.options.idProperty]));
-        if (toRemove.length > 0) {
-          this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.options.idProperty]));
-        }
-      } else {
         const items = await this.getItems();
         await Promise.all(items.map(async (item: any) => {
           const vl: Array<any> = item.value;
@@ -121,23 +132,55 @@ export class StoragePool {
             }
           }
         }));
-        if (typeof this.options.itemDuration !== 'number' || this.options.itemDuration === 0) {
-          return;
+        return;
+      }
+      let diff = Date.now() - this.options.itemDuration;
+      if (this.options.local === true) {
+        const toRemove = this.localStore.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.options.idProperty]));
+        if (toRemove.length > 0) {
+          this.localStore = this.localStore.filter((v) => v !== null && !toRemove.includes(v[this.options.idProperty]));
         }
-        if (typeof this.options.reduceAt === 'number' && this.options.reduceAt > 0) {
-          let diff = Date.now() - this.options.itemDuration;
-          const count = items.length;
-          if (count > this.options.reduceAt) {
-            const leftToMax = ASSUMED_MAX_KEYS - this.options.reduceAt;
-            const toInc = this.options.itemDuration / Math.max(1, leftToMax);
-            const extra = Math.floor(toInc * (count - this.options.reduceAt));
-            diff += extra;
-          }
+        return;
+      }
+      const items = await this.getItems();
+      if (typeof this.options.reduceAt === 'number' && this.options.reduceAt > 0) {
+        const count = items.length;
+        if (count > this.options.reduceAt) {
+          const leftToMax = ASSUMED_MAX_KEYS - this.options.reduceAt;
+          const toInc = this.options.itemDuration / Math.max(1, leftToMax);
+          const extra = Math.floor(toInc * (count - this.options.reduceAt));
+          diff += extra;
         }
       }
+      await Promise.all(items.map(async (item: any) => {
+        const vl: Array<any> = item.value;
+        const { key } = item;
+        const toRemove = vl.filter((e) => e === null || diff > this.getTimestamp(e)).map((e) => (e === null ? null : e[this.options.idProperty]));
+        if (toRemove.length > 0) {
+          let vlCheckEmpty: undefined | Array<any>;
+          await this.kv.transact(key, (prev: any) => {
+            const newDt = prev.filter((e: any) => e !== null && !toRemove.includes(e[this.options.idProperty]));
+            vlCheckEmpty = newDt;
+            return newDt;
+          });
+          if (Array.isArray(vlCheckEmpty) && vlCheckEmpty.length === 0) {
+            try {
+              await this.kv.delete(key, { prevValue: [] });
+            } catch (e) {
+              utils.logError('StoragePools, error deleting empty key', e);
+            }
+          }
+        } else if (item.value.length === 0) {
+          try {
+            await this.kv.delete(key, { prevValue: [] });
+          } catch (e) {
+            utils.logError('StoragePools, error deleting empty key', e);
+          }
+        }
+      }));
     }
 
-    async saveToPool<T>(newObj: T, retries = 0) {
+    async saveToPool<T>(newObj: T, retries = 0, checkExists = false) {
       if (newObj === null || newObj === undefined) {
         return;
       }
@@ -153,18 +196,37 @@ export class StoragePool {
         this.localStore.push(newObj);
         return;
       }
+      // @ts-ignore
+      let cpuinitial = await pylon.getCpuTime();
+
       // check same len
       let _thisLen;
       const items = await this.getItems();
-      const ex = items.map((v) => v.value).flat(1).find((item) => item !== null && typeof item === 'object' && item[this.options.idProperty] === newObj[this.options.idProperty]);
-      if (typeof ex !== 'undefined') {
-        const _res = await this.editPool(newObj[this.options.idProperty], newObj);
-        return _res;
+      // @ts-ignore
+      let cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
+      if (cputnow >= 15) {
+        // console.log(`[StoragePools]-[${this.options.name}] Fetched items : Took ${cputnow}ms`);
       }
       // @ts-ignore
-      const cpuinitial = await pylon.getCpuTime();
+      cpuinitial = await pylon.getCpuTime();
+      if (checkExists) {
+        const ex = await this.exists(newObj[this.options.idProperty]);
+
+        if (typeof ex !== 'undefined') {
+          const _res = await this.editPool(newObj[this.options.idProperty], newObj);
+          return _res;
+        }
+        // @ts-ignore
+        cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
+        if (cputnow >= 10) {
+          // console.log(`[StoragePools]-[${this.options.name}] Checked exists items : Took ${cputnow}ms`);
+        }
+        // @ts-ignore
+        cpuinitial = await pylon.getCpuTime();
+      }
       let saveTo: string | undefined;
       let saveLen : number;
+      /*
       items.every((item: any) => {
         if (!Array.isArray(item.value)) {
           return true;
@@ -189,10 +251,32 @@ export class StoragePool {
         }
         return true;
       });
+      */
+      const lastEntry: Array<T> = <any>items[items.length - 1].value;
+      if (typeof this.options.maxObjects === 'number' && this.options.maxObjects > 0) {
+        if (lastEntry.length < this.options.maxObjects) {
+          saveTo = items[items.length - 1].key;
+          saveLen = lastEntry.length;
+        }
+      } else {
+        const len = (new TextEncoder().encode(JSON.stringify(lastEntry)).byteLength) + _thisLen;
+        if (len < constants.MAX_KV_SIZE) {
+          saveTo = items[items.length - 1].key;
+          saveLen = lastEntry.length;
+          return false;
+        }
+      }
       if (!saveTo) {
         saveTo = utils.composeSnowflake();
         saveLen = 0;
       }
+      // @ts-ignore
+      cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
+      if (cputnow >= 10) {
+        // console.log(`[StoragePools]-[${this.options.name}] Got save to loc : Took ${cputnow}ms`);
+      }
+      // @ts-ignore
+      cpuinitial = await pylon.getCpuTime();
 
       try {
         const { result } = await this.kv.transactWithResult<any, boolean>(saveTo, (prev: T[]) => {
@@ -216,9 +300,9 @@ export class StoragePool {
           return newres;
         }
         // @ts-ignore
-        const cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
-        if (cputnow >= 5) {
-          // console.warn(`Saved item to [${this.options.name}] : Took ${cputnow}ms`);
+        cputnow = Math.floor(await pylon.getCpuTime() - cpuinitial);
+        if (cputnow >= 10) {
+          // console.log(`[StoragePools]-[${this.options.name}] Finished transact item : Took ${cputnow}ms`);
         }
         return true;
       } catch (e) {

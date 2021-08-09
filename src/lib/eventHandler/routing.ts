@@ -105,7 +105,7 @@ export async function OnEvent(event: string, ts: string, ...args: any[]) {
     await ExecuteModules(event, ts, null, ...args);
     // @ts-ignore
     const cputd = Math.floor(await pylon.getCpuTime());
-    console.log(`Executed modules for a ${event} event. -- CPU Time so far: ${cputd}ms`);
+    console.log(`Executed modules for a ${event} event. -- Took: ${cputd - cput}ms CPU time`);
   } catch (e) {
     const err: Error = e;
 
@@ -246,6 +246,8 @@ export async function ExecuteModules(
   const { guildId } = conf;
   let tdiff = Date.now();
   for (const moduleName in moduleDefinitions) {
+    // @ts-ignore
+    const cput = Math.floor(await pylon.getCpuTime());
     tdiff = Date.now();
     const module = moduleDefinitions[moduleName];
     if (typeof module !== 'object' || module === null) {
@@ -307,10 +309,6 @@ export async function ExecuteModules(
             }
           }
         }
-      }
-      const diffexec = Date.now() - tdiff;
-      if (diffexec > 10) {
-        // console.log(`Done executing ${moduleName} , ( ${diffexec}ms )`);
       }
     } catch (e) {
       utils.logError(e);

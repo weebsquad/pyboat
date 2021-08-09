@@ -31,8 +31,8 @@ export const adminPool = new StoragePool({
   itemDuration: 14 * 24 * 60 * 60 * 1000,
   idProperty: 'id',
   timestampProperty: 'ts',
-  // maxObjects: 62,
-  reduceAt: 100,
+  maxObjects: 61,
+  reduceAt: 55, // after this point, commands start to become unusable
   local: false,
 });
 
@@ -419,15 +419,11 @@ export async function saveMessage(msg: discord.GuildMemberMessage, forceBot = fa
   if (!isThisEnabled()) {
     return false;
   }
-  const checkExists = await adminPool.exists(msg.id);
-  if (checkExists) {
-    return false;
-  }
   const newobj = new TrackedMessage(msg);
   if (forceBot) {
     newobj.bot = true;
   }
-  const _res = await adminPool.saveToPool(newobj);
+  const _res = await adminPool.saveToPool(newobj, 0, true);
   return _res;
 }
 export async function getRoleIdByText(txt: string): Promise<string | null> {
@@ -957,7 +953,6 @@ export async function Clean(dtBegin: number, target: any, actor: discord.GuildMe
     const ts = typeof item['ts'] === 'number' ? item['ts'] : utils.decomposeSnowflake(item.id).timestamp;
     return ts < diff;
   });
-  console.log('msgs', msgs.length, msgs);
   if (msgs.length === 0) {
     return 0;
   }
@@ -1147,9 +1142,6 @@ export async function InitRoleLocks() {
     }
     return { next, result: added };
   });
-  if (result) {
-    console.log('Added role tracking for lockedRoles!');
-  }
 }
 export async function AL_OnGuildRoleUpdate(
   id: string,
@@ -2880,7 +2872,7 @@ export function InitializeCommands() {
               return i18n.modules.admin.adm_backup.no_data;
             }
             await persistPool.editPool(usr.id, undefined);
-            return setPlaceholders(i18n.modules.admin.adm_backup.deleted, ['user_mention', user.toMention()]);
+            return setPlaceholders(i18n.modules.admin.adm_backup.deleted, ['user_mention', usr.toMention()]);
           });
           saveMessage(res);
         },

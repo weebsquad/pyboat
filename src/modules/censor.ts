@@ -179,7 +179,7 @@ export async function getCensorshipData(txt: string, checkInvites = false, check
         return undefined;
       }).filter((item) => typeof item === 'string');
       if (_invs.length >= 10) {
-        toret.invites.concat(_invs);
+        toret.invites = toret.invites.concat(_invs);
       } else {
         await Promise.all(_invs.map(async (code) => {
           const thisInv = await discord.getInvite(code);
@@ -191,7 +191,7 @@ export async function getCensorshipData(txt: string, checkInvites = false, check
           const _f = toret.invites!.find((e) => e instanceof discord.Invite && e.code === code);
           return !_f;
         });
-        toret.invites.concat(_invs);
+        toret.invites = toret.invites.concat(_invs);
       }
     }
   }
