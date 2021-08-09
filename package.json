@@ -1,6 +1,6 @@
 {
   "name": "pyboat",
-  "version": "1.8.11",
+  "version": "1.8.12",
   "description": "yes",
   "scripts": {
     "typings": "typings install && npm run i18ntypings",
