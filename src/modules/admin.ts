@@ -9,8 +9,9 @@ import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
 import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback, resolveArgument, CustomArgumentType } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
+import { BetterUser } from '../lib/utils';
 
 const MAX_COMMAND_CLEAN = 1000;
 const DEFAULT_COMMAND_CLEAN = 50;
@@ -1968,17 +1969,17 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
   registerChatOn(
     subCommandGroup,
     'user',
-    (ctx) => ({ user: ctx.user(), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), count: ctx.integerOptional({ maxValue: MAX_COMMAND_CLEAN, minValue: 1, default: DEFAULT_COMMAND_CLEAN }) }),
     async (msg, { user, count }) => {
+      let usr: discord.User | BetterUser | discord.GuildMember = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
       // const msgs = await getMessagesBy({authorId: user.id});
       const chan = await msg.getChannel();
       const guild = await msg.getGuild();
-      let member: discord.User | discord.GuildMember = user;
-      const _tryf = await guild.getMember(user.id);
-      if (_tryf !== null) {
-        member = _tryf;
+      const _tryf = await guild.getMember(usr.id);
+      if (_tryf) {
+        usr = _tryf;
       }
-      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, member, msg.member, chan, count, msg.channelId);
+      const res = await Clean(utils.decomposeSnowflake(msg.id).timestamp, usr, msg.member, chan, count, msg.channelId);
       if (typeof res !== 'number') {
         if (res === false) {
           await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.failed_clean);
@@ -2829,13 +2830,11 @@ export function InitializeCommands() {
       registerChatOn(
         subCommandGroup,
         'show',
-        (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+        (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }) }),
         async (msg, { user }) => {
           const res: any = await msg.inlineReply(async () => {
-            const usr = await utils.getUser(user.replace(/\D/g, ''));
-            if (!usr) {
-              return { content: i18n.modules.admin.adm_backup.user_not_found, allowedMentions: {} };
-            }
+            const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
+
             const thisObj = await persistPool.getById<MemberPersist>(usr.id);
             if (!thisObj) {
               return { content: i18n.modules.admin.adm_backup.no_data };
@@ -2860,12 +2859,9 @@ export function InitializeCommands() {
       registerChatOn(
         subCommandGroup,
         'delete',
-        (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }) }),
+        (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }) }),
         async (msg, { user }) => {
-          const usr = await utils.getUser(user.replace(/\D/g, ''));
-          if (!usr) {
-            return { content: i18n.modules.admin.adm_backup.user_not_found, allowedMentions: {} };
-          }
+          const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
           const res: any = await msg.inlineReply(async () => {
             const thiskv = await persistPool.getById<MemberPersist>(usr.id);
             if (!thiskv) {

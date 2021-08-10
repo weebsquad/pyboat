@@ -4,10 +4,10 @@ import * as c2 from '../lib/commands2';
 import { config, globalConfig, Ranks, guildId } from '../config';
 import { logCustom } from './logging/events/custom';
 import * as logUtils from './logging/utils';
-import { getUserAuth } from '../lib/utils';
+import { BetterUser, getUserAuth } from '../lib/utils';
 import { isIgnoredActor, isIgnoredUser } from './logging/utils';
 import { saveMessage } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, registerChatSubCallback } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, registerChatSubCallback, CustomArgumentType, resolveArgument } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
 export const infsPool = new utils.StoragePool({
@@ -941,13 +941,9 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     'ban',
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
-      const usr = await utils.getUser(user.replace(/\D/g, ''));
-      if (!usr) {
-        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return false;
-      }
+      const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
 
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild())!.getMember(usr.id);
       if (!member) {
@@ -1031,13 +1027,9 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     { name: 'cleanban', aliases: ['cban'] },
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
-      const usr = await utils.getUser(user.replace(/\D/g, ''));
-      if (!usr) {
-        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return false;
-      }
+      const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
         member = usr;
@@ -1067,13 +1059,9 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     { name: 'softban', aliases: ['sban'] },
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), deleteDays: ctx.integer({ choices: [0, 1, 2, 3, 4, 5, 6, 7] }), reason: ctx.textOptional() }),
     async (msg, { user, deleteDays, reason }) => {
-      const usr = await utils.getUser(user.replace(/\D/g, ''));
-      if (!usr) {
-        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return false;
-      }
+      const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
         member = usr;
@@ -1103,13 +1091,9 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     'tempban',
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), time: ctx.string(), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), time: ctx.string(), reason: ctx.textOptional() }),
     async (msg, { user, time, reason }) => {
-      const usr = await utils.getUser(user.replace(/\D/g, ''));
-      if (!usr) {
-        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return false;
-      }
+      const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (member === null) {
         member = usr;
@@ -1141,13 +1125,9 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     'unban',
-    (ctx) => ({ user: ctx.string({ name: 'user', description: 'user' }), reason: ctx.textOptional() }),
+    (ctx) => ({ user: ctx.string({ name: 'user', description: 'UserResolvable' }), reason: ctx.textOptional() }),
     async (msg, { user, reason }) => {
-      const usr = await utils.getUser(user.replace(/\D/g, ''));
-      if (!usr) {
-        await msg.inlineReply({ content: i18n.modules.infractions.inf_terms.user_not_found, allowedMentions: {} });
-        return false;
-      }
+      const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'string', CustomArgumentType.UserResolvable, user);
       let member: discord.User | discord.GuildMember | null = await (await msg.getGuild()).getMember(usr.id);
       if (!member) {
         member = usr;

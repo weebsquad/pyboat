@@ -1,4 +1,4 @@
-import { config, globalConfig } from '../config';
+import { config, globalConfig, isPublic } from '../config';
 import { swapKV, logError, makeFake } from './utils';
 import { EntitlementTypeEnum } from '../constants/constants';
 
@@ -139,12 +139,15 @@ export function getWebhookIdTokenFromUrl(webhook_url: string) {
 export async function getUser(userId: string, forceFetch = false): Promise<BetterUser | discord.User | null> {
   let userData;
   try {
-    if (!forceFetch) {
+    if (!forceFetch || isPublic) {
       userData = await discord.getUser(userId);
     }
   } catch (e) {}
   if (typeof userData !== 'undefined') {
     return userData;
+  }
+  if (isPublic) {
+    return null;
   }
   const data = await baseRequest(
     `users/${userId}`,

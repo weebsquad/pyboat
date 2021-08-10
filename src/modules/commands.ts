@@ -7,6 +7,7 @@ import { logCustom, logDebug } from './logging/events/custom';
 import { isIgnoredChannel, isIgnoredUser, parseMessageContent } from './logging/main';
 import { isModuleEnabled } from '../lib/eventHandler/routing';
 import { language as i18n, setPlaceholders } from '../localization/interface';
+import { BetterUser } from '../lib/utils';
 
 export const errorsDisplay = ['missing permissions'];
 const cmdErrorDebounces: string[] = [];
@@ -365,13 +366,24 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
       cmdInitial = message.content;
     }
     if (error instanceof discord.command.ArgumentError) {
+      const overridenArgNames: {[key: string]: string} = {};
       const argsUsage = command.argumentConfigList.map((v) => {
         let typeArg = v[1].type;
-        if (typeArg.includes('Optional')) {
-          typeArg = typeArg.split('Optional').join('');
-          return `[${v[0]}: ${typeArg}]`;
+        let name = v[0];
+        const isOptional = typeArg.includes('Optional');
+        typeArg = typeArg.split('Optional').join('');
+        for (const key in CustomArgumentType) {
+          if (CustomArgumentType[key] === name || (v[1].options && (CustomArgumentType[key] === v[1].options.description || CustomArgumentType[key] === v[1].options.name))) {
+            typeArg = null;
+            name = CustomArgumentType[key];
+            overridenArgNames[v[0]] = name;
+            break;
+          }
         }
-        return `<${v[0]}: ${typeArg}>`;
+        if (isOptional) {
+          return `[${name}${typeArg ? `: ${typeArg}` : ''}]`;
+        }
+        return `<${name}${typeArg ? `: ${typeArg}` : ''}>`;
       }).join(' ');
       const usageString = `${cmdInitial} ${argsUsage}`;
       let matchingArgErrorName = command.argumentConfigList.find((v) => {
@@ -383,6 +395,9 @@ export async function chatErrorHandler({ message, command }, error: Error | disc
       });
       if (matchingArgErrorName) {
         [matchingArgErrorName] = matchingArgErrorName;
+      }
+      if (overridenArgNames[matchingArgErrorName]) {
+        matchingArgErrorName = overridenArgNames[matchingArgErrorName];
       }
       msgReply = setPlaceholders(i18n.modules.commands.argument_error, ['arg_name', matchingArgErrorName, 'error', error.message, 'usage', usageString]);
     } else if (errorsDisplay.includes(error.message.toLowerCase())) {
@@ -455,6 +470,45 @@ export async function unknownHandler(message, group) {
     }
   }
 }
+
+export enum CustomArgumentType {
+  UserResolvable = 'UserResolvable'
+}
+
+export async function resolveArgument(msg: discord.GuildMemberMessage | discord.interactions.commands.SlashCommandInteraction, argumentName: string, argumentTypeOriginal: any, type: CustomArgumentType, input: any): Promise<discord.User | BetterUser> {
+  const authorId = msg instanceof discord.GuildMemberMessage ? msg.author.id : msg.member.user.id;
+  let message = '';
+  if (type === CustomArgumentType.UserResolvable) {
+    message = i18n.modules.infractions.inf_terms.user_not_found;
+    if (input instanceof discord.User || input instanceof BetterUser) {
+      return input;
+    }
+    if (input instanceof discord.GuildMember) {
+      return input.user;
+    }
+    input = input.replace(/\D/g, '');
+    let user: discord.User | BetterUser;
+    if (input.length > 9) {
+      try {
+        user = await utils.getUser(input, utils.isGlobalAdmin(authorId));
+      } catch (_) {}
+    }
+    if (user && user.id) {
+      return user;
+    }
+  }
+  if (msg instanceof discord.interactions.commands.SlashCommandInteraction) {
+    return null;
+  }
+  const err = new discord.command.ArgumentError();
+  err.argumentConfig = { type: argumentTypeOriginal, options: { name: argumentName, description: type } };
+  // @ts-ignore
+  err.argumentName = argumentName;
+  err.name = 'ArgumentError';
+  err.message = message;
+  throw err;
+}
+
 const cooldowns: any = {};
 export async function OnMessageCreate(
   id: string,

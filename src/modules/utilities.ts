@@ -10,7 +10,7 @@ import { getMemberTag, getUserTag } from './logging/utils';
 import { StoragePool, BetterUser } from '../lib/utils';
 import { infsPool } from './infractions';
 import { saveMessage, getRoleIdByText } from './admin';
-import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback } from './commands';
+import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatOn, registerChatRaw, executeChatCommand, registerChatSubCallback, resolveArgument, CustomArgumentType } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 
 class UserRole {
@@ -823,18 +823,16 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     'avatar',
-    (ctx) => ({ user: ctx.userOptional() }),
+    (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'UserResolvable' }) }),
     async (msg, { user }) => {
       const res: any = await msg.inlineReply(async () => {
-        if (user === null) {
-          user = msg.author;
-        }
+        const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'stringOptional', CustomArgumentType.UserResolvable, user ?? msg.author);
         const emb = new discord.Embed();
-        emb.setAuthor({ iconUrl: user.getAvatarUrl(), name: user.getTag() });
-        emb.setDescription(setPlaceholders(i18n.modules.utilities.avatar.avatar_of, ['user_tag', user.getTag(), 'avatar_url', `<${user.getAvatarUrl()}>`]));
+        emb.setAuthor({ iconUrl: usr.getAvatarUrl(), name: usr.getTag() });
+        emb.setDescription(setPlaceholders(i18n.modules.utilities.avatar.avatar_of, ['user_tag', usr.getTag(), 'avatar_url', `<${usr.getAvatarUrl()}>`]));
         emb.setFooter({ text: setPlaceholders(i18n.modules.utilities.avatar.requested_by, ['user_tag', msg.author.getTag(), 'user_id', msg.author.id]) });
         emb.setTimestamp(new Date().toISOString());
-        emb.setImage({ url: user.getAvatarUrl() });
+        emb.setImage({ url: usr.getAvatarUrl() });
         return { embed: emb };
       });
 
@@ -1302,26 +1300,11 @@ export function InitializeCommands() {
   registerChatOn(
     cmdGroup,
     'info',
-    (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'user' }) }),
-    async (msg, { user }) => {
+    (ctx) => ({ user: ctx.stringOptional({ name: 'user', description: 'UserResolvable' }) }),
+    async (msg, { user }, ctx) => {
       const res: any = await msg.inlineReply(async () => {
-        let usr: discord.User | BetterUser;
-        if (user === null) {
-          usr = msg.author;
-          if (utils.isGlobalAdmin(msg.author.id)) {
-            usr = await utils.getUser(msg.author.id, true);
-          }
-        } else {
-          user = user.replace(/\D/g, ''); // strip all non-number chars
-          if (utils.isGlobalAdmin(msg.author.id)) {
-            usr = await utils.getUser(user, true);
-          } else {
-            usr = await discord.getUser(user);
-          }
-        }
-        if (!usr) {
-          return { content: i18n.modules.utilities.info.user_not_found, allowedMentions: {} };
-        }
+        const usr: discord.User | BetterUser = await resolveArgument(msg, 'user', 'stringOptional', CustomArgumentType.UserResolvable, user ?? msg.author.id);
+
         const emb = new discord.Embed();
         emb.setAuthor({ name: usr.getTag(), iconUrl: usr.getAvatarUrl() });
         if (typeof usr.avatar === 'string') {
