@@ -47,7 +47,7 @@ export class StoragePool {
       // return !this.options.disableCache;
     }
     async getItems(bypassCache = false): Promise<pylon.KVNamespace.Item[]> {
-      if (this.isCacheInitialized() && !bypassCache) {
+      if (this.isCacheInitialized() && !bypassCache && this.isCacheEnabled()) {
         return this.cache;
       }
       const list = await this.kv.list();
@@ -252,20 +252,23 @@ export class StoragePool {
         return true;
       });
       */
-      const lastEntry: Array<T> = <any>items[items.length - 1].value;
-      if (typeof this.options.maxObjects === 'number' && this.options.maxObjects > 0) {
-        if (lastEntry.length < this.options.maxObjects) {
-          saveTo = items[items.length - 1].key;
-          saveLen = lastEntry.length;
-        }
-      } else {
-        const len = (new TextEncoder().encode(JSON.stringify(lastEntry)).byteLength) + _thisLen;
-        if (len < constants.MAX_KV_SIZE) {
-          saveTo = items[items.length - 1].key;
-          saveLen = lastEntry.length;
-          return false;
+      if (items.length > 0) {
+        const lastEntry: Array<T> = <any>items[items.length - 1].value;
+        if (typeof this.options.maxObjects === 'number' && this.options.maxObjects > 0) {
+          if (lastEntry.length < this.options.maxObjects) {
+            saveTo = items[items.length - 1].key;
+            saveLen = lastEntry.length;
+          }
+        } else {
+          const len = (new TextEncoder().encode(JSON.stringify(lastEntry)).byteLength) + _thisLen;
+          if (len < constants.MAX_KV_SIZE) {
+            saveTo = items[items.length - 1].key;
+            saveLen = lastEntry.length;
+            return false;
+          }
         }
       }
+
       if (!saveTo) {
         saveTo = utils.composeSnowflake();
         saveLen = 0;
@@ -279,7 +282,7 @@ export class StoragePool {
       cpuinitial = await pylon.getCpuTime();
 
       try {
-        const { result } = await this.kv.transactWithResult<any, boolean>(saveTo, (prev: T[]) => {
+        const { result } = await this.kv.transactWithResult<any[], boolean>(saveTo, (prev: T[]) => {
           let newArr: Array<T>;
           if (!prev) {
             newArr = [];
