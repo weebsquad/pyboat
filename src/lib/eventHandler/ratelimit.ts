@@ -1,4 +1,4 @@
-/* eslint-disable import/no-mutable-exports */
+
 import { deepCompare } from '../utils';
 
 const kv = new pylon.KVNamespace('eventHandlerRatelimit');

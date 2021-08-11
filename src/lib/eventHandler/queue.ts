@@ -1,4 +1,4 @@
-/* eslint-disable import/no-mutable-exports */
+
 import * as utils from '../utils';
 import * as routing from './routing';
 import { logDebug } from '../../modules/logging/events/custom';

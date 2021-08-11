@@ -1,4 +1,4 @@
-/* eslint-disable import/no-mutable-exports */
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as updates from './updates';
 

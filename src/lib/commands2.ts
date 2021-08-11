@@ -5,7 +5,7 @@ import { registeredSlashCommands, registeredSlashCommandGroups, SlashGroupHasSub
 import * as utils from './utils';
 import { language as i18n, setPlaceholders } from '../localization/interface';
 /* eslint-disable prefer-destructuring */
-/* eslint-disable import/no-mutable-exports */
+
 export let cmdgroups = [];
 
 function getCmdChannels() {

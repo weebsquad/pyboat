@@ -1,4 +1,4 @@
-/* eslint-disable import/no-mutable-exports */
+
 import * as conf from '../../config';
 import {
   eventFunctions,
