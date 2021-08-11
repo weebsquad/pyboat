@@ -544,7 +544,6 @@ export async function OnMessageReactionAdd(
   }
   if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === actualMsg.author.id)) {
     if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-      console.log('deleting: self');
       await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
     }
     return;
@@ -552,7 +551,6 @@ export async function OnMessageReactionAdd(
     const canRun = await utils.canMemberRun(boardCfg.level, reaction.member);
     if (!canRun) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-        console.log('deleting: level');
         await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
       }
       return;
@@ -561,7 +559,6 @@ export async function OnMessageReactionAdd(
     const isbloc = await isBlocked(actualMsg.author.id);
     if (isbloc === true) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-        console.log('deleting: blocked');
         await message.deleteAllReactionsForEmoji(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`);
       }
       return;
@@ -569,7 +566,6 @@ export async function OnMessageReactionAdd(
     const isblock2 = await isBlocked(reaction.userId);
     if (isblock2 === true) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
-        console.log('deleting: blocked2');
         await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
       }
       return;
