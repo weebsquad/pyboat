@@ -7,7 +7,6 @@ on:
     paths:
       - '**.ts'
       - 'package.json'
-      - '**.js'
 
 jobs:
   testdeploy:
