@@ -72,6 +72,10 @@ export class StarredMessage {
       return this.reactors.length;
     }
     private async updateStorage() {
+      if(!this.publishData.messageId) {
+        await messagesKv.delete(this.id)
+        return;
+      }
       await messagesKv.saveToPool(this);
     }
     private async publish() {
@@ -147,8 +151,8 @@ export class StarredMessage {
           await oldMsg.delete();
         }
       } catch (e) {}
-      delete this.publishData.messageId;
-      delete this.publishData.lastUpdate;
+      this.publishData.messageId = null;
+      this.publishData.lastUpdate = null;
       await this.updateStorage();
     }
     private async awardStats() {
@@ -540,6 +544,7 @@ export async function OnMessageReactionAdd(
   }
   if (utils.isBlacklisted(reaction.member.user.id) || reaction.member.user.bot === true || (typeof boardCfg.preventSelf === 'boolean' && boardCfg.preventSelf === true && reaction.member.user.id === actualMsg.author.id)) {
     if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+      console.log('deleting: self');
       await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
     }
     return;
@@ -547,6 +552,7 @@ export async function OnMessageReactionAdd(
     const canRun = await utils.canMemberRun(boardCfg.level, reaction.member);
     if (!canRun) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+        console.log('deleting: level');
         await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
       }
       return;
@@ -555,6 +561,7 @@ export async function OnMessageReactionAdd(
     const isbloc = await isBlocked(actualMsg.author.id);
     if (isbloc === true) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+        console.log('deleting: blocked');
         await message.deleteAllReactionsForEmoji(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`);
       }
       return;
@@ -562,6 +569,7 @@ export async function OnMessageReactionAdd(
     const isblock2 = await isBlocked(reaction.userId);
     if (isblock2 === true) {
       if (channel.canMember(me, discord.Permissions.MANAGE_MESSAGES)) {
+        console.log('deleting: blocked2');
         await message.deleteReaction(`${emoji.type === discord.Emoji.Type.UNICODE ? emoji.name : `${emoji.name}:${emoji.id}`}`, reaction.member.user);
       }
       return;
@@ -572,6 +580,11 @@ export async function OnMessageReactionAdd(
   }
   if (!processing.includes(msgId)) {
     processing.push(msgId);
+    setTimeout(() => {
+      if (processing.includes(msgId)) {
+        processing.splice(processing.indexOf(msgId), 1);
+      }
+    }, 500);
   }
   let data: any;
   const checkStorage: any = await messagesKv.getById<StarredMessage>(msgId);
@@ -583,15 +596,9 @@ export async function OnMessageReactionAdd(
   if (!data.reactors.includes(reaction.userId)) {
     data.reactors.push(reaction.userId);
   } else {
-    if (processing.includes(msgId)) {
-      processing.splice(processing.indexOf(msgId), 1);
-    }
     return;
   }
-  const check = await data.check();
-  if (processing.includes(msgId)) {
-    processing.splice(processing.indexOf(msgId), 1);
-  }
+  await data.check();
 }
 
 export async function OnMessageReactionRemove(id: string, gid: string, reaction: discord.Event.IMessageReactionRemove) {
@@ -709,6 +716,11 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   }
   if (!processing.includes(msgId)) {
     processing.push(msgId);
+    setTimeout(() => {
+      if (processing.includes(msgId)) {
+        processing.splice(processing.indexOf(msgId), 1);
+      }
+    }, 500);
   }
   let data: any;
   const checkStorage = await messagesKv.getById<StarredMessage>(msgId);
@@ -720,15 +732,9 @@ export async function OnMessageReactionRemove(id: string, gid: string, reaction:
   if (data.reactors.includes(reaction.userId)) {
     data.reactors.splice(data.reactors.indexOf(reaction.userId), 1);
   } else {
-    if (processing.includes(msgId)) {
-      processing.splice(processing.indexOf(msgId), 1);
-    }
     return;
   }
-  const check = await data.check();
-  if (processing.includes(msgId)) {
-    processing.splice(processing.indexOf(msgId), 1);
-  }
+  await data.check();
 }
 
 export async function OnMessageReactionRemoveAll(id: string, gid: string, reaction: discord.Event.IMessageReactionRemoveAll) {
@@ -763,6 +769,11 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   }
   if (!processing.includes(reaction.messageId)) {
     processing.push(reaction.messageId);
+    setTimeout(() => {
+      if (processing.includes(reaction.messageId)) {
+        processing.splice(processing.indexOf(reaction.messageId), 1);
+      }
+    }, 500);
   }
   let data: any;
   const checkStorage = await messagesKv.getById<StarredMessage>(reaction.messageId);
@@ -774,15 +785,9 @@ export async function OnMessageReactionRemoveAll(id: string, gid: string, reacti
   if (data.reactors.length > 0) {
     data.reactors = [];
   } else {
-    if (processing.includes(reaction.messageId)) {
-      processing.splice(processing.indexOf(reaction.messageId), 1);
-    }
     return;
   }
-  const check = await data.check();
-  if (processing.includes(reaction.messageId)) {
-    processing.splice(processing.indexOf(reaction.messageId), 1);
-  }
+  await data.check();
 }
 export function InitializeCommands() {
   const _groupOptions = {
