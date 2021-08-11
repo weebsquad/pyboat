@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable consistent-return */
 /* eslint-disable no-async-promise-executor */
 /* eslint-disable eqeqeq */
-import { config, globalConfig, guildId, Ranks } from '../config';
+import { config, guildId, Ranks } from '../config';
 import * as utils from '../lib/utils';
-import * as constants from '../constants/constants';
 import * as c2 from '../lib/commands2';
 import * as infractions from './infractions';
 import { logCustom } from './logging/events/custom';
-import { getActorTag, getUserTag, getMemberTag, isDebug } from './logging/main';
+import { getActorTag, getUserTag, getMemberTag } from './logging/main';
 import { StoragePool } from '../lib/storagePools';
 import { registerSlash, registerSlashGroup, registerSlashSub, interactionChannelRespond, registerChatRaw, registerChatOn, registerChatSubCallback, resolveArgument, CustomArgumentType } from './commands';
 import { language as i18n, setPlaceholders } from '../localization/interface';
@@ -48,13 +47,13 @@ const actionPool = new StoragePool({
   local: false,
 });
 enum ActionType {
-    'CLEAN' = 'CLEAN',
-    'LOCK_GUILD'= 'LOCK_GUILD',
-    'LOCK_CHANNEL'= 'LOCK_CHANNEL',
-    'SLOWMODE' = 'SLOWMODE',
-    'TEMPROLE' = 'TEMPROLE',
-    'ROLE' = 'ROLE',
-    'NICKNAME' = 'NICKNAME'
+    CLEAN = 'CLEAN',
+    LOCK_GUILD= 'LOCK_GUILD',
+    LOCK_CHANNEL= 'LOCK_CHANNEL',
+    SLOWMODE = 'SLOWMODE',
+    TEMPROLE = 'TEMPROLE',
+    ROLE = 'ROLE',
+    NICKNAME = 'NICKNAME'
 }
 
 export class Action { // class action lawsuit lmao

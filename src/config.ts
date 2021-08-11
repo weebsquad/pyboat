@@ -18,11 +18,11 @@ export class ConfigError extends Error {
 }
 // levels
 export enum Ranks {
-    'Guest' = 0,
-    'Authorized' = 10,
-    'Moderator' = 50,
-    'Administrator' = 100,
-    'Owner' = 200,
+    Guest = 0,
+    Authorized = 10,
+    Moderator = 50,
+    Administrator = 100,
+    Owner = 200,
 }
 export const version = '__VERSION__'; // @ts-ignore
 

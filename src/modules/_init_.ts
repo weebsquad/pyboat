@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as antiPing from './antiPing';
 import * as commands from './commands';
 import * as counting from './counting';
