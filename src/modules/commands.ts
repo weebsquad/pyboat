@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 // import { HandleCommand } from '../lib/commands';
 import * as conf from '../config';
 import * as commands2 from '../lib/commands2';

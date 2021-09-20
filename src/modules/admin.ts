@@ -1986,7 +1986,7 @@ export function cleanCommands(subCommandGroup: discord.command.CommandGroup) {
           await infractions.confirmResult(undefined, msg, false, res);
         }
       } else if (res > 0) {
-        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_user, ['count', res.toString(), 'user_mention', user.getTag()]));
+        await infractions.confirmResult(undefined, msg, true, setPlaceholders(i18n.modules.admin.adm_clean.cleaned_messages_user, ['count', res.toString(), 'user_mention', usr instanceof discord.GuildMember ? usr.user.getTag() : usr.getTag()]));
       } else {
         await infractions.confirmResult(undefined, msg, false, i18n.modules.admin.adm_clean.no_messages_cleaned);
       }
